@@ -17,11 +17,7 @@ build-deps:
   tags:
     - default_docker
   script:
-    sudo apt-get install -y \
-      libhdf5-dev \
-      libgsl-dev \
-      libblas-dev \
-      liblapack-dev
+    sudo apt-get install -y libhdf5-dev libgsl-dev libblas-dev liblapack-dev
 
 # Conventional electronic-structure tests
 
