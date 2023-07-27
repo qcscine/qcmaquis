@@ -199,31 +199,29 @@ endmacro(configure_symm_file)
 # Adding symmetries definitions, TwoU1PG and SU2U1PG are needed in any case for smooth compilation/testing
 list(APPEND BUILD_SYMMETRIES "TwoU1PG" "SU2U1PG")
 list(REMOVE_DUPLICATES BUILD_SYMMETRIES)
-message(STATUS "Enabled symmetries: ${BUILD_SYMMETRIES}")
 foreach(SYMM ${BUILD_SYMMETRIES})
   get_symm_group_name(SYMM_NAME ${SYMM})
-  list(APPEND DMRG_DEFINITIONS -DHAVE_${SYMM_NAME})
   set(DMRG_HAS_${SYMM_NAME} TRUE)
 endforeach(SYMM)
 
 # PreBO-specific flags
 if((BUILD_PREBO))
   if((NOT DMRG_HAS_NU1))
-    message(FATAL_ERROR "For pre-BO module, activate NU1 symmetry!")
-  else()
-    list(APPEND DMRG_DEFINITIONS -DDMRG_PREBO)
-    set(DMRG_PREBO TRUE)
+    message(STATUS "Pre-BO module requires NU1 symmetry; adding it.")
+    list(APPEND BUILD_SYMMETRIES "NU1")
   endif()
+  list(APPEND DMRG_DEFINITIONS -DDMRG_PREBO)
+  set(DMRG_PREBO TRUE)
 endif()
 
 # Vibrational-specific flag
 if((BUILD_VIBRATIONAL))
   if((NOT DMRG_HAS_TrivialGroup))
-    message(FATAL_ERROR "The NONE symmetry should be activated for vibrational calculations")
-  else()
+    message(STATUS "Vibrational module requires NONE symmetry; adding it.")
+    list(APPEND BUILD_SYMMETRIES "NONE")
+  endif()
     list(APPEND DMRG_DEFINITIONS -DDMRG_VIBRATIONAL)
     set(DMRG_VIBRATIONAL TRUE)
-  endif()
 endif()
 
 # SRCAS-specific flag
@@ -234,13 +232,20 @@ endif()
 # Vibronic-specific flag
 if(BUILD_VIBRONIC)
   if (NOT DMRG_HAS_U1)
-    message(FATAL_ERROR "U1 symmetry should be activated for vibronic calculations")
-  else()
+    message(STATUS "Vibronic module requires U1 symmetry; adding it.")
+    list(APPEND BUILD_SYMMETRIES "U1")
+  endif()
     list(APPEND DMRG_DEFINITIONS -DDMRG_VIBRONIC)
     set(DMRG_VIBRONIC TRUE)
-  endif()
 endif(BUILD_VIBRONIC)
 
+list(REMOVE_DUPLICATES BUILD_SYMMETRIES)
+foreach(SYMM ${BUILD_SYMMETRIES})
+  get_symm_group_name(SYMM_NAME ${SYMM})
+  list(APPEND DMRG_DEFINITIONS -DHAVE_${SYMM_NAME})
+  set(DMRG_HAS_${SYMM_NAME} TRUE)
+endforeach(SYMM)
+message(STATUS "Enabled symmetries: ${BUILD_SYMMETRIES}")
 ##### Dependencies #####
 # GSL
 # find GNU Scientific Library if using SU2 Groups
