@@ -1,4 +1,4 @@
-image: gitlab.chab.ethz.ch:4567/reiher/docker/scine-gcc:latest
+image: gitlab.chab.ethz.ch:4567/reiher/docker/scine-gcc:test
 
 # Pipeline that compiles the code with increasingly complex models
 
@@ -18,7 +18,6 @@ build-electronic:
   tags:
     - default_docker
   script:
-    - sudo apt-get update && sudo apt-get install -y ninja-build libhdf5-dev libgsl-dev libblas-dev liblapack-dev
     - mkdir buildElectronic && cd buildElectronic
     - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG" -DCMAKE_BUILD_TYPE=Release -DBUILD_DMRG_FEAST=ON -DBUILD_SRCAS=ON ../dmrg
     - cmake --build . -j4
@@ -34,7 +33,6 @@ testElectronic:
   tags:
     - default_docker
   script:
-    - sudo apt-get update && sudo apt-get install -y ninja-build libhdf5-dev libgsl-dev libblas-dev liblapack-dev
     - cd buildElectronic
     - ctest --output-on-failure
 
@@ -46,7 +44,6 @@ build-relativistic:
   tags:
     - default_docker
   script:
-    - sudo apt-get update && sudo apt-get install -y ninja-build libhdf5-dev libgsl-dev libblas-dev liblapack-dev
     - mkdir buildRelativistic && cd buildRelativistic
     - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG;U1DG" -DCMAKE_BUILD_TYPE=Release ../dmrg
     - cmake --build . -j4
@@ -62,7 +59,6 @@ testRelativistic:
   tags:
     - default_docker
   script:
-    - sudo apt-get update && sudo apt-get install -y ninja-build libhdf5-dev libgsl-dev libblas-dev liblapack-dev
     - cd buildRelativistic
     - ctest --output-on-failure
 
@@ -74,7 +70,6 @@ buildPreBO:
   tags:
     - default_docker
   script:
-    - sudo apt-get update && sudo apt-get install -y ninja-build libhdf5-dev libgsl-dev libblas-dev liblapack-dev
     - mkdir buildNU1 && cd buildNU1
     - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG;U1DG;NU1" -DCMAKE_BUILD_TYPE=Release -DBUILD_PREBO=ON -DDMRG_NUMSYMM=5  ../dmrg
     - cmake --build . -j4
@@ -90,7 +85,6 @@ testPreBO:
   tags:
     - default_docker
   script:
-    - sudo apt-get update && sudo apt-get install -y ninja-build libhdf5-dev libgsl-dev libblas-dev liblapack-dev
     - cd buildNU1
     - ctest --output-on-failure 
 
@@ -100,7 +94,6 @@ buildVibrationalHamiltonians:
   tags:
     - default_docker
   script:
-    - sudo apt-get update && sudo apt-get install -y ninja-build libhdf5-dev libgsl-dev libblas-dev liblapack-dev
     - mkdir buildVibrational && cd buildVibrational
     - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="NONE" -DCMAKE_BUILD_TYPE=Release -DBUILD_VIBRATIONAL=ON -DBUILD_DMRG_FEAST=ON -DBUILD_SRCAS=ON -DBUILD_MPS2CI=ON -DDMRG_ORDERNONE=12 ../dmrg
     - cmake --build . -j4
@@ -116,7 +109,6 @@ testVibrationalHamiltonians:
   tags:
     - default_docker
   script:
-    - sudo apt-get update && sudo apt-get install -y ninja-build libhdf5-dev libgsl-dev libblas-dev liblapack-dev
     - cd buildVibrational
     - ctest --output-on-failure
 
@@ -126,7 +118,6 @@ buildVibronicHamiltonians:
   tags:
     - default_docker
   script:
-    - sudo apt-get update && sudo apt-get install -y ninja-build libhdf5-dev libgsl-dev libblas-dev liblapack-dev
     - mkdir buildVibronic && cd buildVibronic
     - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1PG;SU2U1PG;NU1;U1" -DCMAKE_BUILD_TYPE=Release -DBUILD_VIBRONIC=ON ../dmrg
     - cmake --build . -j4
@@ -142,7 +133,6 @@ testVibronicHamiltonians:
   tags:
     - default_docker
   script:
-    - sudo apt-get update && sudo apt-get install -y ninja-build libhdf5-dev libgsl-dev libblas-dev liblapack-dev
     - cd buildVibronic
     - ctest --output-on-failure
 
@@ -157,7 +147,6 @@ build-TD-conventional:
   tags:
     - default_docker
   script:
-    - sudo apt-get update && sudo apt-get install -y ninja-build libhdf5-dev libgsl-dev libblas-dev liblapack-dev
     - mkdir buildTDConventional && cd buildTDConventional
     - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG" -DCMAKE_BUILD_TYPE=Release -DBUILD_DMRG_EVOLVE=ON ../dmrg
     - cmake --build . -j4
@@ -173,7 +162,6 @@ testTDConventional:
   tags:
     - default_docker
   script:
-    - sudo apt-get update && sudo apt-get install -y ninja-build libhdf5-dev libgsl-dev libblas-dev liblapack-dev
     - cd buildTDConventional
     - ctest --output-on-failure
 
@@ -185,7 +173,6 @@ build-TD-with-all-symmetries:
   tags:
     - default_docker
   script:
-    - sudo apt-get update && sudo apt-get install -y ninja-build libhdf5-dev libgsl-dev libblas-dev liblapack-dev
     - mkdir buildTDAllSymmetries && cd buildTDAllSymmetries
     - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG;U1DG;NU1;U1" -DCMAKE_BUILD_TYPE=Release -DBUILD_DMRG_EVOLVE=ON -DBUILD_PREBO=ON -DBUILD_VIBRONIC=ON ../dmrg
     - cmake --build . -j4
@@ -201,6 +188,5 @@ testTDAllSymmetries:
   tags:
     - default_docker
   script:
-    - sudo apt-get update && sudo apt-get install -y ninja-build libhdf5-dev libgsl-dev libblas-dev liblapack-dev
     - cd buildTDAllSymmetries
     - ctest --output-on-failure
