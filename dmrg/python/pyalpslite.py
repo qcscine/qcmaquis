@@ -2,7 +2,7 @@
 
 # QCMaquis DMRG Project
 #
-# Copyright (C) 2015- Laboratory for Physical Chemistry, ETH Zurich
+# Copyright (C) 2015- Department of Chemistry and Applied Biosciences, ETH Zurich
 #               2020 Leon Freitag <lefreita@ethz.ch>
 #
 # This software is part of the ALPS Applications, published under the ALPS

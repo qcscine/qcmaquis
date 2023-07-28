@@ -4,7 +4,7 @@
 #*
 #* ALPS MPS DMRG Project
 #*
-#* Copyright (C) 2013 Laboratory for Physical Chemistry, ETH Zurich
+#* Copyright (C) 2013 Department of Chemistry and Applied Biosciences, ETH Zurich
 #*               2012-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
 #*               2020 by Leon Freitag <lefreita@ethz.ch> (Python3 version)
 #*
