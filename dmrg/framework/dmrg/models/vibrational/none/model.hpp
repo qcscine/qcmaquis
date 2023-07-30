@@ -28,7 +28,7 @@
 #ifndef MODELS_VIBRATIONAL_NONE_H
 #define MODELS_VIBRATIONAL_NONE_H
 
-// #ifdef DMRG_VIBRATIONAL
+#ifdef DMRG_VIBRATIONAL
 
 #include <set>
 #include <sstream>
@@ -101,7 +101,7 @@ public:
     int numModes =  parameters_["L"];
     physIndices_.resize(numModes);
     // Analyzes consistency of nMax parameter
-    nMaxVec = parameters_["Nmax"].as<std::vector<int> >();
+    nMaxVec = parameters_["Nmax"].template as<std::vector<int> >();
     if (nMaxVec.size() == 1) {
       auto nMax = nMaxVec[0];
       nMaxVec = std::vector<int>(numModes, nMax);
@@ -157,7 +157,7 @@ public:
   }
 
   /** @brief Update the model with the new parameters */
-  void update(BaseParameters const &p) {
+  void update(BaseParameters const &p) override {
       // TODO: update this->terms_ with the new parameters
       throw std::runtime_error("update() not yet implemented or this model.");
   }
@@ -201,16 +201,16 @@ public:
   }
 
   /** @brief Getter for the physical dimension of a given type */
-  Index<TrivialGroup> const& phys_dim(size_t type) const { return physIndices_[type]; }
+  Index<TrivialGroup> const& phys_dim(size_t type) const override { return physIndices_[type]; }
 
   /** @brief Getter for the identity operator */
-  tag_type identity_matrix_tag(size_t type) const { return ident_.at(nMaxVec[type]); }
+  tag_type identity_matrix_tag(size_t type) const override { return ident_.at(nMaxVec[type]); }
 
   /** @brief Getter for the filling operator */
-  tag_type filling_matrix_tag(size_t type) const { return identity_matrix_tag(type); }
+  tag_type filling_matrix_tag(size_t type) const override { return identity_matrix_tag(type); }
 
   /** @brief Gets the quantum number associated with the wfn */
-  typename TrivialGroup::charge total_quantum_numbers(BaseParameters& parms) const {
+  typename TrivialGroup::charge total_quantum_numbers(BaseParameters& parms) const override {
     return typename TrivialGroup::charge();
   }
 
@@ -220,7 +220,7 @@ public:
    * @param type site type for which the operator is returned
    * @return tag_type tag associated with the requested operator
    */
-  tag_type get_operator_tag(const std::string& name, size_t type) const {
+  tag_type get_operator_tag(const std::string& name, size_t type) const override {
     if (name == "id")
       return ident_.at(nMaxVec[type]);
     else if (name == "fill")
@@ -231,13 +231,13 @@ public:
   }
 
   /** @brief Getter for the tag_handler */
-  table_ptr operators_table() const { return tag_handler_; }
+  table_ptr operators_table() const override { return tag_handler_; }
 
   /**
    * @brief Measurement associated with the n-mode Hamiltonian class
    * For now, returns an empty container.
    */
-  measurements_type measurements() const {
+  measurements_type measurements() const override {
     typedef std::vector<op_t> op_vec;
     typedef std::vector<std::pair<op_vec, bool> > bond_element;
     measurements_type meas;
@@ -290,6 +290,6 @@ private:
   std::vector<int> nMaxVec;
 };
 
-// #endif // DMRG_VIBRATIONAL
+#endif // DMRG_VIBRATIONAL
 
 #endif

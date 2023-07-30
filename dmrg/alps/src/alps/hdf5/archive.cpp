@@ -285,8 +285,8 @@ namespace alps {
                             if (large_) {
                                 {
                                     char filename0[4096], filename1[4096];
-                                    sprintf(filename0, filename_.c_str(), 0);
-                                    sprintf(filename1, filename_.c_str(), 1);
+                                    snprintf(filename0, 4096, filename_.c_str(), 0);
+                                    snprintf(filename1, 4096, filename_.c_str(), 1);
                                     if (!strcmp(filename0, filename1))
                                         throw archive_error("Large hdf5 archives need to have a '%d' part in the filename" + ALPS_STACKTRACE);
                                 }

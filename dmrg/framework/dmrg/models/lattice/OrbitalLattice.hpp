@@ -78,14 +78,14 @@ public:
     numTypes = *std::max_element(irreps.begin(), irreps.end())+1;
   }
 
-  std::vector<pos_t> forward(pos_t i) const {
+  std::vector<pos_t> forward(pos_t i) const override {
       std::vector<pos_t> ret;
       if (i < L-1)
           ret.push_back(i+1);
       return ret;
   }
 
-  std::vector<pos_t> all(pos_t i) const {
+  std::vector<pos_t> all(pos_t i) const override {
       std::vector<pos_t> ret;
       if (i < L-1)
           ret.push_back(i+1);
@@ -94,7 +94,7 @@ public:
       return ret;
   }
 
-  boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const
+  boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const override
   {
     if (property == "label" && pos.size() == 1) // return "( label )" as string
       return boost::any( site_label(order[pos[0]]) );
@@ -119,7 +119,7 @@ public:
   }
 
   /** @brief Getter for the lattice size */
-  pos_t size() const { return L; }
+  pos_t size() const override { return L; }
 
   /** @brief Getter for the number of types of sites */
   int getMaxType() const override { return numTypes; }

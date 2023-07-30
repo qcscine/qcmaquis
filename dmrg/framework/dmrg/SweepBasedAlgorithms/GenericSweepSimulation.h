@@ -73,6 +73,9 @@ public:
     boundaryPropagator_ = std::make_shared<BoundaryPropagatorType>(mps_, mpoContainer_.getMPO());
     mpsUpdater_ = std::make_unique<SweepMPSUpdaterType>(mpoContainer_.getMPO(), mps_, boundaryPropagator_, parms_, verbose_);
   };
+    
+  /** @brief Virtual class destructor */
+  virtual ~GenericSweepSimulation() = 0;
 
   /**
    * @brief Execution of a generic sweep-based optimization algorithm.

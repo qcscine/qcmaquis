@@ -51,7 +51,7 @@ public:
    2 6 10 14
    3 7 11 15
    */
-  std::vector<int> forward(int p) const
+  std::vector<int> forward(int p) const override
   {
     std::vector<int> ret;
     if (p+1 < L_*W_ && (p+1) % W_ != 0)
@@ -61,7 +61,7 @@ public:
     return ret;
   }
 
-  std::vector<int> all(int p) const
+  std::vector<int> all(int p) const override
   {
     std::vector<int> ret = forward(p);
     if (p >= 1 && p % W_ != 0)
@@ -72,12 +72,12 @@ public:
   }
 
   /** @brief Getter for the lattice size */
-  int size() const { return L_*W_; }
+  int size() const override { return L_*W_; }
   
   /** @brief Getter for the number of types of sites */
   int getMaxType() const override { return 1; }
 
-  boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const
+  boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const override
   {
     if (property == "label" && pos.size() == 1)
       return boost::any( site_label(pos[0]) );

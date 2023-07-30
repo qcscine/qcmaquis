@@ -227,7 +227,7 @@ public:
         : phys_dims(phys_dims_),
           right_end(right_end_), site_type(site_type_), params(params_)
     { 
-      std::string states = params["init_basis_state"].as<std::string>();
+      std::string states = params["init_basis_state"].template as<std::string>();
       std::vector<std::string> specifiedStates;
       boost::split(specifiedStates, states, boost::is_any_of("|"));
       std::stringstream ss(specifiedStates[0]);
@@ -278,7 +278,7 @@ public:
   {
     if (params["init_space"].str().empty())
       throw std::runtime_error("Init_space needs to be provided to populate basis_state_generic_const. Abort.");
-    basis_index = params["init_space"].as<std::vector<int> >(); 
+    basis_index = params["init_space"].template as<std::vector<int> >(); 
   }
 
   // Operator called when initialization occurs
@@ -319,7 +319,7 @@ public:
   {
     if (params["init_space"].str().empty())
       throw std::runtime_error("Init_space needs to be provided to populate basis_state_generic_default. Abort.");
-    basis_index = params["init_space"].as<std::vector<int> >();
+    basis_index = params["init_space"].template as<std::vector<int> >();
     if (params.is_set("seed"))
       dmrg_random::engine.seed(params["seed"]);
   }

@@ -77,7 +77,7 @@ public:
       currentSolution_ = initialMPS;
     //rhs.conjugate_inplace();
     // Parameters that are specific of the solution of the linear system.
-    numberOfMacroIterations_ = parms_["linsystem_max_it"].as<int>();
+    numberOfMacroIterations_ = parms_["linsystem_max_it"].template as<int>();
     gmresTol_ = parms_["linsystem_tol"];
     krylovDim_ = parms_["linsystem_krylov_dim"];
     rhsNorm_ = ietl::two_norm(rhsMPS_);
@@ -401,8 +401,8 @@ private:
       for (size_t i = 0; i < num_rows(data[b]); ++i) {
         for (size_t j = 0; j < num_cols(data[b]); ++j) {
           denom = (precond_->operator[](b)(i, j) - shift_);
-          if (std::fabs(denom) > 1.0E-10)
-            data[b](i, j) /= std::fabs(denom);
+          if (std::abs(denom) > 1.0E-10)
+            data[b](i, j) /= std::abs(denom);
         }
       }
     }
