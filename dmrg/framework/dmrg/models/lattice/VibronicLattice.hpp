@@ -31,7 +31,7 @@ public:
     
   /** @brief Class constructor */
   explicit VibronicLattice(BaseParameters & parameters) 
-      : L(0), vector_types(0), nElecStates(parameters["vibronic_nstates"].as<int>()), 
+      : L(0), nElecStates(parameters["vibronic_nstates"].as<int>()), vector_types(0),
         nModes(parameters["vibronic_nmodes"].as<int>()), nParticles(0), eleFirst(false)
   {
     // Checks consistency

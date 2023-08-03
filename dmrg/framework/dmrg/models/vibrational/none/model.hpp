@@ -51,7 +51,7 @@ public:
      * @param verbose if true, prints information regarding the Hamiltonian terms
      */
     WatsonHamiltonian(const Lattice& lattice, BaseParameters& parameters, bool verbose)
-        : lattice_(lattice), parameters_(parameters), tag_handler_(new table_type()), physIndices_(0)
+        : lattice_(lattice), parameters_(parameters), physIndices_(0), tag_handler_(new table_type())
     {
         // Model parameters
         maquis::cout << std::endl;

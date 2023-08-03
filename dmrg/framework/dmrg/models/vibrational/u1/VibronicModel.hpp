@@ -42,7 +42,7 @@ public:
 
     /** @brief Class constructor */
     VibronicModel(const Lattice& lattice_, BaseParameters& parameters_)
-      : lat(lattice_), parameters(parameters_), tag_handler(new table_type()), L_(parameters_["L"]),
+      : lat(lattice_), parameters(parameters_), L_(parameters_["L"]), tag_handler(new table_type()),
         n_ele_states_(parameters_["vibronic_nstates"]), n_vib_states_(parameters_["vibronic_nmodes"])
     {
         // Variable definition

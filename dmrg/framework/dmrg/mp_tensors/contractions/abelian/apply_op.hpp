@@ -54,7 +54,7 @@ void lbtm_kernel_allocate(size_t b2, ContractionGrid<Matrix, SymmGroup>& contr_g
                 charge out_l_charge = SymmGroup::fuse(out_r_charge, total_delta);
                 if(!out_left_i.has(out_l_charge)) { continue; }
                 size_t r_size = right_i[r].second;
-                if(ret.find_block(out_l_charge, out_r_charge) == ret.n_blocks())
+                if(ret.find_block(out_l_charge, out_r_charge) == ret.n_blocks()) {
                     #ifdef USE_AMBIENT
                     // both versions should be fine for AMBIENT
                     ret.resize_block(ret.insert_block(Matrix(1,1), out_l_charge, out_r_charge),
@@ -62,6 +62,7 @@ void lbtm_kernel_allocate(size_t b2, ContractionGrid<Matrix, SymmGroup>& contr_g
                     #else
                     ret.insert_block(Matrix(out_left_i.size_of_block(out_l_charge), r_size), out_l_charge, out_r_charge);
                     #endif
+                }
             }
         } // oi
     } // b1
