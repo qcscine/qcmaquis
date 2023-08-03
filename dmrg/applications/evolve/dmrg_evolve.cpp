@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -23,7 +23,7 @@ int main(int argc, char ** argv)
               << "  Quantum Chemical Density Matrix Renormalization group\n"
               << "  available from https://scine.ethz.ch/download/qcmaquis\n"
               << "  based on the ALPS MPS codes from http://alps.comp-phys.org/\n"
-              << "  copyright (c) 2015-2018 Laboratory of Physical Chemistry, ETH Zurich\n"
+              << "  copyright (c) 2015-2018 Department of Chemistry and Applied Biosciences, ETH Zurich\n"
               << "  copyright (c) 2012-2016 by Sebastian Keller\n"
               << "  copyright (c) 2016-2021 by Alberto Baiardi, Leon Freitag, \n"
               << "  Stefan Knecht, Yingjin Ma \n"
