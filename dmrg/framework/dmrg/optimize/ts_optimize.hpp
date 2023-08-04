@@ -197,9 +197,9 @@ public:
                 // Write back result from optimization
                 BEGIN_TIMING("TRUNC")
                 if (parms["twosite_truncation"] == "svd")
-                    boost::tie(mps[site1], mps[site2], trunc) = tst.split_mps_l2r(Mmax, cutoff);
+                    std::tie(mps[site1], mps[site2], trunc) = tst.split_mps_l2r(Mmax, cutoff);
                 else
-                    boost::tie(mps[site1], mps[site2], trunc) = tst.predict_split_l2r(Mmax, cutoff, alpha, left_[site1], mpo[site1], true);
+                    std::tie(mps[site1], mps[site2], trunc) = tst.predict_split_l2r(Mmax, cutoff, alpha, left_[site1], mpo[site1], true);
                 END_TIMING("TRUNC")
                 tst.clear();
 
@@ -230,9 +230,9 @@ public:
                 // Write back result from optimization
                 BEGIN_TIMING("TRUNC")
                 if (parms["twosite_truncation"] == "svd")
-                    boost::tie(mps[site1], mps[site2], trunc) = tst.split_mps_r2l(Mmax, cutoff);
+                    std::tie(mps[site1], mps[site2], trunc) = tst.split_mps_r2l(Mmax, cutoff);
                 else
-                    boost::tie(mps[site1], mps[site2], trunc) = tst.predict_split_r2l(Mmax, cutoff, alpha, right_[site2+1], mpo[site2], true);
+                    std::tie(mps[site1], mps[site2], trunc) = tst.predict_split_r2l(Mmax, cutoff, alpha, right_[site2+1], mpo[site2], true);
                 END_TIMING("TRUNC")
                 tst.clear();
 

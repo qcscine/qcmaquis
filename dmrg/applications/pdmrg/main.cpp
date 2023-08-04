@@ -96,7 +96,7 @@ void split_ts(TwoSiteTensor<Matrix, SymmGroup> const& tst,
     inv = s;
     typename dmt::diagonal_iterator it, end;
     for (size_t k=0; k<inv.n_blocks(); ++k)
-        for (boost::tie(it, end) = inv[k].diagonal(); it != end; ++it)
+        for (std::tie(it, end) = inv[k].diagonal(); it != end; ++it)
             *it = 1. / *it;
 }
 
@@ -176,7 +176,7 @@ void dmrg_optim(unsigned site, unsigned local_site, int lr, int L,
     /// Truncation of MPS
     truncation_results trunc;
     if (lr == +1){
-        boost::tie(mps[site], mps[site+1], trunc) = tst.split_mps_l2r(Mmax, cutoff);
+        std::tie(mps[site], mps[site+1], trunc) = tst.split_mps_l2r(Mmax, cutoff);
         
         if (normalize == with_normalization) { // site != L/2-1
             block_matrix<Matrix, SymmGroup> t;
@@ -185,7 +185,7 @@ void dmrg_optim(unsigned site, unsigned local_site, int lr, int L,
         }
     }
     if (lr == -1){
-        boost::tie(mps[site], mps[site+1], trunc) = tst.split_mps_r2l(Mmax, cutoff);
+        std::tie(mps[site], mps[site+1], trunc) = tst.split_mps_r2l(Mmax, cutoff);
 
         if (normalize == with_normalization) { //site != L/2+1
             block_matrix<Matrix, SymmGroup> t;

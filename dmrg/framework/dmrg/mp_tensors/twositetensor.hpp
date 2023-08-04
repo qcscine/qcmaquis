@@ -139,7 +139,7 @@ MPSTensor<Matrix, SymmGroup> TwoSiteTensor<Matrix, SymmGroup>::make_mps_(type_he
 }
 
 template<class Matrix, class SymmGroup>
-boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
+std::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
 TwoSiteTensor<Matrix, SymmGroup>::split_mps_l2r(std::size_t Mmax, double cutoff, bool verbose) const
 {
     make_both_paired();
@@ -156,11 +156,11 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_l2r(std::size_t Mmax, double cutoff,
     MPSTensor<Matrix, SymmGroup> mps_tensor2(phys_i_right, u.left_basis(), right_i, u, RightPaired);
     assert( mps_tensor2.reasonable() );
     
-    return boost::make_tuple(mps_tensor1, mps_tensor2, trunc);
+    return std::make_tuple(mps_tensor1, mps_tensor2, trunc);
 }
 
 template<class Matrix, class SymmGroup>
-boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
+std::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
 TwoSiteTensor<Matrix, SymmGroup>::split_mps_r2l(std::size_t Mmax, double cutoff, bool verbose) const
 {
     make_both_paired();
@@ -176,11 +176,11 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_r2l(std::size_t Mmax, double cutoff,
     gemm(u, s, v);
     MPSTensor<Matrix, SymmGroup> mps_tensor1(phys_i_left, left_i, u.right_basis(), v, LeftPaired);
     
-    return boost::make_tuple(mps_tensor1, mps_tensor2, trunc);
+    return std::make_tuple(mps_tensor1, mps_tensor2, trunc);
 }
 
 template<class Matrix, class SymmGroup>
-boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
+std::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
 TwoSiteTensor<Matrix, SymmGroup>::predict_split_l2r(std::size_t Mmax, double cutoff, double alpha, const Boundary<Matrix, SymmGroup>& left,
                                                     const MPOTensor<Matrix, SymmGroup>& mpo, bool activatePerturbation)
 {
@@ -230,12 +230,12 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_l2r(std::size_t Mmax, double cut
     gemm(transpose(conjugate(U)), data_, V);
     MPSTensor<Matrix, SymmGroup> mps_tensor2(phys_i_right, V.left_basis(), right_i, V, RightPaired);
     assert( mps_tensor2.reasonable() );
-    return boost::make_tuple(mps_tensor1, mps_tensor2, trunc);
+    return std::make_tuple(mps_tensor1, mps_tensor2, trunc);
 }
 
 
 template<class Matrix, class SymmGroup>
-boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
+std::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
 TwoSiteTensor<Matrix, SymmGroup>::predict_split_r2l(std::size_t Mmax, double cutoff, double alpha, const Boundary<Matrix, SymmGroup>& right,
                                                     const MPOTensor<Matrix, SymmGroup>& mpo, bool activatePerturbation)
 {
@@ -293,7 +293,7 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_r2l(std::size_t Mmax, double cut
     MPSTensor<Matrix, SymmGroup> mps_tensor1(phys_i_left, left_i, V.right_basis(), V, LeftPaired);
     assert( mps_tensor1.reasonable() );
     
-    return boost::make_tuple(mps_tensor1, mps_tensor2, trunc);
+    return std::make_tuple(mps_tensor1, mps_tensor2, trunc);
 }
 
 

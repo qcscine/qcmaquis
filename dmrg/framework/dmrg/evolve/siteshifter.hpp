@@ -32,7 +32,7 @@ truncation_results SiteShifter<Matrix, SymmGroup, TimeEvolver, Perturber>::shift
         tmp.make_left_paired();
         perturber_->perturb_mps(tmp, site_ref_, true);
         // Actual calculation
-        boost::tie(res, trunc) =
+        std::tie(res, trunc) =
           contraction::Engine<Matrix, Matrix, SymmGroup>::predict_new_state_l2r_sweep(tmp, mpo[site_ref_],
                                                                                       left[site_ref_], right[site_ref_+1],
                                                                                       alpha, cutoff, Mmax, perturb_dm, true);
@@ -49,7 +49,7 @@ truncation_results SiteShifter<Matrix, SymmGroup, TimeEvolver, Perturber>::shift
         tmp.make_right_paired() ;
         perturber_->perturb_mps(tmp, site_ref_, false);
         // Actual calculation
-        boost::tie(res, trunc)
+        std::tie(res, trunc)
           = contraction::Engine<Matrix, Matrix, SymmGroup>::predict_new_state_r2l_sweep(tmp, mpo[site_ref_],
                                                                                         left[site_ref_], right[site_ref_+1],
                                                                                         alpha, cutoff, Mmax, perturb_dm, true);
@@ -80,7 +80,7 @@ truncation_results SiteShifter<Matrix, SymmGroup, TimeEvolver, Perturber>::shift
         tmp.make_left_paired();
         perturber_->perturb_mps(tmp, site_ref_, true);
         // Actual calculation
-        boost::tie(res, trunc) =
+        std::tie(res, trunc) =
           contraction::Engine<Matrix, Matrix, SymmGroup>::predict_new_state_l2r_sweep(tmp, mpo[site_ref_],
                                                                                       left[site_ref_], right[site_ref_+1],
                                                                                       alpha, cutoff, Mmax, perturb_dm, true);
@@ -100,7 +100,7 @@ truncation_results SiteShifter<Matrix, SymmGroup, TimeEvolver, Perturber>::shift
         tmp.make_right_paired() ;
         perturber_->perturb_mps(tmp, site_ref_, false);
         // Actual calculation
-        boost::tie(res, trunc)
+        std::tie(res, trunc)
           = contraction::Engine<Matrix, Matrix, SymmGroup>::predict_new_state_r2l_sweep(tmp, mpo[site_ref_],
                                                                                         left[site_ref_], right[site_ref_+1],
                                                                                         alpha, cutoff, Mmax, perturb_dm, true);

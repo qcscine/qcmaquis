@@ -375,7 +375,7 @@ void op_kron(Index<SymmGroup> const & phys_A,
 //
 //            if (val != 0.) {
 //                typename MultiIndex<SymmGroup>::coord_t coord_l, coord_r;
-//                boost::tie(coord_l, coord_r) = midx.get_coords(s, *it);
+//                std::tie(coord_l, coord_r) = midx.get_coords(s, *it);
 //                if (run == 0)
 //                    C.reserve(coord_l.first, coord_r.first,
 //                              midx.left_size(s, coord_l.first), midx.right_size(s, coord_r.first));

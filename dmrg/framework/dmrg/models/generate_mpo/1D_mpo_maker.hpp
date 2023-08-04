@@ -173,7 +173,7 @@ namespace generate_mpo
                 if (tag_handler->is_fermionic(product) != carry_sign)
                 {
                     typename Matrix::value_type scale;
-                    boost::tie(product, scale) = tag_handler->get_product_tag(fill[lat.get_prop<sc>("type", p)], product);
+                    std::tie(product, scale) = tag_handler->get_product_tag(fill[lat.get_prop<sc>("type", p)], product);
                     term.coeff *= scale;
                 }
 

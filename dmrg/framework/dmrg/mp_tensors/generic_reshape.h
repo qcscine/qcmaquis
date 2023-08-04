@@ -45,7 +45,7 @@ void reshape(MultiIndex<SymmGroup> const & midx,
                     coord_t in_left = std::make_pair(in_l_charge, i);
                     coord_t in_right = std::make_pair(in_r_charge, j);
                     coord_t out_left, out_right;
-                    boost::tie(out_left, out_right) = midx.convert_coords(in_set, in_left, in_right, out_set);
+                    std::tie(out_left, out_right) = midx.convert_coords(in_set, in_left, in_right, out_set);
                     
                     if (in_block(i, j) != 0.) {
                         if (pretend)
@@ -102,13 +102,13 @@ void reshape2(MultiIndex<SymmGroup> const & midx,
             it++)
         {
             coord_t in_left, in_right;
-            boost::tie(in_left, in_right) = midx.get_coords(in_set, *it);
+            std::tie(in_left, in_right) = midx.get_coords(in_set, *it);
             
             if (!m1.has_block(in_left.first, in_right.first))
                 continue;
             
             coord_t out_left, out_right;
-            boost::tie(out_left, out_right) = midx.get_coords(out_set, *it);
+            std::tie(out_left, out_right) = midx.get_coords(out_set, *it);
             
             if (pretend)
                 m2.reserve(out_left.first, out_right.first,

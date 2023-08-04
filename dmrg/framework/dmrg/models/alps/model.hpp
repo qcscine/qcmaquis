@@ -190,7 +190,7 @@ public:
 //                    for (int n=0; n<site_terms[type].size(); ++n)
 //                        op_matrix += site_terms[type][n].first * tag_handler->get_op(site_terms[type][n].second);
 //                    tag_type mytag = tag_handler->register_op(op_matrix, tag_detail::bosonic);
-//                    boost::tie(match, boost::tuples::ignore) = operators.insert( std::make_pair(opkey_type("site_terms", type), mytag) );
+//                    std::tie(match, boost::tuples::ignore) = operators.insert( std::make_pair(opkey_type("site_terms", type), mytag) );
 //                }
 //
 //                term_descriptor term;
@@ -382,7 +382,7 @@ private:
         tag_type mytag = tag_handler->register_op(convert_matrix(m, type), kind);
 
         opmap_const_iterator match;
-        boost::tie(match, boost::tuples::ignore) = operators.insert( std::make_pair(opkey_type(simplify_name(op), type), mytag) );
+        std::tie(match, boost::tuples::ignore) = operators.insert( std::make_pair(opkey_type(simplify_name(op), type), mytag) );
         return match;
     }
 
@@ -730,7 +730,7 @@ ALPSModel<Matrix, SymmGroup>::measurements () const
 
                 /// parse operators
                 meas_operators_type operators;
-                boost::tie(operators, boost::tuples::ignore) = operators_for_meas(parts[0], false);
+                std::tie(operators, boost::tuples::ignore) = operators_for_meas(parts[0], false);
 
                 /// parse positions
                 std::vector<std::vector<pos_t> > positions;
@@ -818,7 +818,7 @@ ALPSModel<Matrix, SymmGroup>::measurements () const
 
                 meas_operators_type operators;
                 short ops_type;
-                boost::tie(operators, ops_type) = operators_for_meas(value_split[0], true);
+                std::tie(operators, ops_type) = operators_for_meas(value_split[0], true);
 
                 if (ops_type == 2) nearest_neighbors_only = true;
 

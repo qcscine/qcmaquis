@@ -236,7 +236,7 @@ MPS<Matrix, SymmGroup>::grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
     using Contractor = typename contraction::Engine<Matrix, OtherMatrix, SymmGroup>;
     MPSTensor<Matrix, SymmGroup> new_mps;
     truncation_results trunc;
-    boost::tie(new_mps, trunc) = Contractor::predict_new_state_r2l_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, perturbDM, verbose);
+    std::tie(new_mps, trunc) = Contractor::predict_new_state_r2l_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, perturbDM, verbose);
     (*this)[l-1] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_r2l_sweep((*this)[l-1], (*this)[l], new_mps);
     (*this)[l] = new_mps;
     return trunc;

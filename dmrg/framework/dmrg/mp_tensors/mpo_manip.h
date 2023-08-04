@@ -130,7 +130,7 @@ MPO<Matrix, SymmGroup> block_to_mpo(Index<SymmGroup> const & phys_i,
                  it++)
             {
                 typename MultiIndex<SymmGroup>::coord_t lc, rc;
-                boost::tie(lc, rc) = midx_mpo.get_coords(curr_mpo_s, *it);
+                std::tie(lc, rc) = midx_mpo.get_coords(curr_mpo_s, *it);
                 if (!btmp.has_block(lc.first, rc.first))
                     continue;
 

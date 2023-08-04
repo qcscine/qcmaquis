@@ -60,7 +60,7 @@ public:
                 value_type scale = 1.0;
                 if (tag_handler->product_is_null(pos_ops[range_end].second, product))
                     FoundZero = true;
-                boost::tie(product, scale) = tag_handler->get_product_tag(pos_ops[range_end].second, product);
+                std::tie(product, scale) = tag_handler->get_product_tag(pos_ops[range_end].second, product);
                 scaling *= scale;
                 range_end++;
             }

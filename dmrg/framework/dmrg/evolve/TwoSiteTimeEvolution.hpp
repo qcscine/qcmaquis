@@ -176,9 +176,9 @@ public:
       // -- Forward sweep --
       if (lr == +1) {
         if (parms_["twosite_truncation"] == "svd")
-          boost::tie(mps_[site1], mps_[site2], trunc) = two_vec.split_mps_l2r(Mmax, cutoff);
+          std::tie(mps_[site1], mps_[site2], trunc) = two_vec.split_mps_l2r(Mmax, cutoff);
         else
-          boost::tie(mps_[site1], mps_[site2], trunc) = two_vec.predict_split_l2r(Mmax, cutoff, alpha, left_[site1], mpo_[site1], true);
+          std::tie(mps_[site1], mps_[site2], trunc) = two_vec.predict_split_l2r(Mmax, cutoff, alpha, left_[site1], mpo_[site1], true);
         mps_[site2] /= ietl::two_norm(mps_[site2]);
         two_vec.clear();
         this->boundary_left_step(mpo_, site1);
@@ -195,9 +195,9 @@ public:
       // -- Backward sweep --
       } else if (lr == -1) {
         if (parms_["twosite_truncation"] == "svd")
-          boost::tie(mps_[site1], mps_[site2], trunc) = two_vec.split_mps_r2l(Mmax, cutoff);
+          std::tie(mps_[site1], mps_[site2], trunc) = two_vec.split_mps_r2l(Mmax, cutoff);
         else
-          boost::tie(mps_[site1], mps_[site2], trunc) = two_vec.predict_split_r2l(Mmax, cutoff, alpha, right_[site2+1], mpo_[site2], true);
+          std::tie(mps_[site1], mps_[site2], trunc) = two_vec.predict_split_r2l(Mmax, cutoff, alpha, right_[site2+1], mpo_[site2], true);
         two_vec.clear();
         mps_[site1] /= ietl::two_norm(mps_[site1]);
         this->boundary_right_step(mpo_, site2);

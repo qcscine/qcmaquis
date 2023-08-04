@@ -41,7 +41,7 @@ MPS<Matrix,SymmGroup> coherent_init_join(std::vector<double> const& coeff, Index
     double prev_weight;
     bool first = true;
     basis_sector_iterator_<SymmGroup> it,end;
-    for (boost::tie(it,end)=basis_sector_iterators(L, phys, initc); it!=end; ++it)
+    for (std::tie(it,end)=basis_sector_iterators(L, phys, initc); it!=end; ++it)
     {
         std::vector<local_state> const& state = *it;
         double weight = coherent_weight<SymmGroup>(coeff, state);
@@ -108,8 +108,8 @@ MPS<Matrix,SymmGroup> coherent_init_dm_join(std::vector<double> const& coeff, In
     double prev_weight;
     bool first = true;
     basis_sector_iterator_<SymmGroup> it1,it2,end1,end2;
-    for (boost::tie(it1,end1)=basis_sector_iterators(L, phys_psi, SymmGroup::IdentityCharge); it1!=end1; ++it1)
-        for (boost::tie(it2,end2)=basis_sector_iterators(L, phys_psi, SymmGroup::IdentityCharge); it2!=end2; ++it2)
+    for (std::tie(it1,end1)=basis_sector_iterators(L, phys_psi, SymmGroup::IdentityCharge); it1!=end1; ++it1)
+        for (std::tie(it2,end2)=basis_sector_iterators(L, phys_psi, SymmGroup::IdentityCharge); it2!=end2; ++it2)
     {
         std::vector<local_state> const& state1 = *it1;
         std::vector<local_state> const& state2 = *it2;

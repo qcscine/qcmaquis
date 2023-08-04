@@ -145,11 +145,11 @@ namespace generate_mpo
 				lab = "nontriv";
             	if (!with_sign[p][u1] && op_p.second) {
 					//gemm(fill, op_p.first, op);
-					boost::tie(op, scale) = tag_handler.get_product_tag(fillings[lat.get_prop<int>("type", p)], op_p.first[lat.get_prop<int>("type", p)]);
+					std::tie(op, scale) = tag_handler.get_product_tag(fillings[lat.get_prop<int>("type", p)], op_p.first[lat.get_prop<int>("type", p)]);
 					lab += "*fill";
 				} else if (with_sign[p][u1] && !op_p.second) {
 					//gemm(fill, op_p.first, op);
-					boost::tie(op, scale) = tag_handler.get_product_tag(fillings[lat.get_prop<int>("type", p)], op_p.first[lat.get_prop<int>("type", p)]);
+					std::tie(op, scale) = tag_handler.get_product_tag(fillings[lat.get_prop<int>("type", p)], op_p.first[lat.get_prop<int>("type", p)]);
 					lab += "*fill";
 				} else {
 					op = op_p.first[lat.get_prop<int>("type", p)];
@@ -305,11 +305,11 @@ namespace generate_mpo
 				lab = "nontriv";
             	if (!with_sign[p][u1] && op_p.second) {
 					//gemm(fill, op_p.first, op);
-					boost::tie(op, scale) = tag_handler.get_product_tag(fillings[lat.get_prop<int>("type", p)], op_p.first[lat.get_prop<int>("type", p)]);
+					std::tie(op, scale) = tag_handler.get_product_tag(fillings[lat.get_prop<int>("type", p)], op_p.first[lat.get_prop<int>("type", p)]);
 					lab += "*fill";
 				} else if (with_sign[p][u1] && !op_p.second) {
 					//gemm(fill, op_p.first, op);
-					boost::tie(op, scale) = tag_handler.get_product_tag(fillings[lat.get_prop<int>("type", p)], op_p.first[lat.get_prop<int>("type", p)]);
+					std::tie(op, scale) = tag_handler.get_product_tag(fillings[lat.get_prop<int>("type", p)], op_p.first[lat.get_prop<int>("type", p)]);
 					lab += "*fill";
 				} else {
 					op = op_p.first[lat.get_prop<int>("type", p)];

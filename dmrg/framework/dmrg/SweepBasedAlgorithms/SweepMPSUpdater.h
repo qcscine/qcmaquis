@@ -65,7 +65,7 @@ public:
                                                 boundaryPropagator_->getRightBoundary(siteRight), siteLeft, alpha,
                                                 cutoff, mMax, true, verbose_);
         */
-        boost::tie(unitaryFactor, truncationOutput) = Contractor::predict_new_state_l2r_sweep(
+        std::tie(unitaryFactor, truncationOutput) = Contractor::predict_new_state_l2r_sweep(
             mps_[siteLeft], mpo_[siteLeft],
             boundaryPropagator_->getLeftBoundary(siteLeft),
             boundaryPropagator_->getRightBoundary(siteRight),
@@ -85,7 +85,7 @@ public:
                                                  boundaryPropagator_->getRightBoundary(siteRight), siteLeft, alpha,
                                                  cutoff, mMax, true, verbose_);
         */
-        boost::tie(unitaryFactor, truncationOutput) = Contractor::predict_new_state_r2l_sweep(
+        std::tie(unitaryFactor, truncationOutput) = Contractor::predict_new_state_r2l_sweep(
             mps_[siteLeft], mpo_[siteLeft],
             boundaryPropagator_->getLeftBoundary(siteLeft),
             boundaryPropagator_->getRightBoundary(siteRight),
@@ -193,10 +193,10 @@ public:
     if (boundaryModality == GrowBoundaryModality::LeftToRight) {
       // Write back result from optimization
       if (parms_["twosite_truncation"] == "svd") {
-        boost::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.split_mps_l2r(mMax, cutoff, verbose_);
+        std::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.split_mps_l2r(mMax, cutoff, verbose_);
       }
       else {
-        boost::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.predict_split_l2r(
+        std::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.predict_split_l2r(
             mMax, cutoff, alpha,
             boundaryPropagator_->getLeftBoundary(siteLeft),
             mpo_[siteLeft], perturbDM);
@@ -204,10 +204,10 @@ public:
     }
     else if (boundaryModality == GrowBoundaryModality::RightToLeft) {
       if (parms_["twosite_truncation"] == "svd") {
-        boost::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.split_mps_r2l(mMax, cutoff, verbose_);
+        std::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.split_mps_r2l(mMax, cutoff, verbose_);
       }
       else {
-        boost::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.predict_split_r2l(
+        std::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.predict_split_r2l(
             mMax, cutoff, alpha,
             boundaryPropagator_->getRightBoundary(siteRight),
             mpo_[siteLeft+1], perturbDM);

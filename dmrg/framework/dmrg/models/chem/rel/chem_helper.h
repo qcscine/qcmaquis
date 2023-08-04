@@ -29,7 +29,7 @@ namespace detail {
                    std::shared_ptr<TagHandler<M, S> > tag_handler_)
             : lat(lat_), ident(ident_), fill(fill_), tag_handler(tag_handler_)
         {
-			boost::tie(idx_, matrix_elements) = parse_integrals<InputType, S>(parms, lat);
+			std::tie(idx_, matrix_elements) = parse_integrals<InputType, S>(parms, lat);
 
             for (std::size_t m=0; m < matrix_elements.size(); ++m) {
                 IndexTuple pos;

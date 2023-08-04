@@ -231,18 +231,18 @@ public:
                 // updates the right dictionary
                 index_iterator rr = right.find(k2);
                 if (k2 == trivial_left && rr == right.end()) {
-                    boost::tie(rr, boost::tuples::ignore) = right.insert( make_pair(k2, 0) );
+                    std::tie(rr, std::ignore) = right.insert( make_pair(k2, 0) );
                 } else if (k2 == trivial_right && rr == right.end()) {
-                    boost::tie(rr, boost::tuples::ignore) = right.insert( make_pair(k2, 1) );
+                    std::tie(rr, std::ignore) = right.insert( make_pair(k2, 1) );
                 } else if (rr == right.end()) {
-                    boost::tie(rr, boost::tuples::ignore) = right.insert( make_pair(k2, r++) );
+                    std::tie(rr, std::ignore) = right.insert( make_pair(k2, r++) );
                 }
                 // Finalization
                 index_type rr_dim = (p == length-1) ? 0 : rr->second;
                 pre_tensor.push_back( tag_block(ll->second, rr_dim, val.first, val.second) );
                 std::pair<int, int> phase;
                 prempo_key_type ck2;
-                boost::tie(ck2, phase) = conjugate_key(k2, p);
+                std::tie(ck2, phase) = conjugate_key(k2, p);
                 if (!(k2 == ck2)){
                     HermKeyPairs[k2] = ck2;
                     HermitianPhases[k2] = phase;

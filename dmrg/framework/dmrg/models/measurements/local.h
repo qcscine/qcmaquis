@@ -108,8 +108,9 @@ namespace measurements {
             result_type res;
 
             typename MPS<Matrix, SymmGroup>::scalar_type nn;
-            if (this->is_super_meas)
+            if (this->is_super_meas) {
                 nn = dm_trace(mps, this->phys_psi);
+            }
 
             /// collect results from all mpo terms, i.e. all requested combinations of operators.
             for (const auto& it : mpo_terms){
@@ -119,8 +120,9 @@ namespace measurements {
               /// measure the value at each site / bond
               for (const auto& mit : mpos) {
                 typename result_type::iterator match = res.find(mit.first);
-                if (match == res.end())
-                  boost::tie(match, boost::tuples::ignore) = res.insert( std::make_pair(mit.first, 0.) );
+                if (match == res.end()) {
+                  std::tie(match, std::ignore) = res.insert( std::make_pair(mit.first, 0.) );
+                }
 
                 if (!this->is_super_meas) {
                   match->second += (this->cast_to_real) ? maquis::real(expval(mps, mit.second)) : expval(mps, mit.second);
