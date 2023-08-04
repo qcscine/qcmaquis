@@ -170,9 +170,9 @@ public:
     using charge = typename SymmGroup::charge;
     charge C = SymmGroup::IdentityCharge;
 
-    std::vector<boost::tuple<charge, int> > state(mps.length());
+    std::vector<std::tuple<charge, int> > state(mps.length());
     for (int i=0; i<mps.length(); ++i)
-        state[i] = boost::make_tuple(C, occupation[i]);
+        state[i] = std::make_tuple(C, occupation[i]);
     mps = state_mps<Matrix>(state, phys_dims, site_type);
   }
 
@@ -193,7 +193,7 @@ class basis_mps_init_generic : public mps_initializer<Matrix, SymmGroup>
 {
 public:
     // Types definition
-    using state_type = std::vector<boost::tuple<typename SymmGroup::charge, size_t>>;
+    using state_type = std::vector<std::tuple<typename SymmGroup::charge, size_t>>;
 
     /**
      * @brief Class constructor from a parameter object
@@ -228,7 +228,7 @@ public:
 #ifndef NDEBUG
         for (int i = 0 ; i < basis_index.size() ; i++ ) {
           maquis::cout << "state: ";
-          maquis::cout << boost::get<0>(state[i]) << ":" << boost::get<1>(state[i])<< " ";
+          maquis::cout << std::get<0>(state[i]) << ":" << std::get<1>(state[i])<< " ";
           maquis::cout << "\n";
         }
 #endif
@@ -247,7 +247,7 @@ private:
 template<class Matrix, class SymmGroup>
 class basis_mps_init_generic_const : public mps_initializer<Matrix, SymmGroup>
 {
-  using state_type = std::vector<boost::tuple<typename SymmGroup::charge, int> >;
+  using state_type = std::vector<std::tuple<typename SymmGroup::charge, int> >;
 
 public:
   // -- Constructors --
@@ -294,7 +294,7 @@ template<class Matrix, class SymmGroup>
 class basis_mps_init_generic_default : public mps_initializer<Matrix, SymmGroup>
 {
   // Types definition
-  using state_type = std::vector<boost::tuple<typename SymmGroup::charge, int> >;
+  using state_type = std::vector<std::tuple<typename SymmGroup::charge, int> >;
 
 public:
   // -- Constructors --

@@ -163,7 +163,7 @@ public:
     {
         // Aliases for derived types
         using MPOTensor_detail::term_descriptor;
-        using boost::tuples::get;
+        using std::get;
         using charge = typename SymmGroup::charge;
         using value_type = typename Matrix::value_type;
         using row_proxy = typename MPOTensor<Matrix, SymmGroup>::row_proxy;
@@ -391,7 +391,7 @@ public:
                                                                   typename SymmGroup::charge & in_delta)
     {
         using MPOTensor_detail::term_descriptor;
-        using boost::tuples::get;
+        using std::get;
         using charge = typename SymmGroup::charge;
         using value_type = typename Matrix::value_type;
     

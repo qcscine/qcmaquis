@@ -48,7 +48,6 @@ using std::endl;
 #include "dmrg/models/generate_mpo.hpp"
 #include "dmrg/models/coded/lattice.hpp"
 
-#include <boost/tuple/tuple.hpp>
 #include <boost/math/special_functions/factorials.hpp>
 
 typedef alps::numeric::matrix<double> matrix;
@@ -85,7 +84,7 @@ BOOST_AUTO_TEST_CASE( manual_superposition )
 
     typedef TrivialGroup SymmGroup;
     typedef SymmGroup::charge charge;
-    typedef boost::tuple<charge, size_t, double> local_state;
+    typedef std::tuple<charge, size_t, double> local_state;
     typedef operator_selector<matrix, SymmGroup>::type op_t;
 
     using std::exp; using std::sqrt; using std::pow;
@@ -198,7 +197,7 @@ BOOST_AUTO_TEST_CASE( coherent_init_L2Nmax2 )
 
     typedef TrivialGroup SymmGroup;
     typedef SymmGroup::charge charge;
-    typedef boost::tuple<charge, size_t, double> local_state;
+    typedef std::tuple<charge, size_t, double> local_state;
     typedef operator_selector<matrix, SymmGroup>::type op_t;
     using std::sqrt;
 
@@ -246,7 +245,7 @@ BOOST_AUTO_TEST_CASE( coherent_init_Nmax2 )
 
     typedef TrivialGroup SymmGroup;
     typedef SymmGroup::charge charge;
-    typedef boost::tuple<charge, size_t, double> local_state;
+    typedef std::tuple<charge, size_t, double> local_state;
     typedef operator_selector<matrix, SymmGroup>::type op_t;
     using std::sqrt;
 

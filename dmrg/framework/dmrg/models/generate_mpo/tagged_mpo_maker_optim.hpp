@@ -106,7 +106,7 @@ class TaggedMPOMaker
     using pos_t = Lattice::pos_t;
     using tag_type = typename OperatorTagTerm<Matrix, SymmGroup>::tag_type;
     using pos_op_type = typename OperatorTagTerm<Matrix, SymmGroup>::op_pair_t;
-    using tag_block = boost::tuple<std::size_t, std::size_t, tag_type, scale_type>;
+    using tag_block = std::tuple<std::size_t, std::size_t, tag_type, scale_type>;
     using term_descriptor = ::term_descriptor<typename Matrix::value_type>;
     using tag_vec = std::vector<tag_type>;
     using prempo_key_type = detail::prempo_key<pos_t, tag_type, index_type>;
@@ -254,9 +254,9 @@ public:
             std::vector<spin_desc_t> right_spins(rcd.second);
             for (typename std::vector<tag_block>::const_iterator it = pre_tensor.begin(); it != pre_tensor.end(); ++it)
             {
-                spin_desc_t out_spin = couple(left_spins[boost::tuples::get<0>(*it)],
-                                              tag_handler->get_op(boost::tuples::get<2>(*it)).spin());
-                index_type out_index = boost::tuples::get<1>(*it);
+                spin_desc_t out_spin = couple(left_spins[std::get<0>(*it)],
+                                              tag_handler->get_op(std::get<2>(*it)).spin());
+                index_type out_index = std::get<1>(*it);
                 assert(right_spins[out_index].get() == 0 || right_spins[out_index].get() == out_spin.get());
                 right_spins[out_index] = out_spin;
             }

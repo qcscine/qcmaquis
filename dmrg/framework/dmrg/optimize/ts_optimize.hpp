@@ -15,9 +15,6 @@
 
 #include "dmrg/models/lattice/lattice.h"
 
-#include <boost/tuple/tuple.hpp>
-
-
 template<class Matrix, class SymmGroup, class Storage>
 class ts_optimize : public optimizer_base<Matrix, SymmGroup, Storage>
 {

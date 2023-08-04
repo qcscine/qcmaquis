@@ -44,25 +44,25 @@ namespace generate_mpo
         
         bool operator< (OperatorTagTerm const & rhs) const
         {
-            if (operators[0].first == rhs.operators[0].first)
+            if (operators[0].first == rhs.operators[0].first) {
                 return operators.size() >= rhs.operators.size();
+            }
             return operators[0].first < rhs.operators[0].first;
         }
         
         bool site_match (OperatorTagTerm const & rhs) const
         {
-            if (operators.size() == rhs.operators.size())
-            {
+            if (operators.size() == rhs.operators.size()) {
                 bool ret = true;
-                for (std::size_t p=0; p<operators.size() && ret; ++p)
+                for (std::size_t p=0; p<operators.size() && ret; ++p) {
                     ret = (operators[p].first == rhs.operators[p].first);
+                }
                 return ret;
-            } else if (operators.size() == 2 && rhs.operators.size() == 1)
+            } else if (operators.size() == 2 && rhs.operators.size() == 1) {
                 return (operators[0].first == rhs.operators[0].first || operators[1].first == rhs.operators[0].first);
-            else if (operators.size() == 1 && rhs.operators.size() == 2)
+            } else if (operators.size() == 1 && rhs.operators.size() == 2) {
                 return (operators[0].first == rhs.operators[0].first || operators[0].first == rhs.operators[1].first);
-            else
-            {
+            } else {
                 throw std::runtime_error("site_match not implemented for this type of operator." );
                 return false;
             }
@@ -113,8 +113,9 @@ namespace generate_mpo
         
         bool operator< (OperatorTerm const & rhs) const
         {
-            if (operators[0].first == rhs.operators[0].first)
+            if (operators[0].first == rhs.operators[0].first) {
                 return operators.size() >= rhs.operators.size();
+            }
             return operators[0].first < rhs.operators[0].first;
         }
 
@@ -123,15 +124,15 @@ namespace generate_mpo
             if (operators.size() == rhs.operators.size())
             {
                 bool ret = true;
-                for (std::size_t p=0; p<operators.size() && ret; ++p)
+                for (std::size_t p=0; p<operators.size() && ret; ++p) {
                     ret = (operators[p].first == rhs.operators[p].first);
+                }
                 return ret;
-            } else if (operators.size() == 2 && rhs.operators.size() == 1)
+            } else if (operators.size() == 2 && rhs.operators.size() == 1) {
                 return (operators[0].first == rhs.operators[0].first || operators[1].first == rhs.operators[0].first);
-            else if (operators.size() == 1 && rhs.operators.size() == 2)
+            } else if (operators.size() == 1 && rhs.operators.size() == 2) {
                 return (operators[0].first == rhs.operators[0].first || operators[0].first == rhs.operators[1].first);
-            else
-            {
+            } else {
                 throw std::runtime_error("site_match not implemented for this type of operator." );
                 return false;
             }
@@ -146,7 +147,6 @@ namespace generate_mpo
 	};
    
     using namespace std;
-    using namespace boost::tuples;
 
     inline size_t next_free(vector<size_t> const & out_taken,
                             vector<size_t> const & in_taken)
@@ -154,16 +154,19 @@ namespace generate_mpo
         for (size_t k = 0; true; ++k)
         {
             if (count(out_taken.begin(), out_taken.end(), k) == 0 &&
-                count(in_taken.begin(), in_taken.end(), k) == 0)
+                count(in_taken.begin(), in_taken.end(), k) == 0) {
                 return k;// +-------------+
+            }
         }
     }
     
     inline size_t next_free(set<size_t> const & s)
     {
-        for (size_t k = 2; true; ++k)
-            if (s.count(k) == 0)
+        for (size_t k = 2; true; ++k) {
+            if (s.count(k) == 0) {
                 return k;
+            }
+        }
     }
     
     template<class Vector>
@@ -199,15 +202,17 @@ namespace generate_mpo
     template<class Vector>
     std::pair<size_t, size_t> rcdim(Vector const & pm)
     {
-        std::list<size_t> l, r;
+        std::list<size_t> l;
+        std::list<size_t> r;
         for (const auto& it : pm) {
           l.push_back( get<0>(it) );
           r.push_back( get<1>(it) );
         }
         
-        size_t ldim=0, rdim=0;
-        if (l.size() > 0) ldim = *max_element(l.begin(), l.end())+1;
-        if (r.size() > 0) rdim = *max_element(r.begin(), r.end())+1;
+        size_t ldim=0;
+        size_t rdim=0;
+        if (!l.empty()) { ldim = *max_element(l.begin(), l.end())+1; }
+        if (!r.empty()) { rdim = *max_element(r.begin(), r.end())+1; }
         return make_pair(ldim, rdim);
     }
     

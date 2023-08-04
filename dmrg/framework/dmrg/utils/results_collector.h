@@ -59,7 +59,7 @@ public:
         template<class T>
         void operator>>(T const& val);
 
-        /** @brief Gets the underlying boost::get object */
+        /** @brief Gets the underlying std::get object */
         const std::vector<boost::any>& get() const;
 
     private:

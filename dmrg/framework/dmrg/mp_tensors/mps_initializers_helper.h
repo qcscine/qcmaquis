@@ -12,8 +12,6 @@
 #include "dmrg/block_matrix/symmetry.h"
 #include "dmrg/utils/BaseParameters.h"
 
-#include <boost/tuple/tuple.hpp>
-
 /**
  * @brief Helper class for the MPS initialization.
  *
@@ -35,7 +33,7 @@ class HelperClassBasisVectorConverter {
 public:
   using ChargeType = typename SymmGroup::charge;
   using indexType = Index<SymmGroup>;
-  using state_type = std::vector<boost::tuple<ChargeType, int> >;
+  using state_type = std::vector<std::tuple<ChargeType, int> >;
   static state_type GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
                                             const std::vector<int>& siteType, int size)
   {
@@ -49,7 +47,7 @@ class HelperClassBasisVectorConverter<TrivialGroup> {
 public:
   // Types definition
   using indexType = Index<TrivialGroup>;
-  using state_type = std::vector<boost::tuple<typename TrivialGroup::charge, int> >;
+  using state_type = std::vector<std::tuple<typename TrivialGroup::charge, int> >;
   // General implementation
   static state_type GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
                                             const std::vector<int>& siteType, int size) {
@@ -68,7 +66,7 @@ class HelperClassBasisVectorConverter<U1> {
 public:
   // Types definition
   using indexType = Index<U1>;
-  using state_type = std::vector<boost::tuple<typename U1::charge, int> >;
+  using state_type = std::vector<std::tuple<typename U1::charge, int> >;
   // General implementation
   static state_type GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
                                             const std::vector<int>& siteType, int size) {
@@ -106,7 +104,7 @@ public:
   using NU1 = NU1_template<N>;
   using indexType = Index<NU1>;
   using ChargeType = typename NU1::charge;
-  using state_type = std::vector<boost::tuple<ChargeType, int> >;
+  using state_type = std::vector<std::tuple<ChargeType, int> >;
 
   /** @brief Parser for the NU1 symmetry group
   * This function has two-fold functionality:
@@ -136,8 +134,8 @@ public:
       auto positionOfSiteInNewLattice = inverseModalsOrder[iLattice];
       auto type = siteType[positionOfSiteInNewLattice];
       if (params["init_type"] == "basis_state_generic_const" || params["init_type"] == "basis_state_generic_default") {
-        boost::tuple<ChargeType, bool> truePair = boost::make_tuple(boost::get<0>(physDim[type].element(0)), 1);
-        boost::tuple<ChargeType, bool> falsePair = boost::make_tuple(boost::get<0>(physDim[type].element(0)), 0);   
+        std::tuple<ChargeType, bool> truePair = std::make_tuple(std::get<0>(physDim[type].element(0)), 1);
+        std::tuple<ChargeType, bool> falsePair = std::make_tuple(std::get<0>(physDim[type].element(0)), 0);   
         state[positionOfSiteInNewLattice] = (counterOfTypes[type] <= inputVec[type]) ? truePair : falsePair;
       } else {
         state[positionOfSiteInNewLattice] = (counterOfTypes[type] == inputVec[type]) ? physDim[type].element(0) : physDim[type].element(1);

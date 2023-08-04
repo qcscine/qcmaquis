@@ -160,23 +160,23 @@ public:
             alps::expression::ParameterEvaluator<value_type> coords(coordinate_as_parameter(lattice.graph(), *it));
 
             if (site_terms[type].size() == 0) {
-                typedef std::vector<boost::tuple<alps::expression::Term<value_type>,alps::SiteOperator> > V;
+                typedef std::vector<std::tuple<alps::expression::Term<value_type>,alps::SiteOperator> > V;
                 V  ops = model.site_term(type).template templated_split<value_type>();
 
                 for (int n=0; n<ops.size(); ++n) {
-                    SiteOperator op = boost::get<1>(ops[n]);
+                    SiteOperator op = std::get<1>(ops[n]);
                     opmap_const_iterator match = operators.find(opkey_type(simplify_name(op), type));
                     if (match == operators.end())
                         match = register_operator(op, type, parms);
-                    // site_terms[type].push_back( std::make_pair(boost::get<0>(ops[n]).value(), match->second)  );
+                    // site_terms[type].push_back( std::make_pair(std::get<0>(ops[n]).value(), match->second)  );
 
                     if (lattice.inhomogeneous_sites())
-                        boost::get<0>(ops[n]).partial_evaluate(coords);
+                        std::get<0>(ops[n]).partial_evaluate(coords);
 
                     expression_term term;
-                    term.coeff = boost::get<0>(ops[n]);
+                    term.coeff = std::get<0>(ops[n]);
                     term.is_fermionic = false;
-                    term.push_back( boost::make_tuple(p, match->second) );
+                    term.push_back( std::make_tuple(p, match->second) );
                     expression_coeff.insert( std::make_pair(term.coeff, value_type()) );
                     expression_terms.push_back(term);
                 }
@@ -190,13 +190,13 @@ public:
 //                    for (int n=0; n<site_terms[type].size(); ++n)
 //                        op_matrix += site_terms[type][n].first * tag_handler->get_op(site_terms[type][n].second);
 //                    tag_type mytag = tag_handler->register_op(op_matrix, tag_detail::bosonic);
-//                    std::tie(match, boost::tuples::ignore) = operators.insert( std::make_pair(opkey_type("site_terms", type), mytag) );
+//                    std::tie(match, std::ignore) = operators.insert( std::make_pair(opkey_type("site_terms", type), mytag) );
 //                }
 //
 //                term_descriptor term;
 //                term.coeff = 1.;
 //                term.is_fermionic = false;
-//                term.push_back( boost::make_tuple(p, match->second) );
+//                term.push_back( std::make_tuple(p, match->second) );
 //                this->terms_.push_back(term);
 //            }
 
@@ -211,11 +211,11 @@ public:
             int type_s = lattice.site_type(lattice.source(*it));
             int type_t = lattice.site_type(lattice.target(*it));
 
-            bool wrap_pbc = boost::get(alps::boundary_crossing_t(), lattice.graph(), *it);
+            bool wrap_pbc = std::get(alps::boundary_crossing_t(), lattice.graph(), *it);
 
             BondOperator bondop = model.bond_term(type);
 
-            typedef std::vector<boost::tuple<alps::expression::Term<value_type>,alps::SiteOperator,alps::SiteOperator > > V;
+            typedef std::vector<std::tuple<alps::expression::Term<value_type>,alps::SiteOperator,alps::SiteOperator > > V;
             alps::SiteBasisDescriptor<I> const& b1 = basis_descriptors[type_s];
             alps::SiteBasisDescriptor<I> const& b2 = basis_descriptors[type_t];
 
@@ -225,8 +225,8 @@ public:
 
             V  ops = bondop.template templated_split<value_type>(b1,b2);
             for (typename V::iterator tit=ops.begin(); tit!=ops.end();++tit) {
-                SiteOperator op1 = boost::get<1>(*tit);
-                SiteOperator op2 = boost::get<2>(*tit);
+                SiteOperator op1 = std::get<1>(*tit);
+                SiteOperator op2 = std::get<2>(*tit);
 
                 opmap_const_iterator match1 = operators.find(opkey_type(simplify_name(op1), type_s));
                 if (match1 == operators.end())
@@ -238,10 +238,10 @@ public:
                 bool with_sign = fermionic(b1, op1, b2, op2);
 
                 if (lattice.inhomogeneous_bonds())
-                    boost::get<0>(*tit).partial_evaluate(coords);
+                    std::get<0>(*tit).partial_evaluate(coords);
 
                 expression_term term;
-                term.coeff = boost::get<0>(*tit);
+                term.coeff = std::get<0>(*tit);
                 term.is_fermionic = with_sign;
 
                 {
@@ -255,7 +255,7 @@ public:
                     }
                     if (with_sign && wrap_pbc)
                         term.coeff *= value_type(-1.);
-                    term.push_back( boost::make_tuple(p_s, mytag) );
+                    term.push_back( std::make_tuple(p_s, mytag) );
                 }
                 {
                     tag_type mytag = match2->second;
@@ -266,7 +266,7 @@ public:
                         mytag = ptag.first;
                         term.coeff *= ptag.second;
                     }
-                    term.push_back( boost::make_tuple(p_t, mytag) );
+                    term.push_back( std::make_tuple(p_t, mytag) );
                 }
 
                 expression_coeff.insert( std::make_pair(term.coeff, value_type()) );
@@ -382,7 +382,7 @@ private:
         tag_type mytag = tag_handler->register_op(convert_matrix(m, type), kind);
 
         opmap_const_iterator match;
-        std::tie(match, boost::tuples::ignore) = operators.insert( std::make_pair(opkey_type(simplify_name(op), type), mytag) );
+        std::tie(match, std::ignore) = operators.insert( std::make_pair(opkey_type(simplify_name(op), type), mytag) );
         return match;
     }
 
@@ -404,7 +404,7 @@ private:
                 /// extract all site operators in the bond term
                 BondOperator bondop = model.get_bond_operator(*it);
 
-                typedef std::vector<boost::tuple<alps::expression::Term<value_type>,alps::SiteOperator,alps::SiteOperator > > V;
+                typedef std::vector<std::tuple<alps::expression::Term<value_type>,alps::SiteOperator,alps::SiteOperator > > V;
 
                 alps::SiteBasisDescriptor<I> const& b1 = basis_descriptors[0];
                 alps::SiteBasisDescriptor<I> const& b2 = basis_descriptors[0];
@@ -412,8 +412,8 @@ private:
                 V  bond_terms = bondop.template templated_split<value_type>(b1,b2);
                 if (std::distance(bond_terms.begin(), bond_terms.end()) != 1) throw std::runtime_error("Can only measure BONDOPERATOR with a single term.");
 
-                SiteOperator op1 = boost::get<1>(*bond_terms.begin());
-                SiteOperator op2 = boost::get<2>(*bond_terms.begin());
+                SiteOperator op1 = std::get<1>(*bond_terms.begin());
+                SiteOperator op2 = std::get<2>(*bond_terms.begin());
 
                 opnames.push_back(simplify_name(op1));
                 opnames.push_back(simplify_name(op2));
@@ -568,7 +568,7 @@ typename ALPSModel<Matrix, SymmGroup>::initializer_ptr ALPSModel<Matrix, SymmGro
                 throw std::runtime_error(pname + " does not match the lattice size.");
         }
 
-        std::vector<boost::tuple<charge, size_t> > state(lat.size());
+        std::vector<std::tuple<charge, size_t> > state(lat.size());
         for (size_t p=0; p<lat.size(); ++p) {
             const int type = site_types[p];
             alps::SiteBasisDescriptor<I> const& b = basis_descriptors[type];
@@ -625,7 +625,7 @@ ALPSModel<Matrix, SymmGroup>::measurements () const
 
                     typedef std::vector<op_t> op_vec;
                     typedef std::vector<std::pair<op_vec, bool> > bond_element;
-                    typedef std::vector<boost::tuple<alps::expression::Term<value_type>,alps::SiteOperator,alps::SiteOperator > > V;
+                    typedef std::vector<std::tuple<alps::expression::Term<value_type>,alps::SiteOperator,alps::SiteOperator > > V;
 
                     std::vector<op_t> tops1(ntypes), tops2(ntypes);
 
@@ -643,8 +643,8 @@ ALPSModel<Matrix, SymmGroup>::measurements () const
                             if (operators.size() < ops.size()) operators.resize(ops.size(), bond_element(2, std::make_pair(op_vec(ntypes), false)) );
                             int num_done = 0;
                             for (typename V::iterator tit=ops.begin(); tit!=ops.end();++tit) {
-                                SiteOperator op1 = boost::get<1>(*tit);
-                                SiteOperator op2 = boost::get<2>(*tit);
+                                SiteOperator op1 = std::get<1>(*tit);
+                                SiteOperator op2 = std::get<2>(*tit);
 
                                 if (!b1.has_operator(simplify_name(op1)) || !b2.has_operator(simplify_name(op2)))
                                     continue;
@@ -657,7 +657,7 @@ ALPSModel<Matrix, SymmGroup>::measurements () const
                                         gemm(fillings[type1], this->get_operator(simplify_name(op1), type1), m); // Note inverse notation because of notation in operator.
                                     else
                                         m = this->get_operator(simplify_name(op1), type1);
-                                    m = boost::get<0>(*tit).value() * m;
+                                    m = std::get<0>(*tit).value() * m;
                                 }
                                 {
                                     operators[ii][1].second = safe_is_fermionic(b2, op2);
@@ -730,7 +730,7 @@ ALPSModel<Matrix, SymmGroup>::measurements () const
 
                 /// parse operators
                 meas_operators_type operators;
-                std::tie(operators, boost::tuples::ignore) = operators_for_meas(parts[0], false);
+                std::tie(operators, std::ignore) = operators_for_meas(parts[0], false);
 
                 /// parse positions
                 std::vector<std::vector<pos_t> > positions;

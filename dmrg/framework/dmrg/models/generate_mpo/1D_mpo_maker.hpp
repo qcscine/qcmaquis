@@ -180,19 +180,19 @@ namespace generate_mpo
                 // update the phase
                 if (tag_handler->is_fermionic(product)) carry_sign = !carry_sign;
 
-                prempo.push_back(boost::make_tuple(0,0, product, 1.));
+                prempo.push_back(std::make_tuple(0,0, product, 1.));
                 ret[p] = MPOTensor<Matrix, SymmGroup>(1, 1, prempo, tag_handler->get_operator_table());
             }
 
             else if (carry_sign) // if no
             {
-                prempo.push_back(boost::make_tuple(0,0, fill[lat.get_prop<sc>("type", p)], 1.));
+                prempo.push_back(std::make_tuple(0,0, fill[lat.get_prop<sc>("type", p)], 1.));
                 ret[p] = MPOTensor<Matrix, SymmGroup>(1, 1, prempo, tag_handler->get_operator_table());
             }
 
             else
             {
-                prempo.push_back(boost::make_tuple(0,0, ident[lat.get_prop<sc>("type", p)], 1.));
+                prempo.push_back(std::make_tuple(0,0, ident[lat.get_prop<sc>("type", p)], 1.));
                 ret[p] = MPOTensor<Matrix, SymmGroup>(1, 1, prempo, tag_handler->get_operator_table());
             }
 

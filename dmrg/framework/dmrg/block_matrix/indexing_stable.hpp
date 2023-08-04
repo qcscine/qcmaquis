@@ -240,14 +240,14 @@ public:
     value_type const & operator[](std::size_t p) const { return data_[p]; }
 
     /** @brief Function to return the p-th overall element of a given index */
-    boost::tuple<charge, std::size_t> element(std::size_t p) const 
+    std::tuple<charge, std::size_t> element(std::size_t p) const 
     {
         std::size_t i=0;
         while (p >= (*this)[i].second) {
             p -= (*this)[i].second;
             ++i;
         }
-        return boost::make_tuple( (*this)[i].first, p );
+        return std::make_tuple( (*this)[i].first, p );
     }
 
     std::size_t size() const { return data_.size(); }

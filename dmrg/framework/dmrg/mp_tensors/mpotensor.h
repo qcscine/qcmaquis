@@ -44,7 +44,7 @@ public:
     using row_proxy = MPOTensor_detail::row_proxy<typename RowIndex::value_type::const_iterator>;
     using col_proxy = boost::numeric::ublas::matrix_column<const CSCMatrix>;
 
-    using prempo_t = std::vector<boost::tuple<std::size_t, std::size_t, tag_type, value_type>>;
+    using prempo_t = std::vector<std::tuple<std::size_t, std::size_t, tag_type, value_type>>;
     using spin_desc_t = SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type>;
     using spin_index = std::vector<spin_desc_t>;
 

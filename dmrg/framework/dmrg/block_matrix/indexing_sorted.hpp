@@ -222,14 +222,14 @@ public:
     value_type & operator[](std::size_t p) { return static_cast<base_t&>(*this)[p]; }
     value_type const & operator[](std::size_t p) const { return static_cast<base_t const&>(*this)[p]; }
 
-    boost::tuple<charge, std::size_t> element(std::size_t p) const
+    std::tuple<charge, std::size_t> element(std::size_t p) const
     {
         std::size_t i=0;
         while (p >= (*this)[i].second) {
             p -= (*this)[i].second;
             ++i;
         }
-        return boost::make_tuple( (*this)[i].first, p );
+        return std::make_tuple( (*this)[i].first, p );
     }
 
     std::size_t size() const { return base_t::size(); }

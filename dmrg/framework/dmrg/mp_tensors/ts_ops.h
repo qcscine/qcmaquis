@@ -92,7 +92,7 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
     using tag_type = typename OPTable<MPOMatrix, SymmGroup>::tag_type;
     using op_t = typename OPTable<MPOMatrix, SymmGroup>::op_t;
     using value_type = typename MPSMatrix::value_type;
-    using prempo_t = std::vector<boost::tuple<index_type, index_type, tag_type, value_type> >;
+    using prempo_t = std::vector<std::tuple<index_type, index_type, tag_type, value_type> >;
     //
     using MPOTensor_detail::term_descriptor;
     // Variable declaration
@@ -119,7 +119,7 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
             auto coupled_ops = ts_ops_detail::mpo_couple(summands, b1, b3, phys_i1, phys_i2, mpo1, mpo2);
             for (auto it = coupled_ops.begin(); it != coupled_ops.end(); ++it) {
                 tag_type new_tag = kron_handler.get_kronecker_table()->register_op(it->second);
-                prempo.push_back(boost::make_tuple(b1, b3, new_tag, 1.0));
+                prempo.push_back(std::make_tuple(b1, b3, new_tag, 1.0));
             }
         }
     }

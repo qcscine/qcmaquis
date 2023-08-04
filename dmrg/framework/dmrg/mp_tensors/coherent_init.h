@@ -12,17 +12,15 @@
 #include "dmrg/mp_tensors/basis_sector_iterators.h"
 #include "dmrg/mp_tensors/state_mps.h"
 
-#include <boost/tuple/tuple.hpp>
-
 template <class SymmGroup>
-double coherent_weight(std::vector<double> const& coeff, std::vector<boost::tuple<typename SymmGroup::charge, size_t> > const& state)
+double coherent_weight(std::vector<double> const& coeff, std::vector<std::tuple<typename SymmGroup::charge, size_t> > const& state)
 {
     using std::exp; using std::sqrt; using std::pow;
     using boost::math::factorial;
     
     double w = 1.;
     for (int p=0; p<state.size(); ++p) {
-        int n = boost::get<1>(state[p]);
+        int n = std::get<1>(state[p]);
         w *= pow(coeff[p], n) * sqrt(factorial<double>(n)) / factorial<double>(n);
     }
     return w;
@@ -33,7 +31,7 @@ MPS<Matrix,SymmGroup> coherent_init_join(std::vector<double> const& coeff, Index
                                          typename SymmGroup::charge initc=SymmGroup::IdentityCharge)
 {
     using charge = typename SymmGroup::charge;
-    using local_state = boost::tuple<charge, size_t>;
+    using local_state = std::tuple<charge, size_t>;
     
     size_t L = coeff.size();
     
@@ -100,7 +98,7 @@ template <class Matrix, class SymmGroup>
 MPS<Matrix,SymmGroup> coherent_init_dm_join(std::vector<double> const& coeff, Index<SymmGroup> const& phys_psi, Index<SymmGroup> const& phys_rho)
 {
     using charge = typename SymmGroup::charge;
-    using local_state = boost::tuple<charge, size_t>;
+    using local_state = std::tuple<charge, size_t>;
     
     size_t L = coeff.size();
     
@@ -116,8 +114,8 @@ MPS<Matrix,SymmGroup> coherent_init_dm_join(std::vector<double> const& coeff, In
         std::vector<local_state> state_rho(L);
         
         for (int p=0; p<L; ++p) {
-            boost::get<0>(state_rho[p]) = SymmGroup::IdentityCharge;
-            boost::get<1>(state_rho[p]) = boost::get<1>(state1[p])*phys_psi.size_of_block(boost::get<0>(state2[p])) + boost::get<1>(state2[p]);
+            std::get<0>(state_rho[p]) = SymmGroup::IdentityCharge;
+            std::get<1>(state_rho[p]) = std::get<1>(state1[p])*phys_psi.size_of_block(std::get<0>(state2[p])) + std::get<1>(state2[p]);
         }
         
         double weight = coherent_weight<SymmGroup>(coeff, state1)*coherent_weight<SymmGroup>(coeff, state2);

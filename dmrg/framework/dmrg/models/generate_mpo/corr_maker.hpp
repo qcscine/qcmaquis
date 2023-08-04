@@ -32,7 +32,7 @@ namespace generate_mpo
 
     protected:
         using tag_type = tag_detail::tag_type;
-        using block = boost::tuple<size_t, size_t, tag_type, typename Matrix::value_type>;
+        using block = std::tuple<size_t, size_t, tag_type, typename Matrix::value_type>;
 
         MPOTensor<Matrix, SymmGroup> as_bulk(vector<block> const & ops, std::shared_ptr<OPTable<Matrix, SymmGroup> > tbl)
         {
@@ -57,7 +57,7 @@ namespace generate_mpo
         using pos_t = Lattice::pos_t;
         using tag_type = tag_detail::tag_type;
         using op_t = typename OPTable<Matrix, SymmGroup>::op_t;
-        using tag = boost::tuple<size_t, size_t, string>;
+        using tag = std::tuple<size_t, size_t, string>;
 
     public:
         CorrMaker(Lattice const& lat_,
@@ -159,15 +159,15 @@ namespace generate_mpo
 
         	size_t u2 = 0;
             while (used[p].count(u2) > 0) ++u2;
-            prempo[p].push_back( boost::make_tuple(u1, u2, op, scale) );
+            prempo[p].push_back( std::make_tuple(u1, u2, op, scale) );
             used[p].insert(u2);
            	with_sign[p+1][u2] = (op_p.second) ? !with_sign[p][u1] : with_sign[p][u1];
             //            maquis::cout << "Adding a " << lab << " term at " << p << ", " << u1 << " -> " << u2 << std::endl;
             //            maquis::cout << op;
             if (trivial)
-                tags[p].push_back( boost::make_tuple(u1, u2, lab) );
+                tags[p].push_back( std::make_tuple(u1, u2, lab) );
             else
-                tags[p].push_back( boost::make_tuple(u1, u2, lab) );
+                tags[p].push_back( std::make_tuple(u1, u2, lab) );
             return u2;
         }
 
@@ -215,7 +215,7 @@ namespace generate_mpo
         using tag_type = tag_detail::tag_type;
         using pos_t = Lattice::pos_t;
         using op_t = typename OPTable<Matrix, SymmGroup>::op_t;
-        using tag = boost::tuple<size_t, size_t, string>;
+        using tag = std::tuple<size_t, size_t, string>;
 
     public:
         CorrMakerNN(Lattice const& lat_,
@@ -318,15 +318,15 @@ namespace generate_mpo
 
         	size_t u2 = 0;
             while (used[p].count(u2) > 0) ++u2;
-            prempo[p].push_back( boost::make_tuple(u1, u2, op, 1.0) );
+            prempo[p].push_back( std::make_tuple(u1, u2, op, 1.0) );
             used[p].insert(u2);
            	with_sign[p+1][u2] = (op_p.second) ? !with_sign[p][u1] : with_sign[p][u1];
             //            maquis::cout << "Adding a " << lab << " term at " << p << ", " << u1 << " -> " << u2 << std::endl;
             //            maquis::cout << op;
             if (trivial)
-                tags[p].push_back( boost::make_tuple(u1, u2, lab) );
+                tags[p].push_back( std::make_tuple(u1, u2, lab) );
             else
-                tags[p].push_back( boost::make_tuple(u1, u2, lab) );
+                tags[p].push_back( std::make_tuple(u1, u2, lab) );
             return u2;
         }
 

@@ -16,22 +16,21 @@ MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld, index_type rd, prempo_t t
       left_spins(lspins), right_spins(rspins),
       col_tags(ld, rd), operator_table(tbl_)
 {
-    using namespace boost::tuples;
     row_index.resize(ld);
     if (tags.size() > 0 && operator_table.get() != NULL) {
         // sort tags in order used by the CSC (sparse) matrix
         std::sort(tags.begin(), tags.end(), MPOTensor_detail::col_cmp<typename prempo_t::value_type>());
         for (const auto& tag : tags) {
-            internal_value_type & element = col_tags(get<0>(tag), get<1>(tag)).ref();
+            internal_value_type & element = col_tags(std::get<0>(tag), std::get<1>(tag)).ref();
             if (element.size() == 0) {
-                element = internal_value_type(1, std::make_pair(get<2>(tag), get<3>(tag)));
-                row_index[get<0>(tag)].insert(get<1>(tag));
+                element = internal_value_type(1, std::make_pair(std::get<2>(tag), std::get<3>(tag)));
+                row_index[std::get<0>(tag)].insert(std::get<1>(tag));
             }
             else {
                 // avoid resize, as that might increase the capacity beyond the new size
                 internal_value_type new_element(element.size() + 1);
                 std::copy(element.begin(), element.end(), new_element.begin()+1);
-                new_element.front() = std::make_pair(get<2>(tag), get<3>(tag));
+                new_element.front() = std::make_pair(std::get<2>(tag), std::get<3>(tag));
                 std::swap(element, new_element);
             }
         }

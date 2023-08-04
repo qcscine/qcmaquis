@@ -11,8 +11,6 @@
 #include "dmrg/block_matrix/indexing_stable.hpp"
 #include <vector>
 
-#include <boost/tuple/tuple_comparison.hpp>
-#include <boost/tuple/tuple.hpp>
 #include <boost/serialization/nvp.hpp>
 
 namespace dual_index_detail

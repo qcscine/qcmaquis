@@ -130,15 +130,15 @@ MPO<Matrix, U1> s12_heisenberg(std::size_t L, double Jxy, double Jz)
     
     block_matrix<Matrix, U1> ident, splus, sminus, sz, zero;
     
-    ident.insert_block(boost::tuples::make_tuple(Matrix(1, 1, 1), -1, -1));
-    ident.insert_block(boost::tuples::make_tuple(Matrix(1, 1, 1), 1, 1));
+    ident.insert_block(std::make_tuple(Matrix(1, 1, 1), -1, -1));
+    ident.insert_block(std::make_tuple(Matrix(1, 1, 1), 1, 1));
     
-    splus.insert_block(boost::tuples::make_tuple(Matrix(1, 1, 1), -1, 1));
+    splus.insert_block(std::make_tuple(Matrix(1, 1, 1), -1, 1));
     
-    sminus.insert_block(boost::tuples::make_tuple(Matrix(1, 1, 1), 1, -1));
+    sminus.insert_block(std::make_tuple(Matrix(1, 1, 1), 1, -1));
     
-    sz.insert_block(boost::tuples::make_tuple(Matrix(1, 1, 0.5), 1, 1));
-    sz.insert_block(boost::tuples::make_tuple(Matrix(1, 1, -0.5), -1, -1));
+    sz.insert_block(std::make_tuple(Matrix(1, 1, 0.5), 1, 1));
+    sz.insert_block(std::make_tuple(Matrix(1, 1, -0.5), -1, -1));
     
     MPOTensor<Matrix, U1> bulk(5, 5);
     bulk(0,0) = ident;

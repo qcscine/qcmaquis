@@ -52,7 +52,7 @@ void mpo1_test(Index<SymmGroup> const& phys,
     maquis::cout << "TEST MPO 1" << std::endl;
 
     typedef typename OPTable<matrix, SymmGroup>::tag_type tag_type;
-    typedef boost::tuple<std::size_t, std::size_t, tag_type, matrix::value_type> prempo_element;
+    typedef std::tuple<std::size_t, std::size_t, tag_type, matrix::value_type> prempo_element;
     typedef std::vector<prempo_element> prempo_type;
 
     /// MPO with three sites.
@@ -110,7 +110,7 @@ void mpo2_test(Index<SymmGroup> const& phys,
     maquis::cout << "TEST MPO 2" << std::endl;
 
     typedef typename OPTable<matrix, SymmGroup>::tag_type tag_type;
-    typedef boost::tuple<std::size_t, std::size_t, tag_type, matrix::value_type> prempo_element;
+    typedef std::tuple<std::size_t, std::size_t, tag_type, matrix::value_type> prempo_element;
     typedef std::vector<prempo_element> prempo_type;
 
     /// MPO with three sites.
@@ -160,7 +160,7 @@ void mpo3_test(Index<SymmGroup> const& phys,
     maquis::cout << "TEST MPO 3" << std::endl;
 
     typedef typename OPTable<matrix, SymmGroup>::tag_type tag_type;
-    typedef boost::tuple<std::size_t, std::size_t, tag_type, matrix::value_type> prempo_element;
+    typedef std::tuple<std::size_t, std::size_t, tag_type, matrix::value_type> prempo_element;
     typedef std::vector<prempo_element> prempo_type;
 
     /// MPO with four sites.

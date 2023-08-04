@@ -15,7 +15,6 @@
 #include <vector>
 #include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
-#include <boost/tuple/tuple.hpp>
 
 using std::cerr;
 using std::cout;

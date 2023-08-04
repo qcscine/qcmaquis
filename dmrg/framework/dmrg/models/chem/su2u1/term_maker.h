@@ -14,17 +14,17 @@
 template <class M, class S>
 struct TermMakerSU2 {
 
-    typedef typename Lattice::pos_t pos_t;
-    typedef typename M::value_type value_type;
-    typedef ::term_descriptor<value_type> term_descriptor;
-    typedef typename operator_selector<M, S>::type op_t;
+    using pos_t = typename Lattice::pos_t;
+    using value_type = typename M::value_type;
+    using term_descriptor = ::term_descriptor<value_type>;
+    using op_t = typename operator_selector<M, S>::type;
 
-    typedef typename TagHandler<M, S>::tag_type tag_type;
-    typedef std::vector<tag_type> tag_vec;
-    typedef typename term_descriptor::value_type pos_op_t;
-    typedef std::shared_ptr<TagHandler<M, S> > tag_handler_t;
+    using tag_type = typename TagHandler<M, S>::tag_type;
+    using tag_vec = std::vector<tag_type>;
+    using pos_op_t = typename term_descriptor::value_type;
+    using tag_handler_t = std::shared_ptr<TagHandler<M, S>>;
 
-    typedef typename S::subcharge sc;
+    using sc = typename S::subcharge;
 
     struct OperatorBundle
     {
@@ -81,13 +81,13 @@ struct TermMakerSU2 {
         OperatorBundle destroy_count;
     };
 
-    typedef boost::tuple<pos_t, OperatorBundle> pos_bundle_t;
+    using pos_bundle_t = std::tuple<pos_t, OperatorBundle>;
 
     template <class Tuple>
     static bool compare_tag(Tuple p1,
                             Tuple p2)
     {
-        return boost::tuples::get<0>(p1) < boost::tuples::get<0>(p2);
+        return std::get<0>(p1) < std::get<0>(p2);
     }
 
     template <class I>
@@ -95,10 +95,13 @@ struct TermMakerSU2 {
     {
         // Simple O(n^2) algorithm to determine sign of permutation
         I idx[] = { i,j,k,l };
-        I inv_count=0, n=4;
-        for(I c1 = 0; c1 < n - 1; c1++)
-            for(I c2 = c1+1; c2 < n; c2++)
-                if(idx[c1] > idx[c2]) inv_count++;
+        I inv_count=0;
+        I n=4;
+        for(I c1 = 0; c1 < n - 1; c1++) {
+            for(I c2 = c1+1; c2 < n; c2++) {
+                if(idx[c1] > idx[c2]) { inv_count++; }
+            }
+        }
 
         return (inv_count % 2 != 0);
     }
@@ -111,8 +114,9 @@ struct TermMakerSU2 {
         for (typename S::subcharge sc=0; sc < max_irrep+1; ++sc) {
             op_t mod(set_symm(op.basis(), sc));
             mod.spin() = op.spin();
-            for (std::size_t b = 0; b < op.n_blocks(); ++b)
+            for (std::size_t b = 0; b < op.n_blocks(); ++b) {
                 mod[b] = op[b];
+            }
 
             ret.push_back(mod);
         }
@@ -136,7 +140,10 @@ struct TermMakerSU2 {
     {
         Operators ret;
 
-        typename S::charge A(0), B(0), C(0), D(0);
+        typename S::charge A(0);
+        typename S::charge B(0);
+        typename S::charge C(0);
+        typename S::charge D(0);
         A[0] = 2; // 20
         B[0] = 1; B[1] =  1; // 11
         C[0] = 1; C[1] = -1; // 1-1
@@ -377,8 +384,10 @@ struct TermMakerSU2 {
     {
         OperatorCollection op_collection;
 
-        OperatorBundle create_pkg, destroy_pkg;
-        OperatorBundle create_count_pkg, destroy_count_pkg;
+        OperatorBundle create_pkg;
+        OperatorBundle destroy_pkg;
+        OperatorBundle create_count_pkg;
+        OperatorBundle destroy_count_pkg;
 
         create_pkg.couple_up = ops.create_couple_up;
         create_pkg.couple_down = ops.create;
@@ -443,9 +452,10 @@ struct TermMakerSU2 {
 
         tag_vec op1_use = (i<j) ? op1_fill : op2_fill;
         tag_vec op2_use = (i<j) ? op2 : op1;
-        if (j<i && sign) term.coeff = -term.coeff;
+        if (j<i && sign) { term.coeff = -term.coeff; }
 
-        pos_t start = std::min(i,j), end = std::max(i,j);
+        pos_t start = std::min(i,j);
+        pos_t end = std::max(i,j);
         term.push_back( std::make_pair(start, op1_use[lat.get_prop<sc>("type", start)]) );
 
         term.push_back( std::make_pair(end, op2_use[lat.get_prop<sc>("type", end)]) );
@@ -462,7 +472,9 @@ struct TermMakerSU2 {
         term.is_fermionic = true;
         term.coeff = scale;
 
-        tag_vec boson_op_use, op1_use, op2_use;
+        tag_vec boson_op_use;
+        tag_vec op1_use;
+        tag_vec op2_use;
 
         op1_use = (p1<p2) ? op1_fill : op2_fill;
         op2_use = (p1<p2) ? op2 : op1;
@@ -476,9 +488,10 @@ struct TermMakerSU2 {
             boson_op_use = boson_op;
         }
 
-        if (p2<p1) term.coeff = -term.coeff;
+        if (p2<p1) { term.coeff = -term.coeff; }
 
-        pos_t start = std::min(p1,p2), end = std::max(p1,p2);
+        pos_t start = std::min(p1,p2);
+        pos_t end = std::max(p1,p2);
         term.push_back( std::make_pair(pb, boson_op_use[lat.get_prop<sc>("type", pb)]) );
         term.push_back( std::make_pair(start, op1_use[lat.get_prop<sc>("type", start)]) );
         term.push_back( std::make_pair(end, op2_use[lat.get_prop<sc>("type", end)]) );
@@ -495,15 +508,16 @@ struct TermMakerSU2 {
                                      value_type scale, pos_t i, pos_t j, pos_t k, pos_t l,
                                      OperatorBundle op_i, OperatorBundle op_k, Lattice const & lat)
     {
-        using boost::tuples::get;
-        using boost::make_tuple;
+        using std::get;
+        using std::make_tuple;
 
         term_descriptor term;
         term.is_fermionic = true;
         term.coeff = scale;
 
-        if (sgn(i,j,k,l))
+        if (sgn(i,j,k,l)) {
             term.coeff = -term.coeff;
+        }
 
         std::vector<pos_bundle_t> sterm;
         sterm.push_back(make_tuple(i, op_i));
@@ -533,16 +547,16 @@ template <class M, class S>
 class SpinSumSU2 {
 
 public:
-    typedef typename Lattice::pos_t pos_t;
-    typedef typename M::value_type value_type;
-    typedef ::term_descriptor<value_type> term_descriptor;
+    using pos_t = typename Lattice::pos_t;
+    using value_type = typename M::value_type;
+    using term_descriptor = ::term_descriptor<value_type>;
 
-    typedef typename TagHandler<M, S>::tag_type tag_type;
-    typedef std::vector<tag_type> tag_vec;
+    using tag_type = typename TagHandler<M, S>::tag_type;
+    using tag_vec = std::vector<tag_type>;
 
-    typedef TermMakerSU2<M, S> TM;
-    typedef typename TM::OperatorBundle OperatorBundle;
-    typedef typename TM::OperatorCollection OperatorCollection;
+    using TM = TermMakerSU2<M, S>;
+    using OperatorBundle = typename TM::OperatorBundle;
+    using OperatorCollection = typename TM::OperatorCollection;
 
     static std::vector<term_descriptor>
     V_term(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
@@ -551,7 +565,7 @@ public:
         Lattice::pos_t p[4] = {i,k,l,j};
         std::vector<pos_t> ps(p, p + 4);
         std::sort(ps.begin(), ps.end());
-        std::vector<pos_t>::iterator it = std::unique(ps.begin(), ps.end());
+        auto it = std::unique(ps.begin(), ps.end());
 
         std::size_t n_unique = std::distance(ps.begin(), it);
 
@@ -576,22 +590,27 @@ public:
     two_term(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
              OperatorCollection const & ops, Lattice const & lat)
     {
-        if (i==j && k==l && j!=k) return two_termA(matrix_element, i, k, l, j, ops, lat);
-        else if (i==k && j==l && j!=k) return two_termB1(matrix_element, i, k, l, j, ops, lat);
-        else if (i==l && j==k && i!=j) return two_termB2(matrix_element, i, k, l, j, ops, lat);
-        else if ((i==k && k==l) ||
-                 (k==l && l==j) ||
-                 (i==l && l==j) ||
-                 (i==k && k==j)) return two_termC(matrix_element, i, k, l, j, ops, lat);
-        else { throw std::runtime_error("Unexpected index arrangement for V_ijjj term\n"); }
+        if (i==j && k==l && j!=k) {
+          return two_termA(matrix_element, i, k, l, j, ops, lat);
+        } else if (i==k && j==l && j!=k) {
+          return two_termB1(matrix_element, i, k, l, j, ops, lat);
+        } else if (i==l && j==k && i!=j) {
+          return two_termB2(matrix_element, i, k, l, j, ops, lat);
+        } else if ((i==k && k==l) || (k==l && l==j) ||
+                   (i==l && l==j) || (i==k && k==j)) {
+          return two_termC(matrix_element, i, k, l, j, ops, lat);
+        } else { throw std::runtime_error("Unexpected index arrangement for V_ijjj term\n"); }
     }
 
     static std::vector<term_descriptor>
     three_term(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
                OperatorCollection const & ops, Lattice const & lat)
     {
-        if (i==j || k==l) return three_termA(matrix_element, i, k, l, j, ops, lat);
-        else return three_termB(matrix_element, i, k, l, j, ops, lat);
+        if (i==j || k==l) {
+          return three_termA(matrix_element, i, k, l, j, ops, lat);
+        } else {
+          return three_termB(matrix_element, i, k, l, j, ops, lat);
+        }
     }
 
     static std::vector<term_descriptor>
@@ -604,7 +623,10 @@ public:
         // As in standard notation of the Hamiltonian, the first two positions get a creator, the last two a destructor
 
         chem::detail::IndexTuple key = chem::detail::align<S>(i,j,k,l);
-        pos_t i_ = key[0], j_ = key[1], k_ = key[2], l_ = key[3];
+        pos_t i_ = key[0];
+        pos_t j_ = key[1];
+        pos_t k_ = key[2];
+        pos_t l_ = key[3];
 
         if (k_ > l_ && l_ > j_) // eg V_4132
         { // generates up|up|up|up + up|down|down|up + down|up|up|down + down|down|down|down
@@ -616,7 +638,7 @@ public:
         { // generates up|up|up|up + up|down|up|down + down|up|down|up + down|down|down|down
 
             value_type local_element = matrix_element;
-            if (TM::sgn(i,k,l,j)) local_element = -matrix_element;
+            if (TM::sgn(i,k,l,j)) { local_element = -matrix_element; }
 
             ret.push_back(TM::four_term(ops.ident_full.no_couple, 2, value_type(std::sqrt(3.))*local_element, i,k,l,j, ops.create, ops.destroy, lat));
             ret.push_back(TM::four_term(ops.ident.no_couple,      1,               local_element, i,k,l,j, ops.create, ops.destroy, lat));
@@ -675,7 +697,8 @@ private:
     two_termC(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
               OperatorCollection const & ops, Lattice const & lat)
     {
-        int s, p;
+        int s;
+        int p;
 
         if (i==k && k==l)      { s = i; p = j; }
         else if (k==l && l==j) { s = j; p = i; }
@@ -685,16 +708,17 @@ private:
 
         std::vector<term_descriptor> ret;
 
-        if (i==k) // one lonely destructor
+        if (i==k) { // one lonely destructor
             ret.push_back(TM::positional_two_term(
                 true, ops.ident.no_couple,  value_type(std::sqrt(2.))*matrix_element, s, p, ops.create_count.couple_down, ops.create_count.fill_couple_up,
                 ops.destroy.couple_down, ops.destroy.fill_couple_up, lat
             ));
-        else     // one lonely constructor
+        } else {     // one lonely constructor
             ret.push_back(TM::positional_two_term(
                 true, ops.ident.no_couple, value_type(-std::sqrt(2.))*matrix_element, s, p, ops.destroy_count.couple_down, ops.destroy_count.fill_couple_up,
                 ops.create.couple_down, ops.create.fill_couple_up, lat
             ));
+        }
 
         return ret;
     }
@@ -721,7 +745,9 @@ private:
     {
         std::vector<term_descriptor> ret;
 
-        int same_idx, pos1, pos2;
+        int same_idx;
+        int pos1;
+        int pos2;
 
         if (i==k)
         {
@@ -747,8 +773,9 @@ private:
             else { same_idx = i; pos1 = j; pos2 = k; }
 
             value_type phase = 1.;
-            if(TM::sgn(i,k,l,j))
+            if(TM::sgn(i,k,l,j)) {
                 phase = -1.;
+            }
 
             if ( same_idx < std::min(pos1,pos2) )
             {

@@ -84,7 +84,7 @@ void follow_and_print_terms(MPO<Matrix, SymmGroup> const& mpo, int p, int b1, in
 template<class Matrix, class SymmGroup>
 void cleanup_mpo_(MPO<Matrix, SymmGroup> const & in_mpo,
                   MPO<Matrix, SymmGroup> & out_mpo,
-                  std::vector<boost::tuple<int, int, typename operator_selector<Matrix, SymmGroup>::type > > & ops,
+                  std::vector<std::tuple<int, int, typename operator_selector<Matrix, SymmGroup>::type > > & ops,
                   int p, int start)
 {
     for (std::size_t k = 0; k < in_mpo[p].col_dim(); ++k)
@@ -92,13 +92,13 @@ void cleanup_mpo_(MPO<Matrix, SymmGroup> const & in_mpo,
         if (!in_mpo[p].has(start,k)) { continue; }
         if (in_mpo[p].at(start,k).op().n_blocks() == 0) { continue; }
         
-        ops[p] = boost::make_tuple(start, k, in_mpo[p].at(start, k).op() * in_mpo[p].at(start, k).scale());
+        ops[p] = std::make_tuple(start, k, in_mpo[p].at(start, k).op() * in_mpo[p].at(start, k).scale());
         
         if (p+1 < in_mpo.length()) {
             cleanup_mpo_(in_mpo, out_mpo, ops, p+1, k);
         } else {
             assert( ops.size() == out_mpo.length() );
-            using boost::tuples::get;
+            using std::get;
             for (std::size_t t = 0; t < in_mpo.length(); ++t) {
                 MPOTensor_detail::term_descriptor<Matrix, SymmGroup, false> o = out_mpo[t].at(get<0>(ops[t]), get<1>(ops[t]));
                 if (o.op().n_blocks() == 0) {
@@ -118,7 +118,7 @@ MPO<Matrix, SymmGroup> cleanup_mpo(MPO<Matrix, SymmGroup> const & mpo)
         ret[p] = MPOTensor<Matrix, SymmGroup>(mpo[p].row_dim(), mpo[p].col_dim());
     }
     
-    std::vector<boost::tuple<int, int, typename operator_selector<Matrix, SymmGroup>::type > > prempo(mpo.length());
+    std::vector<std::tuple<int, int, typename operator_selector<Matrix, SymmGroup>::type > > prempo(mpo.length());
     cleanup_mpo_(mpo, ret, prempo, 0, 0);
     return ret;
 }

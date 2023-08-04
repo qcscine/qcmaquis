@@ -13,7 +13,6 @@
 #include <vector>
 
 #include <boost/utility.hpp>
-#include <boost/tuple/tuple.hpp>
 #include <boost/type_traits.hpp>
 
 #include "dmrg/models/OperatorHandlers/OpTable.h"
@@ -93,17 +92,15 @@ namespace MPOTensor_detail
         const_iterator end() const { return const_iterator(base::second); }
     };
 
-    using namespace boost::tuples;
-
     template<class Tuple>
     struct row_cmp
     {
         bool operator() (Tuple const & i, Tuple const & j) const
         {
-            if (get<0>(i) == get<0>(j)) {
-                return get<1>(i) < get<1>(j);
+            if (std::get<0>(i) == std::get<0>(j)) {
+                return std::get<1>(i) < std::get<1>(j);
             } else {
-                return get<0>(i) < get<0>(j);
+                return std::get<0>(i) < std::get<0>(j);
             }
         }
     };
@@ -113,10 +110,10 @@ namespace MPOTensor_detail
     {
         bool operator() (Tuple const & i, Tuple const & j) const
         {
-            if (get<1>(i) == get<1>(j)) {
-                return get<0>(i) < get<0>(j);
+            if (std::get<1>(i) == std::get<1>(j)) {
+                return std::get<0>(i) < std::get<0>(j);
             } else {
-                return get<1>(i) < get<1>(j);
+                return std::get<1>(i) < std::get<1>(j);
             }
         }
     };

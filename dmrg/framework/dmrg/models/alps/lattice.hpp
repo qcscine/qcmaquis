@@ -81,7 +81,7 @@ public:
         else if (property == "type" && pos.size() == 2)
             return boost::any( static_cast<int>(graph.bond_type(graph.bond(bond_index_map[pos[0]][pos[1]]))) );
         else if (property == "wraps_pbc" && pos.size() == 2)
-            return boost::any( static_cast<bool>(boost::get(alps::boundary_crossing_t(),
+            return boost::any( static_cast<bool>(std::get(alps::boundary_crossing_t(),
                                                             graph.graph(),
                                                             graph.bond(bond_index_map[pos[0]][pos[1]]))) );
         else {

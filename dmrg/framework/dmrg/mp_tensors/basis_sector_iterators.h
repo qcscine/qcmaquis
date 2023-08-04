@@ -11,23 +11,21 @@
 #include "dmrg/block_matrix/indexing.h"
 
 #include <boost/operators.hpp>
-#include <boost/tuple/tuple.hpp>
-
 
 template <class SymmGroup>
 class basis_sector_iterator_
 : public boost::forward_iterator_helper<
                                           basis_sector_iterator_<SymmGroup>
-                                        , std::vector<boost::tuple<typename SymmGroup::charge, std::size_t> >
+                                        , std::vector<std::tuple<typename SymmGroup::charge, std::size_t> >
                                         , std::ptrdiff_t
-                                        , std::vector<boost::tuple<typename SymmGroup::charge, std::size_t> > *
-                                        , std::vector<boost::tuple<typename SymmGroup::charge, std::size_t> > &
+                                        , std::vector<std::tuple<typename SymmGroup::charge, std::size_t> > *
+                                        , std::vector<std::tuple<typename SymmGroup::charge, std::size_t> > &
                                        >
 
 {
     using charge = typename SymmGroup::charge;
     using size_t = std::size_t;
-    using local_state = boost::tuple<charge, size_t>;
+    using local_state = std::tuple<charge, size_t>;
     using states_iterator = typename std::vector<local_state>::const_iterator;
 
     using get0_fn_t = const charge &(*)(const boost::tuples::cons<charge, boost::tuples::cons<size_t, boost::tuples::null_type>> &);
@@ -44,7 +42,7 @@ public:
     , it(L, 0)
     , state(L)
     {
-        getter_fn = &boost::tuples::get<0, charge, boost::tuples::cons<size_t, boost::tuples::null_type> >;
+        getter_fn = &std::get<0, charge, boost::tuples::cons<size_t, boost::tuples::null_type> >;
     
         for (size_t i=0; i<phys.size(); ++i)
             for (size_t j=0; j<phys[i].second; ++j)
