@@ -13,7 +13,7 @@
 #include <utility>
 #include <vector>
 #include <string>
-#include <boost/any.hpp>
+#include <any>
 
 /// lattice common base
 class lattice_impl {
@@ -30,13 +30,13 @@ public:
     template<class T> T get_prop(const std::string& property) const
                                  
     {
-        return boost::any_cast<T>(get_prop_(property, std::vector<pos_t>()));
+        return std::any_cast<T>(get_prop_(property, std::vector<pos_t>()));
     }
 
     template<class T> T get_prop(const std::string& property,
                                  pos_t site) const
     {
-        return boost::any_cast<T>(get_prop_(property, std::vector<pos_t>(1, site)));
+        return std::any_cast<T>(get_prop_(property, std::vector<pos_t>(1, site)));
     }
 
     template<class T> T get_prop(const std::string& property,
@@ -44,17 +44,17 @@ public:
     {
         std::vector<pos_t> v(2);
         v[0] = bond1; v[1] = bond2;
-        return boost::any_cast<T>(get_prop_(property, v));
+        return std::any_cast<T>(get_prop_(property, v));
     }
 
     template<class T> T get_prop(const std::string& property,
                                  std::vector<pos_t> const & positions) const
     {
-        return boost::any_cast<T>(get_prop_(property, positions));
+        return std::any_cast<T>(get_prop_(property, positions));
     }
 
     // virtual!
-    virtual boost::any get_prop_(std::string const &, std::vector<pos_t> const &) const = 0;
+    virtual std::any get_prop_(std::string const &, std::vector<pos_t> const &) const = 0;
 
     virtual pos_t get_abs_position(part_type const & pt, pos_t const & rel_pos) const {return 0;};
 

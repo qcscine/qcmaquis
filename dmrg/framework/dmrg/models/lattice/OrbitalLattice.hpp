@@ -78,28 +78,28 @@ public:
       return ret;
   }
 
-  boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const override
+  std::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const override
   {
     if (property == "label" && pos.size() == 1) { // return "( label )" as string
-      return boost::any( site_label(order[pos[0]]) );
+      return std::any( site_label(order[pos[0]]) );
     }
     if (property == "label_int" && pos.size() == 1) { // just return label as integer
-      return boost::any(order[pos[0]]);
+      return std::any(order[pos[0]]);
     } else if (property == "label" && pos.size() == 2) {
-      return boost::any( bond_label(order[pos[0]], order[pos[1]]) );
+      return std::any( bond_label(order[pos[0]], order[pos[1]]) );
     } else if (property == "type" && pos.size() == 1) {
-      return boost::any( irreps[pos[0]] );
+      return std::any( irreps[pos[0]] );
     } else if (property == "type" && pos.size() == 2) {
-      return boost::any( 0 );
+      return std::any( 0 );
     } else if (property == "NumTypes") {
-      return boost::any( 1 );
+      return std::any( 1 );
     } else if (property == "ParticleType" && pos.size() == 1) {
-      return boost::any( 0 );
+      return std::any( 0 );
     } else {
       std::ostringstream ss;
       ss << "No property '" << property << "' with " << pos.size() << " points implemented.";
       throw std::runtime_error(ss.str());
-      return boost::any();
+      return std::any();
     }
   }
 

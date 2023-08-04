@@ -15,10 +15,10 @@ class results_collector::collector_impl_base
 {
 public:
     virtual ~collector_impl_base() = default;
-    virtual void collect(boost::any const &) = 0;
+    virtual void collect(std::any const &) = 0;
     virtual void save(alps::hdf5::archive & ar) const = 0;
     virtual void load(alps::hdf5::archive & ar) = 0;
-    virtual const std::vector<boost::any>& get() const = 0;
+    virtual const std::vector<std::any>& get() const = 0;
     // TODO: fixed storage type because templated virtual function are not allowed
 };
 
@@ -26,7 +26,7 @@ template<class T>
 class results_collector::collector_impl : public results_collector::collector_impl_base
 {
 public:
-    void collect(boost::any const & val) override
+    void collect(std::any const & val) override
     {
         vals.push_back(val);
     }
@@ -38,7 +38,7 @@ public:
             ar["mean/value"] >> allvalues;
         allvalues.reserve(allvalues.size()+vals.size());
         for(auto&& val : vals)
-            allvalues.push_back(boost::any_cast<T>(val));
+            allvalues.push_back(std::any_cast<T>(val));
         ar["mean/value"] << allvalues;
     }
 
@@ -56,10 +56,10 @@ public:
     }
 
     // TODO: Copying is inefficient!
-    const std::vector<boost::any>& get() const override { return vals; };
+    const std::vector<std::any>& get() const override { return vals; };
 
 private:
-    std::vector<boost::any> vals;
+    std::vector<std::any> vals;
 };
 
 // results_collector::collector_proxy implementation
@@ -85,7 +85,7 @@ void results_collector::collector_proxy::operator>>(T const& val)
         collector.reset(new results_collector::collector_impl<T>());
 }
 
-const std::vector<boost::any>& results_collector::collector_proxy::get() const
+const std::vector<std::any>& results_collector::collector_proxy::get() const
 {
     return collector->get();
 }

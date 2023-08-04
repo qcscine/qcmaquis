@@ -64,18 +64,18 @@ public:
    * 
    * @param property string identifier for the property
    * @param pos vector of positions 
-   * @return boost::any requested property
+   * @return std::any requested property
    */
-  boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const
+  std::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const
   {
     if (property == "label" && pos.size() == 1)
-      return boost::any(site_label(pos[0]));
+      return std::any(site_label(pos[0]));
     else if (property == "label" && pos.size() == 2)
-      return boost::any(bond_label(pos[0], pos[1]));
+      return std::any(bond_label(pos[0], pos[1]));
     else if (property == "type" && pos.size() == 1)
-      return boost::any(pos[0]);
+      return std::any(pos[0]);
     else if (property == "type" && pos.size() == 2)
-      return boost::any(0);
+      return std::any(0);
     else if (property == "ParticleType" && pos.size() == 1) {
       assert (pos[0] >= 0 && pos[0] < L);
       return 0;
@@ -86,7 +86,7 @@ public:
       std::ostringstream ss;
       ss << "No property '" << property << "' with " << pos.size() << " points implemented."; 
       throw std::runtime_error(ss.str());
-      return boost::any();
+      return std::any();
     }
   }
     

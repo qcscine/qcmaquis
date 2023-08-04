@@ -165,36 +165,36 @@ public:
      * E.g.: "type" at position 12 in lattice --> 0 (electron)
      * @param property
      * @param pos
-     * @return boost::any
+     * @return std::any
      */
-    boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const override
+    std::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const override
     {
         if (property == "type" && pos.size() == 1)
-            return boost::any(vec_lattice_type[pos[0]]);
+            return std::any(vec_lattice_type[pos[0]]);
         else if (property == "Mmax" && pos.size() == 1)
-            return boost::any(vec_max_m[pos[0]]);
+            return std::any(vec_max_m[pos[0]]);
         else if (property == "NumTypes")
-            return boost::any(num_particle_types);
+            return std::any(num_particle_types);
         else if (property == "ParticleType" && pos.size() == 1)
-            return boost::any( vec_lattice_type[pos[0]] );
+            return std::any( vec_lattice_type[pos[0]] );
         else if (property == "label" && pos.size() == 2)
-            return boost::any(bond_label(pos[0], pos[1]));
+            return std::any(bond_label(pos[0], pos[1]));
         else if (property == "vec_particles")
-            return boost::any(vec_particles);
+            return std::any(vec_particles);
         else if (property == "num_particle_types")
-            return boost::any(num_particle_types);
+            return std::any(num_particle_types);
         else if (property == "isFermion")
-            return boost::any(isFermion);
+            return std::any(isFermion);
         else if (property == "vec_orbitals")
-            return boost::any(vec_orbitals);
+            return std::any(vec_orbitals);
         else if (property == "vec_ini_state")
-            return boost::any(vec_ini_state);
+            return std::any(vec_ini_state);
         else if (property == "vec_fer_bos")
-            return boost::any(vec_fer_bos);
+            return std::any(vec_fer_bos);
         else if (property == "order")
-            return boost::any(m_order);
+            return std::any(m_order);
         else if (property == "inv_order")
-            return boost::any(m_inv_order);
+            return std::any(m_inv_order);
         else {
             std::ostringstream ss;
             ss << "No property '" << property << "' with " << pos.size() << " points implemented.";

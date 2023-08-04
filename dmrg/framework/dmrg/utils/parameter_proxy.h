@@ -18,7 +18,7 @@ namespace parameters {
     namespace conversion
     {
         // this can be specialized to provide conversion for types that cannot be read
-        // with the boost::any_cast, or whatever program options uses for the as<>
+        // with the std::any_cast, or whatever program options uses for the as<>
         // method
         template<class T> struct get_
         {

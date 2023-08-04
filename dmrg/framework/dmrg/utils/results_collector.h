@@ -8,16 +8,16 @@
 #ifndef UTILS_RESULTS_COLLECTOR_H
 #define UTILS_RESULTS_COLLECTOR_H
 
-#include <boost/any.hpp>
+#include <any>
 #include <vector>
 #include <memory>
 #include <map>
 
 /**
  * @brief Class used to store the results of a generic sweep-based algorithm 
- * The object is basically a wrapper around a string --> vector<boost::any> object.
+ * The object is basically a wrapper around a string --> vector<std::any> object.
  * The string identifies the specific result of the simulation.
- * The vector<boost::any> object is represented, in practice, by a pointer to a 
+ * The vector<std::any> object is represented, in practice, by a pointer to a 
  * [collector_impl_base] object. The latter is, in turn, a interface class
  * that in implemented, by the [collector_impl] class in the "<<" operator.
  */
@@ -28,8 +28,8 @@ private:
     class collector_impl_base;
 
     /**
-     * @brief Actual implementation based on a boost::any vector 
-     * Note that the template parameter T represents the type used for the casting of boost::any.
+     * @brief Actual implementation based on a std::any vector 
+     * Note that the template parameter T represents the type used for the casting of std::any.
      */
     template <class T>
     class collector_impl;
@@ -60,7 +60,7 @@ public:
         void operator>>(T const& val);
 
         /** @brief Gets the underlying std::get object */
-        const std::vector<boost::any>& get() const;
+        const std::vector<std::any>& get() const;
 
     private:
         coll_type& collector;

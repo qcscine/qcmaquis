@@ -54,31 +54,31 @@ public:
   /** @brief Getter for the number of types of sites */
   int getMaxType() const override { return 1; }
 
-  boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const override
+  std::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const override
   {
     if (property == "label" && pos.size() == 1)
-      return boost::any( site_label(pos[0]) );
+      return std::any( site_label(pos[0]) );
     else if (property == "label" && pos.size() == 2)
-      return boost::any( bond_label(pos[0], pos[1]) );
+      return std::any( bond_label(pos[0], pos[1]) );
     else if (property == "type" && pos.size() == 1)
-      return boost::any( 0 );
+      return std::any( 0 );
     else if (property == "type" && pos.size() == 2)
-      return boost::any( 0 );
+      return std::any( 0 );
     else if (property == "x" && pos.size() == 1)
-      return boost::any( x(pos[0]) );
+      return std::any( x(pos[0]) );
     else if (property == "y" && pos.size() == 1)
-      return boost::any( y(pos[0]) );
+      return std::any( y(pos[0]) );
     else if (property == "wraps_pbc" && pos.size() == 2)
-      return boost::any( false );
+      return std::any( false );
     else if (property == "NumTypes")
-      return boost::any( 1 );
+      return std::any( 1 );
     else if (property == "ParticleType")
-      return boost::any( 0 );
+      return std::any( 0 );
     else {
       std::ostringstream ss;
       ss << "No property '" << property << "' with " << pos.size() << " points implemented.";
       throw std::runtime_error(ss.str());
-      return boost::any();
+      return std::any();
     }
   }
 

@@ -187,7 +187,7 @@ public:
     if (!iterationResults_.has(resultName)) {
       throw std::runtime_error("Trying to access non-existing simulation result");
     }
-    return boost::any_cast<CastType>(iterationResults_[resultName].get()[0]);
+    return std::any_cast<CastType>(iterationResults_[resultName].get()[0]);
   }
 
 protected:

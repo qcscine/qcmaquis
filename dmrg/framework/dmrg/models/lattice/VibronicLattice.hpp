@@ -102,35 +102,35 @@ public:
    * 
    * @param property Property identified
    * @param pos vector with the positions associated with the property to be calculated.
-   * @return boost::any requested property.
+   * @return std::any requested property.
    */
-  boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const
+  std::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const
   {
     if (property == "label" && pos.size() == 1)
-      return boost::any(site_label(pos[0]));
+      return std::any(site_label(pos[0]));
     else if (property == "label" && pos.size() == 2)
-      return boost::any(bond_label(pos[0], pos[1]));
+      return std::any(bond_label(pos[0], pos[1]));
     else if (property == "type" && pos.size() == 1)
-      return boost::any(vector_types[pos[0]]);
+      return std::any(vector_types[pos[0]]);
     else if (property == "ParticleType" && pos.size() == 1)
-      return boost::any(vector_types[pos[0]]);
+      return std::any(vector_types[pos[0]]);
     else if (property == "NumTypes")
-      return boost::any(2);
+      return std::any(2);
     else if (property == "vibindex" && pos.size() == 2)
       // In this case the first index is the molecule, the second one is the specific
       // mode that molecule.
-      return (eleFirst) ? boost::any(nParticles*nElecStates+pos[0]*nModes+pos[1]) :
-                          boost::any((nElecStates+nModes)*pos[0]+nElecStates+pos[1]);
+      return (eleFirst) ? std::any(nParticles*nElecStates+pos[0]*nModes+pos[1]) :
+                          std::any((nElecStates+nModes)*pos[0]+nElecStates+pos[1]);
     else if (property == "eleindex" && pos.size() == 2)
       // In this case the first index is the molecule, the second one is the specific
       // excited state of that molecule.
-      return (eleFirst) ? boost::any(nElecStates*pos[0]+pos[1]) :
-                          boost::any((nElecStates+nModes)*pos[0]+pos[1]);
+      return (eleFirst) ? std::any(nElecStates*pos[0]+pos[1]) :
+                          std::any((nElecStates+nModes)*pos[0]+pos[1]);
     else {
       std::ostringstream ss;
       ss << "No property '" << property << "' with " << pos.size() << " points implemented.";
       throw std::runtime_error(ss.str());
-      return boost::any();
+      return std::any();
     }
   }
 

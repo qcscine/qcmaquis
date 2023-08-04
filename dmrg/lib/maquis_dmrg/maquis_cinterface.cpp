@@ -366,19 +366,19 @@ extern "C"
         if (!iter.empty())
         {
             // iter contains results, one element per microiteration
-            const std::vector<boost::any>& m_vec = iter["BondDimension"].get();
-            const std::vector<boost::any>& ev_vec = iter["SmallestEV"].get();
+            const std::vector<std::any>& m_vec = iter["BondDimension"].get();
+            const std::vector<std::any>& ev_vec = iter["SmallestEV"].get();
 
             // if we do single-site optimization, we will not have TruncatedWeight or TruncatedFraction, so check whether we have it
-            const std::vector<boost::any>& tw_vec = (iter.has("TruncatedWeight")) ? iter["TruncatedWeight"].get() : std::vector<boost::any>();
-            const std::vector<boost::any>& tf_vec = (iter.has("TruncatedFraction")) ? iter["TruncatedFraction"].get() : std::vector<boost::any>();
+            const std::vector<std::any>& tw_vec = (iter.has("TruncatedWeight")) ? iter["TruncatedWeight"].get() : std::vector<std::any>();
+            const std::vector<std::any>& tf_vec = (iter.has("TruncatedFraction")) ? iter["TruncatedFraction"].get() : std::vector<std::any>();
 
             // We return the sum of these values for the last sweep
             // this should be done with transform_reduce
-            *m = 0; for (auto&& m_ : m_vec) *m += boost::any_cast<std::size_t>(m_);
-            *truncated_weight = 0; for (auto&& tw_ : tw_vec) *truncated_weight += boost::any_cast<V>(tw_);
-            *truncated_fraction = 0; for (auto&& tf_ : tf_vec) *truncated_fraction += boost::any_cast<V>(tf_);
-            *smallest_ev = 0; for (auto&& ev_ : ev_vec) *smallest_ev += boost::any_cast<V>(ev_);
+            *m = 0; for (auto&& m_ : m_vec) *m += std::any_cast<std::size_t>(m_);
+            *truncated_weight = 0; for (auto&& tw_ : tw_vec) *truncated_weight += std::any_cast<V>(tw_);
+            *truncated_fraction = 0; for (auto&& tf_ : tf_vec) *truncated_fraction += std::any_cast<V>(tf_);
+            *smallest_ev = 0; for (auto&& ev_ : ev_vec) *smallest_ev += std::any_cast<V>(ev_);
 
             *nsweeps = interface_ptr->get_last_sweep()+1;
         }
