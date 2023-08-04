@@ -91,8 +91,6 @@ public:
     Determinant(int L) : base(L) {}
    //default constructor
     Determinant() = default;
-   //copy constructor
-    Determinant(const Determinant& Copy) {*this = Copy;}
 
 //get number of electrons in a determinant
    int num_el()

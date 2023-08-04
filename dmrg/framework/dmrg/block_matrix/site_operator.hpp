@@ -33,25 +33,6 @@ SiteOperator<Matrix, SymmGroup>::SiteOperator(block_matrix<Matrix,SymmGroup> con
 {
 }
 
-template<class Matrix, class SymmGroup>
-SiteOperator<Matrix, SymmGroup> & SiteOperator<Matrix, SymmGroup>::operator=(SiteOperator rhs)
-{
-    swap(*this, rhs);
-    return *this;
-}
-
-template<class Matrix, class SymmGroup>
-template<class OtherMatrix>
-SiteOperator<Matrix, SymmGroup> & SiteOperator<Matrix, SymmGroup>::operator=(const SiteOperator<OtherMatrix, SymmGroup> & rhs)
-{
-    block_matrix<Matrix, SymmGroup> cpy = rhs.bm_;
-    sparse_op = rhs.sparse_op;
-    spin_basis = rhs.spin_basis;
-    swap(bm_, cpy);
-    spin_ = rhs.spin();
-    return *this;
-}
-
 namespace SiteOperator_detail
 {
 

@@ -46,10 +46,6 @@ public:
 
     SiteOperator(block_matrix<Matrix, SymmGroup> const&, spin_basis_type const &);
 
-    SiteOperator& operator=(SiteOperator rhs);
-    template<class OtherMatrix>
-    SiteOperator& operator=(const SiteOperator<OtherMatrix, SymmGroup>& rhs);
-
     Index<SymmGroup> left_basis() const;
     Index<SymmGroup> right_basis() const;
     DualIndex<SymmGroup> const & basis() const;
