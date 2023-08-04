@@ -25,10 +25,11 @@ namespace checks {
             BaseParameters chkp_parms;
             ar_in["/parameters"] >> chkp_parms;
 
-            if (chkp_parms.defined("symmetry"))
+            if (chkp_parms.defined("symmetry")) {
                 return chkp_parms["symmetry"].str();
-            else
+            } else {
                 throw std::runtime_error("Symmetry not defined in checkpoint "+chkpfile);
+            }
         }
     }
     // check whether the checkpoint chkpfile has the same symmetry as is declared in parms
@@ -42,8 +43,9 @@ namespace checks {
     inline void symmetry_check(BaseParameters & parms, const std::string & chkpfile)
     {
         std::string chkp_sym = detail::get_symmetry(chkpfile);
-        if (parms["symmetry"].str() != chkp_sym)
+        if (parms["symmetry"].str() != chkp_sym) {
             throw std::runtime_error("The existing checkpoint file " + chkpfile +  " has the wrong symmetry group " + chkp_sym + " instead of " + parms["symmetry"].str() + "\n");
+        }
     }
 
     // check whether the checkpoint has symmetry that ends in pg
@@ -87,14 +89,16 @@ namespace checks {
         BaseParameters chkp_parms;
         ar_in["/parameters"] >> chkp_parms;
 
-        std::string chkp_order, parm_order;
+        std::string chkp_order;
+        std::string parm_order;
         if (chkp_parms.defined("orbital_order")) {
             chkp_order = chkp_parms["orbital_order"].str();
             if (parms.is_set("orbital_order")) {
                 parm_order = parms["orbital_order"].str();
-                if (chkp_order != parm_order)
+                if (chkp_order != parm_order) {
                     // make sure we apply the orbital order previously used for this MPS
                     parms.set("orbital_order",chkp_order);
+                }
                     //throw std::runtime_error("The existing checkpoint file " + chkpfile +  " has the wrong orbital order " + chkp_order + "\n");
             }
             else{

@@ -33,6 +33,15 @@
 
 template <class Matrix, class SymmGroup>
 class sim : public abstract_sim {
+private:
+  void initializeWignerCache() const;
+  void loadParams(
+      storage::archive& ar_in,
+      const bool hasSU2, const bool has2U1, const bool hasPG) const;
+  void loadMPSAndParams(
+      const std::string& chkpfile,
+      const bool hasSU2, const bool has2U1, const bool hasPG);
+  void updateParamsInArchive(const std::string& chkpfile) const;
 public:
     explicit sim(DmrgParameters &);
      ~sim() override;
@@ -48,24 +57,25 @@ protected:
     // TODO: can be made const, now only problem are parameters
     virtual void checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, status_type const&, std::string filename = "");
 
-protected:
     DmrgParameters& parms;
     int init_sweep, init_site;
     bool restore;
     bool dns;
     std::string chkpfile;
     std::string chkpfolder() const {
-        if (parms.is_set("chkpfile"))
-            return parms["chkpfile"].str();
-        else
-            return std::string();
+      if (parms.is_set("chkpfile")) {
+        return parms["chkpfile"].str();
+      } else {
+        return std::string();
+}
     }
     std::string rfile() const
     {
-        if (parms.is_set("resultfile"))
-            return parms["resultfile"].str();
-        else
-            return std::string();
+      if (parms.is_set("resultfile")) {
+        return parms["resultfile"].str();
+      } else {
+        return std::string();
+      }
     };
     time_stopper stop_callback;
     Lattice lat;
