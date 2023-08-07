@@ -5,6 +5,8 @@
  *            See LICENSE.txt for details.
  */
 
+#include "dmrg/block_matrix/indexing.h"
+#include "dmrg/block_matrix/symmetry.h"
 
 #include "utils/function_objects.h"
 #include "dmrg/block_matrix/site_operator.h"

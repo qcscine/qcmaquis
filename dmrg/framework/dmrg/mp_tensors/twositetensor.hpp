@@ -5,10 +5,10 @@
  *            See LICENSE.txt for details.
  */
 
+
 #include "dmrg/mp_tensors/twositetensor.h"
 #include "dmrg/mp_tensors/mpstensor.h"
 
-#include "dmrg/mp_tensors/reshapes.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
 
 #include <alps/numeric/real.hpp>

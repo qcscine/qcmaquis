@@ -5,7 +5,8 @@
  *            See LICENSE.txt for details.
  */
 
-#include "dmrg/mp_tensors/reshapes.h"
+#include "dmrg/block_matrix/block_matrix.h"
+
 #include "dmrg/mp_tensors/mpotensor.h"
 
 template<class Matrix, class SymmGroup>

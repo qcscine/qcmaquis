@@ -14,12 +14,7 @@
 #include <alps/numeric/isnan.hpp>
 #include <alps/numeric/isinf.hpp>
 
-#include "utils/traits.hpp"
 
-#include "dmrg/mp_tensors/contractions/non-abelian/gemm.hpp"
-
-// implementation of join functions
-#include "dmrg/mp_tensors/mps_join.h"
 
 template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,

@@ -14,6 +14,9 @@
 
 #include <limits>
 
+// implementation of join functions
+#include "dmrg/mp_tensors/mps_join.h"
+
 template<class Matrix, class SymmGroup>
 struct mps_initializer;
 

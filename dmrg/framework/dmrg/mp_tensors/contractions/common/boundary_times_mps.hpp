@@ -13,6 +13,8 @@
 #include "dmrg/mp_tensors/reshapes.h"
 #include "dmrg/block_matrix/indexing.h"
 
+#include "dmrg/mp_tensors/contractions/non-abelian/gemm.hpp"
+
 namespace contraction {
     namespace common {
 

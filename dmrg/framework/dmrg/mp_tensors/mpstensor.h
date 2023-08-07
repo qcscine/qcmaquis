@@ -12,7 +12,6 @@
 #include <algorithm>
 
 #include "dmrg/block_matrix/block_matrix.h"
-#include "dmrg/block_matrix/indexing.h"
 //#include "solver.h"
 
 enum boundary_flag_t {no_boundary_f,l_boundary_f,r_boundary_f};
