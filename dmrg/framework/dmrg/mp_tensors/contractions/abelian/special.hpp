@@ -8,6 +8,7 @@
 #ifndef CONTRACTIONS_SPECIAL_HPP
 #define CONTRACTIONS_SPECIAL_HPP
 
+#include "dmrg/block_matrix/detail/alps_detail.hpp"
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
 

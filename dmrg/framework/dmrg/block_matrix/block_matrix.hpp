@@ -5,6 +5,7 @@
  *            See LICENSE.txt for details.
  */
 
+#include "dmrg/block_matrix/detail/alps_detail.hpp"
 #include "dmrg/block_matrix/block_matrix.h"
 
 #include "utils/function_objects.h"

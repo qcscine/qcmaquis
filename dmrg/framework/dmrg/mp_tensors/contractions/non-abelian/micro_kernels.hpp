@@ -8,6 +8,7 @@
 #ifndef CONTRACTIONS_SU2_MICRO_KERNELS_HPP
 #define CONTRACTIONS_SU2_MICRO_KERNELS_HPP
 
+#include "dmrg/block_matrix/detail/alps_detail.hpp"
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/sparse_operator.h"
 

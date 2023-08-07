@@ -11,6 +11,7 @@
 #include <map>
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/block_matrix/block_matrix.h"
+#include "dmrg/block_matrix/detail/alps_detail.hpp"
 
 template<class Matrix, class SymmGroup>
 void reshape_left_to_right(Index<SymmGroup> physical_i,

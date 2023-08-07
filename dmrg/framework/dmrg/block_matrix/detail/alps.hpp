@@ -11,7 +11,6 @@
 #include <alps/numeric/matrix.hpp>
 #include <alps/numeric/matrix/algorithms.hpp>
 #include <alps/numeric/diagonal_matrix.hpp>
-#include "dmrg/block_matrix/detail/alps_detail.hpp"
 #include "dmrg/block_matrix/detail/one_matrix.hpp"
 #include "utils/traits.hpp"
 

@@ -11,7 +11,6 @@
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/mp_tensors/ts_ops.h"
-#include "dmrg/utils/parallel/placement.hpp"
 #include "SweepOptimizationTypeTrait.h"
 
 /**

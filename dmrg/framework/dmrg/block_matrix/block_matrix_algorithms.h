@@ -10,7 +10,6 @@
 
 #include "BlockMatrixAlgorithmsHelper.h"
 
-#include "dmrg/utils/logger.h"
 #include "dmrg/utils/utils.hpp"
 #include "utils/timings.h"
 #include "utils/traits.hpp"

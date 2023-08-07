@@ -16,8 +16,6 @@
 #include <boost/algorithm/string.hpp>
 #include <utility>
 
-#include "utils/sizeof.h"
-
 #include "ietl_lanczos_solver.h"
 #include "ietl_jacobi_davidson.h"
 #include "ietl_davidson.h"
