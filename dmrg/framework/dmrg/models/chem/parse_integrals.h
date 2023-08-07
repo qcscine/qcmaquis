@@ -35,7 +35,8 @@ namespace detail {
         template<>
         inline std::istream& read_value<std::complex<double> >(std::istream& s, std::complex<double>& v)
         {
-            double real, imag;
+            double real;
+            double imag;
             s >> real >> imag;
             v = { real, imag };
             return s;
@@ -50,39 +51,34 @@ namespace detail {
     {
         using pos_t = Lattice::pos_t;
 
-        std::vector<pos_t> inv_order;
         std::vector<T> matrix_elements;
         alps::numeric::matrix<Lattice::pos_t> idx_;
-
-        struct reorderer
-        {
-            pos_t operator()(pos_t p, std::vector<pos_t> const & inv_order) {
-                return p >= 0 ? inv_order[p] : p;
-            }
-        };
 
         // load ordering and determine inverse ordering
         std::vector<pos_t> order(lat.size());
         if (!parms.is_set("orbital_order")){
             std::string s;
-            for (pos_t p = 0; p < lat.size(); ++p){
-                order[p] = p+1;
-                s += (std::to_string(p+1)+ (p < (lat.size()-1) ? "," : ""));
-            }
+            std::iota(order.begin(), order.end(), 0);
+            // Build comma seperated site string
+            std::accumulate(
+                order.begin(), order.end(), s,
+                [&order](const std::string& s, const pos_t p){
+                  bool is_last_site = p == (order.size() - 1);
+                  return s + (std::to_string(p+1) + (is_last_site ? "," : ""));
+            });
             parms.set("orbital_order", s);
             //std::cout << "orbital order string " << s << std::endl;
         }
-        else
+        else {
             order = parms["orbital_order"].as<std::vector<pos_t> >();
+            // convert to 0-based indexing
+            std::transform(order.begin(), order.end(), order.begin(),
+                [](const pos_t p){ return p-1; });
+        }
 
-        if (order.size() != lat.size())
+        if (order.size() != lat.size()) {
             throw std::runtime_error("orbital_order length is not the same as the number of orbitals\n");
-
-        std::transform(order.begin(), order.end(), order.begin(),
-            [](const auto& e){ return e - 1; });
-        inv_order.resize(order.size());
-        for (int p = 0; p < order.size(); ++p)
-            inv_order[p] = std::distance(order.begin(), std::find(order.begin(), order.end(), p));
+        }
 
         // ********************************************************************
         // *** Parse orbital data *********************************************
@@ -102,14 +98,16 @@ namespace detail {
         else if (parms.is_set("integral_file")) // FCIDUMP file
         {
             std::string integral_file = parms["integral_file"];
-            if (!std::filesystem::exists(integral_file))
+            if (!std::filesystem::exists(integral_file)) {
                 throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
+            }
 
             orb_string = std::make_unique<std::ifstream>(integral_file.c_str());
 
             // ignore the FCIDUMP file header -- 1st four lines
-            for (int i = 0; i < 4; ++i)
-                orb_string.get()->ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+            for (int i = 0; i < 4; ++i) {
+                orb_string->ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+            }
 
         }
         else if (parms.is_set("integrals_binary")) // Serialized integral object
@@ -129,17 +127,19 @@ namespace detail {
                     matrix_elements.push_back(t.second);
                     if (do_align)
                     {
-                        IndexTuple aligned = align<SymmGroup>(reorderer()(t.first[0]-1, inv_order), reorderer()(t.first[1]-1, inv_order),
-                                                reorderer()(t.first[2]-1, inv_order), reorderer()(t.first[3]-1, inv_order));
+                        IndexTuple aligned = align<SymmGroup>(
+                            t.first[0]-1, t.first[1]-1, t.first[2]-1, t.first[3]-1);
                         indices.push_back({ aligned[0], aligned[1], aligned[2], aligned[3] });
                     }
-                    else
+                    else {
                         indices.push_back({ t.first[0]-1, t.first[1]-1, t.first[2]-1, t.first[3]-1 });
+                    }
                 }
             }
         }
-        else
+        else {
             throw std::runtime_error("Integrals are not defined in the input.");
+        }
 
         if (orb_string)
         // Read the FCIDUMP file/string and parse it. Only do it if the orb_string pointer is not empty
@@ -150,13 +150,13 @@ namespace detail {
         {
             T val;
             // use our specialization to read either real or complex value from the file
-            while(parser_detail::read_value<T>(*(orb_string.get()), val))
+            while(parser_detail::read_value<T>(*(orb_string), val))
             {
                 integral_tuple<T> t;
                 t.second = val;
                 try {
                     // now read the indices
-                    *(orb_string.get()) >> t.first[0] >> t.first[1] >> t.first[2] >> t.first[3];
+                    *(orb_string) >> t.first[0] >> t.first[1] >> t.first[2] >> t.first[3];
                 }
                 catch(std::exception & e)
                 {
@@ -169,12 +169,13 @@ namespace detail {
                     matrix_elements.push_back(t.second);
                     if (do_align)
                     {
-                        IndexTuple aligned = align<SymmGroup>(reorderer()(t.first[0]-1, inv_order), reorderer()(t.first[1]-1, inv_order),
-                                                reorderer()(t.first[2]-1, inv_order), reorderer()(t.first[3]-1, inv_order));
+                        IndexTuple aligned = align<SymmGroup>(
+                            t.first[0]-1, t.first[1]-1, t.first[2]-1, t.first[3]-1);
                         indices.push_back({ aligned[0], aligned[1], aligned[2], aligned[3] });
                     }
-                    else
+                    else {
                         indices.push_back({ t.first[0]-1, t.first[1]-1, t.first[2]-1, t.first[3]-1 });
+                    }
 
                 }
             }
@@ -187,9 +188,11 @@ namespace detail {
         idx_.resize(indices.size(), 4);
 
         // is better done with row iterators
-        for (int i = 0; i < idx_.num_rows(); i++)
-        for (int j = 0; j < 4; j++)
+        for (int i = 0; i < idx_.num_rows(); i++) {
+          for (int j = 0; j < 4; j++) {
             idx_(i,j) = indices[i][j];
+          }
+        }
 
         // Integral dumping into HDF5 below MUST BE DISABLED
         // if one builds dmrg_multi_meas!
@@ -201,9 +204,11 @@ namespace detail {
             std::vector<Lattice::pos_t> indices1;
 
             indices1.reserve(4*indices.size());
-            for (auto&& idx: indices)
-                for (auto&& i: idx)
+            for (auto&& idx: indices) {
+                for (auto&& i: idx) {
                     indices1.push_back(i+1);
+                }
+            }
 
             storage::archive ar(parms["resultfile"], "w");
             ar["/integrals/elements"] << matrix_elements;
