@@ -60,12 +60,11 @@ namespace detail {
             std::string s;
             std::iota(order.begin(), order.end(), 0);
             // Build comma seperated site string
-            std::accumulate(
-                order.begin(), order.end(), s,
-                [&order](const std::string& s, const pos_t p){
-                  bool is_last_site = p == (order.size() - 1);
-                  return s + (std::to_string(p+1) + (is_last_site ? "," : ""));
-            });
+            for (int p = 0; p < lat.size(); ++p) {
+              bool is_last_site = p == (lat.size() - 1);
+              std::string ending = is_last_site ? "" : ",";
+              s += std::to_string(p+1) + ending;
+            }
             parms.set("orbital_order", s);
             //std::cout << "orbital order string " << s << std::endl;
         }

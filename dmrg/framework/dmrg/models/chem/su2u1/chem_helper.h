@@ -17,9 +17,9 @@ namespace detail {
     class ChemHelperSU2
     {
     public:
-        typedef typename M::value_type value_type;
-        typedef ::term_descriptor<value_type> term_descriptor;
-        typedef Lattice::pos_t pos_t;
+        using value_type = typename M::value_type;
+        using term_descriptor = ::term_descriptor<value_type>;
+        using pos_t = Lattice::pos_t;
         using InputType = double;
 
         ChemHelperSU2(BaseParameters & parms, Lattice const & lat, std::shared_ptr<TagHandler<M, S> > tag_handler_)
@@ -43,8 +43,9 @@ namespace detail {
 
         void commit_terms(std::vector<term_descriptor> & tagterms) {
             for (typename std::map<IndexTuple, term_descriptor>::const_iterator it = two_terms.begin();
-                    it != two_terms.end(); ++it)
+                    it != two_terms.end(); ++it) {
                 tagterms.push_back(it->second);
+            }
 
             for (typename std::map<SixTuple, term_descriptor>::const_iterator it = three_terms.begin();
                     it != three_terms.end(); ++it)

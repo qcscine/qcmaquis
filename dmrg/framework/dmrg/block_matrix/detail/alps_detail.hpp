@@ -5,8 +5,8 @@
  *            See LICENSE.txt for details.
  */
 
-#ifndef MAQUIS_BLOCK_MATRIX_DEATAIL_ALPS_MATRIX_DETAIL_HPP
-#define MAQUIS_BLOCK_MATRIX_DEATAIL_ALPS_MATRIX_DETAIL_HPP
+#ifndef ALPS_DETAIL_H
+#define ALPS_DETAIL_H
 
 #include "dmrg/block_matrix/detail/alps.hpp"
 
@@ -292,4 +292,4 @@ namespace maquis { namespace dmrg { namespace detail {
     
 } } } // namespace maquis::dmrg::detail
 
-#endif // MAQUIS_BLOCK_MATRIX_DEATAIL_ALPS_MATRIX_DETAIL_HPP
+#endif /* ALPS_DETAIL_H */

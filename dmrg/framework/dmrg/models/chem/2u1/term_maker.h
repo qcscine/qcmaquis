@@ -109,7 +109,8 @@ struct TermMaker {
         tag_type boson_op;
         tag_type op1 = ops1[lat.get_prop<sc_t>("type", p1)];
         tag_type op2 = ops2[lat.get_prop<sc_t>("type", p2)];
-        std::pair<tag_type, value_type> ptag1, ptag2;
+        std::pair<tag_type, value_type> ptag1;
+        std::pair<tag_type, value_type> ptag2;
 
         if ( (pb>p1 && pb<p2) || (pb>p2 && pb<p1) ) {
             // if the bosonic operator is in between
@@ -163,10 +164,13 @@ struct TermMaker {
 
         // Simple O(n^2) algorithm to determine sign of permutation
         pos_t idx[] = { i,j,k,l };
-        pos_t inv_count=0, n=4;
-        for(pos_t c1 = 0; c1 < n - 1; c1++)
-            for(pos_t c2 = c1+1; c2 < n; c2++)
-                if(idx[c1] > idx[c2]) inv_count++;
+        pos_t inv_count=0;
+        pos_t n=4;
+        for(pos_t c1 = 0; c1 < n - 1; c1++) {
+            for(pos_t c2 = c1+1; c2 < n; c2++) {
+                if(idx[c1] > idx[c2]) { inv_count++; }
+            }
+        }
 
         std::vector<pos_op_t> sterm;
         sterm.emplace_back(i, op_i[lat.get_prop<sc_t>("type", i)]);
@@ -183,8 +187,9 @@ struct TermMaker {
         sterm[2].second = ptag.first;
         term.coeff *= ptag.second;
 
-        if (inv_count % 2)
+        if (inv_count % 2) {
             term.coeff = -term.coeff;
+        }
 
         term.push_back(sterm[0]);
         term.push_back(sterm[1]);
