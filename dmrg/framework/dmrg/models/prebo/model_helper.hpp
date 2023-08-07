@@ -13,15 +13,15 @@
 template <class Matrix, class SymmGroup>
 class modelHelper {
     // Types definition
-    typedef model_impl<Matrix, SymmGroup> base;
-    typedef typename Matrix::value_type value_type;
-    typedef typename base::tag_type tag_type;
-    typedef typename base::term_descriptor term_descriptor;
-    typedef typename std::vector<term_descriptor> terms_type;
-    typedef typename base::op_t op_t;
-    typedef typename std::vector<tag_type> operators_type;
-    typedef typename Lattice::pos_t pos_t;
-    typedef typename std::vector<pos_t> positions_type;
+    using base = model_impl<Matrix, SymmGroup>;
+    using value_type = typename Matrix::value_type;
+    using tag_type = typename base::tag_type;
+    using term_descriptor = typename base::term_descriptor;
+    using terms_type = typename std::vector<term_descriptor>;
+    using op_t = typename base::op_t;
+    using operators_type = typename std::vector<tag_type>;
+    using pos_t = typename Lattice::pos_t;
+    using positions_type = typename std::vector<pos_t>;
 
 public:
     // +-------------------+
@@ -58,8 +58,9 @@ public:
             size_t range_end = opnr + 1;
             while (range_end < pos_ops.size() && pos_ops[range_end].first == pos_ops[opnr].first) {
                 value_type scale = 1.0;
-                if (tag_handler->product_is_null(pos_ops[range_end].second, product))
+                if (tag_handler->product_is_null(pos_ops[range_end].second, product)) {
                     FoundZero = true;
+                }
                 std::tie(product, scale) = tag_handler->get_product_tag(pos_ops[range_end].second, product);
                 scaling *= scale;
                 range_end++;

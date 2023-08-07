@@ -8,6 +8,8 @@
 #ifndef MAQUIS_DMRG_PREBO_TERMGENERATOR_HPP
 #define MAQUIS_DMRG_PREBO_TERMGENERATOR_HPP
 
+#ifdef DMRG_PREBO
+
 #include "dmrg/models/lattice/lattice.h"
 #include "dmrg/models/OperatorHandlers/TagHandler.h"
 #include "nu1/nu1_nBodyTerm.hpp"
@@ -15,7 +17,6 @@
 #include "prebo_TagGenerator.hpp"
 #include "integral_interface.h"
 
-#ifdef DMRG_PREBO
 
 namespace prebo {
 

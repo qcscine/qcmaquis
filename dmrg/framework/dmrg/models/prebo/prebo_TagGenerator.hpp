@@ -8,6 +8,8 @@
 #ifndef MAQUIS_DMRG_PREBO_TAGGENERATOR_HPP
 #define MAQUIS_DMRG_PREBO_TAGGENERATOR_HPP
 
+#ifdef DMRG_PREBO
+
 #include "dmrg/models/model.h"
 #include "dmrg/utils/BaseParameters.h"
 #include "nu1/nu1_SymbolicJordanWigner.hpp"
@@ -16,7 +18,6 @@
 #include <alps/numeric/matrix/matrix.hpp>
 #include <map>
 
-#ifdef DMRG_PREBO
 
 namespace prebo {
 

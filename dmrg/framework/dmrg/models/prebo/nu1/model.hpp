@@ -8,6 +8,8 @@
 #ifndef MODELS_CODED_NU1_H
 #define MODELS_CODED_NU1_H
 
+#ifdef DMRG_PREBO
+
 #include "dmrg/models/measurements.h"
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/models/prebo/prebo_TermGenerator.hpp"
@@ -24,7 +26,6 @@
 #include <unordered_map>
 #include <chrono>
 
-#ifdef DMRG_PREBO
 
 /**
  * @brief Pre-Born Oppenheimer model class
