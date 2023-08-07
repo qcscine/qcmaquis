@@ -7,6 +7,12 @@
 
 #include <boost/algorithm/string.hpp>
 
+#include "dmrg/models/generate_mpo.hpp"
+#include "dmrg/mp_tensors/twositetensor.h"
+#include "dmrg/mp_tensors/mps_mpo_ops.h"
+#include "dmrg/utils/checks.h"
+#include "dmrg/models/measurements.h"
+
 #include "dmrg/block_matrix/symmetry/symmetry_traits.h"
 #include "dmrg/sim/sim.h"
 #include "dmrg/utils/DmrgParameters.h"

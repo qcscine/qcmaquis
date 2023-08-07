@@ -12,23 +12,12 @@
 #include <iterator>
 #include <iostream>
 #include <boost/optional.hpp>
-#include "utils/data_collector.hpp"
 #include "dmrg/utils/DmrgParameters.h"
 #include "dmrg/mp_tensors/mps.h"
-#include "dmrg/mp_tensors/mps_initializers.h"
 #include "dmrg/mp_tensors/mpo.h"
-#include "dmrg/models/generate_mpo.hpp"
-#include "dmrg/mp_tensors/twositetensor.h"
-#include "dmrg/mp_tensors/contractions.h"
-#include "dmrg/mp_tensors/mps_mpo_ops.h"
-#include "dmrg/mp_tensors/mpo_ops.h"
-#include "dmrg/utils/random.hpp"
 #include "dmrg/utils/time_stopper.h"
-#include "utils/timings.h"
-#include "dmrg/utils/checks.h"
 #include "dmrg/models/lattice/lattice.h"
 #include "dmrg/models/model.h"
-#include "dmrg/models/measurements.h"
 #include "abstract_sim.h"
 
 template <class Matrix, class SymmGroup>
@@ -84,6 +73,7 @@ protected:
     MPO<Matrix, SymmGroup> mpo, mpoc;
     measurements_type all_measurements, sweep_measurements;
 };
+
 
 #include "sim.hpp"
 #endif

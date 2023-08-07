@@ -1,7 +1,10 @@
 #ifndef MATRIX_BINDINGS_H
 #define MATRIX_BINDINGS_H
 
+#include <numeric>
+
 #include <alps/numeric/real.hpp> 
+#include "alps/numeric/diagonal_matrix.hpp"
 
 namespace maquis { namespace bindings {
 

@@ -13,8 +13,6 @@
 #include <algorithm>
 #include <numeric>
 
-#include "dmrg/block_matrix/indexing.h"
-#include "dmrg/block_matrix/symmetry.h"
 #include "dmrg/utils/storage.h"
 #include "utils/traits.hpp"
 
