@@ -5,7 +5,6 @@
  *            See LICENSE.txt for details.
  */
 
-#include <map>
 #include "results_collector.h"
 #include "dmrg/utils/storage.h"
 #include <boost/preprocessor/seq/for_each.hpp>

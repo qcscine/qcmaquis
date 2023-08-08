@@ -12,6 +12,8 @@
 #include <vector>
 #include <memory>
 #include <map>
+#include <string>
+
 
 /**
  * @brief Class used to store the results of a generic sweep-based algorithm 
