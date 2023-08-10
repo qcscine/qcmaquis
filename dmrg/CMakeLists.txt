@@ -278,6 +278,7 @@ endif()
 
 # BLAS/LAPACK selector
 find_package(MAQUISLapack)
+find_package(MAQUISLapack REQUIRED)
 message(STATUS "Lapack include:  ${MAQUISLapack_INCLUDE_DIRS}")
 message(STATUS "Lapack lib dirs: ${MAQUISLapack_LIB_DIRS}")
 message(STATUS "Lapack libs:     ${MAQUISLapack_LIBRARIES}")
