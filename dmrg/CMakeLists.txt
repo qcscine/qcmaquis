@@ -298,6 +298,7 @@ set (Boost_NO_BOOST_CMAKE ON)
 
 find_package(Boost 1.56 COMPONENTS ${Boost_requirements})
 if(Boost_FOUND)
+    include_directories(SYSTEM ${Boost_INCLUDE_DIRS}) # Silence warning coming from boost headers
     list(APPEND DMRG_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
     list(APPEND DMRG_LIBRARY_DIRS ${Boost_LIBRARY_DIRS})
     list(APPEND DMRG_LIBRARIES ${Boost_LIBRARIES})
@@ -475,8 +476,8 @@ if(QCMAQUIS_TESTS)
   add_test(NAME Test_1DMPO_Electronic COMMAND test_1D_mpo_electronic)
   add_test(NAME Test_GeneralizedEigenvalue COMMAND test_generalized_eigenvalue_problem)
   add_test(NAME Test_SweepOptimization_Traits COMMAND test_sweep_optimization_traits)
-  add_test(NAME Test_MPO_times_MPS_TwoU1 COMMAND test_mpo_times_mps_TwoU1)
   add_test(NAME Test_DMRG_LiH COMMAND testLiH)
+  add_test(NAME Test_MPO_times_MPS_TwoU1 COMMAND test_mpo_times_mps_TwoU1)
   add_test(NAME Test_SweepBasedLinearSystem_Electronic COMMAND test_sweep_based_linear_system_electronic)
   # Time-evolution tests
   if(BUILD_DMRG_EVOLVE)
