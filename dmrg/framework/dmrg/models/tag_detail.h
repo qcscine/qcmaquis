@@ -55,9 +55,16 @@ namespace tag_detail {
 
     inline bool num_check(std::complex<double> x) { return true; }
 
+    
+    /**
+     * @brief Checks if two BlockMatrices are equal up to a scale factor
+     *
+     * @return Returns a pair containing either false and 0.
+     *         or true and the scale factor
+     */
     template <class BlockMatrix>
     std::pair<bool, typename BlockMatrix::matrix_type::value_type>
-    equal(BlockMatrix const& reference, BlockMatrix const& sample)
+    is_scaled(BlockMatrix const& reference, BlockMatrix const& sample)
     {
         using Matrix = typename BlockMatrix::matrix_type;
         using value_type = typename Matrix::value_type;
@@ -78,7 +85,7 @@ namespace tag_detail {
         value_type invscale1;
         value_type invscale2;
      
-        // determine scale of matrices
+        // determine scale of matrices by finding first nonzero element
         const Matrix& m1 = reference[0];
         for (int i = 0; i < num_rows(m1); i++) {
           for(int j = 0; j < num_cols(m1); j++)
