@@ -50,6 +50,7 @@ class SRCAS {
     private:
         std::vector<int> generateNewDet();
         double calculateCompleteness();
+        double addToCompleteness (ScalarType coeff, std::vector<int> det);
         void quicksort(std::string dets[], ScalarType b[], int left, int right);
         
         // For electronic case
@@ -70,6 +71,7 @@ class SRCAS {
         std::vector<int> detQueen_, detTmp_, detSpace_;
         int numParticles_; // this is either modes or electrons, for the vibrational or the electronic case, respectively
         double completeness_;
+        bool verboseForPlotting_;
 
         std::map<std::vector<int>, ScalarType> hashTable_;
         typename std::map<std::vector<int>, ScalarType>::iterator iter_;

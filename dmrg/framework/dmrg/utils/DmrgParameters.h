@@ -190,6 +190,7 @@ private:
         add_option("determinant_threshold", "Threshold for the determinant-related tool", 0.);
 
         // SRCAS settings
+        add_option("srcas_veryVerbose", "If == yes, SRCAS will print output for each new sample", value("no"));
         add_option("srcas_targetCompleteness", "Desired completness for SRCAS to terminate sampling", value(0.99));
         add_option("srcas_maxNumIterations", "Maximum number of macroiterations until SRCAS sampling is terminated", value(10));
         add_option("srcas_numSamples", "Number of samples in each SRCAS macroiteration", value(10000));
