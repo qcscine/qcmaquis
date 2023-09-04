@@ -287,6 +287,9 @@ public:
 
     charge & left_charge(std::size_t k) { return data_[k].lc; }
     charge & right_charge(std::size_t k) { return data_[k].rc; }
+    std::pair<charge, charge> & charges(std::size_t k) const {
+      return {left_charge(k), right_charge(k)};
+    }
     std::size_t & left_size(std::size_t k) { return data_[k].ls; }
     std::size_t & right_size(std::size_t k) { return data_[k].rs; }
 

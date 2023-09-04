@@ -373,12 +373,15 @@ namespace ietl
         std::vector<vector_type> V(iter.max_iterations());
         std::vector<vector_type> VA(iter.max_iterations());
         M.resize(iter.max_iterations(), iter.max_iterations());
-        magnitude_type theta, tau, rel_tol;
+        magnitude_type theta;
+        magnitude_type tau;
+        magnitude_type rel_tol;
         magnitude_type kappa = 0.25;
         atol_ = iter.absolute_tolerance();
         
         // Start with t=v_o, starting guess
-        ietl::generate(V[0],gen); const_cast<GEN&>(gen).clear();
+        ietl::generate(V[0],gen);
+        const_cast<GEN&>(gen).clear();
         ietl::project(V[0], vecspace_);
         
         // Start iteration
@@ -387,11 +390,14 @@ namespace ietl
 
             // Modified Gram-Schmidt Orthogonalization with Refinement
             tau = ietl::two_norm(t);
-            for(int i = 1; i <= iter.iterations(); i++)
+            for(int i = 1; i <= iter.iterations(); i++) {
                 t -= ietl::dot(V[i-1],t)*V[i-1];
-            if(ietl::two_norm(t) < kappa * tau)
-                for(int i = 1; i <= iter.iterations(); i++)
+            }
+            if(ietl::two_norm(t) < kappa * tau) {
+                for(int i = 1; i <= iter.iterations(); i++) {
                     t -= ietl::dot(V[i-1],t) * V[i-1];
+                }
+            }
             
             // Project out orthogonal subspace
             ietl::project(t,vecspace_);
@@ -402,8 +408,9 @@ namespace ietl
             
             // for i=1, ..., iter
             //   M_{i,m} = v_i ^\star v_m ^A
-            for(int i = 1; i <= iter.iterations()+1; i++)
+            for(int i = 1; i <= iter.iterations()+1; i++) {
                 M(i-1,iter.iterations()) = ietl::dot(V[i-1], VA[iter.iterations()]);
+            }
             
             // compute the largest eigenpair (\theta, s) of M (|s|_2 = 1)
             get_extremal_eigenvalue(theta,s,iter.iterations()+1);
@@ -416,8 +423,9 @@ namespace ietl
             std::vector<vector_type>().swap(u_parts);
             #else
             vector_type u = V[0] * s[0];
-            for(int j = 1; j <= iter.iterations(); ++j)
+            for(int j = 1; j <= iter.iterations(); ++j) {
                 u += V[j] * s[j];
+            }
             #endif
 
             // u^A = V^A s
@@ -429,8 +437,9 @@ namespace ietl
             std::vector<vector_type>().swap(uA_parts);
             #else
             vector_type uA = VA[0] * s[0];
-            for(int j = 1; j <= iter.iterations(); ++j)
+            for(int j = 1; j <= iter.iterations(); ++j) {
                 uA += VA[j] * s[j];
+            }
             #endif
 
             ietl::project(uA,vecspace_);
@@ -444,7 +453,7 @@ namespace ietl
             if(iter.finished(ietl::two_norm(r),theta)) {
                 auto stop = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double, std::milli> duration = stop - start;
-                maquis::cout << " [Eigen decomp took " << duration.count() << " ms]\n";
+                // maquis::cout << " [Eigen decomp took " << duration.count() << " ms]\n";
                 return std::make_pair(theta, u);
             }
             

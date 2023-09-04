@@ -113,17 +113,20 @@ private:
 
     std::vector<subcharge> parse_irreps(std::string input)
     {
-        std::vector<subcharge> symm_vec, ret(L, 0);
+        std::vector<subcharge> symm_vec;
+        std::vector<subcharge> ret(L, 0);
 
         std::replace(input.begin(), input.end(), ',', ' ');
         std::istringstream iss(input);
         subcharge number;
-        while( iss >> number )
+        while( iss >> number ) {
             symm_vec.push_back(number-1);
+        }
 
         assert(L == symm_vec.size());
-        for (subcharge p = 0; p < L; ++p)
+        for (subcharge p = 0; p < L; ++p) {
             ret[p] = symm_vec[order[p]];
+        }
 
         return ret;
     }

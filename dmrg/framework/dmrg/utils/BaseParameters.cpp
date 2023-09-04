@@ -62,8 +62,9 @@ void BaseParameters::print_description(Stream& os) const
   for (const auto & description : descriptions) {
     os << std::setw(column_length) << std::left << description.first << description.second << std::endl;
     map_iterator matched = defaults.find(description.first);
-    if (matched != defaults.end())
+    if (matched != defaults.end()) {
       os << std::setw(column_length) << "" << "(default: " << matched->second << ")" << std::endl;
+    }
   }
 }
 
@@ -86,10 +87,11 @@ parameters::proxy BaseParameters::operator[](std::string const& key)
 {
   if (!is_set(key)) {
     std::map<std::string, std::string>::const_iterator match = defaults.find(key);
-    if (match != defaults.end())
+    if (match != defaults.end()) {
       impl_->operator[](key) = match->second;
-    else
+    } else {
       boost::throw_exception(std::runtime_error("parameter " + key + " not defined"));
+    }
   }
   return {impl_->operator[](key)};
 }
@@ -124,12 +126,15 @@ void BaseParameters::erase_regex(std::string const & regex)
   std::vector<std::string> keys_toerase;
 
   std::regex expression(regex);
-  for (auto&& k : *impl_)
-    if(std::regex_search(k.key(), expression))
+  for (auto&& k : *impl_) {
+    if(std::regex_search(k.key(), expression)) {
       keys_toerase.push_back(k.key());
+    }
+  }
 
-  for (auto&& k_erase : keys_toerase)
+  for (auto&& k_erase : keys_toerase) {
     impl_->erase(k_erase);
+  }
 }
 
 BaseParameters BaseParameters::measurements() const
@@ -138,9 +143,11 @@ BaseParameters BaseParameters::measurements() const
   const std::string regex = "^MEASURE";
   std::regex expression(regex);
 
-  for (auto&& k : *impl_)
-    if(std::regex_search(k.key(), expression))
+  for (auto&& k : *impl_) {
+    if(std::regex_search(k.key(), expression)) {
       p.set(k.key(), k.value());
+    }
+  }
 
   return p;
 }
@@ -170,10 +177,11 @@ BaseParameters BaseParameters::iteration_params(std::string const & var, std::si
     std::string key = it->key();
     if (std::regex_match(key, what, expression)) {
       std::vector<std::string> v = (*this)[key]; // use std::strign instead of value type, because value type is some alps internal type that can anyway be constructed from string.
-      if (val < v.size())
+      if (val < v.size()) {
         p.set(what.str(1), v[val]);
-      else
+      } else {
         p.set(what.str(1), *(v.rbegin()));
+      }
     }
   }
   p.set(var, val);
@@ -183,8 +191,9 @@ BaseParameters BaseParameters::iteration_params(std::string const & var, std::si
 
 BaseParameters & BaseParameters::operator<<(BaseParameters const& p)
 {
-  for (alps::Parameters::const_iterator it=p.impl_->begin(); it!=p.impl_->end(); ++it)
+  for (alps::Parameters::const_iterator it=p.impl_->begin(); it!=p.impl_->end(); ++it) {
     impl_->operator[](it->key()) = it->value();
+  }
   defaults.insert(p.defaults.begin(), p.defaults.end());
 
   return *this;
@@ -202,8 +211,9 @@ void BaseParameters::add_option(std::string const & name,
     std::string const & desc,
     parameters::value const & val)
 {
-  if (!val.empty())
+  if (!val.empty()) {
     defaults[name] = val.get();
+  }
   descriptions[name] = desc;
 }
 
@@ -212,8 +222,9 @@ std::list<typename BaseParameters::value_type> BaseParameters::get_range() const
 {
   std::list<typename BaseParameters::value_type> ret;
 
-  for (auto&& l: *impl_)
+  for (auto&& l: *impl_) {
     ret.emplace_back(l.key(), l.value());
+  }
 
   return ret;
 }

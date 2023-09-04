@@ -29,12 +29,14 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
     std::pair<ValueType, MPSTensor<Matrix, SymmGroup>> r0;
     bool skipOptimization=false;
     auto ortho_vecs_local = std::vector< MPSTensor<Matrix, SymmGroup> >();
-    if (initial.num_elements() <= ortho_vecs.size())
+    if (initial.num_elements() <= ortho_vecs.size()) {
         ortho_vecs.resize(initial.num_elements()-1);
+    }
     // Gram-Schmidt the ortho_vecs and loads the results in the [ortho_vecs_local]
     for (int n = 0; n < ortho_vecs.size(); ++n) {
-        for (const auto& iLocal: ortho_vecs_local)
+        for (const auto& iLocal: ortho_vecs_local) {
             ortho_vecs[n] -= ietl::dot(iLocal, ortho_vecs[n])*iLocal;
+        }
         if (ortho_vecs[n].scalar_norm() > thresholdForCompleteness) {
             ortho_vecs[n] /= ietl::two_norm(ortho_vecs[n]);
             ortho_vecs_local.push_back(ortho_vecs[n]);
@@ -45,10 +47,12 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
     }
     // Checks if the number of constraints is > than the actual size of the vector space
     auto tmp = initial;
-    for (std::size_t idx = 0; idx < ortho_vecs_local.size(); idx++)
+    for (std::size_t idx = 0; idx < ortho_vecs_local.size(); idx++) {
         tmp -= ietl::dot(tmp, ortho_vecs_local[idx]) * ortho_vecs_local[idx];
-    if (tmp.scalar_norm() < thresholdForCompleteness)
+    }
+    if (tmp.scalar_norm() < thresholdForCompleteness) {
         skipOptimization = true;
+    }
     // Actual Jacobi-Davidson diagonalization
     double tol = params["ietl_jcd_tol"];
     ietl::basic_iteration<double> iter(params["ietl_jcd_maxiter"], tol, tol);
@@ -65,8 +69,9 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
             maquis::cout << "Input <MPS|O[" << n << "]> : " << ietl::dot(initial, ortho_vecs_local[n]) << std::endl;
         }
         r0 = jd.calculate_eigenvalue(initial, jcd_gmres, iter);
-        for (int n = 0; n < ortho_vecs_local.size(); ++n)
+        for (int n = 0; n < ortho_vecs_local.size(); ++n) {
             maquis::cout << "Output <MPS|O[" << n << "]> : " << ietl::dot(r0.second, ortho_vecs_local[n]) << std::endl;
+        }
     }
     else {
         maquis::cout << "Vector space too small, diagonalization skipped" << std::endl;
@@ -77,9 +82,9 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
     }
     auto stop = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration_milisec = stop - start;
-    maquis::cout << " Jacobi-Davidson diagonalization converged after "
-      << iter.iterations() << " iterations."
-      << " [" << duration_milisec.count() << " ms]\n";
+    // maquis::cout << " Jacobi-Davidson diagonalization converged after "
+    //   << iter.iterations() << " iterations."
+    //   << " [" << duration_milisec.count() << " ms]\n";
     return r0;
 }
 

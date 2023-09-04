@@ -81,12 +81,14 @@ public:
         blocks_ = std::vector<int>(bm.n_blocks() + 1);
         data_ = std::vector<value_type>();
 
-        int entry_counter = 0;
+        // entry_counter defines the index of the first entry for each block
+        // similar to doing a prefix sum on the number of non-zero entries over the blocks
+        int entry_counter = 0; 
         for(std::size_t b = 0; b < bm.n_blocks(); ++b) {
           blocks_[b] = entry_counter;
           for (std::size_t ss1 = 0; ss1 < num_rows(bm[b]); ++ss1) {
             for (std::size_t ss2 = 0; ss2 < num_cols(bm[b]); ++ss2) {
-              if (bm[b](ss1,ss2) != float_type()) {
+              if (bm[b](ss1,ss2) != float_type()) { // only add non-zero values
                 data_.push_back(value_type(ss1, ss2, bm[b](ss1,ss2)));
                 //data_.push_back(value_type(ss1, ss2, left_spins.at(ss1), right_spins.at(ss2), bm[b](ss1,ss2)));
                 ++entry_counter;

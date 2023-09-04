@@ -15,6 +15,8 @@
 
 #include "dmrg/utils/storage.h"
 #include "utils/traits.hpp"
+#include "dmrg/block_matrix/indexing.h"
+#include "dmrg/block_matrix/symmetry/symmetry_traits.h"
 
 
 template<class Matrix, class SymmGroup, class Dummy> class SparseOperator;

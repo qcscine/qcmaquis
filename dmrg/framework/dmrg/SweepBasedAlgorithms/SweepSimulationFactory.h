@@ -48,10 +48,10 @@ public:
     // Optimization
     if (simulationName == "optimize") {
       if (sweepType_ == SweepOptimizationType::SingleSite) {
-        ssSimulator_ = std::make_unique<OptimizationSSSimulationType>(mps, mpo, parms, model, lattice, true);
+        ssSimulator_ = std::make_unique<OptimizationSSSimulationType>(mps, mpo, parms, model, lattice, false);
       }
       else if (sweepType_ == SweepOptimizationType::TwoSite) {
-        tsSimulator_ = std::make_unique<OptimizationTSSimulationType>(mps, mpo, parms, model, lattice, true);
+        tsSimulator_ = std::make_unique<OptimizationTSSimulationType>(mps, mpo, parms, model, lattice, false);
       }
     }
     // Solution of a linear system
@@ -78,32 +78,36 @@ public:
       throw std::runtime_error("Sweep-based simulation type not recognized");
     }
     // Final check
-    if (!ssSimulator_ && !tsSimulator_)
+    if (!ssSimulator_ && !tsSimulator_) {
       throw std::runtime_error("Error in parameters for [SweepSimulationFactory] object");
+    }
   };
 
   /** @brief Runs a complete sweep-based optimization */
   void runSweepSimulation() {
-    if (ssSimulator_)
+    if (ssSimulator_) {
       ssSimulator_->runSweepSimulation();
-    else
+    } else {
       tsSimulator_->runSweepSimulation();
+    }
   }
 
   /** @brief Runs a single sweep (back and forth) */
   void runSingleSweep(int iSweep) {
-    if (ssSimulator_)
+    if (ssSimulator_) {
       ssSimulator_->runSingleSweep(iSweep);
-    else
+    } else {
       tsSimulator_->runSingleSweep(iSweep);
+    }
   }
 
   /** @brief Retrieves simulation results */
   auto getIterationResults() {
-    if (ssSimulator_)
+    if (ssSimulator_) {
       return ssSimulator_->iteration_results();
-    else
+    } else {
       return tsSimulator_->iteration_results();
+    }
   }
 
 private:

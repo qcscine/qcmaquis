@@ -35,13 +35,12 @@ site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor, MPSTensor<Matrix, SymmGroup
     using index_type = std::size_t;
     //
     Index<SymmGroup> const & physical_i = ket_tensor.site_dim();
-    Index<SymmGroup> const & left_i = bra_tensor.row_dim();
+    Index<SymmGroup> const & left_i = ket_tensor.row_dim();
+    Index<SymmGroup> right_i = ket_tensor.col_dim();
     bra_tensor.make_right_paired();
     Index<SymmGroup> indexForTrim = bra_tensor.data().left_basis();
     contraction::common::BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, abelian::Gemms> t(ket_tensor, left, mpo, indexForTrim, isHermitian);
-    Index<SymmGroup> right_i = ket_tensor.col_dim();
     Index<SymmGroup> out_left_i = physical_i * left_i;
-    Index<SymmGroup> right_i_bra = bra_tensor.col_dim();
     common_subset(out_left_i, right_i);
     ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
     ProductBasis<SymmGroup> in_right_pb(physical_i, right_i,

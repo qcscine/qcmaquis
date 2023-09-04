@@ -8,7 +8,15 @@
 #ifndef TAG_HANDLER_HPP
 #define TAG_HANDLER_HPP
 
+#include <cassert>
+#include <memory>
+#include <set>
+#include <vector>
+#include <utility>
+#include <stdexcept>
+#include "dmrg/models/OperatorHandlers/OpTable.h"
 #include "dmrg/models/OperatorHandlers/TagHandler.h"
+#include "dmrg/models/tag_detail.h"
 
 template <class Matrix, class SymmGroup>
 TagHandler<Matrix, SymmGroup>::TagHandler(TagHandler const & rhs)
@@ -183,7 +191,7 @@ get_product_tags(std::vector<typename OPTable<Matrix, SymmGroup>::tag_type> cons
                  std::vector<typename OPTable<Matrix, SymmGroup>::tag_type> const & ops2)
 {
     assert(ops1.size() == ops2.size());
-    std::pair<std::vector<tag_type>, std::vector<value_type> >ret;
+    std::pair<std::vector<tag_type>, std::vector<value_type>> ret;
     for (typename SymmGroup::subcharge sc=0; sc < ops1.size(); ++sc) {
         std::pair<tag_type, value_type> ptag = this->get_product_tag(ops1[sc], ops2[sc]);
         ret.first.push_back(ptag.first);

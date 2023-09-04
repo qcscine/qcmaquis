@@ -66,18 +66,19 @@ namespace contraction {
                 charge in_charge = right_i[block].first;
                 size_t o = ret.find_block(in_charge, in_charge);
                 // Insert block with the same symmetry of the right index
-                if (o == ret.n_blocks())
+                if (o == ret.n_blocks()) {
                     o = ret.insert_block(Matrix(out_left_i[block].second, right_i[block].second), in_charge, in_charge);
+                }
                 // Loop over the physical indexes
                 for (size_t s = 0; s < phys_i.size(); ++s) {
                     // Symmetry requirement : o_l*a_{l-1} == a_l'. In this way we determine a_{l-1}, which is also
                     // the index of the left boundary to be extracted.
                     charge phys_charge = phys_i[s].first;
                     size_t l = left_i.position(SymmGroup::fuse(in_charge, -phys_charge));
-                    if (l == left_i.size()) continue;
+                    if (l == left_i.size()) { continue; }
                     charge lc = left_i[l].first;
                     size_t l_block = left[b1].find_block(lc, lc);
-                    if (l_block == left[b1].n_blocks()) continue;
+                    if (l_block == left[b1].n_blocks()) { continue; }
                     // copy the diagonal elements of the boundary into a vector
                     std::vector<value_type> left_diagonal(left_i[l].second);
                     // Diagonal is a method of the alps matrix class that gives two iterators, for the
@@ -91,12 +92,12 @@ namespace contraction {
                     for (size_t w_block = 0; w_block < W.basis().size(); ++w_block) {
                         charge phys_in = W.basis().left_charge(w_block);
                         charge phys_out = W.basis().right_charge(w_block);
-                        if (phys_charge != phys_in || phys_in != phys_out) continue;
+                        if (phys_charge != phys_in || phys_in != phys_out) { continue; }
                         using block_iterator = typename SparseOperator<Matrix, SymmGroup>::const_iterator;
                         std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
                         for (block_iterator it = blocks.first; it != blocks.second; ++it) {
                             std::size_t ss1 = it->row;
-                            if (ss1 != it->col) continue;
+                            if (ss1 != it->col) { continue; }
                             for (size_t col_i = 0; col_i < right_i[block].second; ++col_i) {
                                 std::transform(
                                     left_diagonal.begin(), left_diagonal.end(),
@@ -160,7 +161,7 @@ namespace contraction {
                 size_t rblock = right[b2].find_block(in_r_charge, in_r_charge);
                 if (rblock != right[b2].n_blocks()) {
                     // Final contraction
-                    for (size_t c = 0; c < num_cols(lb2[block]); ++c)
+                    for (size_t c = 0; c < num_cols(lb2[block]); ++c) {
                         std::transform(
                             lb2[block].col(c).first,
                             lb2[block].col(c).second,
@@ -169,6 +170,7 @@ namespace contraction {
                               return e * right[b2][rblock](c, c);
                             }
                         );
+                    }
                     ret.match_and_add_block(lb2[block], in_r_charge, in_r_charge);
                 }
             }

@@ -29,18 +29,22 @@ public:
     std::vector<PositionType> outputOrder(latticeSize, 0);
     // Main code part
     if (!parms.is_set(nameOfOrder)) {
-      for (int p = 0; p < latticeSize; ++p)
+      for (int p = 0; p < latticeSize; ++p) {
         outputOrder[p] = p;
+      }
     }
     else {
       outputOrder = parms[nameOfOrder].as<std::vector<PositionType> >();
-      if (outputOrder.size() != latticeSize)
+      if (outputOrder.size() != latticeSize) {
         throw std::runtime_error("Number of orbitals in the orbital order does not match the total number of orbitals");
+      }
       // Shifts the order by -1 to match the convention that indices start in
       // C++ from *zero*.
-      if (doShift)
-        for (auto&& o: outputOrder)
+      if (doShift) {
+        for (auto&& o: outputOrder) {
           o--;
+        }
+      }
     }
     return outputOrder;
   }

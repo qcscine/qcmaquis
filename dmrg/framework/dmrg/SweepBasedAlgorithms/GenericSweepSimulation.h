@@ -104,7 +104,7 @@ public:
       //   Storage::sync();
       // }
       this->updateSites();
-      if (verbose_) { printMicroiterInfo(sweepType); }
+      printMicroiterInfo(sweepType);
       // Gets the boundary that are needed. Note that, in a forward sweep, the left boundary is assumed
       // to have been generated during the previous boundary update and, therefore, is not fetched.
       if (sweepType == SweepDirectionType::Backward || indexOfMicroIteration_ == 0) {
@@ -167,7 +167,7 @@ public:
       }
       auto stop = std::chrono::high_resolution_clock::now();
       std::chrono::duration<double, std::milli> duration_milisec = stop - start;
-      maquis::cout << " [Microiteration took " << duration_milisec.count() << " ms]\n";
+      maquis::cout << "[Time: " << duration_milisec.count() << " ms]\n";
     }
     // At the end, just stores to file the final right boundary (if needed, one can use it for the next sweep)
     // Storage::StoreToFile(boundaryPropagator_->getRightBoundary(siteRight_-1));
@@ -175,7 +175,7 @@ public:
     auto stop_sweep = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> duriation_sweep = stop_sweep - start_sweep;
     this->finalizeSweep();
-    maquis::cout << " [Sweep " << iSweep << " took " << duriation_sweep.count() << " s]\n";
+    maquis::cout << "[Sweep " << iSweep << " took " << duriation_sweep.count() << " s]\n\n";
   }
 
   /** @brief Gets the container with the results of each iteration */
@@ -316,6 +316,12 @@ protected:
       if (nSweeps_ != 0) {
         maquis::cout << " - Maximum number of sweeps: " << nSweeps_ << std::endl;
       }
+    } else {
+      maquis::cout << "+----------------------------------+\n"
+                   << " NEW SWEEP-BASED SIMULATION STARTED\n"
+                   << " Type: " << SweepTraitClass::getSimulationTypeName() 
+                   << " " << simulationName_ << "\n" 
+                   << "+----------------------------------+\n";
     }
   }
 
@@ -330,6 +336,12 @@ protected:
       maquis::cout << " - Maximum bond dimension: " << this->get_Mmax(iSweep) << std::endl;
       maquis::cout << " - Truncation parameter: " << this->get_cutoff(iSweep) << std::endl;
       maquis::cout << std::endl;
+    } else {
+      maquis::cout << "SWEEP " << iSweep << "; Noise: " << this->getAlpha(iSweep)
+                   << "; Max Bond Dim: " << this->get_Mmax(iSweep) 
+                   << "; Truncation: " << this->get_cutoff(iSweep) << '\n';
+
+
     }
   }
 
@@ -345,6 +357,15 @@ protected:
       maquis::cout << " - Left boundaries taken from index: " << siteLeft_ << std::endl;
       maquis::cout << " - Right boundaries taken from index: " << siteRight_ << std::endl;
       maquis::cout << std::endl;
+    } else {
+      std::stringstream stream;
+      stream << (sweepType == SweepDirectionType::Backward ? "  <" : "   ");
+      stream << "-" << siteLeft_ << "-";
+      if (SweepType == SweepOptimizationType::TwoSite) {
+        stream << (siteLeft_ + 1) << "-";
+      }
+      stream << (sweepType == SweepDirectionType::Forward ? "> " : "  ");
+      maquis::cout << stream.str();
     }
   }
 

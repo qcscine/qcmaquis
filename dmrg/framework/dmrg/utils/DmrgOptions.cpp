@@ -14,11 +14,7 @@
 #include <stdexcept>
 
 
-DmrgOptions::DmrgOptions()
-:
-time_limit(0.),
-valid(false)
-{ }
+DmrgOptions::DmrgOptions() : time_limit(0.), valid(false) { }
 
 DmrgOptions::DmrgOptions(int argc, char** argv)
 {
@@ -27,7 +23,8 @@ DmrgOptions::DmrgOptions(int argc, char** argv)
     programname = std::string(argv[0]);
     valid = true;
     if (argc) {
-        std::string parms_fname, model_fname;
+        std::string parms_fname;
+        std::string model_fname;
 
         po::options_description desc("Allowed options");
         desc.add_options()
@@ -55,30 +52,35 @@ DmrgOptions::DmrgOptions(int argc, char** argv)
             maquis::cout << DMRG_VERSION_STRING << std::endl;
             valid=false;
         }
-        if (!valid)
+        if (!valid) {
             return;
+        }
 
 
         /// Load parameters
         std::ifstream param_file(parms_fname.c_str());
-        if (!param_file)
+        if (!param_file) {
             throw std::runtime_error("Could not open parameter file " + parms_fname);
+        }
         parms = DmrgParameters(param_file);
 
         /// Load model parameters from second input (if needed)
         std::string integral_file;
-        if (parms.is_set("model_file") && model_fname.empty())
+        if (parms.is_set("model_file") && model_fname.empty()) {
             model_fname = parms["model_file"].str();
+        }
         if (!model_fname.empty()) {
             std::ifstream model_ifs(model_fname.c_str());
-            if (!model_ifs)
+            if (!model_ifs) {
                 throw std::runtime_error("Could not open model_parms file.");
+            }
             parms << ModelParameters(model_ifs);
         }
 
 
-        if (!vm["time-limit"].defaulted())
+        if (!vm["time-limit"].defaulted()) {
             parms["run_seconds"] = time_limit;
+        }
 
         parallel::params.init();
     }

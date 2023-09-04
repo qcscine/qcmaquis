@@ -73,8 +73,9 @@ public:
     : instance(m)
     , ortho_vecs(ortho_vecs)
     {
-        for (std::size_t k = 0; k < m.data().n_blocks(); ++k)
+        for (std::size_t k = 0; k < m.data().n_blocks(); ++k) {
             N += num_rows(m.data()[k]) * num_cols(m.data()[k]);
+        }
     }
 
     friend MPSTensor<Matrix, SymmGroup> new_vector(SingleSiteVS const & vs)
@@ -90,8 +91,9 @@ public:
     void project(MPSTensor<Matrix, SymmGroup> & t) const
     {
         for (typename std::vector<MPSTensor<Matrix, SymmGroup> >::const_iterator it = ortho_vecs.begin();
-             it != ortho_vecs.end(); ++it)
+             it != ortho_vecs.end(); ++it) {
             t -= ietl::dot(*it,t)/ietl::dot(*it,*it)**it;
+        }
     }
 
 private:

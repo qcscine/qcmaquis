@@ -48,7 +48,7 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A, block_matrix<Matrix2, Symm
     // Types definition
     using charge = typename SymmGroup::charge;
     using const_iterator = typename DualIndex<SymmGroup>::const_iterator;
-    //
+    // Get the basis of the input matrices
     const DualIndex<SymmGroup> A_basis = A.basis();
     const DualIndex<SymmGroup> B_basis = B.basis();
     C.clear();
@@ -58,14 +58,15 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A, block_matrix<Matrix2, Symm
         charge A_left_charge = A_basis.left_charge(k);
         auto A_block_nrows = num_rows(A[k]);
 
-        auto bounds = B_basis.left_equal_range(A_right_charge);
-        int matched_block = std::distance(B_basis.begin(), bounds.first);
-        for (; bounds.first != bounds.second; ++bounds.first) {
-            Matrix3 tmp(A_block_nrows, bounds.first->rs);
+        auto [lower_bound, upper_bound] = B_basis.left_equal_range(A_right_charge);
+        int matched_block = std::distance(B_basis.begin(), lower_bound);
+        for (auto it = lower_bound; it != upper_bound; ++it, matched_block++) {
+            Matrix3 tmp(A_block_nrows, it->rs);
             parallel::guard proc(scheduler(k));
             gemm(A[k], B[matched_block], tmp);
-            C.match_and_add_block(tmp, A_left_charge, bounds.first->rc);
-            ++matched_block;
+            C.match_and_add_block(tmp, A_left_charge, it->rc);
+            // kszenes: Line below also seems to work
+            /* C.insert_block(tmp, A_left_charge, it->rc); */
         }
     }
     if(scheduler.propagate()){

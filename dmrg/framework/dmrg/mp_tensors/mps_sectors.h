@@ -131,7 +131,7 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
         }
     }
 
-    printAllowed(allowed);
+    // printAllowed(allowed);
     
     return allowed;
 }

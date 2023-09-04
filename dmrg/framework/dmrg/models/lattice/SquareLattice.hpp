@@ -31,20 +31,24 @@ public:
   std::vector<int> forward(int p) const override
   {
     std::vector<int> ret;
-    if (p+1 < L_*W_ && (p+1) % W_ != 0)
+    if (p+1 < L_*W_ && (p+1) % W_ != 0) {
       ret.push_back(p+1);
-    if (p+W_ < L_*W_)
+    }
+    if (p+W_ < L_*W_) {
       ret.push_back(p+W_);
+    }
     return ret;
   }
 
   std::vector<int> all(int p) const override
   {
     std::vector<int> ret = forward(p);
-    if (p >= 1 && p % W_ != 0)
+    if (p >= 1 && p % W_ != 0) {
       ret.push_back(p-1);
-    if (p >= W_)
+    }
+    if (p >= W_) {
       ret.push_back(p-W_);
+    }
     return ret;
   }
 
@@ -56,25 +60,25 @@ public:
 
   std::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const override
   {
-    if (property == "label" && pos.size() == 1)
+    if (property == "label" && pos.size() == 1) {
       return std::any( site_label(pos[0]) );
-    else if (property == "label" && pos.size() == 2)
+    } else if (property == "label" && pos.size() == 2) {
       return std::any( bond_label(pos[0], pos[1]) );
-    else if (property == "type" && pos.size() == 1)
+    } else if (property == "type" && pos.size() == 1) {
       return std::any( 0 );
-    else if (property == "type" && pos.size() == 2)
+    } else if (property == "type" && pos.size() == 2) {
       return std::any( 0 );
-    else if (property == "x" && pos.size() == 1)
+    } else if (property == "x" && pos.size() == 1) {
       return std::any( x(pos[0]) );
-    else if (property == "y" && pos.size() == 1)
+    } else if (property == "y" && pos.size() == 1) {
       return std::any( y(pos[0]) );
-    else if (property == "wraps_pbc" && pos.size() == 2)
+    } else if (property == "wraps_pbc" && pos.size() == 2) {
       return std::any( false );
-    else if (property == "NumTypes")
+    } else if (property == "NumTypes") {
       return std::any( 1 );
-    else if (property == "ParticleType")
+    } else if (property == "ParticleType") {
       return std::any( 0 );
-    else {
+    } else {
       std::ostringstream ss;
       ss << "No property '" << property << "' with " << pos.size() << " points implemented.";
       throw std::runtime_error(ss.str());

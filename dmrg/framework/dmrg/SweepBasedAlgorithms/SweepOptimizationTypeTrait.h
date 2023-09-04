@@ -40,24 +40,26 @@ public:
    */
   static int getNumberOfMicroiterations(int L) {
     int numberOfMicroiterations;
-    if (L == 1)
+    if (L == 1) {
       numberOfMicroiterations = 1;
-    else if (L == 2)
+    } else if (L == 2) {
       numberOfMicroiterations = 2;
-    else
+    } else {
       numberOfMicroiterations = 2*(L-1);
+    }
     return numberOfMicroiterations;
   }
 
   /** @brief Gets the direction of a sweep */
   static SweepDirectionType getSweepDirection(int L, int i) {
     SweepDirectionType ret;
-    if (i < L)
+    if (i < L) {
       ret = SweepDirectionType::Forward;
-    else if (i < getNumberOfMicroiterations(L))
+    } else if (i < getNumberOfMicroiterations(L)) {
       ret = SweepDirectionType::Backward;
-    else
+    } else {
       ret = SweepDirectionType::EndOfLattice;
+    }
     return ret;
     // return (i < L) ? SweepDirectionType::Forward : SweepDirectionType::Backward;
   }
@@ -105,24 +107,26 @@ public:
   /** @brief Gets the number of microiterations for a given */
   static int getNumberOfMicroiterations(int L) {
     int numberOfMicroiterations;
-    if (L == 2)
+    if (L == 2) {
       numberOfMicroiterations = 1;
-    else if (L == 1)
+    } else if (L == 1) {
       throw std::runtime_error("TS optimizer not available for 1-site lattices");
-    else
+    } else {
       numberOfMicroiterations = 2*(L-2);
+    }
     return numberOfMicroiterations;
   }
 
   /** @brief Gets the direction of a sweep */
   static SweepDirectionType getSweepDirection(int L, int i) {
     SweepDirectionType ret;
-    if (i < L-1)
+    if (i < L-1) {
       ret = SweepDirectionType::Forward;
-    else if (i < getNumberOfMicroiterations(L))
+    } else if (i < getNumberOfMicroiterations(L)) {
       ret = SweepDirectionType::Backward;
-    else
+    } else {
       ret = SweepDirectionType::EndOfLattice;
+    }
     return ret;
     // return (i < L-1) ? SweepDirectionType::Forward : SweepDirectionType::Backward;
   }

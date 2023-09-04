@@ -26,7 +26,7 @@
 namespace parameters {
     class value {
     public:
-        value () : val_(""), empty_(true) { }
+        value () : empty_(true) { }
 
         template <class T>
         value (const T & val)

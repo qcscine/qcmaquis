@@ -64,6 +64,59 @@ namespace sim_detail {
 }
 
 template <class Matrix, class SymmGroup>
+sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
+  : parms(parms_), init_sweep(0), init_site(-1), restore(false), dns( (parms["donotsave"] != 0) || !parms.is_set("chkpfile") ),
+    chkpfile(parms.is_set("chkpfile") ? boost::trim_right_copy_if(parms["chkpfile"].str(), boost::is_any_of("/ ")) : ""),
+    stop_callback(static_cast<double>(parms["run_seconds"]))
+{
+    maquis::cout << DMRG_VERSION_STRING << std::endl;
+    storage::setup(parms);
+
+    bool has2U1 = symm_traits::Has2U1<SymmGroup>::value;
+    bool hasPG = symm_traits::HasPG<SymmGroup>::value;
+    bool hasSU2 = symm_traits::HasSU2<SymmGroup>::value;
+
+    dmrg_random::engine.seed(parms["seed"]);
+    // check possible orbital order in existing MPS before(!) model initialization
+    if (!chkpfile.empty()) {
+        std::filesystem::path p(chkpfile);
+        if (std::filesystem::exists(p) && std::filesystem::exists(p / "props.h5")) {
+            maquis::checks::orbital_order_check(parms, chkpfile);
+        }
+        // Load MPS from checkpoint
+        loadMPSAndParams(chkpfile, hasSU2, has2U1, hasPG);
+    }
+
+    // Initialise Wigner cache for SU2
+    if (hasSU2) {
+      initializeWignerCache();
+    }
+
+    // Model initialization
+    lat = Lattice(parms);
+    model = Model<Matrix, SymmGroup>(lat, parms);
+    mpo = make_mpo(lat, model);
+    all_measurements = model.measurements();
+    all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
+
+    // Final check on the checkpoint MPS after model has been initialised
+    // Otherwise, does a fresh MPS initialization
+    if (restore) {
+        maquis::checks::right_end_check(chkpfile, mps, model.total_quantum_numbers(parms));
+    }
+    else {
+        mps = MPS<Matrix, SymmGroup>(lat.size(), *(model.initializer(lat, parms)));
+    }
+
+    assert(mps.length() == lat.size());
+
+    /// Update parameters - after checks have passed
+    updateParamsInArchive(chkpfile);
+
+    maquis::cout << "MPS initialization has finished...\n"; // MPS restored now
+}
+
+template <class Matrix, class SymmGroup>
 void sim<Matrix, SymmGroup>::loadMPSAndParams(
     const std::string& chkpfile,
     const bool hasSU2, const bool has2U1, const bool hasPG) {
@@ -157,58 +210,6 @@ void sim<Matrix, SymmGroup>::updateParamsInArchive(
   }
 }
 
-template <class Matrix, class SymmGroup>
-sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
-  : parms(parms_), init_sweep(0), init_site(-1), restore(false), dns( (parms["donotsave"] != 0) || !parms.is_set("chkpfile") ),
-    chkpfile(parms.is_set("chkpfile") ? boost::trim_right_copy_if(parms["chkpfile"].str(), boost::is_any_of("/ ")) : ""),
-    stop_callback(static_cast<double>(parms["run_seconds"]))
-{
-    maquis::cout << DMRG_VERSION_STRING << std::endl;
-    storage::setup(parms);
-
-    bool has2U1 = symm_traits::Has2U1<SymmGroup>::value;
-    bool hasPG = symm_traits::HasPG<SymmGroup>::value;
-    bool hasSU2 = symm_traits::HasSU2<SymmGroup>::value;
-
-    dmrg_random::engine.seed(parms["seed"]);
-    // check possible orbital order in existing MPS before(!) model initialization
-    if (!chkpfile.empty()) {
-        std::filesystem::path p(chkpfile);
-        if (std::filesystem::exists(p) && std::filesystem::exists(p / "props.h5")) {
-            maquis::checks::orbital_order_check(parms, chkpfile);
-        }
-        // Load MPS from checkpoint
-        loadMPSAndParams(chkpfile, hasSU2, has2U1, hasPG);
-    }
-
-    // Initialise Wigner cache for SU2
-    if (hasSU2) {
-      initializeWignerCache();
-    }
-
-    // Model initialization
-    lat = Lattice(parms);
-    model = Model<Matrix, SymmGroup>(lat, parms);
-    mpo = make_mpo(lat, model);
-    all_measurements = model.measurements();
-    all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
-
-    // Final check on the checkpoint MPS after model has been initialised
-    // Otherwise, does a fresh MPS initialization
-    if (restore) {
-        maquis::checks::right_end_check(chkpfile, mps, model.total_quantum_numbers(parms));
-    }
-    else {
-        mps = MPS<Matrix, SymmGroup>(lat.size(), *(model.initializer(lat, parms)));
-    }
-
-    assert(mps.length() == lat.size());
-
-    /// Update parameters - after checks have passed
-    updateParamsInArchive(chkpfile);
-
-    maquis::cout << "MPS initialization has finished...\n"; // MPS restored now
-}
 
 template <class Matrix, class SymmGroup>
 typename sim<Matrix, SymmGroup>::measurements_type

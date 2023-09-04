@@ -9,6 +9,8 @@
 
 #include "dmrg/mp_tensors/mpotensor.h"
 
+
+
 template<class Matrix, class SymmGroup>
 MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld, index_type rd, prempo_t tags,
                                         op_table_ptr tbl_, MPOTensor_detail::Hermitian h_,
@@ -18,54 +20,73 @@ MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld, index_type rd, prempo_t t
       col_tags(ld, rd), operator_table(tbl_)
 {
     row_index.resize(ld);
-    if (tags.size() > 0 && operator_table.get() != NULL) {
+    if (tags.size() > 0 && operator_table.get() != nullptr) {
         // sort tags in order used by the CSC (sparse) matrix
         std::sort(tags.begin(), tags.end(), MPOTensor_detail::col_cmp<typename prempo_t::value_type>());
-        for (const auto& tag : tags) {
-            internal_value_type & element = col_tags(std::get<0>(tag), std::get<1>(tag)).ref();
-            if (element.size() == 0) {
-                element = internal_value_type(1, std::make_pair(std::get<2>(tag), std::get<3>(tag)));
-                row_index[std::get<0>(tag)].insert(std::get<1>(tag));
-            }
-            else {
-                // avoid resize, as that might increase the capacity beyond the new size
-                internal_value_type new_element(element.size() + 1);
-                std::copy(element.begin(), element.end(), new_element.begin()+1);
-                new_element.front() = std::make_pair(std::get<2>(tag), std::get<3>(tag));
-                std::swap(element, new_element);
-            }
-        }
-        for (std::size_t i = 0; i < operator_table->size(); ++i) {
-            operator_table->operator[](i).update_sparse();
-        }
+        loadTagsIntoCSCMatrix(tags);
     }
     else {
         // Initialize a private operator table
         operator_table = op_table_ptr(new OPTable<Matrix, SymmGroup>());
     }
 
-    // provide information about number of non-zeros in rows and columns
-    row_non_zeros.resize(row_dim());
-    col_non_zeros.resize(col_dim());
-    for (index_type b2 = 0; b2 < col_dim(); ++b2)
-    {
-        col_proxy col_b2 = column(b2);
-        for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it)
-        {
-            index_type b1 = col_it.index();
-            row_non_zeros[b1]++;
-            col_non_zeros[b2]++;
-        }
-    }
+    computeRowColNonZeros();
 
-    num_one_rows_ = std::count(row_non_zeros.begin(), row_non_zeros.end(), 1);
-    num_one_cols_ = std::count(col_non_zeros.begin(), col_non_zeros.end(), 1);
     // maquis::cout << "nr1r: " << row_dim() - num_one_rows_ << " nr1c: " << col_dim() - num_one_cols_ << std::endl;
 
     // if the optional Hermitian object h_ is valid, adopt it
     if (h_.left_size() == left_i && h_.right_size() == right_i) {
         herm_info = h_;
     }
+}
+
+/**
+ * @brief Populates entries of the sparse CSC matrix with the given tags.
+ *
+ * @param tags A vector of tuples (row, col, tag_number, scale_factor).
+ */
+template<class Matrix, class SymmGroup>
+void MPOTensor<Matrix, SymmGroup>::loadTagsIntoCSCMatrix(const prempo_t& tags){
+  for (const auto& tag : tags) {
+    internal_value_type & element = col_tags(std::get<0>(tag), std::get<1>(tag)).ref();
+    if (element.empty()) {
+      element = internal_value_type(1, std::make_pair(std::get<2>(tag), std::get<3>(tag)));
+      row_index[std::get<0>(tag)].insert(std::get<1>(tag));
+    }
+    else {
+      // avoid resize, as that might increase the capacity beyond the new size
+      internal_value_type new_element(element.size() + 1);
+      std::copy(element.begin(), element.end(), new_element.begin()+1);
+      new_element.front() = std::make_pair(std::get<2>(tag), std::get<3>(tag));
+      std::swap(element, new_element);
+    }
+  }
+  for (std::size_t i = 0; i < operator_table->size(); ++i) {
+    operator_table->operator[](i).update_sparse();
+  }
+}
+
+/**
+ * @brief Computes the number of non-zero elements in each row and column as
+ *        well as the number of rows and columns with only one non-zero element.
+ */
+template<class Matrix, class SymmGroup>
+void MPOTensor<Matrix, SymmGroup>::computeRowColNonZeros(){
+    // provide information about number of non-zeros in rows and columns
+    row_non_zeros.resize(row_dim());
+    col_non_zeros.resize(col_dim());
+    for (index_type b2 = 0; b2 < col_dim(); ++b2) {
+        col_proxy col_b2 = column(b2);
+        for (auto col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
+            index_type b1 = col_it.index();
+            row_non_zeros[b1]++;
+            col_non_zeros[b2]++;
+        }
+    }
+
+    // Compute rows with only one non-zero element
+    num_one_rows_ = std::count(row_non_zeros.begin(), row_non_zeros.end(), 1);
+    num_one_cols_ = std::count(col_non_zeros.begin(), col_non_zeros.end(), 1);
 }
 
 /*

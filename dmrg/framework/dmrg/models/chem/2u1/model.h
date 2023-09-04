@@ -1023,12 +1023,12 @@ private:
     {
         PGDecorator<SymmGroup> set_symm;
         std::vector<op_t> ret;
+        ret.reserve(max_irrep+1);
         for (typename SymmGroup::subcharge sc=0; sc < max_irrep+1; ++sc) {
-            op_t mod(set_symm(op.basis(), sc));
+            op_t mod(set_symm(op.basis(), sc)); // sets 
             for (std::size_t b = 0; b < op.n_blocks(); ++b) {
                 mod[b] = op[b];
             }
-
             ret.push_back(mod);
         }
         return ret;
@@ -1037,8 +1037,9 @@ private:
     std::vector<tag_type> register_site_specific(std::vector<op_t> const & ops, tag_detail::operator_kind kind)
     {
         std::vector<tag_type> ret;
-        for (typename SymmGroup::subcharge sc=0; sc < max_irrep+1; ++sc) {
-            std::pair<tag_type, value_type> newtag = tag_handler->checked_register(ops[sc], kind);
+        ret.reserve(ops.size());
+        for (const auto& op : ops) {
+            std::pair<tag_type, value_type> newtag = tag_handler->checked_register(op, kind);
             assert( newtag.first < tag_handler->size() );
             assert( std::abs(newtag.second - value_type(1.)) == value_type() );
             ret.push_back(newtag.first);

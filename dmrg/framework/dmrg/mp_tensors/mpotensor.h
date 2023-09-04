@@ -91,6 +91,8 @@ public:
     MPOTensor_detail::Hermitian herm_info;
 
 private:
+    void loadTagsIntoCSCMatrix(prempo_t const & tags);
+    void computeRowColNonZeros();
     index_type left_i, right_i;
     spin_index left_spins, right_spins;
     std::vector<index_type> row_non_zeros, col_non_zeros;

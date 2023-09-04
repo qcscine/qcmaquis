@@ -21,8 +21,7 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
     // used to generate ops for all irreps 0..max_irrep
     
     for (pos_t p=0; p < lat.size(); ++p) {
-        max_irrep = (lat.get_prop<typename SymmGroup::subcharge>("type", p) > max_irrep)
-                        ? lat.get_prop<typename SymmGroup::subcharge>("type", p) : max_irrep;
+        max_irrep = std::max(lat.get_prop<typename SymmGroup::subcharge>("type", p), max_irrep);
     }
 
     typename SymmGroup::charge A(0);
@@ -104,6 +103,7 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
     gemm(destroy_up_op, create_down_op, u2d_op); // S_minus
 
     // only effective if point group symmetry is active, need to adapt operators to different irreps
+    // ## is the string concatenation operator (e.g., ident_op -> ident_ops)
     #define GENERATE_SITE_SPECIFIC(opname) std::vector<op_t> opname ## s = this->generate_site_specific_ops(opname);
 
     GENERATE_SITE_SPECIFIC(ident_op)

@@ -50,10 +50,11 @@ public:
 
     static void modify(charge & rhs, subcharge irr)
     {
-        if ( (SymmGroup::particleNumber(rhs)) % 2 == 0)
+        if ( (SymmGroup::particleNumber(rhs)) % 2 == 0) {
             SymmGroup::irrep(rhs) = 0;
-        else
+        } else {
             SymmGroup::irrep(rhs) = irr;
+        }
     }
 };
 

@@ -90,7 +90,7 @@ public:
   /** @brief Solution of the site-centered problem */
   MPSTensorType solveLocalProblem() final {
     auto& mpsToOptimize = mpsContainer_.getMPSTensor(siteLeft_);
-    std::cout << "MPS:\n" << mpsToOptimize << '\n';
+    // std::cout << "MPS:\n" << mpsToOptimize << '\n';
     if (parms_["eigensolver"] == std::string("IETL")) {
       resultOfLocalSiteProblem_ = solve_ietl_lanczos(*(siteProblem_.get()), mpsToOptimize, parms_);
     } else if (parms_["eigensolver"] == std::string("IETL_JCD")) {
@@ -102,7 +102,7 @@ public:
     }
     // Loads the final results
     auto energy = resultOfLocalSiteProblem_.first + mpoContainer_.getMPO().getCoreEnergy();
-    maquis::cout << std::setprecision(10) << " Energy = " << std::setprecision(16) << energy << std::endl;
+    maquis::cout << std::setprecision(10) << " Energy = " << std::setprecision(16) << energy << "  ";
     iterationResults_["Energy"] << energy;
     return resultOfLocalSiteProblem_.second;
   }

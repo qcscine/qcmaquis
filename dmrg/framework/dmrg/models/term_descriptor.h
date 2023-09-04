@@ -63,14 +63,18 @@ public:
     /** @brief Comparison operator */
     bool operator< (term_descriptor const & rhs) const
     {
-        if (this->size() == 0 && rhs.size() == 0)
+        if (this->size() == 0 && rhs.size() == 0) {
             return false;
-        if (this->size() == 0)
+        }
+        if (this->size() == 0) {
             return true;
-        if (rhs.size()   == 0)
+        }
+        if (rhs.size()   == 0) {
             return false;
-        if (this->position(0) == rhs.position(0))
+        }
+        if (this->position(0) == rhs.position(0)) {
             return this->size() > rhs.size();
+        }
         return this->position(0) < rhs.position(0);
     }
 
@@ -87,8 +91,9 @@ std::ostream & operator<< (std::ostream & os, term_descriptor<T> const& term)
 {
     os << "coeff: " << term.coeff << std::endl;
     os << "operators:";
-    for (int i=0; i<term.size(); ++i)
+    for (int i=0; i<term.size(); ++i) {
         os << " {"  << term.position(i) << "," << term.operator_tag(i) << "}";
+    }
     os << std::endl;
     return os;
 }

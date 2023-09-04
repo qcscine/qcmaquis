@@ -409,8 +409,8 @@ template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::match_and_add_block(Matrix const & mtx, charge c1, charge c2)
 {
     size_type match = this->find_block(c1, c2);
-    if (match < this->n_blocks())
-    {
+    bool block_exists = (match < this->n_blocks());
+    if (block_exists) {
         if (num_rows(mtx) == num_rows((*this)[match]) &&
             num_cols(mtx) == num_cols((*this)[match])) {
             (*this)[match] += mtx;

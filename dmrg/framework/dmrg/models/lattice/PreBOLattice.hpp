@@ -39,8 +39,9 @@ public:
         auto orbitals_str = parms["PreBO_OrbitalVector"].as<std::string>();
         auto vec_ini_state_str = parms["PreBO_InitialStateVector"].as<std::string>();
         std::string max_m_str;
-        if (parms.is_set("PreBO_MaxBondDimVector"))
+        if (parms.is_set("PreBO_MaxBondDimVector")) {
             max_m_str = parms["PreBO_MaxBondDimVector"].as<std::string>();
+        }
         // convert strings to vectors
         std::istringstream is( vec_particles_str );
         vec_particles.assign(std::istream_iterator<int>( is ), std::istream_iterator<int>() );
@@ -92,16 +93,19 @@ public:
             m_order = parms["orbital_order"].as<std::vector<pos_t> >();
             vec_lattice_type.resize(L);
             m_inv_order.resize(L);
-            if (m_order.size() != L)
+            if (m_order.size() != L) {
                 throw std::runtime_error("orbital_order length is not the same as the number of orbitals\n");
-            for (int p = 0; p < m_order.size(); ++p)
+            }
+            for (int p = 0; p < m_order.size(); ++p) {
                 m_inv_order[p] = std::distance(m_order.begin(), std::find(m_order.begin(), m_order.end(), p));
+            }
             for (pos_t i = 0; i < L; i++) {
                 vec_lattice_type[i] = vec_abs_index_part_type[m_order[i]];
             }
         }
-        else
+        else {
             vec_lattice_type=vec_abs_index_part_type;
+        }
         //populate vec_fer_bos
         unsigned int bos_temp = 0;
         unsigned int fer_temp = 0;
@@ -146,17 +150,20 @@ public:
     // is taken from the orbital lattice
     std::vector<pos_t> forward(pos_t i) const override {
         std::vector<pos_t> ret;
-        if (i < L-1)
+        if (i < L-1) {
             ret.push_back(i+1);
+        }
         return ret;
     }
     //
     std::vector<pos_t> all(pos_t i) const override {
         std::vector<pos_t> ret;
-        if (i < L-1)
+        if (i < L-1) {
             ret.push_back(i+1);
-        if (i > 0)
+        }
+        if (i > 0) {
             ret.push_back(i-1);
+        }
         return ret;
     }
     //
@@ -169,33 +176,33 @@ public:
      */
     std::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const override
     {
-        if (property == "type" && pos.size() == 1)
+        if (property == "type" && pos.size() == 1) {
             return std::any(vec_lattice_type[pos[0]]);
-        else if (property == "Mmax" && pos.size() == 1)
+        } else if (property == "Mmax" && pos.size() == 1) {
             return std::any(vec_max_m[pos[0]]);
-        else if (property == "NumTypes")
+        } else if (property == "NumTypes") {
             return std::any(num_particle_types);
-        else if (property == "ParticleType" && pos.size() == 1)
+        } else if (property == "ParticleType" && pos.size() == 1) {
             return std::any( vec_lattice_type[pos[0]] );
-        else if (property == "label" && pos.size() == 2)
+        } else if (property == "label" && pos.size() == 2) {
             return std::any(bond_label(pos[0], pos[1]));
-        else if (property == "vec_particles")
+        } else if (property == "vec_particles") {
             return std::any(vec_particles);
-        else if (property == "num_particle_types")
+        } else if (property == "num_particle_types") {
             return std::any(num_particle_types);
-        else if (property == "isFermion")
+        } else if (property == "isFermion") {
             return std::any(isFermion);
-        else if (property == "vec_orbitals")
+        } else if (property == "vec_orbitals") {
             return std::any(vec_orbitals);
-        else if (property == "vec_ini_state")
+        } else if (property == "vec_ini_state") {
             return std::any(vec_ini_state);
-        else if (property == "vec_fer_bos")
+        } else if (property == "vec_fer_bos") {
             return std::any(vec_fer_bos);
-        else if (property == "order")
+        } else if (property == "order") {
             return std::any(m_order);
-        else if (property == "inv_order")
+        } else if (property == "inv_order") {
             return std::any(m_inv_order);
-        else {
+        } else {
             std::ostringstream ss;
             ss << "No property '" << property << "' with " << pos.size() << " points implemented.";
             throw std::runtime_error(ss.str());
