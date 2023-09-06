@@ -161,6 +161,40 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
             STRING "Choose the type of build." FORCE)
 endif()
 
+if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
+  # message(STATUS "Debug build: Adding Address Sanitizer")
+  # add_compile_options(-fsanitize=address -g3 -Wall -Wextra)
+  # add_link_options(-fsanitize=address -g3 -Wall -Wextra)
+  if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+    message(STATUS "Adding CLANG warning flags")
+    set(COMPILER_WARNING_FLAGS
+      -Wall -Wextra
+      -Wno-unused-variable
+      -Wno-unused-parameter
+      -Wno-unused-local-typedef
+      -Wno-return-type-c-linkage      # boost ublas bug
+      -Wno-sign-compare               # TODO: These should be fixed
+      )
+  elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+    message(STATUS "Adding GNU warning flags")
+    set(COMPILER_WARNING_FLAGS
+      -Wall -Wextra
+      -Wno-int-in-bool-context        # TODO: This should also be fixed
+      -Wno-unused-variable
+      -Wno-unused-but-set-variable
+      -Wno-unused-parameter
+      -Wno-unused-local-typedefs
+      -Wno-sign-compare               # TODO: These should be fixed
+      -Wno-deprecated-copy            # TODO: Fix this as well
+      )
+  add_compile_options(-fsanitize=address,leak,undefined)
+  add_link_options(-fsanitize=address,leak,undefined)
+  endif()
+  message(STATUS "Debug warnings = ${COMPILER_WARNING_FLAGS}")
+  add_compile_options(${COMPILER_WARNING_FLAGS})
+  add_link_options(${COMPILER_WARNING_FLAGS})
+
+endif()
 ######################################################################
 # Symmetries management
 ######################################################################
@@ -220,6 +254,8 @@ endmacro(configure_symm_file)
 
 # Adding symmetries definitions, TwoU1PG and SU2U1PG are needed in any case for smooth compilation/testing
 list(APPEND BUILD_SYMMETRIES "TwoU1PG" "SU2U1PG")
+
+# Set DMRG_HAS_* flag such that missing symmetries can be added later
 list(REMOVE_DUPLICATES BUILD_SYMMETRIES)
 foreach(SYMM ${BUILD_SYMMETRIES})
   get_symm_group_name(SYMM_NAME ${SYMM})
@@ -277,7 +313,6 @@ if((DMRG_HAS_SU2U1) OR (DMRG_HAS_SU2U1PG))
 endif()
 
 # BLAS/LAPACK selector
-find_package(MAQUISLapack)
 find_package(MAQUISLapack REQUIRED)
 message(STATUS "Lapack include:  ${MAQUISLapack_INCLUDE_DIRS}")
 message(STATUS "Lapack lib dirs: ${MAQUISLapack_LIB_DIRS}")
@@ -293,8 +328,16 @@ find_package(HDF5 REQUIRED)
 list(APPEND DMRG_LIBRARIES ${HDF5_LIBRARIES})
 
 # Boost
+
+# Remove annoying cmake configure boost warning
+set(Boost_NO_WARN_NEW_VERSIONS 1)
+# Remove global placeholder warning
+# add_compile_definitions(BOOST_BIND_GLOBAL_PLACEHOLDERS)
+# Remove deprecated warnings when compiling using gcc
+# add_compile_definitions(BOOST_NO_CXX98_FUNCTION_BASE)
+
 set(Boost_requirements program_options filesystem system serialization thread)
-set (Boost_NO_BOOST_CMAKE ON)
+set(Boost_NO_BOOST_CMAKE ON)
 
 find_package(Boost 1.56 COMPONENTS ${Boost_requirements})
 if(Boost_FOUND)
