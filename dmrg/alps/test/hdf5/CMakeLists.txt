@@ -99,7 +99,7 @@ IF (ALPS_BUILD_HDF5_TESTS)
         "std::array<int, 20>" "std::array<long double, 20>" "std::array<float, 20>" "std::array<unsigned long long, 20>" 
         "std::array<std::array<std::complex<double>, 20>, 20>"
         "std::vector<std::array<int, 4> >" "std::array<std::vector<int>, 4>" "std::vector<std::array<std::vector<int>, 4> >"
-        "boost::tuple<int, double, float, std::complex<double> >" "std::vector<boost::tuple<char, bool, long long> >"
+        "std::tuple<int, double, float, std::complex<double> >" "std::vector<std::tuple<char, bool, long long> >"
     )
     
     FOREACH (type ${ALPS_HDF5_DATA_TYPES})

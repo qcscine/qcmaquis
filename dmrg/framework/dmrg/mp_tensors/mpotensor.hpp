@@ -9,7 +9,24 @@
 
 #include "dmrg/mp_tensors/mpotensor.h"
 
-
+/**
+ * @brief Outputs the spasity pattern of the CSCMatrix
+ *        drawing non-zeros elements as "x" and zeros as " ".
+ */
+template <class CSCMatrix>
+void printCSC(const CSCMatrix& col_tags) {
+  std::cout << "\nMPO (" << col_tags.size1() << " x " << col_tags.size2() << ")" << std::endl;
+  for (std::size_t i = 0; i < col_tags.size1(); ++i) {
+    for (std::size_t j = 0; j < col_tags.size2(); ++j) {
+        if (col_tags(i, j).empty()) {
+            std::cout << " ";
+        } else {
+            std::cout << "x";
+        }
+    }
+    std::cout << "|" << std::endl;
+}
+}
 
 template<class Matrix, class SymmGroup>
 MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld, index_type rd, prempo_t tags,
@@ -21,7 +38,7 @@ MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld, index_type rd, prempo_t t
 {
     row_index.resize(ld);
     if (tags.size() > 0 && operator_table.get() != nullptr) {
-        // sort tags in order used by the CSC (sparse) matrix
+        // sort tags column-wise in order used by the CSC (sparse) matrix
         std::sort(tags.begin(), tags.end(), MPOTensor_detail::col_cmp<typename prempo_t::value_type>());
         loadTagsIntoCSCMatrix(tags);
     }
@@ -31,6 +48,8 @@ MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld, index_type rd, prempo_t t
     }
 
     computeRowColNonZeros();
+
+    // printCSC(col_tags);
 
     // maquis::cout << "nr1r: " << row_dim() - num_one_rows_ << " nr1c: " << col_dim() - num_one_cols_ << std::endl;
 
@@ -47,17 +66,17 @@ MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld, index_type rd, prempo_t t
  */
 template<class Matrix, class SymmGroup>
 void MPOTensor<Matrix, SymmGroup>::loadTagsIntoCSCMatrix(const prempo_t& tags){
-  for (const auto& tag : tags) {
-    internal_value_type & element = col_tags(std::get<0>(tag), std::get<1>(tag)).ref();
+  for (const auto& [row, col, tag_id, scale_factor] : tags) {
+    internal_value_type& element = col_tags(row, col).ref();
     if (element.empty()) {
-      element = internal_value_type(1, std::make_pair(std::get<2>(tag), std::get<3>(tag)));
-      row_index[std::get<0>(tag)].insert(std::get<1>(tag));
+      element = internal_value_type(1, std::make_pair(tag_id, scale_factor));
+      row_index[row].insert(col);
     }
     else {
       // avoid resize, as that might increase the capacity beyond the new size
       internal_value_type new_element(element.size() + 1);
       std::copy(element.begin(), element.end(), new_element.begin()+1);
-      new_element.front() = std::make_pair(std::get<2>(tag), std::get<3>(tag));
+      new_element.front() = std::make_pair(tag_id, scale_factor);
       std::swap(element, new_element);
     }
   }

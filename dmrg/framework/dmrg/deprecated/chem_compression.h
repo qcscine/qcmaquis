@@ -32,6 +32,7 @@
 #include <functional>
 #include <iostream>
 #include <boost/lexical_cast.hpp>
+#include <boost/tuple/tuple.hpp>
 
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
@@ -103,6 +104,7 @@ namespace compressor_detail
         bool operator()(std::pair<charge, charge> const & i,
                         std::pair<charge, charge> const & j) const
         {
+            using namespace boost::tuples;
             if (i.first > j.first)
                 return true;
             else if (i.first < j.first)
@@ -961,11 +963,11 @@ void compressor<Matrix, SymmGroup>::convert_to_dense_matrix(MPO<Matrix, SymmGrou
 // Relabel the MPO-indices such that the 13 possible bond charges are grouped together
 template <class Tuple, class Matrix, class SymmGroup> void
 charge_sort(std::vector< std::vector<
-                //std::tuple<std::size_t, std::size_t, block_matrix<Matrix, SymmGroup> > > > & prempo,
+                //boost::tuple<std::size_t, std::size_t, block_matrix<Matrix, SymmGroup> > > > & prempo,
                 Tuple > > & prempo,
             MPO<Matrix, SymmGroup> const & mpo_in)
 {
-    //typedef std::tuple<std::size_t, std::size_t, block_matrix<Matrix, SymmGroup> > block;
+    //typedef boost::tuple<std::size_t, std::size_t, block_matrix<Matrix, SymmGroup> > block;
     typedef typename SymmGroup::charge charge;
 
     Timer csort("MPO_charge_sort"); csort.begin();
@@ -981,7 +983,7 @@ charge_sort(std::vector< std::vector<
         for (typename std::vector<Tuple>::iterator it = prempo[p].begin();
                 it != prempo[p].end(); ++it)
         {
-            std::size_t c = std::get<1>(*it);
+            std::size_t c = boost::tuples::get<1>(*it);
             if (c < 2) continue;
             charge out_charge = mpo_in_index[p+1][c];
             reorder_map[c] = visited_delta_basis[out_charge]++;
@@ -1001,7 +1003,7 @@ charge_sort(std::vector< std::vector<
         for (typename std::vector<Tuple>::iterator it = prempo[p].begin();
                 it != prempo[p].end(); ++it)
         {
-            std::size_t c = std::get<1>(*it);
+            std::size_t c = boost::tuples::get<1>(*it);
             if (c < 2) continue;
             charge out_charge = mpo_in_index[p+1][c];
             reorder_map[c] += offsets[out_charge];
@@ -1009,11 +1011,11 @@ charge_sort(std::vector< std::vector<
 
         // carry out reordering
         for (typename std::vector<Tuple>::iterator it = prempo[p].begin(); it != prempo[p].end(); ++it)
-            if (reorder_map.count(std::get<1>(*it)) > 0)
-                std::get<1>(*it) = reorder_map[std::get<1>(*it)];
+            if (reorder_map.count(boost::tuples::get<1>(*it)) > 0)
+                boost::tuples::get<1>(*it) = reorder_map[boost::tuples::get<1>(*it)];
         for (typename std::vector<Tuple>::iterator it = prempo[p+1].begin(); it != prempo[p+1].end(); ++it)
-            if (reorder_map.count(std::get<0>(*it)) > 0)
-                std::get<0>(*it) = reorder_map[std::get<0>(*it)];
+            if (reorder_map.count(boost::tuples::get<0>(*it)) > 0)
+                boost::tuples::get<0>(*it) = reorder_map[boost::tuples::get<0>(*it)];
 
     }
     csort.end();

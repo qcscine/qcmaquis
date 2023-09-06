@@ -208,19 +208,20 @@ public:
         std::vector<int> LeftPhase(1,1);
         // Main loop over sites
         for (pos_t p = 0; p < length; ++p) {
-            std::vector<tag_block> pre_tensor; pre_tensor.reserve(prempo[p].size());
+            std::vector<tag_block> pre_tensor;
+            pre_tensor.reserve(prempo[p].size());
             std::map<prempo_key_type, prempo_key_type> HermKeyPairs;
             std::map<prempo_key_type, std::pair<int,int> > HermitianPhases;
             index_map right;
             index_type r = 2;
-            for (typename prempo_map_type::const_iterator it = prempo[p].begin(); it != prempo[p].end(); ++it) {
+            for (const auto& it : prempo[p]) {
                 // Remember that tag_block identifies a tuple with (size, size, tag_type and scaling factor)
                 // The first two sizes should identify the operators acting on the left and right, respectively,
                 // the tag_type is the operator and the scaling factor is the coefficient appearing in the definition
                 // of the Hamiltonian
-                prempo_key_type const& k1 = it->first.first;
-                prempo_key_type const& k2 = it->first.second;
-                prempo_value_type const& val = it->second;
+                prempo_key_type const& k1 = it.first.first;
+                prempo_key_type const& k2 = it.first.second;
+                prempo_value_type const& val = it.second;
                 // Looks for the tag inside the left dictionary. Here an error is raised if the operator is not
                 // found because, at each cycle, the left is filled with the right at the previous iteration
                 index_iterator ll = left.find(k1);
@@ -252,11 +253,10 @@ public:
             std::pair<index_type, index_type> rcd = rcdim(pre_tensor);
             // Spin-related part
             std::vector<spin_desc_t> right_spins(rcd.second);
-            for (typename std::vector<tag_block>::const_iterator it = pre_tensor.begin(); it != pre_tensor.end(); ++it)
-            {
-                spin_desc_t out_spin = couple(left_spins[std::get<0>(*it)],
-                                              tag_handler->get_op(std::get<2>(*it)).spin());
-                index_type out_index = std::get<1>(*it);
+            for (const auto& it : pre_tensor) {
+                spin_desc_t out_spin = couple(left_spins[std::get<0>(it)],
+                                              tag_handler->get_op(std::get<2>(it)).spin());
+                index_type out_index = std::get<1>(it);
                 assert(right_spins[out_index].get() == 0 || right_spins[out_index].get() == out_spin.get());
                 right_spins[out_index] = out_spin;
             }
@@ -266,17 +266,14 @@ public:
             index_type cnt = 0;
             // For starting, everything is its own hermitian conjugate
             std::iota(RightHerm.begin(), RightHerm.end(), 0);
-            for (typename std::map<prempo_key_type, prempo_key_type>::const_iterator
-                            h_it = HermKeyPairs.begin(); h_it != HermKeyPairs.end(); ++h_it)
-            {
-                index_type romeo = right[h_it->first];
-                index_type julia = right[h_it->second];
-                if (romeo < julia)
-                {
+            for (const auto& h_it : HermKeyPairs) {
+                index_type romeo = right[h_it.first];
+                index_type julia = right[h_it.second];
+                if (romeo < julia) {
                     cnt++;
                     std::swap(RightHerm[romeo], RightHerm[julia]);
-                    RightPhase[romeo] = HermitianPhases[h_it->first].first;
-                    RightPhase[julia] = HermitianPhases[h_it->first].second;
+                    RightPhase[romeo] = HermitianPhases[h_it.first].first;
+                    RightPhase[julia] = HermitianPhases[h_it.first].second;
                 }
             }
             MPOTensor_detail::Hermitian h_(LeftHerm, RightHerm, LeftPhase, RightPhase);
@@ -635,7 +632,7 @@ private:
     }
 
     /**
-     * @brief Method to insert an element in the prempo objecj
+     * @brief Method to insert an element in the prempo object
      * @param int p: site on which the operator acts.
      * @param pair<prempo_key_type, prempo_key_type> kk: element to add
      * @param prempo_value_type val: element to be added on site p
