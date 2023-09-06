@@ -226,6 +226,10 @@ namespace contraction {
     {
     }
 
+    /**
+     * @brief Same as MPSBoundaryProduct but contracts the MPS with the right boundary.
+     *
+     */
     template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
     class MPSBoundaryProduct
     {

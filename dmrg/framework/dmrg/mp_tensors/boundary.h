@@ -17,6 +17,10 @@
 #include <iostream>
 #include <set>
 
+/**
+ * @brief Boundary corresponds to the contraction between a bra, ket MPS and MPO.
+ *
+ */
 template<class Matrix, class SymmGroup>
 class Boundary : public storage::disk::serializable<Boundary<Matrix, SymmGroup> >
 {
