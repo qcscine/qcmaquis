@@ -29,47 +29,16 @@
 
 namespace index_detail
 {
-    template<class SymmGroup>
-    bool lt(std::pair<typename SymmGroup::charge, std::size_t> const & a,
-        std::pair<typename SymmGroup::charge, std::size_t> const & b)
-    {
-        return a.first < b.first;
-    }
-
-    template<class SymmGroup>
-    struct gt{
-        bool operator()(std::pair<typename SymmGroup::charge, std::size_t> const & a,
-                        std::pair<typename SymmGroup::charge, std::size_t> const & b){
-            return a.first > b.first;
-        }
+    const auto gt = [](const auto& left_pair, const auto& right_pair) -> bool {
+        return left_pair.first > right_pair.first;
     };
 
-    template<class SymmGroup>
-    typename SymmGroup::charge get_first(std::pair<typename SymmGroup::charge, std::size_t> const & x)
-    {
-        return x.first;
-    }
+    const auto lt = [](const auto& left_pair, const auto& right_pair) -> bool {
+        return left_pair.first < right_pair.first;
+    };
 
-    template<class SymmGroup>
-    std::size_t get_second(std::pair<typename SymmGroup::charge, std::size_t> const & x)
-    {
-        return x.second;
-    }
-
-    // simpler, and potentially faster since inlining is easier for the compiler
-    template<class SymmGroup>
-    class is_first_equal
-    {
-    public:
-        is_first_equal(typename SymmGroup::charge c) : c_(c) { }
-
-        bool operator()(std::pair<typename SymmGroup::charge, std::size_t> const & x) const
-        {
-            return x.first == c_;
-        }
-
-    private:
-        typename SymmGroup::charge c_;
+    const auto is_charge_equal = [](const auto& pair, const auto& charge) -> bool {
+        return pair.first == charge;
     };
 }
 
@@ -97,6 +66,7 @@ public:
     Index(std::size_t s_) : data_(s_), sorted_(true)  {}
     Index(std::initializer_list<data_entry_type> data) : data_{data}, sorted_(true) {}
 
+    /** @brief Returns the size of the block with charge c */
     std::size_t size_of_block(charge c) const
     {
         assert( has(c) );
@@ -118,17 +88,20 @@ public:
         if (sorted_) {
             match = std::lower_bound(
                 data_.begin(), data_.end(),
-                std::make_pair(c,0), index_detail::gt<SymmGroup>());
+                std::make_pair(c,0), index_detail::gt);
         } else {
             match = std::find_if(
                 data_.begin(), data_.end(),
-                index_detail::is_first_equal<SymmGroup>(c));
+                [&c](const auto& pair){ 
+                  return index_detail::is_charge_equal(pair, c);
+                });
         }
 
         if (match != data_.end() && (*match).first != c) { match = data_.end(); }
         return std::distance(data_.begin(), match);
     }
 
+    /** @brief Returns the size of the blocks up to the given charge */
     std::size_t position(value_type x) const
     {
         assert( has(x.first) );
@@ -139,12 +112,13 @@ public:
             [](const auto& acc, const auto& x){ return acc + x.second; });
     }
 
+    /** @brief Checks if the index contains a given charge */
     bool has(charge c) const
     {
         if (sorted_) {
             return std::binary_search(
                 data_.begin(), data_.end(),
-                std::make_pair(c,0), index_detail::gt<SymmGroup>());
+                std::make_pair(c,0), index_detail::gt);
         }
         else {
             auto it = std::find_if(data_.begin(), data_.end(),
@@ -154,12 +128,14 @@ public:
         }
     }
 
+    /** @brief Sorts the Index in **descending** order. */
     void sort()
     {
-        std::sort(data_.begin(), data_.end(), index_detail::gt<SymmGroup>());
+        std::sort(data_.begin(), data_.end(), index_detail::gt);
         sorted_ = true;
     }
 
+    /** @brief Inserts an element into the correct location in the sorted Index. */
     std::size_t insert(value_type const & x)
     {
         if (sorted_) {
@@ -172,17 +148,19 @@ public:
         }
     }
 
+    /** @brief Inserts an element in a given position in the Index. */
     void insert(std::size_t position, value_type const & x)
     {
         data_.insert(data_.begin() + position, x);
         sorted_ = false;
     }
 
+    /** @brief Shifts all charges in the Index by a given value. */
     void shift(charge diff)
     {
-        for (std::size_t k = 0; k < data_.size(); ++k) {
-            (*this)[k].first = SymmGroup::fuse((*this)[k].first, diff);
-        }
+      for (auto& element : data_) {
+        element.first = SymmGroup::fuse(element.first, diff);
+      }
     }
 
     bool operator==(Index const & o) const
@@ -201,6 +179,7 @@ public:
         return basis_iterator(*this);
     }
 
+    /** @brief Returns all the charges in the Index. */
     std::vector<charge> charges() const
     {
         std::vector<charge> ret(data_.size());
@@ -209,6 +188,7 @@ public:
         return ret;
     }
 
+    /** @brief Returns all the sizes in the Index */
     std::vector<std::size_t> sizes() const
     {
         std::vector<std::size_t> ret(data_.size());
@@ -217,6 +197,7 @@ public:
         return ret;
     }
 
+    /** @brief Returns the sum of all the sizes in the Index */
     std::size_t sum_of_sizes() const
     {
         return std::accumulate(
