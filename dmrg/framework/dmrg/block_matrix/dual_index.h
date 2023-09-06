@@ -53,49 +53,20 @@ namespace dual_index_detail
         std::size_t rs{};   // right size
     };
 
-    template<class SymmGroup>
-    struct is_left_charge_greater{
-        bool operator()(QnBlock<SymmGroup> const & a,
-                        QnBlock<SymmGroup> const & b)
-        {
-            return (a.lc > b.lc);
-        }
+    // --- Convenience functions ---
+    const auto is_left_charge_greater = [](const auto& QnBlockA, const auto& QnBlockB) -> bool {
+      return QnBlockA.lc > QnBlockB.lc;
     };
 
-    //// simpler, and potentially faster since inlining is easier for the compiler
-    template<class SymmGroup>
-    class are_charges_equal
-    {
-    public:
-        are_charges_equal(typename SymmGroup::charge c1, typename SymmGroup::charge c2) : c1_(c1), c2_(c2) { }
-
-        bool operator()(QnBlock<SymmGroup> const & x) const
-        {
-            return x.lc == c1_ && x.rc == c2_;
-        }
-
-    private:
-        typename SymmGroup::charge c1_;
-        typename SymmGroup::charge c2_;
+    const auto are_charges_equal = [](const auto& QnBlock, const auto& left_charge, const auto& right_charge) -> bool {
+      return QnBlock.lc == left_charge && QnBlock.rc == right_charge;
     };
 
-    /**
-     * @brief This is used in case the index is not sorted. Checks only for 
-     *        equality of the left charge.
+    /** @brief This is used in case the index is not sorted.
+     *         Checks only for equality of the left charge.
      */
-    template<class SymmGroup>
-    class is_left_charge_equal
-    {
-    public:
-        is_left_charge_equal(typename SymmGroup::charge c1) : c1_(c1) { }
-
-        bool operator()(QnBlock<SymmGroup> const & x) const
-        {
-            return x.lc == c1_;
-        }
-
-    private:
-        typename SymmGroup::charge c1_;
+    const auto is_left_charge_equal = [](const auto& QnBlock, const auto& charge) -> bool {
+      return QnBlock.lc == charge;
     };
 }
 
@@ -158,7 +129,9 @@ public:
             match = std::find_if(
                 data_.begin(),
                 data_.end(),
-                dual_index_detail::are_charges_equal<SymmGroup>(row,col));
+                [&row, &col](const auto& QnBlock){
+                   return dual_index_detail::are_charges_equal(QnBlock, row, col);
+                });
         }
         
         // If the element is not found, return the position of the last element.
@@ -169,9 +142,7 @@ public:
         return std::distance(data_.begin(), match);
     }
 
-    /**
-     * @brief Checks if quantum number matching (row, col) exists.
-     */
+    /** @brief Checks if quantum number matching (row, col) exists. */
     bool has(charge row, charge col) const
     {
         if (sorted_) {
@@ -184,38 +155,38 @@ public:
             return std::find_if(
                 data_.begin(),
                 data_.end(),
-                dual_index_detail::are_charges_equal<SymmGroup>(row,col)) != data_.end();
+                [&row, &col](const auto& QnBlock){
+                   return dual_index_detail::are_charges_equal(QnBlock, row, col);
+                }) != data_.end();
         }
     }
 
-    /**
-     * @brief Finds first element matching with left charge equal to row.
-     */
+    /** @brief Finds first element matching with left charge equal to row. */
     const_iterator left_lower_bound(charge row) const
     {
         if (sorted_) {
             return std::lower_bound(
                 data_.begin(), data_.end(),
                 value_type(row, SymmGroup::IdentityCharge,0,0),
-                dual_index_detail::is_left_charge_greater<SymmGroup>());
+                dual_index_detail::is_left_charge_greater);
         }
         else {
             return std::find_if(
                 data_.begin(), data_.end(),
-                dual_index_detail::is_left_charge_equal<SymmGroup>(row));
+                [&row](const auto& QnBlock){
+                   return dual_index_detail::is_left_charge_equal(QnBlock, row);
+                });
         }
     }
 
-    /**
-     * @brief Returns all the elements with the same left charge as row.
-     */
+    /** @brief Returns all the elements with the same left charge as row. */
     std::pair<const_iterator, const_iterator> left_equal_range(charge row) const
     {
         if (sorted_) {
             return std::equal_range(
                 data_.begin(), data_.end(),
                 value_type(row, SymmGroup::IdentityCharge,0,0),
-                dual_index_detail::is_left_charge_greater<SymmGroup>());
+                dual_index_detail::is_left_charge_greater);
         }
         else {
           throw std::runtime_error("Not implemented for unsorted");
@@ -228,17 +199,17 @@ public:
         }
     }
 
+    /** @brief Checks if block with charge equal to row exists. */
     bool left_has(charge row) const
     {
         const_iterator it = left_lower_bound(row);
         return (it != data_.end() && row == it->lc);
     }
 
+    /** @brief Checks if sorted flag is set */
     bool is_sorted() const { return sorted_; }
     
-    /**
-     * @brief Sorts the DualIndex in descending order.
-     */
+    /** @brief Sorts the DualIndex in descending order. */
     void sort()
     {
         // kszenes: Why are we sorting in descending order?
@@ -246,9 +217,7 @@ public:
         sorted_ = true;
     }
     
-    /**
-     * @brief Inserts an element into the DualIndex and returns its position.
-     */
+    /** @brief Inserts an element into the DualIndex and returns its position. */
     std::size_t insert(value_type const & x)
     {
         if (sorted_) {
@@ -261,6 +230,7 @@ public:
         }
     }
     
+    /** @brief Shifts bothe left and right charge by diff. */
     void shift(charge diff)
     {
         for (auto& x : data_) {
@@ -286,9 +256,7 @@ public:
         return basis_iterator(*this);
     }
     
-    /**
-     * @brief Computes sum or rows in block_matrix.
-     */
+    /** @brief Computes sum or rows in block_matrix. */
     std::size_t sum_of_left_sizes() const
     {
         return std::accumulate(data_.begin(), data_.end(), 0,
@@ -297,9 +265,7 @@ public:
             });
     }
 
-    /**
-     * @brief Computes total number of elements in block_matrix.
-     */
+    /** @brief Computes total number of elements in block_matrix. */
     std::size_t memory_size() const
     {
         return std::accumulate(data_.begin(), data_.end(), 0,
@@ -400,18 +366,23 @@ public:
 };
 
 template<class SymmGroup>
-std::ostream& operator<<(std::ostream& os, DualIndex<SymmGroup> const & idx)
+std::ostream& operator<<(std::ostream& os, const dual_index_detail::QnBlock<SymmGroup>& block)
+{
+      os << "( " << block.lc << ","
+                 << block.rc << ": "
+                 << block.ls << "x"
+                 << block.rs
+         << " )";
+    return os;
+}
+
+template<class SymmGroup>
+std::ostream& operator<<(std::ostream& os, const DualIndex<SymmGroup>& idx)
 {
     os << "|";
-    for (typename DualIndex<SymmGroup>::const_iterator it = idx.begin();
-         it != idx.end();
-         ++it)
-    {
-        os << "( " << (*it).lc << ","
-                   << (*it).rc << ": "
-                   << (*it).ls << "x"
-                   << (*it).rs
-           << " )";
+    for (const auto& QnBlock : idx) {
+      os << QnBlock;
+
     }
     os << "|";
 
