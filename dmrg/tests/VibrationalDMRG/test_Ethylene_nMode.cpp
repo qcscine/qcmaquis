@@ -77,3 +77,5 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Ethylene_nMode, EthyleneNModeFixture)
 #endif // HAS_NU1
 }
 
+#endif // DMRG_VIBRATIONAL
+

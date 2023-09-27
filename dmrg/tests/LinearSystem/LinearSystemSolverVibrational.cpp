@@ -158,3 +158,5 @@ BOOST_FIXTURE_TEST_CASE(Test_LinearSolver_Trivial_Complex, WatsonFixture) {
   BOOST_CHECK_CLOSE(std::abs(lhsTerm), std::abs(rhsTerm), 1.0E-10);
 }
 
+#endif // HAVE_TrivialGroup
+

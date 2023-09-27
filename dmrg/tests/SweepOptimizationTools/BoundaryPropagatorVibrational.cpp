@@ -73,4 +73,5 @@ BOOST_FIXTURE_TEST_CASE(Test_BoundaryPropagator_Vibrational_NU1, NModeFixture)
 }
 
 #endif // HAVE_NU1
+#endif // DMRG_VIBRATIONAL
 

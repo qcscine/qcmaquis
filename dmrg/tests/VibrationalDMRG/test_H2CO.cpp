@@ -40,3 +40,5 @@ BOOST_FIXTURE_TEST_CASE(Test_DMRG_, WatsonFixture)
 #endif // HAVE_TrivialGroup
 }
 
+#endif // DMRG_VIBRATIONAL
+
