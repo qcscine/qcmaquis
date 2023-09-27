@@ -1,9 +1,9 @@
-ngrowsweeps                      = 5
-nmainsweeps                      = 5
+ngrowsweeps                      = 1
+nmainsweeps                      = 1
 max_bond_dimension               = 50
 
 truncation_initial               = 0
-truncation_final                 = 0
+truncation_main                 = 0
 
 optimization                     = singlesite 
 symmetry                         = none

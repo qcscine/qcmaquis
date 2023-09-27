@@ -23,6 +23,12 @@ macro(create_tools_vib_target TNAME CPPFILE LIBS)
   endif()
 endmacro()
 
+macro(create_tools_target TNAME CPPFILE LIBS)
+    add_executable(${TNAME} ${CPPFILE})
+    target_link_libraries(${TNAME} ${LIBS})
+    install(TARGETS ${TNAME} RUNTIME DESTINATION bin COMPONENT applications)
+endmacro()
+
 if (BUILD_MPS_OVERLAP)
   # Real case
   create_tools_symm_target("mps_overlap_u1"       "U1"       "mps_overlap.cpp"  "${DMRG_APP_LIBRARIES}")
@@ -87,6 +93,9 @@ if (BUILD_MPS2CI)
   create_tools_vib_target( "srcas_vib"            "srcas_vibrational.cpp"   "dmrg_models;${DMRG_APP_LIBRARIES};srcas_utils")
 endif (BUILD_MPS2CI)
 
+if (BUILD_SRCAS)
+  create_tools_target("srcas"  "srcas.cpp"   "dmrg_models;${DMRG_APP_LIBRARIES}")
+endif (BUILD_SRCAS)
 # DEAS
 if (BUILD_DEAS)
   create_tools_symm_target("deas"   "TWOU1"   "deas.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")

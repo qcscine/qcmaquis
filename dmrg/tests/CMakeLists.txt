@@ -58,6 +58,12 @@ if(BUILD_PREBO)
     target_link_libraries(test_mps_mpo_ops_prebo ${DMRG_APP_LIBRARIES})
 endif(BUILD_PREBO)
 
+# SRCAS
+if (BUILD_SRCAS)
+    add_executable(test_srcas tools/test_srcas.cpp)
+    target_link_libraries(test_srcas ${DMRG_APP_LIBRARIES})
+endif(BUILD_SRCAS)
+
 if(BUILD_VIBRATIONAL)
     # Unit test
     add_executable(test_vibrational_lattice vibrational/test_vibrational_lattice.cpp)

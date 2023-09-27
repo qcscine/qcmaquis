@@ -31,3 +31,4 @@ if (BUILD_TRANSCORRELATED_DMRG)
 endif (BUILD_TRANSCORRELATED_DMRG)
 
 add_subdirectory(tools)
+

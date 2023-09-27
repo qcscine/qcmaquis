@@ -66,7 +66,7 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Ethylene_nMode, EthyleneNModeFixture)
     parametersEthyleneNMode.set("alpha_main", 1.0E-15);
     parametersEthyleneNMode.set("alpha_final", 0);
     parametersEthyleneNMode.set("truncation_initial", 1.0E-20);
-    parametersEthyleneNMode.set("truncation_final", 1.0E-20);
+    parametersEthyleneNMode.set("truncation_main", 1.0E-20);
     parametersEthyleneNMode.set("eigensolver", "IETL_JCD");
     parametersEthyleneNMode.set("optimization", "singlesite");
     // Creates the interface
@@ -77,4 +77,3 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Ethylene_nMode, EthyleneNModeFixture)
 #endif // HAS_NU1
 }
 
-#endif // DMRG_VIBRATIONAL

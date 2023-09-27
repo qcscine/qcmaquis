@@ -1,31 +1,14 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2021 Institute for Theoretical Physics, ETH Zurich
- *               2021 by Alberto Baiardi <alberto.baiardi@sns.it>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef SINGLESITETIMEEVOLUTION_H
 #define SINGLESITETIMEEVOLUTION_H
+
+#include <chrono>
 
 #include "dmrg/mp_tensors/mpo_ops.h"
 #include "dmrg/evolve/TimeEvolutionSweep.h"
@@ -96,7 +79,7 @@ public:
    */
   void evolve_sweep(int sweep) override {
     // Initialization
-    boost::chrono::high_resolution_clock::time_point sweep_now = boost::chrono::high_resolution_clock::now();
+    std::chrono::high_resolution_clock::time_point sweep_now = std::chrono::high_resolution_clock::now();
     // Clears the vector with the results of the previous iteration
     iteration_results_.clear();
     typename MPSTensor<Matrix, SymmGroup>::scalar_type dipole;
@@ -108,7 +91,7 @@ public:
     Storage::prefetch(right_[_site+1]);
     // Main loop
     for (; _site < 2*L_; ++_site) {
-      boost::chrono::high_resolution_clock::time_point now, then;
+      std::chrono::high_resolution_clock::time_point now, then;
       site = to_site(L_, _site);
       int lr = (_site < L) ? +1 : -1;
       print_header(sweep, site, lr);
@@ -202,8 +185,8 @@ public:
       iteration_results_["BondDimension"] << trunc.bond_dimension;
       iteration_results_["TruncatedWeight"] << trunc.truncated_weight;
       iteration_results_["SmallestEV"] << trunc.smallest_ev;
-      boost::chrono::high_resolution_clock::time_point sweep_then = boost::chrono::high_resolution_clock::now();
-      double elapsed = boost::chrono::duration<double>(sweep_then - sweep_now).count();
+      std::chrono::high_resolution_clock::time_point sweep_then = std::chrono::high_resolution_clock::now();
+      double elapsed = std::chrono::duration<double>(sweep_then - sweep_now).count();
       maquis::cout << " Sweep has been running for " << elapsed << " seconds. \n" << std::endl;
       parallel::meminfo();
       if (stop_callback())

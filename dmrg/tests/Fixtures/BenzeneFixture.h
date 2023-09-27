@@ -1,28 +1,9 @@
-/*****************************************************************************
-*
-* ALPS MPS DMRG Project
-*
-* Copyright (C) 2021 Institute for Theoretical Physics, ETH Zurich
-*               2021- by Alberto Baiardi <abaiardi@ethz.ch>
-*
-* This software is part of the ALPS Applications, published under the ALPS
-* Application License; you can use, redistribute it and/or modify it under
-* the terms of the license, either version 1 or (at your option) any later
-* version.
-*
-* You should have received a copy of the ALPS Application License along with
-* the ALPS Applications; see the file LICENSE.txt. If not, the license is also
-* available from http://alps.comp-phys.org/.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
-* SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
-* FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
-* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-* DEALINGS IN THE SOFTWARE.
-*
-*****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef TEST_BENZENE_FIXTURE_H
 #define TEST_BENZENE_FIXTURE_H
@@ -327,7 +308,7 @@ struct BenzeneFixture
         parametersBenzeneRealTime.set("imaginary_time", "no");
         parametersBenzeneRealTime.set("TD_backpropagation", "yes");
         parametersBenzeneRealTime.set("truncation_initial", 1.0E-30);
-        parametersBenzeneRealTime.set("truncation_final", 1.0E-30);
+        parametersBenzeneRealTime.set("truncation_main", 1.0E-30);
         parametersBenzeneRealTime.set("alpha_initial", 0.);
         parametersBenzeneRealTime.set("alpha_main", 0.);
         parametersBenzeneRealTime.set("alpha_final", 0.);
@@ -369,7 +350,7 @@ struct BenzeneFixture
         parametersBenzene.set("u1_total_charge1", 3);
         parametersBenzene.set("u1_total_charge2", 3);
         parametersBenzene.set("truncation_initial", 1.0E-30);
-        parametersBenzene.set("truncation_final", 1.0E-30);
+        parametersBenzene.set("truncation_main", 1.0E-30);
         parametersBenzene.set("init_type", "hf");
         parametersBenzene.set("hf_occ", "4,4,4,1,1,1");
         parametersBenzene.set("ietl_jcd_tol", 1.0E-15);

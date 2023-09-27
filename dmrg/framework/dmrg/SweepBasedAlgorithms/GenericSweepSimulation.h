@@ -1,28 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2022 Institute for Theoretical Physics, ETH Zurich
- *               2022- by Alberto Baiardi <abaiardi@ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef GENERIC_SWEEPS_SIMULATION_H
 #define GENERIC_SWEEPS_SIMULATION_H
@@ -251,9 +232,9 @@ protected:
 
   /** @brief Method to get the truncation threshold for a given sweep */
   double get_cutoff(int sweep) const {
-    return (sweep >= parms_.template get<int>("ngrowsweeps")) ? parms_.template get<double>("truncation_final")
+    return (sweep >= parms_.template get<int>("ngrowsweeps")) ? parms_.template get<double>("truncation_main")
         : log_interpolate(parms_.template get<double>("truncation_initial"),
-                          parms_.template get<double>("truncation_final"),
+                          parms_.template get<double>("truncation_main"),
                           parms_.template get<int>("ngrowsweeps"), sweep);
   }
 
@@ -337,8 +318,10 @@ protected:
   }
 
   /** @brief Checks whether the current microiteration is associated with a terminal site */
-  inline bool isTerminal() const { return indexOfMicroIteration_ == 0 ||
-                                          SweepTraitClass::changeDirectionNextMicroiteration(L_, indexOfMicroIteration_); }
+  inline bool isTerminal() const {
+    return indexOfMicroIteration_ == 0 || SweepTraitClass::changeDirectionNextMicroiteration(L_, indexOfMicroIteration_)
+                                          && SweepTraitClass::getSweepDirection(L_, indexOfMicroIteration_) == SweepDirectionType::Forward;
+  }
 
 protected:
   MPSType& mps_;

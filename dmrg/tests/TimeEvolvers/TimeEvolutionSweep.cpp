@@ -1,28 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2021 Institute for Theoretical Physics, ETH Zurich
- *               2021 by Alberto Baiardi <abaiardi@ethz.ch>
- * 
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- * 
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #define BOOST_TEST_MODULE TimeEvolutionSweep
 
@@ -53,9 +34,9 @@ TwoU1PG
 #endif
 > symmetries;
 
+#ifdef DMRG_TD
 /** Checks the constructor of a site shifter object */
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestConstructorSingleSiteEvolution, S, symmetries, TestTimeEvolverFixture) {
-#ifdef DMRG_TD
     using SingleSiteTimeEvolution = SingleSiteTimeEvolution<cmatrix, S, storage::disk>;
     // In both cases, we construct everything as is done in [sim.hpp]
     auto lat = Lattice(parametersH2FourOrbitals);
@@ -71,10 +52,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestConstructorSingleSiteEvolution, S, symmetri
         ssEvolver.evolve_sweep(iSweep);
     auto finalEnergy = expval(mps, mpo);
     BOOST_CHECK_CLOSE(maquis::real(initialEnergy), maquis::real(finalEnergy), 1.0E-10);
-#endif // DMRG_TD
 }
-
-#ifdef DMRG_TD
 
 /** Checks the constructor of a site shifter object */
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestConstructorTwoSiteEvolution, S, symmetries, TestTimeEvolverFixture) {
@@ -204,5 +182,4 @@ BOOST_FIXTURE_TEST_CASE(TestSingleSiteImaginaryTimeVsTIRelativistic, TestTimeEvo
 }
 
 #endif // HAVE_U1DG
-
 #endif // DMRG_TD

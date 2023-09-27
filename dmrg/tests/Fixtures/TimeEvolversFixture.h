@@ -1,28 +1,9 @@
-/*****************************************************************************
-*
-* ALPS MPS DMRG Project
-*
-* Copyright (C) 2021 Institute for Theoretical Physics, ETH Zurich
-*               2021- by Alberto Baiardi <abaiardi@ethz.ch>
-*
-* This software is part of the ALPS Applications, published under the ALPS
-* Application License; you can use, redistribute it and/or modify it under
-* the terms of the license, either version 1 or (at your option) any later
-* version.
-*
-* You should have received a copy of the ALPS Application License along with
-* the ALPS Applications; see the file LICENSE.txt. If not, the license is also
-* available from http://alps.comp-phys.org/.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
-* SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
-* FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
-* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-* DEALINGS IN THE SOFTWARE.
-*
-*****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef TEST_TIMEEVOLVER_FIXTURE_H
 #define TEST_TIMEEVOLVER_FIXTURE_H
@@ -42,7 +23,7 @@ struct TestTimeEvolverFixture
     /** @brief Constructor for the fixture class */
     TestTimeEvolverFixture() {
         // Same as above, but double
-        integralsH2 = maquis::integral_map<double> { { { 1, 1, 1, 1 },  0.597263715971     },
+        integralsDouble = maquis::integral_map<double> { { { 1, 1, 1, 1 },  0.597263715971     },
                                                          { { 1, 1, 2, 1 },  0.106899493032E-01 },
                                                          { { 2, 1, 2, 1 },  0.215106203079E-02 },
                                                          { { 2, 2, 2, 1 },  0.310109624236E-02 },
@@ -1061,7 +1042,7 @@ struct TestTimeEvolverFixture
                                                 };
 #endif
         // == PARAMETERS FOR REAL-TIME EVOLUTION ==
-        parametersH2FourOrbitals.set("integrals_binary", maquis::serialize(integralsH2));
+        parametersH2FourOrbitals.set("integrals_binary", maquis::serialize(integralsDouble));
         parametersH2FourOrbitals.set("site_types", "0,0,0,0");
         parametersH2FourOrbitals.set("L", 4);
         parametersH2FourOrbitals.set("irrep", 0);
@@ -1086,7 +1067,7 @@ struct TestTimeEvolverFixture
         parametersH2FourOrbitals.set("alpha_main", 1.0E-15);
         parametersH2FourOrbitals.set("alpha_final", 0);
         // == PARAMETERS FOR IMAGINARY-TIME EVOLUTION ==
-        parametersH2FourOrbitalsImaginary.set("integrals_binary", maquis::serialize(integralsH2));
+        parametersH2FourOrbitalsImaginary.set("integrals_binary", maquis::serialize(integralsDouble));
         parametersH2FourOrbitalsImaginary.set("site_types", "0,0,0,0");
         parametersH2FourOrbitalsImaginary.set("L", 4);
         parametersH2FourOrbitalsImaginary.set("irrep", 0);
@@ -1106,7 +1087,7 @@ struct TestTimeEvolverFixture
         parametersH2FourOrbitalsImaginary.set("u1_total_charge1", 1);
         parametersH2FourOrbitalsImaginary.set("u1_total_charge2", 1);
         // == PARAMETERS FOR REAL-TIME EVOLUTION ==
-        parametersH2FourOrbitalsReal.set("integrals_binary", maquis::serialize(integralsH2));
+        parametersH2FourOrbitalsReal.set("integrals_binary", maquis::serialize(integralsDouble));
         parametersH2FourOrbitalsReal.set("site_types", "0,0,0,0");
         parametersH2FourOrbitalsReal.set("L", 4);
         parametersH2FourOrbitalsReal.set("irrep", 0);
@@ -1142,7 +1123,7 @@ struct TestTimeEvolverFixture
     std::string returnStringRepresentation() { return ""; };
     // Class members
     IntegralMapType integralsRelativistic;
-    IntegralMapTypeDouble integralsH2;
+    IntegralMapTypeDouble integralsDouble;
     DmrgParameters parametersH2FourOrbitals, parametersH2FourOrbitalsImaginary, parametersH2FourOrbitalsReal, parametersRelativistic;
 };
 
