@@ -44,3 +44,4 @@ int main(int argc, char ** argv)
     DCOLLECTOR_SAVE_TO_FILE(svd_collector, "collectors.h5", "/results")
     maquis::cout << "Task took " << elapsed << " seconds." << std::endl;
   }
+}
