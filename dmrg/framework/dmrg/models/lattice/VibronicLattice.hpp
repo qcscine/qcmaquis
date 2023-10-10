@@ -110,7 +110,6 @@ public:
             vector_types[(nModes+nElecStates)*idx1+idx2] = 0; //electronic type
             for(auto idx3 = 1; idx3 <= nModes; idx3++){
               if((nModes+nElecStates)*idx1+idx2+idx3 < L) { //checks whether still within allowed range
-                std::cout << "entered if statement in lattice for site " << (nModes+nElecStates)*idx1+idx2+idx3 << " which gets vibtype " << vibtype << std::endl;
                 vector_types[(nModes+nElecStates)*idx1+idx2+idx3] = vibtype; //vibrational type
                 vibtype++;
               }
@@ -119,9 +118,6 @@ public:
         }
       }
       numTypes = nModes*nParticles-nConnecting+1;
-      for(int i=0; i < vector_types.size(); i++){
-        maquis::cout << "DEBUG_LATTICE: vector_types_element " << i << " is: " << vector_types[i] << std::endl;
-      }
     } else { 
       if (eleFirst) {
         for (auto idx1 = 0; idx1 < nParticles*nElecStates; idx1++) {
