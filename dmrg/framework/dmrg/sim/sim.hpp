@@ -253,7 +253,7 @@ template <class Matrix, class SymmGroup>
 void sim<Matrix, SymmGroup>::measure(std::string archive_path, measurements_type & meas)
 {
     #ifdef MAQUIS_OPENMP
-    #pragma omp parallel for schedule(dynamic)
+    #pragma omp parallel for schedule(dynamic) if(parms["parallelize_measurements"])
     for (typename measurements_type::iterator it = meas.begin(); it < meas.end(); it++) {
         MPS<Matrix, SymmGroup> mpsCopy = mps; // this is required as the measurements might change the pairing of the mps
         // note that omp firstprivate cannot be used since the mps does apparently not fulfill the necessary requirements

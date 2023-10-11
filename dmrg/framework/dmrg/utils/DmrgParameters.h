@@ -232,6 +232,9 @@ private:
         add_option("feast_verbose", "If yes, activate verbose output for FEAST", value("no"));
         add_option("feast_standard_deviation_threshold", "If set, uses this threshold to accept/reject an eigenpair");
         add_option("feast_print_timings", "If equal to yes, prints timings spent in each step", value("yes"));
+
+        // Parameters related to parallelization
+        add_option("parallelize_measurements", "If true, measurements will be executed in parallel by OPENMP", value(false));
     }
 };
 
