@@ -121,26 +121,68 @@ template<class Matrix, class SymmGroup>
 class coherent_mps_init : public mps_initializer<Matrix, SymmGroup>
 {
 public:
-  // Declaration of types
-  using stateEntryType = std::vector<boost::tuple<typename SymmGroup::charge, int> >;
-  using stateType = std::vector<stateEntryType>;
-
-  /** @brief Class constructor */
-  coherent_mps_init(BaseParameters & params, std::vector<Index<SymmGroup> > const& phys_dims_,
+  /** @brief Class constructor 
+   *
+   * Note that generally determinants are utilized except for SU2, where CSF are constructed.
+   * 
+   */
+  coherent_mps_init(BaseParameters & params_, std::vector<Index<SymmGroup> > const& phys_dims_,
                     typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
-    : coeff(params["init_coeff"].as<std::vector<double> >()), phys_dims(phys_dims_),
-      site_type(site_type_), right_end(right_end_)
+    : phys_dims(phys_dims_), site_type(site_type_), right_end(right_end_), params(params_)
   {
-    std::vector<std::string> list_sa;
-    std::string input_str = params["init_basis_state"].str();
-    boost::split(list_sa, input_str, boost::is_any_of("|"));
-    for (int i = 0; i < list_sa.size(); i++) {
-      std::stringstream ss(list_sa[i]);
+    if (params["init_file"].str().empty() && params["init_basis_state"].str().empty())
+      throw std::runtime_error("Either init_file or init_basis_state has to be provided for the coherent initializer");
+
+    initialBondDim = (params["init_bond_dimension"] > 5) ? params["init_bond_dimension"] : params["max_bond_dimension"];
+    fromFile = (params["init_file"].str().empty()) ? false : true;
+
+    std::vector<std::string> list_dets;
+
+    if (fromFile) {
+      std::string fileName = params["init_file"];
+      std::vector<std::string> specifiedFiles;
+      boost::split(specifiedFiles, fileName, boost::is_any_of("|"));
+      fileName=specifiedFiles[0]; // This is a safeguard for the interface sim initialization in case several filenames are provided
+      if (!boost::filesystem::exists(fileName))
+        throw std::runtime_error("Initializer file " + fileName + " does not exist\n");
+      maquis::cout << "Initializing MPS from file " << fileName << std::endl;
+      std::ifstream stateFile;
+      stateFile.open(fileName.c_str());
+      std::string line;
+      std::vector< std::string > line_splitted;
+      while (std::getline(stateFile, line)) {
+        boost::trim_left(line);
+        boost::trim_right(line);
+        boost::split(line_splitted, line, boost::is_any_of(" "), boost::token_compress_on);
+        coeffs.push_back(std::stod(line_splitted[0]));
+        list_dets.push_back(line_splitted[1]);
+      }
+      stateFile.close();
+    } else {
+      boost::split(list_dets, params["init_basis_state"].str(), boost::is_any_of("|"));
+      coeffs = params_["init_coeff"].as<std::vector<double> >();
+    }
+
+    for (int i = 0; i < list_dets.size(); i++) {
+      std::stringstream ss(list_dets[i]);
       int ichar;
       std::vector<int> tmp_vec;
-      while (ss >> ichar) {
-        tmp_vec.push_back(ichar);
-        ss.ignore(1);
+      if (params["init_state_type"] == "csf"){
+        char jchar;
+        while (ss.get(jchar)) {
+          if (jchar == '2') ichar = 4; // doubly occ to explicitly construct csf
+          else if (jchar == 'u') ichar = 6; // up to explicitly construct csf
+          else if (jchar == 'd') ichar = 7; // down to explicitly construct csf
+          else if  (jchar == '0') ichar = 1; // not occ to explicitly construct csf
+          else throw std::runtime_error("The specificed state contains symbols which are not recognized. Abort.");
+          tmp_vec.push_back(ichar);
+          ss.ignore(1);
+        }
+      } else { // regular determinant
+        while (ss >> ichar) {
+          tmp_vec.push_back(ichar);
+          ss.ignore(1);
+        }
       }
       basis_index.push_back(tmp_vec);
     }
@@ -152,30 +194,43 @@ public:
   void operator()(MPS<Matrix, SymmGroup>& mps)
   {
     MPS<Matrix, SymmGroup> MPSBuffer;
+    auto sym = params["symmetry"].as<std::string>();
     for (int i=0; i<basis_index.size(); i++ ) {
-      state = stateType(mps.length(), stateEntryType(1));
-      for (int j=0; j<mps.length(); j++)
-        state[j][0] = phys_dims[site_type[j]].element(basis_index[i][j]);
-      auto mps_tmp = state_mps<Matrix>(state, phys_dims, site_type, right_end);
+      auto state = HelperClassBasisVectorConverter<SymmGroup>::GenerateIndexFromString(params, basis_index[i], phys_dims, site_type, mps.length());
+      auto mps_tmp = (sym=="su2u1" || sym=="su2u1pg") ? state_mps_cd<Matrix>(state, phys_dims, site_type, right_end, initialBondDim, false)
+                                                      : state_mps<Matrix>(state, phys_dims, site_type, right_end);
+      mps_tmp.normalize_right();
       if (i == 0) {
         mps = mps_tmp;
-        mps[0] *= coeff[0];
+        mps[0] *= coeffs[0];
       }
       else {
-        MPSBuffer = join(mps, mps_tmp, 1., coeff[i]);
+        MPSBuffer = join(mps, mps_tmp, 1., coeffs[i]);
         mps = MPSBuffer;
       }
     }
+    // Compression to initialBondDim
+    mps = compression::l2r_compress(mps, initialBondDim, 0);
+    // Normalization
+    for (int i = 0; i < mps.length(); i++) {
+      mps[i].divide_by_scalar(mps[i].scalar_norm());
+    }
+    if (mps[mps.length()-1].col_dim()[0].first != right_end)
+      throw std::runtime_error("Initial state does not satisfy total quantum numbers.");
   }
 
 private:
   typename SymmGroup::charge right_end;
-  std::vector<double> coeff;
   std::vector<Index<SymmGroup> > phys_dims;
   std::vector<int> site_type;
   std::vector< std::vector<int> > basis_index;
-  stateType state;
+  std::vector<double> coeffs;
+  BaseParameters& params;
+  int initialBondDim;
+  bool fromFile;
 };
+
+
 
 /**
  * @brief ONV MPS initializer

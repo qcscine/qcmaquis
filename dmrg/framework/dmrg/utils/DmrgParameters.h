@@ -235,6 +235,12 @@ private:
 
         // Parameters related to parallelization
         add_option("parallelize_measurements", "If true, measurements will be executed in parallel by OPENMP", value(false));
+
+        //coherent initialization
+        add_option("init_state_type", "Type of provided states, can be [csf] for SU2 calcultions, or [det] by default", value("det"));
+        add_option("init_file", "Filename(s) for coherent initalization", value(""));
+
+
     }
 };
 
