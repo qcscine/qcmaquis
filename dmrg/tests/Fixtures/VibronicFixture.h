@@ -160,6 +160,28 @@ struct VibronicFixture
         parametersExcitonicExtendedAggregate.set("integral_file", "integral_file_ExcitonicExtended");
         parametersExcitonicExtendedAggregate.set("hamiltonian_units", "Hartree");
         //
+        parametersSimpleCoherent.set("nsweeps", 10);
+        parametersSimpleCoherent.set("max_bond_dimension", 50);
+        parametersSimpleCoherent.set("integral_file", "integral_file_simpleCoherent");
+        parametersSimpleCoherent.set("L", 4);
+        parametersSimpleCoherent.set("Nmax", 6);
+        parametersSimpleCoherent.set("symmetry", "u1");
+        parametersSimpleCoherent.set("LATTICE", "vibronic lattice");
+        parametersSimpleCoherent.set("MODEL", "excitonicextended");
+        parametersSimpleCoherent.set("vibronic_J_coupling", -0.0461);
+        parametersSimpleCoherent.set("vibronic_sorting", "intertwined");
+        parametersSimpleCoherent.set("vibronic_num_elestates", 1);        
+        parametersSimpleCoherent.set("vibronic_num_vibmodes", 1);
+        parametersSimpleCoherent.set("vibronic_num_molecules", 2);
+        parametersSimpleCoherent.set("vibronic_num_excitons", 1);
+        parametersSimpleCoherent.set("vibronic_num_connectingmodes", 0);
+        parametersSimpleCoherent.set("simulation_type", "TD");
+        parametersSimpleCoherent.set("propagator_accuracy", 1.0E-10);
+        parametersSimpleCoherent.set("propagator_maxiter", 10);
+        parametersSimpleCoherent.set("time_step", 10);
+        parametersSimpleCoherent.set("hamiltonian_units", "Hartree");
+        parametersSimpleCoherent.set("time_units", "as");
+        //
         integralFileFakeVibronic.open("integral_file_VibronicFile");
         integralFileFakeVibronic << "EL_ST 0 0 " << std::endl;
         integralFileFakeVibronic << " 1.0000   1   1  " << std::endl;
@@ -342,6 +364,13 @@ struct VibronicFixture
         integralFileTestNmax << "-2. 1 1 -2 -2" << std::endl;
         integralFileTestNmax << "2. 1 1 2 2" << std::endl;
         integralFileTestNmax.close();
+        //
+        IntegralFileSimpleCoherent.open("integral_file_simpleCoherent");
+        IntegralFileSimpleCoherent << "-1. 0 0 -1 -1" << std::endl;
+        IntegralFileSimpleCoherent << "1. 0 0 1 1" << std::endl;
+        IntegralFileSimpleCoherent << "-1. 1 0 -1 -1" << std::endl;
+        IntegralFileSimpleCoherent << "1. 1 0 1 1" << std::endl;
+        IntegralFileSimpleCoherent.close();
     }
 
     /** @brief Class destructor */
@@ -356,9 +385,9 @@ struct VibronicFixture
     // Class members
     DmrgParameters parametersVibronic, parametersFakeVibronic, parametersExcitonicAggregate,
         parametersExcitonicAggregateTwoSites, parametersVibronicPyrazineRedDim, parametersVibronicPyrazineRedDimFull, parametersVibronicThiopheneDimer,
-        parametersExcitonicExtendedAggregate, parametersTestNmax;
+        parametersExcitonicExtendedAggregate, parametersTestNmax, parametersSimpleCoherent;
     std::ofstream integralFileFakeVibronic, integralFileExcitonic, integralFileExcitonicHarmonic,
-        integralFilePyrazineRedDim, integralFilePyrazineRedDimFull, integralFileThiopheneDimer, integralFileExcitonicExtended, integralFileTestNmax;
+        integralFilePyrazineRedDim, integralFilePyrazineRedDimFull, integralFileThiopheneDimer, integralFileExcitonicExtended, integralFileTestNmax, IntegralFileSimpleCoherent;
 };
 
 #endif
