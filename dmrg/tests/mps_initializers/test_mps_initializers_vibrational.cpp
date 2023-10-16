@@ -177,6 +177,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_Coherent, WatsonFixture)
   // Construction of the coherent superposition
   parametersEthyleneWatson.set("init_type", "coherent");
   parametersEthyleneWatson.set("init_coeff", "0.5,0.5");
+  parametersEthyleneWatson.set("init_bond_dimension", 5);
   parametersEthyleneWatson.set("init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0|1,0,0,0,0,0,0,0,0,0,0,0");
   auto mpsCoherent = MPS<matrix, Symmetry>(latticeSize, *(watsonModel.initializer(lattice, parametersEthyleneWatson)));
   // The energy is taken from the integral provides as input in the fixture class.
