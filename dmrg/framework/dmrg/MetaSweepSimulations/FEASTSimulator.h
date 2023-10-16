@@ -8,7 +8,6 @@
 #ifndef FEAST_SIMULATOR
 #define FEAST_SIMULATOR
 
-#include <omp.h>
 #include <cstdlib>
 #include "dmrg/models/model.h"
 #include "dmrg/models/lattice/lattice.h"
@@ -49,18 +48,18 @@ public:
     // Retrieve simulation parameters
     verbose_ = (parameters["feast_verbose"] == "yes");
     printTimings_ = (parameters["feast_print_timings"] == "yes");
-    numStates = parameters["feast_num_states"].as<int>();
-    maxFeastIter = parameters["feast_max_iter"].as<int>();
-    eMin = parameters["feast_emin"].as<double>();
-    eMax = parameters["feast_emax"].as<double>();
-    mMax = parameters["max_bond_dimension"].as<int>();
-    feastThresholdEnergy = parameters["feast_energy_convergence_threshold"].as<double>();
-    feastThresholdOverlap = parameters["feast_overlap_convergence_threshold"].as<double>();
-    numQuadraturePoint = parameters["feast_num_points"].as<int>();
-    intModality = parameters["feast_integral_type"].as<std::string>();
-    truncModality = parameters["feast_truncation_type"].as<std::string>();
+    numStates = parameters["feast_num_states"].template as<int>();
+    maxFeastIter = parameters["feast_max_iter"].template as<int>();
+    eMin = parameters["feast_emin"].template as<double>();
+    eMax = parameters["feast_emax"].template as<double>();
+    mMax = parameters["max_bond_dimension"].template as<int>();
+    feastThresholdEnergy = parameters["feast_energy_convergence_threshold"].template as<double>();
+    feastThresholdOverlap = parameters["feast_overlap_convergence_threshold"].template as<double>();
+    numQuadraturePoint = parameters["feast_num_points"].template as<int>();
+    intModality = parameters["feast_integral_type"].template as<std::string>();
+    truncModality = parameters["feast_truncation_type"].template as<std::string>();
     truncateEach = (truncModality == "each");
-    initType = parameters["init_type"].as<std::string>();
+    initType = parameters["init_type"].template as<std::string>();
     if (parameters["linsystem_exact_error"] == "yes")
       calculateExactError = true;
     calculateVariance = (parameters["feast_calculate_standard_deviation"] == "yes");

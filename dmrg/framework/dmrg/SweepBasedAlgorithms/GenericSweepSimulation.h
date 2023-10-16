@@ -53,14 +53,17 @@ public:
     nSweeps_ = parms_["nsweeps"];
     boundaryPropagator_ = std::make_shared<BoundaryPropagatorType>(mps_, mpoContainer_.getMPO());
     mpsUpdater_ = std::make_unique<SweepMPSUpdaterType>(mpoContainer_.getMPO(), mps_, boundaryPropagator_, parms_, verbose_);
-  };
+  }
+
+  /** @brief Virtual destructor */
+  virtual ~GenericSweepSimulation() = default; 
 
   /**
    * @brief Execution of a generic sweep-based optimization algorithm.
    *
    * Note that we delegate every action to the derived class, with the exception of the
-   * memory management, which is done here to ensure that
-   *
+   * memory management, which is done here to ensure that the implementation is consistent
+   * for all methods.
    */
   void runSweepSimulation() {
     // == LOOP OVER THE SWEEPS ==
@@ -127,7 +130,12 @@ public:
                                                                   this->get_cutoff(iSweep), this->get_Mmax(iSweep), this->normalizeAtEnd(),
                                                                   this->activatePerturbation());
       // == BOUNDARY PROPAGATION ==
-      // First, drops the memory of the right boundary (in the case of a l2r sweep).
+      // Updates the boundary
+      this->propagateBoundaries();
+      this->propagateOtherTensors();
+      this->performBackPropagation(boundaryGrowthModality);
+      mpsUpdater_->mergeUnitaryFactor(boundaryGrowthModality, siteLeft_, siteRight_, this->normalizeAtEnd());
+      // Now, can drop the memory of the right boundary (in the case of a l2r sweep).
       // The memory will anyways be overwritten by the r2l sweep that will follow.
       // Note also that, if we are at a point at which we reverse the direction of the boundary
       // propagation, we don't drop the right boundary because the next step will be a r2l sweep
@@ -136,11 +144,6 @@ public:
         Storage::drop(boundaryPropagator_->getRightBoundary(siteRight_));
       else // if (sweepType == SweepDirectionType::Backward)
         Storage::drop(boundaryPropagator_->getLeftBoundary(siteLeft_));
-      // Updates the boundary
-      this->propagateBoundaries();
-      this->propagateOtherTensors();
-      this->performBackPropagation(boundaryGrowthModality);
-      mpsUpdater_->mergeUnitaryFactor(boundaryGrowthModality, siteLeft_, siteRight_, this->normalizeAtEnd());
       this->finalizeMicroIteration(truncationResults);
       indexOfMicroIteration_ += 1;
       if (verbose_)

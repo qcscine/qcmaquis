@@ -98,7 +98,7 @@ public:
             return d2e[type];
         else if (name == "docc")
             return docc[type];
-	else if (name == "d2u")
+        else if (name == "d2u")
             return d2u[type];
         else if (name == "u2d")
             return u2d[type];
@@ -170,7 +170,7 @@ public:
         typedef std::vector<tag_vec> bond_tag_element;
         typedef std::pair<std::vector<tag_vec>, value_type> scaled_bond_element;
         {
-            std::regex expression("^MEASURE_LOCAL\\[(.*)]$");
+            std::regex expression("^MEASURE_LOCAL\\[(.*)\\]$");
             std::smatch what;
             for (auto&& it : parms.get_range()) {
                 std::string lhs = it.first;
@@ -192,10 +192,10 @@ public:
         }
 
         {
-        std::regex expression("^MEASURE_CORRELATIONS\\[(.*)]$");
-        std::regex expression_half("^MEASURE_HALF_CORRELATIONS\\[(.*)]$");
-        std::regex expression_nn("^MEASURE_NN_CORRELATIONS\\[(.*)]$");
-        std::regex expression_halfnn("^MEASURE_HALF_NN_CORRELATIONS\\[(.*)]$");
+        std::regex expression("^MEASURE_CORRELATIONS\\[(.*)\\]$");
+        std::regex expression_half("^MEASURE_HALF_CORRELATIONS\\[(.*)\\]$");
+        std::regex expression_nn("^MEASURE_NN_CORRELATIONS\\[(.*)\\]$");
+        std::regex expression_halfnn("^MEASURE_HALF_NN_CORRELATIONS\\[(.*)\\]$");
         std::regex expression_oneptdm("^MEASURE\\[1rdm\\]");
         std::regex expression_oneptspdm("^MEASURE\\[1spdm\\]");
         std::regex expression_oneptdm_uu("^MEASURE\\[1rdm_aa\\]");

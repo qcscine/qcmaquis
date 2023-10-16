@@ -41,8 +41,10 @@ struct TimeStepTraits<TimeStepDistributor::FourthOrderMagnus> {
   using InternalValueType = std::array<std::pair<double, double>, 2>;
   using FactorsType = std::array<InternalValueType, numberOfExponentials>;
   static constexpr FactorsType factorsAndSteps 
-    = { InternalValueType({std::make_pair((3.-2.*sqrt(3.))/12., 0.5+sqrt(3.)/6.), std::make_pair((3.+2.*sqrt(3.))/12., 0.5-sqrt(3.)/6.)}),
-        InternalValueType({std::make_pair((3.+2.*sqrt(3.))/12., 0.5+sqrt(3.)/6.), std::make_pair((3.-2.*sqrt(3.))/12., 0.5-sqrt(3.)/6.)}) };
+    = { InternalValueType({std::make_pair((3.-2.*1.73205080757)/12., 0.5+1.73205080757/6.),
+                           std::make_pair((3.+2.*1.73205080757)/12., 0.5-1.73205080757/6.)}),
+        InternalValueType({std::make_pair((3.+2.*1.73205080757)/12., 0.5+1.73205080757/6.),
+                           std::make_pair((3.-2.*1.73205080757)/12., 0.5-1.73205080757/6.)}) };
 };
 
 template<>
@@ -59,7 +61,7 @@ class LanczosEvolver : public TimeEvolutionAlgorithm<Matrix, SymmGroup> {
 
   /** Types definition */
   using complex_type = std::complex<double>;
-  using base = typename TimeEvolutionAlgorithm<Matrix, SymmGroup>::TimeEvolutionAlgorithm;
+  using base = TimeEvolutionAlgorithm<Matrix, SymmGroup>;
   using scalar_type = typename MPSTensor<Matrix, SymmGroup>::scalar_type;
   using time_type = typename base::time_type;
   //using matrix_complex = Eigen::Matrix< complex_type, Eigen::Dynamic, Eigen::Dynamic >;
@@ -116,17 +118,17 @@ class LanczosEvolver : public TimeEvolutionAlgorithm<Matrix, SymmGroup> {
 
   /* Methods to print the results of the Lanczos algorithm. */
   void print_header() const {
-    print_line() ;
+    print_line();
     std::cout << "  ITERATION  |   ERROR " << std::endl ;
-    print_line() ;
+    print_line();
   }
+
   void print_line() const {
-    std::cout << "+------------+------------+" << std::endl ;
+    std::cout << "+------------+------------+" << std::endl;
   }
+
   void print_data(std::size_t n_iter, time_type error) const {
-    char buf[100] ;
-    int n = sprintf(buf, "   %2d        |  %1.4E ", static_cast<int>(n_iter), error) ;
-    std::cout << buf << std::endl ;
+    std::cout << "     " << n_iter << "     |   " << error << std::endl;
   };
 
   /* Class members */

@@ -28,6 +28,7 @@ struct VibronicFixture
         parametersExcitonicAggregate.set("J_coupling", -500);
         parametersExcitonicAggregate.set("J_interaction", "nn");
         parametersExcitonicAggregate.set("integral_file", "integral_file_Excitonic");
+        parametersExcitonicAggregate.set("hamiltonian_units", "cm-1");
         //
         parametersExcitonicAggregateTwoSites.set("L", 22);
         parametersExcitonicAggregateTwoSites.set("symmetry", "u1");
@@ -40,6 +41,7 @@ struct VibronicFixture
         parametersExcitonicAggregateTwoSites.set("J_coupling", -500);
         parametersExcitonicAggregateTwoSites.set("J_interaction", "nn");
         parametersExcitonicAggregateTwoSites.set("integral_file", "integral_file_Excitonic");
+        parametersExcitonicAggregateTwoSites.set("hamiltonian_units", "cm-1");
         // Vibronic models for S1/S2 states of pyrazine --> L=26
         parametersVibronic.set("L", 26);
         parametersVibronic.set("symmetry", "u1");
@@ -48,6 +50,7 @@ struct VibronicFixture
         parametersVibronic.set("Nmax", 6);
         parametersVibronic.set("vibronic_nstates", 2);
         parametersVibronic.set("vibronic_nmodes", 24);
+        parametersVibronic.set("hamiltonian_units", "cm-1");
         // "Fake" vibronic Hamiltonian with only a single state, with an Harmonic PES.
         parametersFakeVibronic.set("L", 4);
         parametersFakeVibronic.set("symmetry", "u1");
@@ -66,6 +69,7 @@ struct VibronicFixture
         parametersVibronicPyrazineRedDim.set("vibronic_nstates", 2);
         parametersVibronicPyrazineRedDim.set("vibronic_nmodes", 4);
         parametersVibronicPyrazineRedDim.set("integral_file", "integral_file_vibronic_Pyrazine_RedDim");
+        parametersVibronicPyrazineRedDim.set("hamiltonian_units", "cm-1");
         // Vibronic Hamiltonian for pyrazine, for the 4-mode full vibronic Hamiltonian.
         parametersVibronicPyrazineRedDimFull.set("L", 6);
         parametersVibronicPyrazineRedDimFull.set("symmetry", "u1");
@@ -75,6 +79,7 @@ struct VibronicFixture
         parametersVibronicPyrazineRedDimFull.set("vibronic_nstates", 2);
         parametersVibronicPyrazineRedDimFull.set("vibronic_nmodes", 4);
         parametersVibronicPyrazineRedDimFull.set("integral_file", "integral_file_vibronic_Pyrazine_RedDim_Full");
+        parametersVibronicPyrazineRedDimFull.set("hamiltonian_units", "cm-1");
         //
         integralFileFakeVibronic.open("integral_file_VibronicFile");
         integralFileFakeVibronic << "EL_ST 0 0 " << std::endl;

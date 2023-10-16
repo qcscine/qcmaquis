@@ -57,7 +57,7 @@ public:
     calculateStandardDeviation = (parms["feast_calculate_standard_deviation"] == "yes");
     screenStandardDeviation = parms.is_set("feast_standard_deviation_threshold");
     if (screenStandardDeviation)
-      standardDeviationScreening = parms["feast_standard_deviation_threshold"].as<double>();
+      standardDeviationScreening = parms["feast_standard_deviation_threshold"].template as<double>();
   }
 
   /** @brief Updates teh mps container */
@@ -365,7 +365,7 @@ private:
   std::vector<EigenvalueSelection> accepted;                     // Eigenpairs that are accepted.
   std::vector<double> truncatedEnergy, standardDeviations;       // FEAST-specific double parameters for checks.
   ComplexMatrixType feastEigenVectors;                           // FEAST --> eigenvalues transformation matrix.
-  static constexpr int thresholdForRank_ = 1.0E-10;              // Threshold for rank.
+  static constexpr double thresholdForRank_ = 1.0E-10;           // Threshold for rank.
   RealVectorType eigenValues;                                    // FEAST Eigenvalues
   std::vector<ComplexNumber> weights;                            // Quadrature weights.
   const ModelType& model;                                        // DMRG model.

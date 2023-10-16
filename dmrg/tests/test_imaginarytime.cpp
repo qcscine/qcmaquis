@@ -115,10 +115,10 @@ BOOST_FIXTURE_TEST_CASE( TestImaginaryTimeVibronic, VibronicFixture )
 #ifdef HAVE_U1
     parametersVibronicPyrazineRedDimFull.set("init_type", "basis_state_generic");
     parametersVibronicPyrazineRedDimFull.set("init_basis_state", "1,0,0,0,0,0");
-    parametersVibronicPyrazineRedDimFull.set("nsweeps", 20);
+    parametersVibronicPyrazineRedDimFull.set("nsweeps", 40);
     parametersVibronicPyrazineRedDimFull.set("max_bond_dimension", 20);
-    parametersVibronicPyrazineRedDimFull.set("time_step", 0.1);
-    parametersVibronicPyrazineRedDimFull.set("time_units", "as");
+    parametersVibronicPyrazineRedDimFull.set("time_step", 1);
+    parametersVibronicPyrazineRedDimFull.set("time_units", "fs");
     parametersVibronicPyrazineRedDimFull.set("propagator_maxiter", 40);
     parametersVibronicPyrazineRedDimFull.set("TD_backpropagation", "no");
     parametersVibronicPyrazineRedDimFull.set("imaginary_time", "yes");

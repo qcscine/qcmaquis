@@ -14,6 +14,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <map>
 
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>

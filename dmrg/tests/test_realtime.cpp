@@ -46,6 +46,7 @@ BOOST_FIXTURE_TEST_CASE(TestRealTime, BenzeneFixture)
   #ifdef HAVE_TwoU1
   symmetries.push_back("2u1");
   #endif
+  parametersBenzeneRealTime.set("storagedir", "tmpTD");
   for (auto&& s: symmetries) {
     parametersBenzeneRealTime.set("symmetry", s);
     // Single-site evolution
@@ -55,6 +56,7 @@ BOOST_FIXTURE_TEST_CASE(TestRealTime, BenzeneFixture)
     auto initialEnergy = std::real(interfaceSS.energy());
     interfaceSS.evolve();
     auto finalEnergy = std::real(interfaceSS.energy());
+    boost::filesystem::remove_all("tmpTD");
     BOOST_CHECK_CLOSE(initialEnergy, finalEnergy, 1.0E-8);
     // Two-site evolution
     maquis::cout << "Running TS real-time evolution test for symmetry " << s << std::endl;
@@ -63,6 +65,7 @@ BOOST_FIXTURE_TEST_CASE(TestRealTime, BenzeneFixture)
     initialEnergy = std::real(interfaceTS.energy());
     interfaceTS.evolve();
     finalEnergy = std::real(interfaceTS.energy());
+    boost::filesystem::remove_all("tmpTD");
     BOOST_CHECK_CLOSE(initialEnergy, finalEnergy, 1.0E-10);
   }
 }

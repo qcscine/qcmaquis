@@ -10,7 +10,9 @@
 
 #include <boost/any.hpp>
 #include <vector>
+#include <map>
 #include <memory>
+#include <map>
 
 /**
  * @brief Class used to store the results of a generic sweep-based algorithm 

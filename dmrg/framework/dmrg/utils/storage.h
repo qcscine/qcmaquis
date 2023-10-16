@@ -400,10 +400,8 @@ public:
   /** @brief Stores a serializable object on disk */
   template<class T>
   static void StoreToFile(serializable<T>& t) {
-    if (enabled()) {
-      std::cout << "I AM ACTUALLY STORING TO FILE" << std::endl;
+    if (enabled())
       t.StoreToFile();
-    }
   }
 
   /** @brief Drops the memory associated with a serializable object */
