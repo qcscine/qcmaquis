@@ -43,8 +43,8 @@ SRCAS<ScalarType>::SRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceTy
     parms_(parameters)
 {
     generator_.seed(parms_["seed"]);
-    // Get the number of modes and the maximum occupation of each one
-    if(parms_["MODEL"] == "nmode") {
+    // Get the sampling space
+    if(parms_["MODEL"] == "nmode") { // Get the number of modes and the maximum occupation of each one
         numParticles_ = parms_["nmode_num_modes"];
         maxDetStr_ = parms_["nmode_num_basis"].str();
         detSpace_ = parms_["nmode_num_basis"].as<std::vector<int> >();
@@ -88,7 +88,7 @@ SRCAS<ScalarType>::SRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceTy
             for (int i=1; i<numParticles_; i++) startingDet_ += ",0";
             std::vector<int> tmpVec(numParticles_, 0);
             detQueen_ = std::move(tmpVec);
-        } else {
+        } else { // Electronic case: use HF det as starting point
             int numDoubleOcc = numParticles_ / 2;
             startingDet_ = "";
             detQueen_.resize(parms_["L"]);
@@ -120,7 +120,7 @@ SRCAS<ScalarType>::SRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceTy
     detTmp_ = detQueen_;
 }
 
-template <typename ScalarType> // real or complex, nmode or canonical (watson)
+template <typename ScalarType>
 void SRCAS<ScalarType>::printSRCASSettings() {
     maquis::cout << std::endl << "----- SRCAS SETTINGS -----" << std::endl;
     maquis::cout << "MPS taken from:                             " << parms_["chkpfile"].str() << std::endl;
@@ -131,10 +131,12 @@ void SRCAS<ScalarType>::printSRCASSettings() {
     maquis::cout << "Maximum number of iterations is:            " << parms_["srcas_maxNumIterations"] << std::endl;
     maquis::cout << "Number of samples per iteration is:         " << parms_["srcas_numSamples"] << std::endl;
     maquis::cout << "Random number seed is:                      " << parms_["seed"] << std::endl;
-    maquis::cout << "Sampling speed for simultaneous updates is: " << parms_["srcas_samplingSpeed"] << std::endl;
+    if (parms_["MODEL"] != "quantum_chemistry") {
+        maquis::cout << "Sampling speed for simultaneous updates is: " << parms_["srcas_samplingSpeed"] << std::endl;
+    }
 }
 
-template <typename ScalarType> // real or complex, nmode or canonical (watson)
+template <typename ScalarType>
 void SRCAS<ScalarType>::quicksort(std::string dets[], ScalarType b[], int left, int right) {
     double pivot = std::abs(b[(left+right)/2]);
     int l = left;
@@ -163,7 +165,7 @@ void SRCAS<ScalarType>::quicksort(std::string dets[], ScalarType b[], int left, 
     if (l < right) quicksort(dets, b, l, right);
 }
 
-template <typename ScalarType> // real or complex
+template <typename ScalarType>
 int SRCAS<ScalarType>::getARandomOccSpinOrb(std::vector<int> det) {
     std::vector<int> indices;
     for (int i = 1; i<= det.size(); i++) {
@@ -180,7 +182,7 @@ int SRCAS<ScalarType>::getARandomOccSpinOrb(std::vector<int> det) {
     return indices[whichIndex];
 }
 
-template <typename ScalarType> // real or complex
+template <typename ScalarType>
 int SRCAS<ScalarType>::getARandomUnoccSpinOrb(std::vector<int> det) {
     std::vector<int> indices;
     for (int i = 1; i<= det.size(); i++) {
@@ -197,7 +199,8 @@ int SRCAS<ScalarType>::getARandomUnoccSpinOrb(std::vector<int> det) {
     return indices[whichIndex];
 }
 
-template <typename ScalarType> // real or complex
+// checks whether electronic symmetries are fulfilled
+template <typename ScalarType>
 bool SRCAS<ScalarType>::symmetriesFulfilled(std::vector<int> det) {
     int nUnpaired=0;
     int nAlpha=0;
@@ -220,7 +223,7 @@ bool SRCAS<ScalarType>::symmetriesFulfilled(std::vector<int> det) {
         return ((nAlpha==parms_["u1_total_charge1"]) && (nBeta==parms_["u1_total_charge2"]));
 }
 
-template <typename ScalarType> // real or complex
+template <typename ScalarType>
 std::vector<int> SRCAS<ScalarType>::generateNewDet() {
     // Start from queen
     detTmp_= detQueen_;
@@ -277,8 +280,8 @@ void SRCAS<ScalarType>::run() {
             // Get new determinant
             detTmp_ = generateNewDet();
 
-            // Updates the data if the determinant has not been visited yet.
-            iter_ = hashTable_.find(detTmp_) ;
+            iter_ = hashTable_.find(detTmp_);
+            // Updates the lookup table if the determinant has not been visited yet
             if(iter_ == hashTable_.end()) {
                 detTmpStr_ = std::to_string(detTmp_[0]);
                 for (int i=1; i<detTmp_.size(); i++) {
@@ -286,7 +289,7 @@ void SRCAS<ScalarType>::run() {
                     detTmpStr_ += std::to_string(detTmp_[i]);
                 }
                 overlap = interface_->getCICoefficient(detTmpStr_);
-                // The data are stored based on the CI_threshold parameter
+                // The dets are stored based on the CI_threshold parameter
                 if(std::abs(overlap) >= parms_["srcas_overlapThreshold"]) {
                     hashTable_[detTmp_] = overlap;
                     nSampled++;
