@@ -60,7 +60,9 @@ public:
         //manage electronic dimensions
         phys_indexes[0].insert(std::make_pair(0, 1));
         phys_indexes[0].insert(std::make_pair(1, 1));
+        #ifndef NDEBUG
         std::cout << "PRINTING PHYSICAL INDEX" << std::endl;
+        #endif 
         for (const auto& iEl: phys_indexes)
             std::cout << iEl << std::endl;
         // Registering the electronic operators
@@ -70,11 +72,13 @@ public:
         destroy_ele_op.insert_block(Matrix(1, 1, 1), 1, 0); //contrary to usual matrix index notation, the first index here corresponds to the column and the second one to the row
         count_ele_op.insert_block(Matrix(1, 1, 1), 1, 1);
         count_ele_op_gs.insert_block(Matrix(1, 1, 1), 0, 0); //electronic ground state count operator
+        #ifndef NDEBUG   
         std::cout << "electronic identity" << ident_ele_op << std::endl; 
         std::cout << "electronic creation" << create_ele_op << std::endl;
         std::cout << "electronic destroyer" << destroy_ele_op << std::endl;
         std::cout << "electronic count" << count_ele_op << std::endl;
         std::cout << "electronic count, ground state" << count_ele_op_gs << std::endl;
+        #endif
         // Creation of operator tag table for the electronic operators
         ident_ele = tag_handler->register_op(ident_ele_op, tag_detail::bosonic);
         create_ele = tag_handler->register_op(create_ele_op, tag_detail::bosonic);
@@ -105,19 +109,23 @@ public:
             auto powersOfMomentum_op = VibrationalHelpers<Matrix, U1>::generatePowersOfMomentumOperator(maxCoupling, nMax, ident_vib_op, momentum_vib_op);
             ident_vib_op.resize_block(0, nMax, nMax);
             ident_vib[nMax] = tag_handler->checked_register(ident_vib_op, tag_detail::bosonic);
+            #ifndef NDEBUG
             std::cout << ident_vib_op << std::endl;
             std::cout << "Identity registered with tag " << ident_vib[nMax].first << " and coefficient " << ident_vib[nMax].second << std::endl;
+            #endif
             positionPowers[nMax].resize(maxCoupling+1);
             momentumPowers[nMax].resize(maxCoupling+1);
             positionPowers[nMax][0] = ident_vib[nMax];
             momentumPowers[nMax][0] = ident_vib[nMax];
             for (int iOrder = 1; iOrder <= maxCoupling; iOrder++) {
+                positionPowers[nMax][iOrder] = tag_handler->checked_register(powersOfPositions_op[iOrder], tag_detail::bosonic);
+                momentumPowers[nMax][iOrder] = tag_handler->checked_register(powersOfMomentum_op[iOrder], tag_detail::bosonic);
+                #ifndef NDEBUG
                 std::cout << powersOfPositions_op[iOrder] << std::endl;
                 std::cout << powersOfMomentum_op[iOrder] << std::endl;
-                positionPowers[nMax][iOrder] = tag_handler->checked_register(powersOfPositions_op[iOrder], tag_detail::bosonic);
                 std::cout << "Position registered with tag " << positionPowers[nMax][iOrder].first << " and coeff " << positionPowers[nMax][iOrder].second << std::endl;
-                momentumPowers[nMax][iOrder] = tag_handler->checked_register(powersOfMomentum_op[iOrder], tag_detail::bosonic);
                 std::cout << "Momentum registered with tag " << momentumPowers[nMax][iOrder].first << " and coeff " << momentumPowers[nMax][iOrder].second << std::endl;
+                #endif
             }   
 
         }
@@ -146,7 +154,9 @@ public:
                 int connecting = hamiltonianTerms.first[idx][1]; //stores information wether the vibrational mode is monomer-internal or connecting two monomers
                 int mode = abs(hamiltonianTerms.first[idx][2])-1;
                 if (mode > check_maxVibMode) check_maxVibMode = mode; 
+                #ifndef NDEBUG
                 std::cout << "MaxVibMode " << check_maxVibMode << std::endl;
+                #endif
                 auto scalingFactor = hamiltonianTerms.second[idx];
                 //Add vibrational contribution
                 std::vector<int> tmpVec;
@@ -157,22 +167,33 @@ public:
                     int countOccurrences = std::count(tmpVec.begin(), tmpVec.end(), index);
                     if (index < 0){ //if momentum operator
                         operators.push_back(momentumPowers[nMaxVec[i_body*n_vib_states_+abs(index)-1]][countOccurrences].first);
+                        #ifndef NDEBUG
                         std::cout << "Scaling factor before " << scalingFactor << std::endl;
+                        #endif
                         scalingFactor *= momentumPowers[nMaxVec[i_body*n_vib_states_+abs(index)-1]][countOccurrences].second;
+                        #ifndef NDEBUG
                         std::cout << "Scaling factor after " << scalingFactor << std::endl;
+                        #endif
                         vec_jnk[1] = abs(index)-1;
                         positions.push_back(lat.get_prop<int>("vibindex", vec_jnk));
+                        #ifndef NDEBUG
                         std::cout << "momentum registered with power" << " " << countOccurrences << std::endl;
+                        #endif
                     }
                     else if (index > 0){ //if position operator
                         operators.push_back(positionPowers[nMaxVec[i_body*n_vib_states_+abs(index)-1]][countOccurrences].first);
+                        #ifndef NDEBUG
                         std::cout << "Scaling factor before " << scalingFactor << std::endl;
+                        #endif
                         scalingFactor *= positionPowers[nMaxVec[i_body*n_vib_states_+abs(index)-1]][countOccurrences].second;
+                        #ifndef NDEBUG
                         std::cout << "Scaling factor after " << scalingFactor << std::endl;
-                        //vec_jnk[1] = hamiltonianTerms.first[idx][op_vib]-1;
+                        #endif
                         vec_jnk[1] = index-1;
                         positions.push_back(lat.get_prop<int>("vibindex", vec_jnk));  
+                        #ifndef NDEBUG
                         std::cout << "position registered with power" << " " << countOccurrences << std::endl;
+                        #endif
                     }
                 }
                 // Add electronic contribution
@@ -219,7 +240,9 @@ public:
                 // Builds the term of the Hamiltonian
                 if( !(i_body == n_particles_-1 && connecting == 1) && flag == 0 ){ //is this check correct?
                     modelHelper<Matrix, U1>::add_term(positions, operators, scalingFactor, tag_handler, this->terms_, true);
+                    #ifndef NDEBUG
                     maquis::cout << "created term for monomer " << i_body << " and integral file line " << idx << std::endl;
+                    #endif
                 }
                 flag = 0;
             }                
@@ -325,7 +348,9 @@ public:
                 std::vector<std::vector<pos_t> > pos_local(0);
                 pos_internal.push_back((n_vib_states_+n_ele_states_)*idx); 
                 pos_local.push_back(pos_internal);
+                #ifndef NDEBUG
                 maquis::cout << "pos of pushed back positions for meas. of population: " << (n_vib_states_+n_ele_states_)*idx << std::endl;
+                #endif
                 // Generates vector for the fillings and identity operators
                 op_vec identities_local, fillings_local;
                 for (std::size_t idx1 = 0; idx1 < num_vibtypes + n_ele_states_; idx1++) {

@@ -166,7 +166,7 @@ public:
       basis_index.push_back(tmp_vec);
     }
     // Final check
-    assert (basis_index.size() == coeff.size());
+    assert (basis_index.size() == coeffs.size());
   }
 
   /** @brief Method to construct the MPS */
