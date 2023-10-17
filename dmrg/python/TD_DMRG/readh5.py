@@ -9,13 +9,15 @@ from ExcitonicTDResultsFile import ResultFileVibrationaleMeasurement
 
 class ResultsFilePopulationMeasurement(ResultFileVibrationaleMeasurement):
     
-    num_elestates = 19 #hardcoded for now, as the Excitonic Model only allows for a single excited electronic state
+    def extractNumMolecules(self):
+        return self.h5pyfile()['parameters']['vibronic_num_molecules'][()]
 
     def extractNumSweeps(self):
         return self.h5pyfile['parameters']['nsweeps'][()]-1
 
     def extractPopulations(self):
         nsweeps = self.extractNumSweeps()
+        n_elestates = self.extractNumMolecules-1
         pop = np.zeros((self.num_elestates+1, nsweeps), dtype=float) #stores populations for all electornic states
         pop_error = np.zeros((self.num_elestates+1, nsweeps), dtype=float) #stores population error for all electornic states
         for iteration_idx in range(nsweeps): #group index
@@ -103,10 +105,11 @@ class ResultsFilePopulationMeasurement(ResultFileVibrationaleMeasurement):
     
     def extractBondDimension(self):
         nsweeps = self.extractNumSweeps()
-        L = 78
-        BondDimension = np.zeros((nsweeps, (L-1)*2-2), dtype=float)
+        L = self.getLatticeSize()
+        BondDimension = np.zeros((nsweeps, (L-1)*2-2), dtype=float) #for excitonicextended Lattice
         for iteration_idx in range(nsweeps): #group index   
             BondDimension[iteration_idx][:] = self.h5pyfile['spectrum']['iteration'][str(iteration_idx)]['results']['BondDimension']['mean']['value']
         return BondDimension
                 
-        
+
+
