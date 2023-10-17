@@ -1,28 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2021 Institute for Theoretical Physics, ETH Zurich
- *               2021 by Alberto Baiardi <alberto.baiardi@sns.it>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef SINGLESITETIMEEVOLUTION_H
 #define SINGLESITETIMEEVOLUTION_H
@@ -219,19 +200,12 @@ private:
    * @param site: site of the optimization.
    * @param lr: direction of the optimization
    */
-  void print_header(int& sweep, int& site, int& lr) {
+  void print_header(int sweep, int site, int lr) {
     char buffer[40];
-    int n, a;
-    if (lr == 1) {
-        a = 2*sweep+1;
-        n = sprintf(buffer, "  Sweep number %3d - site number %3d", a, site);
-    } else {
-        a = 2*sweep+2;
-        n = sprintf(buffer, "  Sweep number %3d - site number %3d", a, site);
-    }
-    std::cout << " +-----------------------------------+" << std::endl;
-    std::cout << buffer << std::endl;
-    std::cout << " +-----------------------------------+" << std::endl;
+    int a = (lr == 1) ? 2*sweep+1 : 2*sweep+2;
+    std::cout << " +-------------------------------------------+" << std::endl;
+    std::cout << "   Sweep number " << a << " - site number " << site << std::endl;
+    std::cout << " +-------------------------------------------+" << std::endl;
   }
 };
 

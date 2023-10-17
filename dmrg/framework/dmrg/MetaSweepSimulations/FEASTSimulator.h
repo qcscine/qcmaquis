@@ -1,33 +1,13 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2022 Institute for Theoretical Physics, ETH Zurich
- *               2022 by Alberto Baiardi <abaiardi@ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef FEAST_SIMULATOR
 #define FEAST_SIMULATOR
 
-#include <omp.h>
 #include <cstdlib>
 #include "dmrg/models/model.h"
 #include "dmrg/models/lattice/lattice.h"
@@ -68,18 +48,18 @@ public:
     // Retrieve simulation parameters
     verbose_ = (parameters["feast_verbose"] == "yes");
     printTimings_ = (parameters["feast_print_timings"] == "yes");
-    numStates = parameters["feast_num_states"].as<int>();
-    maxFeastIter = parameters["feast_max_iter"].as<int>();
-    eMin = parameters["feast_emin"].as<double>();
-    eMax = parameters["feast_emax"].as<double>();
-    mMax = parameters["max_bond_dimension"].as<int>();
-    feastThresholdEnergy = parameters["feast_energy_convergence_threshold"].as<double>();
-    feastThresholdOverlap = parameters["feast_overlap_convergence_threshold"].as<double>();
-    numQuadraturePoint = parameters["feast_num_points"].as<int>();
-    intModality = parameters["feast_integral_type"].as<std::string>();
-    truncModality = parameters["feast_truncation_type"].as<std::string>();
+    numStates = parameters["feast_num_states"].template as<int>();
+    maxFeastIter = parameters["feast_max_iter"].template as<int>();
+    eMin = parameters["feast_emin"].template as<double>();
+    eMax = parameters["feast_emax"].template as<double>();
+    mMax = parameters["max_bond_dimension"].template as<int>();
+    feastThresholdEnergy = parameters["feast_energy_convergence_threshold"].template as<double>();
+    feastThresholdOverlap = parameters["feast_overlap_convergence_threshold"].template as<double>();
+    numQuadraturePoint = parameters["feast_num_points"].template as<int>();
+    intModality = parameters["feast_integral_type"].template as<std::string>();
+    truncModality = parameters["feast_truncation_type"].template as<std::string>();
     truncateEach = (truncModality == "each");
-    initType = parameters["init_type"].as<std::string>();
+    initType = parameters["init_type"].template as<std::string>();
     if (parameters["linsystem_exact_error"] == "yes")
       calculateExactError = true;
     calculateVariance = (parameters["feast_calculate_standard_deviation"] == "yes");

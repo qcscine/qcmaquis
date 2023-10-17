@@ -49,11 +49,11 @@ SRCAS<ScalarType>::SRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceTy
     if(parms_["MODEL"] == "nmode") {
         numParticles_ = parms_["nmode_num_modes"];
         maxDetStr_ = parms_["nmode_num_basis"].str();
-        detSpace_ = parms_["nmode_num_basis"].as<std::vector<int> >();
+        detSpace_ = parms_["nmode_num_basis"].template as<std::vector<int> >();
     } else if (parms_["MODEL"] == "watson") {
         numParticles_ = parms_["L"];
         maxDetStr_ = parms_["Nmax"].str();
-        detSpace_ = parms_["Nmax"].as<std::vector<int> >();
+        detSpace_ = parms_["Nmax"].template as<std::vector<int> >();
         if (detSpace_.size()!=numParticles_ && detSpace_.size()!=1){
             throw std::runtime_error("The Nmax parameter must be either a single integer, or a vector of lenght L");
         }
@@ -83,7 +83,7 @@ SRCAS<ScalarType>::SRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceTy
     // If user set a starting det, use this, otherwise use the HF/VSCF ground state
     if (parms_.is_set("init_basis_state")) {
         startingDet_ = parms_["init_basis_state"].str();
-        detQueen_ = parms_["init_basis_state"].as<std::vector<int> >();
+        detQueen_ = parms_["init_basis_state"].template as<std::vector<int> >();
     } else {
         if (parms_["MODEL"] == "nmode" || parms_["MODEL"] == "watson") {
             startingDet_ = "0";

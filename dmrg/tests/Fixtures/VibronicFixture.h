@@ -1,28 +1,9 @@
-/*****************************************************************************
-*
-* ALPS MPS DMRG Project
-*
-* Copyright (C) 2021 Institute for Theoretical Physics, ETH Zurich
-*               2021 by Alberto Baiardi <abaiardi@ethz.ch>
-*
-* This software is part of the ALPS Applications, published under the ALPS
-* Application License; you can use, redistribute it and/or modify it under
-* the terms of the license, either version 1 or (at your option) any later
-* version.
-*
-* You should have received a copy of the ALPS Application License along with
-* the ALPS Applications; see the file LICENSE.txt. If not, the license is also
-* available from http://alps.comp-phys.org/.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
-* SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
-* FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
-* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-* DEALINGS IN THE SOFTWARE.
-*
-*****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef TEST_VIBRONIC_FIXTURE_H
 #define TEST_VIBRONIC_FIXTURE_H
@@ -67,8 +48,8 @@ struct VibronicFixture
         parametersVibronic.set("LATTICE", "vibronic lattice");
         parametersVibronic.set("MODEL", "vibronic");
         parametersVibronic.set("Nmax", 6);
-        parametersVibronic.set("vibronic_num_elestates", 2);
-        parametersVibronic.set("vibronic_num_vibmodes", 24);
+        parametersVibronic.set("vibronic_nstates", 2);
+        parametersVibronic.set("vibronic_nmodes", 24);
         parametersVibronic.set("hamiltonian_units", "cm-1");
         // "Fake" vibronic Hamiltonian with only a single state, with an Harmonic PES.
         parametersFakeVibronic.set("L", 4);
@@ -181,6 +162,7 @@ struct VibronicFixture
         parametersSimpleCoherent.set("time_step", 10);
         parametersSimpleCoherent.set("hamiltonian_units", "Hartree");
         parametersSimpleCoherent.set("time_units", "as");
+        parametersVibronicPyrazineRedDimFull.set("hamiltonian_units", "cm-1");
         //
         integralFileFakeVibronic.open("integral_file_VibronicFile");
         integralFileFakeVibronic << "EL_ST 0 0 " << std::endl;

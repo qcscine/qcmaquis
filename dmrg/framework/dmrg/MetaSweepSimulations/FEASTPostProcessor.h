@@ -1,28 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2022 Institute for Theoretical Physics, ETH Zurich
- *               2022 by Alberto Baiardi <abaiardi@ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef FEAST_HELPER_CLASS
 #define FEAST_HELPER_CLASS
@@ -76,7 +57,7 @@ public:
     calculateStandardDeviation = (parms["feast_calculate_standard_deviation"] == "yes");
     screenStandardDeviation = parms.is_set("feast_standard_deviation_threshold");
     if (screenStandardDeviation)
-      standardDeviationScreening = parms["feast_standard_deviation_threshold"].as<double>();
+      standardDeviationScreening = parms["feast_standard_deviation_threshold"].template as<double>();
   }
 
   /** @brief Updates teh mps container */
@@ -384,7 +365,7 @@ private:
   std::vector<EigenvalueSelection> accepted;                     // Eigenpairs that are accepted.
   std::vector<double> truncatedEnergy, standardDeviations;       // FEAST-specific double parameters for checks.
   ComplexMatrixType feastEigenVectors;                           // FEAST --> eigenvalues transformation matrix.
-  static constexpr int thresholdForRank_ = 1.0E-10;              // Threshold for rank.
+  static constexpr double thresholdForRank_ = 1.0E-10;           // Threshold for rank.
   RealVectorType eigenValues;                                    // FEAST Eigenvalues
   std::vector<ComplexNumber> weights;                            // Quadrature weights.
   const ModelType& model;                                        // DMRG model.

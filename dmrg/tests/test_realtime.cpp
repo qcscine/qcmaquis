@@ -1,28 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2021 Institute for Theoretical Physics, ETH Zurich
- *               2021-2022 by Alberto Baiardi <abaiardi@ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #define BOOST_TEST_MAIN
 
@@ -65,6 +46,7 @@ BOOST_FIXTURE_TEST_CASE(TestRealTime, BenzeneFixture)
   #ifdef HAVE_TwoU1
   symmetries.push_back("2u1");
   #endif
+  parametersBenzeneRealTime.set("storagedir", "tmpTD");
   for (auto&& s: symmetries) {
     parametersBenzeneRealTime.set("symmetry", s);
     // Single-site evolution
@@ -74,6 +56,7 @@ BOOST_FIXTURE_TEST_CASE(TestRealTime, BenzeneFixture)
     auto initialEnergy = std::real(interfaceSS.energy());
     interfaceSS.evolve();
     auto finalEnergy = std::real(interfaceSS.energy());
+    boost::filesystem::remove_all("tmpTD");
     BOOST_CHECK_CLOSE(initialEnergy, finalEnergy, 1.0E-8);
     // Two-site evolution
     maquis::cout << "Running TS real-time evolution test for symmetry " << s << std::endl;
@@ -82,6 +65,7 @@ BOOST_FIXTURE_TEST_CASE(TestRealTime, BenzeneFixture)
     initialEnergy = std::real(interfaceTS.energy());
     interfaceTS.evolve();
     finalEnergy = std::real(interfaceTS.energy());
+    boost::filesystem::remove_all("tmpTD");
     BOOST_CHECK_CLOSE(initialEnergy, finalEnergy, 1.0E-10);
   }
 }

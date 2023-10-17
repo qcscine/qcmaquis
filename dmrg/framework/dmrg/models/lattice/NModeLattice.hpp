@@ -115,7 +115,7 @@ public:
   }
 
   /** @brief Returns the next position in the lattice */
-  std::vector<pos_t> forward(pos_t i) const {
+  std::vector<pos_t> forward(pos_t i) const override {
     std::vector<pos_t> ret;
     if (i < L-1)
         ret.push_back(i+1);
@@ -123,7 +123,7 @@ public:
   }
 
   /** @brief Returns the neighbors of a given site */
-  std::vector<pos_t> all(pos_t i) const {
+  std::vector<pos_t> all(pos_t i) const override {
     std::vector<pos_t> ret;
     if (i < L-1)
         ret.push_back(i+1);
@@ -146,7 +146,7 @@ public:
    * @param pos vector of positions
    * @return boost::any requested property
    */
-  boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const
+  boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const override
   {
     if (property == "label" && pos.size() == 1)
       return boost::any(site_label(pos[0]));
@@ -180,7 +180,7 @@ public:
   }
 
   /** @brief Getter for the lattice size */
-  pos_t size() const { return L; }
+  pos_t size() const override { return L; }
 
   /** @brief Getter for the number of types of sites */
   int getMaxType() const override { return numTypes; }

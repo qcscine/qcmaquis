@@ -1,29 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2019- Institute for Theoretical Physics, ETH Zurich
- *               2019 by Anna Kelemen <akelemen@ethz.ch>
- *               2020- by Alberto Baiardi <abaiardi@ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef LINSOLVER_H
 #define LINSOLVER_H
@@ -77,7 +57,7 @@ public:
       currentSolution_ = initialMPS;
     //rhs.conjugate_inplace();
     // Parameters that are specific of the solution of the linear system.
-    numberOfMacroIterations_ = parms_["linsystem_max_it"].as<int>();
+    numberOfMacroIterations_ = parms_["linsystem_max_it"].template as<int>();
     gmresTol_ = parms_["linsystem_tol"];
     krylovDim_ = parms_["linsystem_krylov_dim"];
     rhsNorm_ = ietl::two_norm(rhsMPS_);
@@ -381,7 +361,7 @@ public:
     //if (isFolded_) {
     //    ietl::mult(sp, inputVec, retSquared, 0, true);
     //    if (params["lin_alg"] == "feast")
-    //        ret = retSquared - 2.*maquis::real(Z)*ret + inputVec*std::norm(Z);
+    //        ret = retSquared - 2.*maquis::real(Z)*ret + inputVec*std::abs(Z);
     //    else
     //        ret = retSquared - 2.*sigma*ret + inputVec*sigma*sigma;
     //}
@@ -401,8 +381,8 @@ private:
       for (size_t i = 0; i < num_rows(data[b]); ++i) {
         for (size_t j = 0; j < num_cols(data[b]); ++j) {
           denom = (precond_->operator[](b)(i, j) - shift_);
-          if (std::fabs(denom) > 1.0E-10)
-            data[b](i, j) /= std::fabs(denom);
+          if (std::abs(denom) > 1.0E-10)
+            data[b](i, j) /= std::abs(denom);
         }
       }
     }
