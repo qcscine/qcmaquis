@@ -48,8 +48,8 @@ struct VibronicFixture
         parametersVibronic.set("LATTICE", "vibronic lattice");
         parametersVibronic.set("MODEL", "vibronic");
         parametersVibronic.set("Nmax", 6);
-        parametersVibronic.set("vibronic_nstates", 2);
-        parametersVibronic.set("vibronic_nmodes", 24);
+        parametersVibronic.set("vibronic_num_elestates", 2);
+        parametersVibronic.set("vibronic_num_vibmodes", 24);
         parametersVibronic.set("hamiltonian_units", "cm-1");
         // "Fake" vibronic Hamiltonian with only a single state, with an Harmonic PES.
         parametersFakeVibronic.set("L", 4);
