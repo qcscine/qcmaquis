@@ -61,6 +61,7 @@ namespace transform_detail
     }
 }
 
+/** @brief Function that transforms the mps tensor at a given site from su2 to 2u1 */
 template<class Matrix, class SymmIn, class SymmOut>
 void transform_site(MPSTensor<Matrix, SymmIn> const & mps_in,
                     MPSTensor<Matrix, SymmOut> & mps_out)
@@ -77,8 +78,8 @@ void transform_site(MPSTensor<Matrix, SymmIn> const & mps_in,
     Index<SymmOut> const & left_i_out = mps_out.row_dim();
     Index<SymmOut> const & right_i_out = mps_out.col_dim();
 
-    block_matrix<Matrix, SymmIn> const & m1 = mps_in.data();
-    block_matrix<Matrix, SymmOut> & m2 = mps_out.data();
+    block_matrix<Matrix, SymmIn> const & m_in = mps_in.data();
+    block_matrix<Matrix, SymmOut> & m_out = mps_out.data();
 
     ProductBasis<SymmIn> in_left_pb(physical_i, left_i);
 
@@ -105,89 +106,89 @@ void transform_site(MPSTensor<Matrix, SymmIn> const & mps_in,
 
         ProductBasis<SymmOut> out_left_pb(physical_i_out, new_left_i);
 
-    for (size_t block = 0; block < m1.n_blocks(); ++block)
-    {
-        size_t r = right_i.position(m1.basis().right_charge(block));
-        if(r == right_i.size()) continue;
-        charge in_r_charge = right_i[r].first;
-        charge in_l_charge_paired = m1.basis().left_charge(block);
-
-        for (size_t s = 0; s < physical_i.size(); ++s)
+        for (size_t block = 0; block < m_in.n_blocks(); ++block)
         {
-            size_t l = left_i.position(SymmIn::fuse(m1.basis().left_charge(block), -physical_i[s].first));
-            if(l == left_i.size()) continue;
+            size_t r = right_i.position(m_in.basis().right_charge(block));
+            if(r == right_i.size()) continue;
+            charge in_r_charge = right_i[r].first;
+            charge in_l_charge_paired = m_in.basis().left_charge(block);
 
-            charge in_l_charge = left_i[l].first;
-
-            // transform one SU2 charge to corresponding 2U1 charges
-            std::vector<out_charge> l_sectors = transform_detail::transform_charge<SymmIn, SymmOut>(in_l_charge);
-            std::vector<out_charge> r_sectors = transform_detail::transform_charge<SymmIn, SymmOut>(in_r_charge);
-
-            // form pairs from matching right and left sectors
-            std::vector<std::pair<out_charge, out_charge> > sectors;
-            for (typename std::vector<out_charge>::const_iterator it1 = l_sectors.begin(); it1 != l_sectors.end(); ++it1)
-                for (typename std::vector<out_charge>::const_iterator it2 = r_sectors.begin(); it2 != r_sectors.end(); ++it2)
-                    for (typename Index<SymmOut>::const_iterator itp = physical_i_out.begin(); itp != physical_i_out.end(); ++itp)
-                        if (SymmOut::fuse(*it1, itp->first) == *it2)
-                            sectors.push_back(std::make_pair(*it1, *it2));
-
-            // record positions of the SU2 blocks within the larger 2U1 blocks
-            if (pass == 0)
+            for (size_t s = 0; s < physical_i.size(); ++s)
             {
-                // insert the source sector into a non-paired target symmetry block_matrix
-                for (typename std::vector<std::pair<out_charge, out_charge> >::const_iterator it = sectors.begin(); it != sectors.end(); ++it)
+                size_t l = left_i.position(SymmIn::fuse(m_in.basis().left_charge(block), -physical_i[s].first));
+                if(l == left_i.size()) continue;
+
+                charge in_l_charge = left_i[l].first;
+
+                // transform one SU2 charge to corresponding 2U1 charges
+                std::vector<out_charge> l_sectors = transform_detail::transform_charge<SymmIn, SymmOut>(in_l_charge);
+                std::vector<out_charge> r_sectors = transform_detail::transform_charge<SymmIn, SymmOut>(in_r_charge);
+
+                // form pairs from matching right and left sectors
+                std::vector<std::pair<out_charge, out_charge> > sectors;
+                for (typename std::vector<out_charge>::const_iterator it1 = l_sectors.begin(); it1 != l_sectors.end(); ++it1)
+                    for (typename std::vector<out_charge>::const_iterator it2 = r_sectors.begin(); it2 != r_sectors.end(); ++it2)
+                        for (typename Index<SymmOut>::const_iterator itp = physical_i_out.begin(); itp != physical_i_out.end(); ++itp)
+                            if (SymmOut::fuse(*it1, itp->first) == *it2)
+                                sectors.push_back(std::make_pair(*it1, *it2));
+
+                // record positions of the SU2 blocks within the larger 2U1 blocks
+                if (pass == 0)
                 {
-                    out_charge leftc = it->first, rightc = it->second, physc = SymmOut::fuse(leftc, -rightc);
+                    // insert the source sector into a non-paired target symmetry block_matrix
+                    for (typename std::vector<std::pair<out_charge, out_charge> >::const_iterator it = sectors.begin(); it != sectors.end(); ++it)
+                    {
+                        out_charge leftc = it->first, rightc = it->second, physc = SymmOut::fuse(leftc, -rightc);
 
-                    if ( !left_i_out.has(leftc) || !right_i_out.has(rightc) )
-                        continue;
+                        if ( !left_i_out.has(leftc) || !right_i_out.has(rightc) )
+                            continue;
 
-                    if (!left_subblocks[leftc].has(in_l_charge))
-                        left_subblocks[leftc].insert(left_i[l]);
+                        if (!left_subblocks[leftc].has(in_l_charge))
+                            left_subblocks[leftc].insert(left_i[l]);
 
-                    if (!right_subblocks[rightc].has(in_r_charge))
-                        right_subblocks[rightc].insert(right_i[r]);
+                        if (!right_subblocks[rightc].has(in_r_charge))
+                            right_subblocks[rightc].insert(right_i[r]);
 
-                    assert(left_subblocks[leftc].size_of_block(in_l_charge) == left_i[l].second);
-                    assert(right_subblocks[rightc].size_of_block(in_r_charge) == right_i[r].second);
+                        assert(left_subblocks[leftc].size_of_block(in_l_charge) == left_i[l].second);
+                        assert(right_subblocks[rightc].size_of_block(in_r_charge) == right_i[r].second);
+                    }
                 }
-            }
-            // transfer the blocks
-            else
-            {
-                std::size_t in_left_offset = in_left_pb(physical_i[s].first, left_i[l].first);
-                std::size_t ldim = left_i[l].second;
-                Matrix const & iblock = m1[block];
-                Matrix source_block(ldim, right_i[r].second);
-
-                // extract source block
-                for (std::size_t ci = 0; ci < num_cols(iblock); ++ci)
-                    std::copy(iblock.col(ci).first + in_left_offset, iblock.col(ci).first + in_left_offset + ldim, source_block.col(ci).first);
-
-                for (typename std::vector<std::pair<out_charge, out_charge> >::const_iterator it = sectors.begin(); it != sectors.end(); ++it)
+                // transfer the blocks
+                else
                 {
-                    out_charge leftc = it->first, rightc = it->second, physc = SymmOut::fuse(-leftc, rightc);
+                    std::size_t in_left_offset = in_left_pb(physical_i[s].first, left_i[l].first);
+                    std::size_t ldim = left_i[l].second;
+                    Matrix const & iblock = m_in[block];
+                    Matrix source_block(ldim, right_i[r].second);
 
-                    if (!m2.has_block(rightc, rightc))
-                        continue;
-                    Matrix & current_block = m2(rightc, rightc); // left_paired
+                    // extract source block
+                    for (std::size_t ci = 0; ci < num_cols(iblock); ++ci)
+                        std::copy(iblock.col(ci).first + in_left_offset, iblock.col(ci).first + in_left_offset + ldim, source_block.col(ci).first);
 
-                    std::size_t  out_left_offset_2u1 = out_left_pb(physc, leftc);
-                    std::size_t  out_left_offset_su2 = left_subblocks[leftc].position(std::make_pair(in_l_charge, 0));
-                    std::size_t out_right_offset_su2 = right_subblocks[rightc].position(std::make_pair(in_r_charge, 0));
+                    for (typename std::vector<std::pair<out_charge, out_charge> >::const_iterator it = sectors.begin(); it != sectors.end(); ++it)
+                    {
+                        out_charge leftc = it->first, rightc = it->second, physc = SymmOut::fuse(-leftc, rightc);
 
-                    int l1 = SymmIn::spin(in_l_charge), l2 = std::abs(SymmIn::spin(physical_i[s].first)), l3 = SymmIn::spin(in_r_charge);
-                    int m1 = leftc[0] - leftc[1], m2 = physc[0] - physc[1], m3 = rightc[0] - rightc[1];
-                    double clebsch_gordan = pow(-1.0,(l1-l2+m3)/2)*sqrt(l3+1.0)*WignerWrapper::gsl_sf_coupling_3j(l1,l2,l3,m1,m2,-m3);
+                        if (!m_out.has_block(rightc, rightc))
+                            continue;
+                        Matrix & current_block = m_out(rightc, rightc); // left_paired
 
-                    for (std::size_t ci = 0; ci < num_cols(source_block); ++ci)
-                        std::transform(source_block.col(ci).first, source_block.col(ci).second,
-                                       current_block.col(ci + out_right_offset_su2).first + out_left_offset_2u1 + out_left_offset_su2,
-                                       boost::lambda::_1*clebsch_gordan);
+                        std::size_t  out_left_offset_2u1 = out_left_pb(physc, leftc);
+                        std::size_t  out_left_offset_su2 = left_subblocks[leftc].position(std::make_pair(in_l_charge, 0));
+                        std::size_t out_right_offset_su2 = right_subblocks[rightc].position(std::make_pair(in_r_charge, 0));
+
+                        int l1 = SymmIn::spin(in_l_charge), l2 = std::abs(SymmIn::spin(physical_i[s].first)), l3 = SymmIn::spin(in_r_charge);
+                        int m_in = leftc[0] - leftc[1], m_out = physc[0] - physc[1], m3 = rightc[0] - rightc[1];
+                        double clebsch_gordan = pow(-1.0,(l1-l2+m3)/2)*sqrt(l3+1.0)*WignerWrapper::gsl_sf_coupling_3j(l1,l2,l3,m_in,m_out,-m3);
+
+                        for (std::size_t ci = 0; ci < num_cols(source_block); ++ci)
+                            std::transform(source_block.col(ci).first, source_block.col(ci).second,
+                                        current_block.col(ci + out_right_offset_su2).first + out_left_offset_2u1 + out_left_offset_su2,
+                                        boost::lambda::_1*clebsch_gordan);
+                    }
                 }
-            }
-        } // SU2 input physical_i
-    } // m1 block
+            } // SU2 input physical_i
+        } // m_in block
     } // pass
 }
 

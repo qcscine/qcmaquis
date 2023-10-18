@@ -405,11 +405,10 @@ void check_equal_mps (MPS<Matrix, SymmGroup> const & mps1, MPS<Matrix, SymmGroup
         }
 }
 
+/** @brief Function to ensure consistent indices across bonds by removing blocks without connection across bonds */
 template <class Matrix, class SymmGroup>
 void clean_mps(MPS<Matrix, SymmGroup> & mps)
 {
-    // ensure consistent indices across bonds by removing blocks without connection across bonds
-
     bool again;
     do {
         again = false;
