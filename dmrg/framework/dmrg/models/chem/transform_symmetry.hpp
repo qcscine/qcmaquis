@@ -70,9 +70,9 @@ void transform_site(MPSTensor<Matrix, SymmIn> const & mps_in,
     typedef typename SymmIn::charge charge;
     typedef typename SymmOut::charge out_charge;
 
-    Index<SymmIn> const & physical_i = mps_in.site_dim();
-    Index<SymmIn> const & left_i = mps_in.row_dim();
-    Index<SymmIn> const & right_i = mps_in.col_dim();
+    Index<SymmIn> const & physical_i_in = mps_in.site_dim();
+    Index<SymmIn> const & left_i_in = mps_in.row_dim();
+    Index<SymmIn> const & right_i_in = mps_in.col_dim();
 
     Index<SymmOut> const & physical_i_out = mps_out.site_dim();
     Index<SymmOut> const & left_i_out = mps_out.row_dim();
@@ -81,7 +81,7 @@ void transform_site(MPSTensor<Matrix, SymmIn> const & mps_in,
     block_matrix<Matrix, SymmIn> const & m_in = mps_in.data();
     block_matrix<Matrix, SymmOut> & m_out = mps_out.data();
 
-    ProductBasis<SymmIn> in_left_pb(physical_i, left_i);
+    ProductBasis<SymmIn> in_left_pb(physical_i_in, left_i_in);
 
     // data for the layout of the output MPS/block_matrix
     // each 2u1 sector (out_charge) contains a SU2 Index to describe the SU2 blocks within
@@ -108,17 +108,17 @@ void transform_site(MPSTensor<Matrix, SymmIn> const & mps_in,
 
         for (size_t block = 0; block < m_in.n_blocks(); ++block)
         {
-            size_t r = right_i.position(m_in.basis().right_charge(block));
-            if(r == right_i.size()) continue;
-            charge in_r_charge = right_i[r].first;
+            size_t r = right_i_in.position(m_in.basis().right_charge(block));
+            if(r == right_i_in.size()) continue;
+            charge in_r_charge = right_i_in[r].first;
             charge in_l_charge_paired = m_in.basis().left_charge(block);
 
-            for (size_t s = 0; s < physical_i.size(); ++s)
+            for (size_t s = 0; s < physical_i_in.size(); ++s)
             {
-                size_t l = left_i.position(SymmIn::fuse(m_in.basis().left_charge(block), -physical_i[s].first));
-                if(l == left_i.size()) continue;
+                size_t l = left_i_in.position(SymmIn::fuse(m_in.basis().left_charge(block), -physical_i_in[s].first));
+                if(l == left_i_in.size()) continue;
 
-                charge in_l_charge = left_i[l].first;
+                charge in_l_charge = left_i_in[l].first;
 
                 // transform one SU2 charge to corresponding 2U1 charges
                 std::vector<out_charge> l_sectors = transform_detail::transform_charge<SymmIn, SymmOut>(in_l_charge);
@@ -144,22 +144,22 @@ void transform_site(MPSTensor<Matrix, SymmIn> const & mps_in,
                             continue;
 
                         if (!left_subblocks[leftc].has(in_l_charge))
-                            left_subblocks[leftc].insert(left_i[l]);
+                            left_subblocks[leftc].insert(left_i_in[l]);
 
                         if (!right_subblocks[rightc].has(in_r_charge))
-                            right_subblocks[rightc].insert(right_i[r]);
+                            right_subblocks[rightc].insert(right_i_in[r]);
 
-                        assert(left_subblocks[leftc].size_of_block(in_l_charge) == left_i[l].second);
-                        assert(right_subblocks[rightc].size_of_block(in_r_charge) == right_i[r].second);
+                        assert(left_subblocks[leftc].size_of_block(in_l_charge) == left_i_in[l].second);
+                        assert(right_subblocks[rightc].size_of_block(in_r_charge) == right_i_in[r].second);
                     }
                 }
                 // transfer the blocks
                 else
                 {
-                    std::size_t in_left_offset = in_left_pb(physical_i[s].first, left_i[l].first);
-                    std::size_t ldim = left_i[l].second;
+                    std::size_t in_left_offset = in_left_pb(physical_i_in[s].first, left_i_in[l].first);
+                    std::size_t ldim = left_i_in[l].second;
                     Matrix const & iblock = m_in[block];
-                    Matrix source_block(ldim, right_i[r].second);
+                    Matrix source_block(ldim, right_i_in[r].second);
 
                     // extract source block
                     for (std::size_t ci = 0; ci < num_cols(iblock); ++ci)
@@ -177,7 +177,7 @@ void transform_site(MPSTensor<Matrix, SymmIn> const & mps_in,
                         std::size_t  out_left_offset_su2 = left_subblocks[leftc].position(std::make_pair(in_l_charge, 0));
                         std::size_t out_right_offset_su2 = right_subblocks[rightc].position(std::make_pair(in_r_charge, 0));
 
-                        int l1 = SymmIn::spin(in_l_charge), l2 = std::abs(SymmIn::spin(physical_i[s].first)), l3 = SymmIn::spin(in_r_charge);
+                        int l1 = SymmIn::spin(in_l_charge), l2 = std::abs(SymmIn::spin(physical_i_in[s].first)), l3 = SymmIn::spin(in_r_charge);
                         int m_in = leftc[0] - leftc[1], m_out = physc[0] - physc[1], m3 = rightc[0] - rightc[1];
                         double clebsch_gordan = pow(-1.0,(l1-l2+m3)/2)*sqrt(l3+1.0)*WignerWrapper::gsl_sf_coupling_3j(l1,l2,l3,m_in,m_out,-m3);
 
@@ -185,9 +185,9 @@ void transform_site(MPSTensor<Matrix, SymmIn> const & mps_in,
                             std::transform(source_block.col(ci).first, source_block.col(ci).second,
                                         current_block.col(ci + out_right_offset_su2).first + out_left_offset_2u1 + out_left_offset_su2,
                                         boost::lambda::_1*clebsch_gordan);
-                    }
+                    } // sectors
                 }
-            } // SU2 input physical_i
+            } // SU2 input physical_i_in
         } // m_in block
     } // pass
 }
