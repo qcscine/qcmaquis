@@ -238,7 +238,7 @@ public:
                     }
                 }
                 // Builds the term of the Hamiltonian
-                if( !(i_body == n_particles_-1 && connecting == 1) && flag == 0 ){ //is this check correct?
+                if( !(i_body == n_particles_-1 && connecting == 1) && flag == 0 ){ 
                     modelHelper<Matrix, U1>::add_term(positions, operators, scalingFactor, tag_handler, this->terms_, true);
                     #ifndef NDEBUG
                     maquis::cout << "created term for monomer " << i_body << " and integral file line " << idx << std::endl;
@@ -284,10 +284,10 @@ public:
     tag_type identity_matrix_tag(size_t type) const
     {
         tag_type ret ;
-        if(type == 0)
-            ret = ident_ele;
-        else
+        if(type != 0)
             ret = ident_vib.at(nMaxVec[type-1]).first;
+        else
+            ret = ident_ele;
         return ret;
     }
 

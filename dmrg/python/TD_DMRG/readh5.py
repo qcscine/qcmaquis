@@ -14,6 +14,9 @@ class ResultsFilePopulationMeasurement(ResultFileVibrationaleMeasurement):
 
     def extractNumSweeps(self):
         return self.h5pyfile['parameters']['nsweeps'][()]-1
+    
+    def extractNumModes(self):
+         return self.h5pyfile['parameters']['vibronic_num_vibmodes'][()]
 
     def extractPopulations(self):
         nsweeps = self.extractNumSweeps()

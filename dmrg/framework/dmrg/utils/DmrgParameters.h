@@ -122,7 +122,6 @@ private:
         add_option("MEASURE[ChemEntropy]", "Evaluate all expectation valus required for a mututal information calculation. Only available for 2u1(pg)", value(false));
         add_option("MEASURE[Renyi2]", "", value(false));
         add_option("MEASURE[Autocorrelation]", "", value(0));
-        add_option("MEASURE[Autocorrelation]", "", value(0));
         add_option("ALWAYS_MEASURE", "comma separated list of measurements", value(""));
 
         // Electronic-structure calculations parameters
