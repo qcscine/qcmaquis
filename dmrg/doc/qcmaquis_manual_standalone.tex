@@ -826,19 +826,21 @@ Currently, \qcm\ supports two different strategies for mapping these sites onto 
   lattice_library                 = coded
   optimization                    = singlesite
   integral_file                   = FCIDUMP_Excitonic
-  init_type                      = `default'
+  init_type                       = `default'
   // The symmetry group is u1 for all vibronic DMRG calculations
   symmetry                        = u1
   // This is lattice is used for both vibronic and excitonic calculations.
   LATTICE                         = `vibronic lattice'
-  // Vibronic model
-  MODEL                           = vibronic
-  J_coupling                      = -500
+  // Excitonic model
+  MODEL                           = excitonic
+  vibronic_J_coupling             = -500
   // This could have been also 'firstele'
   vibronic_sorting                = `intertwined'
   // Number of modes and of molecules
-  vibronic_nmodes                 = 10
-  n_excitons                      = 6
+  vibronic_num_vibmodes           = 10
+  vibronic_num_elestates          = 1
+  vibronic_num_molecules          = 6
+  L                               = 66
 \end{lstlisting}
 
 We report in Listing~\ref{lst:excitonicInput} an examples of an input file for running a DMRG calculation on an excitonic Hamiltonian composed by 6 molecules, each one with 10 vibrational modes, coupled by a Coulomb coupling of -500 (note that the units in which the $J$ parameter is reported must be the same used in the \texttt{integral\_file}).
@@ -948,18 +950,16 @@ where $g_k^{(i,j)}$ and $h_{k,l}^{(i,j)}$ are the first- and second-order coupli
   lattice_library                 = coded
   optimization                    = singlesite
   integral_file                   = FCIDUMP_Vibronic
-  init_type                      = 'default'
+  init_type                       = 'default'
   symmetry                        = u1
   LATTICE                         = "vibronic lattice"
   MODEL                           = vibronic
-  // Note that here the [n_excitons] parameter is replaced 
-  // by the [vibronic_nstates] one
-  vibronic_nmodes                 = 4
-  vibronic_nstates                = 2
+  vibronic_num_vibmodes           = 4
+  vibronic_num_elestates          = 2
 \end{lstlisting}
 
 A sample input file for a DMRG calculation on a vibronic Hamiltonian is given in Listing~\ref{lst:vibronicInput}.
-The key difference between this input and the one reported in Listing~\ref{lst:excitonicInput} for excitonic Hamiltonians is that the keyword \texttt{n\_excitons} is replaced by \texttt{vibronic\_nstates}, which corresponds to the $N_\text{ele}$ parameter in Eq.~(\ref{eq:VibronicHamiltonian}).
+The key difference between this input and the one reported in Listing~\ref{lst:excitonicInput} for excitonic Hamiltonians is that the keyword \texttt{vibronic\_num\_molecules} is replaced by \texttt{vibronic\_num\_elestates}, which corresponds to the $N_\text{ele}$ parameter in Eq.~(\ref{eq:VibronicHamiltonian}).
 The integral file \texttt{FCIDUMP\_Vibronic} should contain the definition of the parameters entering the vibronic Hamiltonian, \textit{i.e.}, $\omega_j^{(i)}$, $g_k^{(i)}$, $g_k^{(i,j)}$, and $h_{k,l}^{(i,j)}$.
 We show in Listing~\ref{lst:vibronicDump} the format of the integral file for the case of the 4-mode vibronic Hamiltonian of pyrazine that describes the S$_1$ and S$_2$ electronic states, taken from Ref.~\citenum{Raab1999_Pyrazine}.
 

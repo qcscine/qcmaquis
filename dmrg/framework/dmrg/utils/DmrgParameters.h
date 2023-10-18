@@ -64,7 +64,9 @@ private:
         add_option("alpha_final", "Scaling factor of the noise added to perturb the MPS update during the optimization/evolution during the remainder of nsweeps", value(1e-8));
 
         // MPS initialization settings
+        // MPS initialization settings
         add_option("init_type", "Initialization type of the initial guess MPS. The default is random, also possible are const, basis_state*/hf, etc.", value("default"));
+        add_option("init_coeff", "Comma-separated list of coefficients for coherent init", value(""));
         add_option("init_coeff", "Comma-separated list of coefficients for coherent init", value(""));
         add_option("init_basis_state", "Local indices (ONV) for basis state init (used if [init_type] is [basis_state_generic])", value(""));
         add_option("init_space", "Occupation up to which the initial guess MPS should be populated (used if [init_type] is [basis_state_generic_*])", value(""));
@@ -78,11 +80,13 @@ private:
         add_option("CONSERVED_QUANTUMNUMBERS", "", value("Nup,Ndown"));
         add_option("orbital_order", "Comma separated list of orbital numbers");
 
+
         // Settings for model
         add_option("MODEL","Type of Hamiltonian", value("quantum_chemistry"));
         add_option("symmetry", "Total symmetry group of the MPS, e.g. 2u1,2u1pg,su2u1,su2u1pg", value("su2u1pg"));
         add_option("model_library", "", value("coded"));
         add_option("model_file", "path to model parameters", value(""));
+
 
         // Settings for integral read-in
         add_option("integral_file", "Path to model parameters, e.g. FCIDUMP-style integral file", value("FCIDUMP"));
@@ -104,6 +108,7 @@ private:
         add_option("donotsave", "", value(0));
 
         add_option("use_compressed", "", value(0));
+
 
         add_option("entanglement_spectra", "", value(0));
 
@@ -132,6 +137,7 @@ private:
         add_option("watson_coordinate_type", "Type of coordinate used for the Hamiltonian definition", value("cartesian"));
         add_option("Nmax", "Maximum excitation degree for each mode in the canonical quantization-based vDMRG, either single integer or comma separated list with the number of basis functions per mode", value(6));
 
+
         // n-mode vDMRG related parameters
         add_option("nmode_dumpIntegral", "If == yes, store the integrals in the result file", value("no"));
         add_option("nmode_num_modes", "Number of modes of the Hamiltonian expressed in the n-mode representation");
@@ -146,13 +152,16 @@ private:
         add_option("PreBO_InitialStateVector", "Number of particles in alpha/beta state for each particle.");
 
         // Vibronic settings
-        add_option("J_coupling", "Coulomb coupling defining the excitonic Hamiltonian", value(0.));
-        add_option("J_excitation", "Scaling factor for the single-state component of the Hamiltonian", value(0.));
-        add_option("J_interaction", "Type of Coulomb coupling. Allowed values: nn (nearest-neighbour) or all (all excitons are coupled)", value("nn"));
-        add_option("vibronic_nstates", "Number of the electronic states entering the vibronic Hamiltonian");
-        add_option("vibronic_nmodes", "Number of modes per molecule included in the vibronic Hamiltonian");
+        add_option("vibronic_J_coupling", "Coulomb coupling defining the excitonic Hamiltonian", value(0.));
+        add_option("vibronic_J_excitation", "Scaling factor for the single-state component of the Hamiltonian", value(0.));
+        add_option("vibronic_J_interaction_type", "Type of Coulomb coupling. Allowed values: nn (nearest-neighbour) or all (all molecules are coupled)", value("nn"));
+        add_option("vibronic_num_elestates", "Number of the electronic states entering the vibronic Hamiltonian");
+        add_option("vibronic_num_vibmodes", "Number of vibrational modes per molecule included in the vibronic Hamiltonian");
         add_option("vibronic_sorting", "Method to map the sites onto the DMRG lattice. Can be either equal to 'firstele', or to 'intertwined'", "firstele");
-        add_option("n_excitons", "Number of molecule composing the molecular aggregate");
+        add_option("vibronic_num_molecules", "Number of molecules composing the molecular aggregate");
+        add_option("vibronic_num_excitons", "Number of excitons", value(1));
+        add_option("vibronic_num_connectingmodes", "Number of vibrational modes connecting two monomers", value(0));
+        add_option("vibronic_max_coupling", "Maximum power of operators in the Hamiltonian", value(2));
 
         // TD-related parameters
         add_option("propagator_accuracy", "Accuracy of the iterative approximation of the time-evolution operator", value(1.0E-10));
@@ -167,7 +176,8 @@ private:
         add_option("determinant_file", "File where the determinants are stored. Used in the tools.");
         add_option("determinant_threshold", "Threshold for the determinant-related tool", 0.);
 
-        // Vibrational SRCAS settings
+        // SRCAS settings
+        add_option("srcas_veryVerbose", "If == yes, SRCAS will print output for each new sample", value("no"));
         add_option("srcas_targetCompleteness", "Desired completness for SRCAS to terminate sampling", value(0.99));
         add_option("srcas_maxNumIterations", "Maximum number of macroiterations until SRCAS sampling is terminated", value(10));
         add_option("srcas_numSamples", "Number of samples in each SRCAS macroiteration", value(10000));
@@ -209,6 +219,15 @@ private:
         add_option("feast_verbose", "If yes, activate verbose output for FEAST", value("no"));
         add_option("feast_standard_deviation_threshold", "If set, uses this threshold to accept/reject an eigenpair");
         add_option("feast_print_timings", "If equal to yes, prints timings spent in each step", value("yes"));
+
+        // Parameters related to parallelization
+        add_option("parallelize_measurements", "If true, measurements will be executed in parallel by OPENMP", value(false));
+
+        //coherent initialization
+        add_option("init_state_type", "Type of provided states, can be [csf] for SU2 calcultions, or [det] by default", value("det"));
+        add_option("init_file", "Filename(s) for coherent initalization", value(""));
+
+
     }
 };
 

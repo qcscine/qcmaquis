@@ -8,6 +8,7 @@
 #include "dmrg/models/factories/factory.h"
 #include "dmrg/models/vibrational/u1/VibronicModel.hpp"
 #include "dmrg/models/vibrational/u1/ExcitonicModel.hpp"
+#include "dmrg/models/vibrational/u1/ExcitonicExtendedModel.hpp"
 
 template<class Matrix>
 struct coded_model_factory<Matrix, U1> {
@@ -27,6 +28,14 @@ struct coded_model_factory<Matrix, U1> {
         else if (parms["MODEL"] == std::string("excitonic")) {
 #ifdef DMRG_VIBRONIC
             return impl_ptr( new HolsteinHubbardExcitonicHamiltonian<Matrix>(lattice, parms));
+#else
+            throw std::runtime_error("Don't know this model!");
+#endif
+        }
+        // does not compile until the class is finishes (not all members implemented yet)
+        else if (parms["MODEL"] == std::string("excitonicextended")) {
+#ifdef DMRG_VIBRONIC
+            return impl_ptr( new HolsteinbHubbardExcitonicExtendedHamiltonian<Matrix>(lattice, parms));
 #else
             throw std::runtime_error("Don't know this model!");
 #endif

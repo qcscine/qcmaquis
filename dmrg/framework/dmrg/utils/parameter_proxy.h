@@ -32,7 +32,7 @@ namespace parameters {
             }
         };
 
-        // eliminating quatation marks around strings
+        // eliminating quotation marks around strings
         template <> struct get_<std::string>
         {
             std::string operator()(std::string const & val)
