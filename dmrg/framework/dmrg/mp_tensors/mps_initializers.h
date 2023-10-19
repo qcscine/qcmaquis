@@ -57,7 +57,6 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
      */
     void operator()(MPS<Matrix, SymmGroup> & mps) { init_sectors(mps, this->init_bond_dimension, true); }
 
-  private:
     // Main routine
     void init_sectors(MPS<Matrix, SymmGroup> & mps, size_t Mmax, bool fillrand=true, typename Matrix::value_type val=0)
     {
@@ -94,7 +93,6 @@ struct const_mps_init : public mps_initializer<Matrix, SymmGroup>
 
     void operator()(MPS<Matrix, SymmGroup> & mps) { di.init_sectors(mps, di.init_bond_dimension, false, 1.); }
 
-  private:
     // Class member
     default_mps_init<Matrix, SymmGroup> di;
 };
