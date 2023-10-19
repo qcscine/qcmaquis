@@ -223,8 +223,8 @@ private:
         add_option("feast_num_points", "Number of quadrature points for approximating the integral", value(8));
         add_option("feast_integral_type", "`full' for the complete integration, `half' for the semicircle integration", value("full"));
         add_option("feast_truncation_type", "`each' for truncating the MPS after each sum, `end' if the truncation must be done only at the end", value("end"));
-        add_option("feast_overlap_convergence_threshold", "Threshold to assess the convergence of the FEAST procedure", value(1.0E-5));
-        add_option("feast_energy_convergence_threshold", "Threshold to assess the convergence of the FEAST procedure", value(1.0E-5));
+        add_option("feast_overlap_convergence_threshold", "Overlap threshold to assess the convergence of the FEAST procedure", value(1.0E-5));
+        add_option("feast_energy_convergence_threshold", "Energy threshold to assess the convergence of the FEAST procedure", value(1.0E-5));
         add_option("feast_calculate_standard_deviation", "If yes, calculates the standard deviation associated with each FEAST state.", value("no"));
         add_option("feast_verbose", "If yes, activate verbose output for FEAST", value("no"));
         add_option("feast_standard_deviation_threshold", "If set, uses this threshold to accept/reject an eigenpair");
