@@ -64,7 +64,6 @@ private:
         add_option("alpha_final", "Scaling factor of the noise added to perturb the MPS update during the optimization/evolution during the remainder of nsweeps", value(1e-8));
 
         // MPS initialization settings
-        // MPS initialization settings
         add_option("init_type", "Initialization type of the initial guess MPS. The default is random, also possible are const, basis_state*/hf, etc.", value("default"));
         add_option("init_state_type", "Type of provided states, can be [csf] for SU2 calcultions, or [det] by default", value("det"));
         add_option("init_coeffs", "Comma-separated list of coefficients for coherent init", value(""));
@@ -81,13 +80,11 @@ private:
         add_option("CONSERVED_QUANTUMNUMBERS", "", value("Nup,Ndown"));
         add_option("orbital_order", "Comma separated list of orbital numbers");
 
-
         // Settings for model
         add_option("MODEL","Type of Hamiltonian", value("quantum_chemistry"));
         add_option("symmetry", "Total symmetry group of the MPS, e.g. 2u1,2u1pg,su2u1,su2u1pg", value("su2u1pg"));
         add_option("model_library", "", value("coded"));
         add_option("model_file", "path to model parameters", value(""));
-
 
         // Settings for integral read-in
         add_option("integral_file", "Path to model parameters, e.g. FCIDUMP-style integral file", value("FCIDUMP"));
@@ -104,11 +101,9 @@ private:
         add_option("chkpfile", "Path and name of folder in which to store the MPS");
         add_option("chkp_each", "Update the checkpoint every 2*chkp_each sweeps", value(1));
         add_option("storagedir", "Scratch directory for temporary files", value(""));
-
         add_option("donotsave", "", value(0));
 
         add_option("use_compressed", "", value(0));
-
 
         add_option("entanglement_spectra", "", value(0));
 
@@ -117,6 +112,7 @@ private:
 
         // Measurement related settings
         add_option("measure_each", "Compute the expectation values every 2*measure_each sweeps", value(1));
+        add_option("parallelize_measurements", "If true, measurements will be executed in parallel if OPENMP is enabled", value(false));
         add_option("MEASURE[Energy]", "", value(true));
         add_option("MEASURE[EnergyVariance]", "", value(false));
         add_option("MEASURE[Entropy]", "", value(false));
@@ -137,7 +133,6 @@ private:
         add_option("watson_max_coupling_input", "Maximum many-body coupling allowed to appear in the input file", value(ORDER_NONE));
         add_option("watson_coordinate_type", "Type of coordinate used for the Hamiltonian definition", value("cartesian"));
         add_option("Nmax", "Maximum excitation degree for each mode in the canonical quantization-based vDMRG, either single integer or comma separated list with the number of basis functions per mode", value(6));
-
 
         // n-mode vDMRG related parameters
         add_option("nmode_dumpIntegral", "If == yes, store the integrals in the result file", value("no"));
@@ -220,15 +215,6 @@ private:
         add_option("feast_verbose", "If yes, activate verbose output for FEAST", value("no"));
         add_option("feast_standard_deviation_threshold", "If set, uses this threshold to accept/reject an eigenpair");
         add_option("feast_print_timings", "If equal to yes, prints timings spent in each step", value("yes"));
-
-        // Parameters related to parallelization
-        add_option("parallelize_measurements", "If true, measurements will be executed in parallel by OPENMP", value(false));
-
-        //coherent initialization
-        add_option("init_state_type", "Type of provided states, can be [csf] for SU2 calcultions, or [det] by default", value("det"));
-        add_option("init_file", "Filename(s) for coherent initalization", value(""));
-
-
     }
 };
 
