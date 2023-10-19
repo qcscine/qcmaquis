@@ -177,14 +177,19 @@ void transform_site(MPSTensor<Matrix, SymmIn> const & mps_in,
                         std::size_t  out_left_offset_su2 = left_subblocks[leftc].position(std::make_pair(in_l_charge, 0));
                         std::size_t out_right_offset_su2 = right_subblocks[rightc].position(std::make_pair(in_r_charge, 0));
 
-                        int l1 = SymmIn::spin(in_l_charge), l2 = std::abs(SymmIn::spin(physical_i_in[s].first)), l3 = SymmIn::spin(in_r_charge);
-                        int m_in = leftc[0] - leftc[1], m_out = physc[0] - physc[1], m3 = rightc[0] - rightc[1];
-                        double clebsch_gordan = pow(-1.0,(l1-l2+m3)/2)*sqrt(l3+1.0)*WignerWrapper::gsl_sf_coupling_3j(l1,l2,l3,m_in,m_out,-m3);
+                        int l_left = SymmIn::spin(in_l_charge); // spin from left
+                        int l_site = std::abs(SymmIn::spin(physical_i_in[s].first)); // new spin at this site
+                        int l_tot = SymmIn::spin(in_r_charge); // spin resulting from left and new spin --> total spin
+                        int m_left = leftc[0] - leftc[1]; // spin proj from left
+                        int m_site = physc[0] - physc[1]; // spin proj at this site
+                        int m_tot = rightc[0] - rightc[1]; // spin proj resulting from left and site --> total spin proj
+                        double prefac = pow(-1.0,(l_left-l_site+m_tot)/2)*sqrt(l_tot+1.0);
+                        double clebsch_gordan = prefac*WignerWrapper::gsl_sf_coupling_3j(l_left,l_site,l_tot,m_left,m_site,-m_tot);
 
                         for (std::size_t ci = 0; ci < num_cols(source_block); ++ci)
                             std::transform(source_block.col(ci).first, source_block.col(ci).second,
-                                        current_block.col(ci + out_right_offset_su2).first + out_left_offset_2u1 + out_left_offset_su2,
-                                        boost::lambda::_1*clebsch_gordan);
+                                           current_block.col(ci + out_right_offset_su2).first + out_left_offset_2u1 + out_left_offset_su2,
+                                           boost::lambda::_1*clebsch_gordan);
                     } // sectors
                 }
             } // SU2 input physical_i_in
