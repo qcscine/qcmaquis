@@ -128,7 +128,9 @@ endif()
 
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     include("config/clang_fixes.cmake")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 endif(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+
 # Set a default build type if none was specified
 set(default_build_type "Release")
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -381,13 +383,25 @@ set(DMRG_VERSION_STRING "DMRG version ${DMRG_VERSION}")
 MESSAGE(STATUS "DMRG version: ${DMRG_VERSION}")
 
 # OpenMP
+
+if(APPLE)
+    if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
+        set(OpenMP_C_FLAG "-fopenmp=libomp -Wno-unused-command-line-argument")
+    endif()
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        set(OpenMP_CXX_FLAG "-fopenmp=libomp -Wno-unused-command-line-argument")
+    endif()
+endif()
+
 if(ENABLE_OMP)
-  find_package(OpenMP)
+  find_package(OpenMP REQUIRED)
   if(OPENMP_FOUND)
     add_definitions(-DMAQUIS_OPENMP)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+    list(APPEND DMRG_INCLUDE_DIRS ${OpenMP_CXX_INCLUDE_DIRS})
+    list(APPEND DMRG_LIBRARIES OpenMP::OpenMP_CXX)
   else(OPENMP_FOUND)
     message("OpenMP not found")
   endif(OPENMP_FOUND)

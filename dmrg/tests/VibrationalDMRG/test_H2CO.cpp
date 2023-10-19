@@ -1,28 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2022 Institute for Theoretical Physics, ETH Zurich
- *               2022- by Alberto Baiardi <abaiardi@ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #define BOOST_TEST_MAIN
 
@@ -33,7 +14,7 @@
 #include "maquis_dmrg.h"
 
 /** @brief Checks that increasing NMax leads to a lower energy for H2CO */
-BOOST_FIXTURE_TEST_CASE(Test_DMRG_, WatsonFixture)
+BOOST_FIXTURE_TEST_CASE(Test_DMRG_H2CO, WatsonFixture)
 {
 #ifdef HAVE_TrivialGroup
   using InterfaceType = maquis::DMRGInterface<double>;
@@ -58,5 +39,34 @@ BOOST_FIXTURE_TEST_CASE(Test_DMRG_, WatsonFixture)
   BOOST_TEST(interface.energy() < interfaceSmaller.energy());
 #endif // HAVE_TrivialGroup
 }
+
+#ifdef HAVE_TrivialGroup
+
+/** @brief Checks that increasing NMax leads to a lower energy for H2CO */
+BOOST_FIXTURE_TEST_CASE(Test_DMRG_H2CO_Measurement, WatsonFixture)
+{
+  using InterfaceType = maquis::DMRGInterface<double>;
+  // Adds the final input parameters
+  auto parametersH2COWatsonMeasurement = parametersH2COWatsonNoCoriolis;
+  parametersH2COWatsonMeasurement.set("init_type", "basis_state_generic");
+  parametersH2COWatsonMeasurement.set("init_basis_state", "0,0,0,0,0,0");
+  parametersH2COWatsonMeasurement.set("optimization", "singlesite");
+  parametersH2COWatsonMeasurement.set("alpha_initial", 1.0E-8);
+  parametersH2COWatsonMeasurement.set("alpha_initial", 1.0E-15);
+  parametersH2COWatsonMeasurement.set("alpha_initial", 0.);
+  parametersH2COWatsonMeasurement.set("nsweeps", 20);
+  parametersH2COWatsonMeasurement.set("ngrowsweeps", 2);
+  parametersH2COWatsonMeasurement.set("nmainsweeps", 2);
+  parametersH2COWatsonMeasurement.set("max_bond_dimension", 50);
+  parametersH2COWatsonMeasurement.set("MODEL", "watson");
+  parametersH2COWatsonMeasurement.set("Nmax", 2);
+  parametersH2COWatsonMeasurement.set("MEASURE[ModeExcitationDegree]", "ON");
+  parametersH2COWatsonMeasurement.set("ALWAYS_MEASURE", "ExcitationMode0,ExcitationMode1,ExcitationMode2,ExcitationMode3,ExcitationMode4");
+  parametersH2COWatsonMeasurement.set("resultfile", "tst.result.h5");
+  InterfaceType interface(parametersH2COWatsonMeasurement);
+  interface.optimize();
+}
+
+#endif // HAVE_TrivialGroup
 
 #endif // DMRG_VIBRATIONAL

@@ -1,32 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
- *               2011-2013    Michele Dolfi <dolfim@phys.ethz.ch>
- *               2014-2014    Sebastian Keller <sebkelle@phys.ethz.ch>
- *               2018         Leon Freitag <lefreita@ethz.ch>
- *               2021-        Alberto Baiardi <abaiardi@ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef INTERFACE_SIM_H
 #define INTERFACE_SIM_H
@@ -83,7 +60,7 @@ public:
   explicit interface_sim(DmrgParameters & parms_) : base(parms_), last_sweep_(init_sweep-1) { }
 
   /** @brief Runs a DMRG-based optimization */
-  void run(const std::string& simulationType) {
+  void run(const std::string& simulationType) override {
     if (simulationType == "optimize")
       this->runAlternatingLeastSquares("optimize", parms["nsweeps"].template as<int>(), parms["conv_thresh"].template as<double>());
     else if (simulationType == "evolve")
@@ -152,18 +129,18 @@ public:
       nIpiIterations += 1;
       nextEnergy = this->get_energy();
       energiesForIPIIteration.push_back(nextEnergy);
-      energyDifference = std::fabs(nextEnergy - previousEnergy);
+      energyDifference = std::abs(nextEnergy - previousEnergy);
       auto mpsOverlap = overlap(mpsBackup, this->mps)/std::sqrt(norm(mpsBackup)*norm(this->mps));
       auto precision = std::cout.precision();
       maquis::cout << " === RESULTS FOR THE " << nIpiIterations << "-th iteration ===" << std::endl;
       std::cout.precision(10);
       maquis::cout << " - Energy difference to previous iteration =         " << energyDifference << std::endl;
-      maquis::cout << " - MPS overlap with solution at previous iteration = " << std::fabs(mpsOverlap) << std::endl;
+      maquis::cout << " - MPS overlap with solution at previous iteration = " << std::abs(mpsOverlap) << std::endl;
       maquis::cout << std::endl;
       std::cout.precision(precision);
       // Checks convergence and, if not reached, starts a new IPI iteration
       if (nIpiIterations == numberOfOuterIterations || energyDifference < energyConvergenceThreshold ||
-          std::fabs(1.-std::fabs(mpsOverlap)) < overlapConvergenceThreshold)
+          std::abs(1.-std::abs(mpsOverlap)) < overlapConvergenceThreshold)
       {
         std::string message = (nIpiIterations == numberOfOuterIterations) ? " --> MAXIMUM NUMBER OF IPI ITERATIONS REACHED" : " --> CONVERGENCE REACHED";
         maquis::cout << message << std::endl;
@@ -301,8 +278,7 @@ public:
   */
 
   /** @brief Runs a measurement calculation */
-  void run_measure()
-  {
+  void run_measure() override {
     //if (this->get_last_sweep() < 0)
     //    throw std::runtime_error("Tried to measure before a sweep");
     this->measure("/spectrum/results/", all_measurements);
@@ -352,7 +328,7 @@ public:
     #endif
   }
 
-  results_map_type measure_out() {
+  results_map_type measure_out() override {
     results_map_type ret;
     // Do not measure before a sweep
     if (this->get_last_sweep() < 0)
@@ -374,9 +350,11 @@ public:
     return ret;
   }
 
-  /** @brief Gets the energy for the mps that is stored in the sim object */
-  /** if it is a feastMPS, return the feast energy of the zeroth feast state*/
-  RealType get_energy() {
+  /** 
+   * @brief Gets the energy for the mps that is stored in the sim object
+   * Note that, if it is a feastMPS, return the feast energy of the zeroth feast state
+   */
+  RealType get_energy() override {
     if (!feastMPSs_)
       return maquis::real(expval(mps, mpo)/overlap(mps, mps));
     else
@@ -392,7 +370,7 @@ public:
   }
 
   /** @brief Gets the FEAST energies -- throws an exception if FEAST is not run */
-  RealType getFEASTEnergy(int iState) const {
+  RealType getFEASTEnergy(int iState) const override {
     if (!feastMPSs_)
       throw std::runtime_error("FEAST energy requested before running a FEAST simulation");
     else if (iState >= feastMPSs_->size()) {
@@ -426,7 +404,7 @@ public:
   }
 
   /** @brief Updates the integral and regenerates the data that depends on it */
-  void update_integrals(const chem::integral_map<typename Matrix::value_type> & integrals)
+  void update_integrals(const chem::integral_map<typename Matrix::value_type> & integrals) override
   {
       if (parms.is_set("integral_file") || parms.is_set("integrals"))
           throw std::runtime_error("updating integrals in the interface not supported yet in the FCIDUMP format");
@@ -441,7 +419,7 @@ public:
       all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
   }
 
-  results_collector& get_iteration_results()
+  results_collector& get_iteration_results() override
   {
     // If iteration_results is empty, we didn't perform the sweep yet, but possibly loaded the MPS from a checkpoint
     // so we need to load also iteration results
@@ -469,7 +447,7 @@ public:
   }
 
   /** @brief Get the overlap of the MPS with another MPS, which is loaded from a chkp file */
-  virtual typename Matrix::value_type get_overlap(const std::string & aux_filename)
+  virtual typename Matrix::value_type get_overlap(const std::string & aux_filename) override
   {
       maquis::checks::symmetry_check(parms, aux_filename);
       MPS<Matrix, SymmGroup> aux_mps;
@@ -478,7 +456,7 @@ public:
   }
 
   /** @brief Getter for the number of sweeps that have been run */
-  int get_last_sweep() { return last_sweep_; };
+  int get_last_sweep() override { return last_sweep_; }
 
   /** @brief Class destructor */
   ~interface_sim() { storage::disk::sync(); }

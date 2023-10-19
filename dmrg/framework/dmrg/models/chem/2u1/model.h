@@ -1,29 +1,9 @@
-/*****************************************************************************
- *
- * QCMaquis DMRG Project
- *
- * Copyright (C) 2015 Laboratory for Physical Chemistry, ETH Zurich
- *               2012-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
- *
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef QC_HAMILTONIANS_H
 #define QC_HAMILTONIANS_H
@@ -118,7 +98,7 @@ public:
             return d2e[type];
         else if (name == "docc")
             return docc[type];
-	else if (name == "d2u")
+        else if (name == "d2u")
             return d2u[type];
         else if (name == "u2d")
             return u2d[type];
@@ -190,7 +170,7 @@ public:
         typedef std::vector<tag_vec> bond_tag_element;
         typedef std::pair<std::vector<tag_vec>, value_type> scaled_bond_element;
         {
-            std::regex expression("^MEASURE_LOCAL\\[(.*)]$");
+            std::regex expression("^MEASURE_LOCAL\\[(.*)\\]$");
             std::smatch what;
             for (auto&& it : parms.get_range()) {
                 std::string lhs = it.first;
@@ -212,10 +192,10 @@ public:
         }
 
         {
-        std::regex expression("^MEASURE_CORRELATIONS\\[(.*)]$");
-        std::regex expression_half("^MEASURE_HALF_CORRELATIONS\\[(.*)]$");
-        std::regex expression_nn("^MEASURE_NN_CORRELATIONS\\[(.*)]$");
-        std::regex expression_halfnn("^MEASURE_HALF_NN_CORRELATIONS\\[(.*)]$");
+        std::regex expression("^MEASURE_CORRELATIONS\\[(.*)\\]$");
+        std::regex expression_half("^MEASURE_HALF_CORRELATIONS\\[(.*)\\]$");
+        std::regex expression_nn("^MEASURE_NN_CORRELATIONS\\[(.*)\\]$");
+        std::regex expression_halfnn("^MEASURE_HALF_NN_CORRELATIONS\\[(.*)\\]$");
         std::regex expression_oneptdm("^MEASURE\\[1rdm\\]");
         std::regex expression_oneptspdm("^MEASURE\\[1spdm\\]");
         std::regex expression_oneptdm_uu("^MEASURE\\[1rdm_aa\\]");

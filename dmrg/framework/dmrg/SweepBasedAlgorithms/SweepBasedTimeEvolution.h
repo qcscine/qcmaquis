@@ -1,28 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2022 Institute for Theoretical Physics, ETH Zurich
- *               2022- by Alberto Baiardi <abaiardi@ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef SWEEP_BASED_TIME_EVOLUTION_H
 #define SWEEP_BASED_TIME_EVOLUTION_H
@@ -116,6 +97,12 @@ public:
       auto energy = ietl::get_energy(*(siteProblem_.get()), mpsToPropagate) + maquis::real(mpoContainer_.getMPO().getCoreEnergy());
       resultOfLocalSiteProblem_.first = energy;
       maquis::cout << std::setprecision(10) << " Energy = " << std::setprecision(16) << resultOfLocalSiteProblem_.first << std::endl;
+      //normalize the mps
+      mpsToPropagate.divide_by_scalar(mpsToPropagate.scalar_norm());
+      #ifndef NDEBUG
+      maquis::cout << "Wave function norm " << mpsToPropagate.scalar_norm() << std::endl;
+      #endif
+
     }
     iterationResults_["Energy"] << resultOfLocalSiteProblem_.first;
     resultOfLocalSiteProblem_.second = mpsToPropagate;

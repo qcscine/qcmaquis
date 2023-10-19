@@ -1,28 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2021 Institute for Theoretical Physics, ETH Zurich
- *               2021 by Alberto Baiardi <alberto.baiardi@sns.it>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef MPS_INITIALIZER_HELPER_H
 #define MPS_INITIALIZER_HELPER_H
@@ -124,10 +105,8 @@ public:
     if (inputVec.size() != size)
       throw std::runtime_error("Index list number of elements does not match the lattice size. Check the input settings.");
     auto state = stateType(size, stateEntryType(1));
-    std::cout << physDim[0] << std::endl;
     for (int j = 0 ; j < size; ++j) {
       state[j][0] = physDim[siteType[j]].element(inputVec[j]);
-      std::cout << boost::get<0>(state[j][0]) << " " << boost::get<1>(state[j][0]) << std::endl;
     }
     return state;
   }
@@ -149,11 +128,10 @@ public:
     auto state = stateType(size, stateEntryType(1));
     // Note that here we have two possibilities: either a site is electronic site, or it is a vibrational one.
     for (int j = 0 ; j < size; ++j) {
-      if (siteType[j] == 1) {
+      if (siteType[j] == 0) { // electronic site
         auto posOfCharge = physDim[siteType[j]].position(inputVec[j]);
         state[j][0] = physDim[siteType[j]].element(posOfCharge);
-      }
-      else {
+      } else { // vibrational site
         state[j][0] = physDim[siteType[j]].element(inputVec[j]);
       }
     }
@@ -230,9 +208,6 @@ public:
           state[j].resize(4);
           for (int addPhysDim = 0; addPhysDim < 4; ++addPhysDim)
             state[j][addPhysDim] = physDim[siteType[j]].element(addPhysDim);
-        } else if (hfIdx==6 || hfIdx==7) { // to explicitly construct a specified csf
-          state[j].resize(1);
-          state[j][0] = (hfIdx==6) ? physDim[siteType[j]].element(1) : physDim[siteType[j]].element(2);
         } else {
           throw std::runtime_error("HF coefficients range from 1 (empty)  to 4 (doubly occupied). 5 (mix of all possible occupations) only allowed for init_type generic_const/default");
         }
@@ -240,7 +215,7 @@ public:
         state[j].resize(2);
         state[j][0] = physDim[siteType[j]].element(1);
         state[j][1] = physDim[siteType[j]].element(2);
-      } else { //otherwise the occupation is either zero or double
+      } else {
         state[j].resize(1);
         state[j][0] = physDim[siteType[j]].element(4-hfIdx);
       }
@@ -278,9 +253,6 @@ public:
           state[j].resize(4);
           for (int addPhysDim = 0; addPhysDim < 4; ++addPhysDim)
             state[j][addPhysDim] = physDim[siteType[j]].element(addPhysDim);
-        } else if (hfIdx==6 || hfIdx==7) { // to explicitly construct a specified csf
-          state[j].resize(1);
-          state[j][0] = (hfIdx==6) ? physDim[siteType[j]].element(1) : physDim[siteType[j]].element(2);
         } else {
           throw std::runtime_error("HF coefficients range from 1 (empty)  to 4 (doubly occupied). 5 (mix of all possible occupations) only allowed for init_type generic_const/default");
         }

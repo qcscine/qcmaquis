@@ -1,31 +1,9 @@
-/*****************************************************************************
-*
-* ALPS MPS DMRG Project
-*
-* Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
-*               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
-*               2011-2013    Michele Dolfi <dolfim@phys.ethz.ch>
-*               2014-2014    Sebastian Keller <sebkelle@phys.ethz.ch>
-*               2018         Leon Freitag <lefreita@ethz.ch>
-*
-* This software is part of the ALPS Applications, published under the ALPS
-* Application License; you can use, redistribute it and/or modify it under
-* the terms of the license, either version 1 or (at your option) any later
-* version.
-*
-* You should have received a copy of the ALPS Application License along with
-* the ALPS Applications; see the file LICENSE.txt. If not, the license is also
-* available from http://alps.comp-phys.org/.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
-* SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
-* FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
-* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-* DEALINGS IN THE SOFTWARE.
-*
-*****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 #ifndef TEST_MPS_H
 #define TEST_MPS_H
 
@@ -50,10 +28,10 @@ template <class grp>
                         { {{1,1,0},1}, {{1,0,0},1}, {{0,1,0},1}, {{0,0,0},1} }, // rows
                         { {{1,1,0},1}, {{1,0,0},1}, {{0,1,0},1}, {{0,0,0},1} }, // cols
                         {
-                        matrix(1, 1, {-0.98761145122206129}),
-                        matrix(1, 1, {-0.14162250971811657}),
-                        matrix(1, 1, {-0.14162250971811657}),
-                        matrix(1, 1, {-0.067577260644360676})
+                        matrix(1, 1, -0.98761145122206129),
+                        matrix(1, 1, -0.14162250971811657),
+                        matrix(1, 1, -0.14162250971811657),
+                        matrix(1, 1, -0.067577260644360676)
                         } // data
                     )
                 ), // mps[0]
@@ -71,10 +49,10 @@ template <class grp>
                         {{1,1,0},4}, {{1,0,0},2}, {{0,2,0},1}, {{0,1,0},2},
                         {{0,0,0},1} }, // cols
                         {
-                        matrix(1, 1, {0.99593907511899671}),
+                        matrix(1, 1, 0.99593907511899671),
                         matrix(2, 2, {-0.86191004558575357, -4.6002047033774667e-08, // column-major order so this looks transposed!
                                         -1.1092845129179752e-07, 0.042738578511034929}),
-                        matrix(1, 1, {0.16680163900950651}),
+                        matrix(1, 1, 0.16680163900950651),
                         matrix(2, 2, {-0.86191004558575357, -4.6002047033774667e-08,
                                         -1.1092845129179752e-07, 0.042738578511034929}),
                         matrix(4, 4, {0, 0.11794657005665261, 0.11794657005665261, 0,
@@ -83,10 +61,10 @@ template <class grp>
                                         0.50863130999437023, 1.2245198253793157e-07, -1.2245198253793157e-07, -0.027059271174061181}),
                         matrix(2, 2, {-7.1104467702987106e-07, 0.05800608993260413,
                                         0.11784371620441166, 3.2890185339773664e-07}),
-                        matrix(1, 1, {0.16680163900950651}),
+                        matrix(1, 1, 0.16680163900950651),
                         matrix(2, 2, {-7.1104467702987106e-07, 0.05800608993260413,
-                                        0.11784371620441166, 3.2890185339773664e-07}),
-                        matrix(1, 1, {0.10618840519123873})
+                                       0.11784371620441166, 3.2890185339773664e-07}),
+                        matrix(1, 1, 0.10618840519123873)
                         }
                     )
                 ), // mps[1]
@@ -109,14 +87,14 @@ template <class grp>
                         {{1,3,0},3}, {{1,2,0},9}, {{1,1,0},9}, {{1,0,0},3},
                         {{0,3,0},1}, {{0,2,0},3}, {{0,1,0},3}, {{0,0,0},1} }, // cols
                     {
-                        matrix(1,1, {0.93746101075188237}),
+                        matrix(1,1, 0.93746101075188237),
                         matrix(3,3, {0.79945267548720589, -9.7525062984128917e-08, 0.057926481718290561,
                                         1.374306380734629e-08, 0.23669297798685096, -2.187286966261547e-09,
                                     -5.0831906442895123e-07, 7.8902345004036946e-13, 1.0804450563575665e-07}),
                         matrix(3,3, {-0.85922687394491437, -1.5357982317124378e-09, -0.28716727592789465,
                                         1.0497825555221065e-10, -1.1514782595191607e-07, -9.8378985436422006e-11,
                                     -2.09534742539695e-08, -2.7215438828174424e-12, 1.9637299590796334e-08}),
-                        matrix(1,1,  {1.0737353814975803e-07}),
+                        matrix(1,1,  1.0737353814975803e-07),
                         matrix(3,3,  {0.79945267548720589, -9.7525062984128917e-08, 0.057926481718290561,
                                         1.374306380734629e-08, 0.23669297798685096, -2.187286966261547e-09,
                                         -5.0831906442895123e-07, 7.8902345004036946e-13, 1.0804450563575665e-07}),
@@ -165,14 +143,14 @@ template <class grp>
                         matrix(3,3, {1.3705380501137873e-08, -1.4219204639230911e-06, 0.23373813806030871,
                                         0.02992207385222433, 0.12060048583230916, 7.7929037485471503e-07,
                                     -1.3817067429633793e-07, 2.6157854328475686e-08, 1.7591292429989698e-13}),
-                        matrix(1,1, {1.0737353814975803e-07}),
+                        matrix(1,1, 1.0737353814975803e-07),
                         matrix(3,3, {-1.0008940439030065e-06, 0.16480431836511464, 0.30265854107565943,
                                         -1.5771456145433263e-09, -7.9213089659315704e-08, 4.9018653232918252e-09,
                                         7.1238111095068528e-08, -1.4601168409437267e-09, 9.0383468842654526e-11}),
                         matrix(3,3, {1.3705380501137873e-08, -1.4219204639230911e-06, 0.23373813806030871,
                                         0.02992207385222433, 0.12060048583230916, 7.7929037485471503e-07,
                                     -1.3817067429633793e-07, 2.6157854328475686e-08, 1.7591292429989698e-13}),
-                        matrix(1,1, {0.3714216174592247})
+                        matrix(1,1, 0.3714216174592247)
                         }
                     )
                 ), // mps[2]

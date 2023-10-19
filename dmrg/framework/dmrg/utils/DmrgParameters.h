@@ -1,28 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef DMRGPARAMETERS2_H
 #define DMRGPARAMETERS2_H
@@ -69,9 +50,9 @@ private:
         add_option("twosite_truncation", "`svd` on the two-site mps or `heev` on the reduced density matrix (with alpha factor)", value("svd"));
 
         // Number of sweeps for different calculation phases
-        add_option("nsweeps", "Maximum number of sweeps per ALS procedure", 10);
-        add_option("ngrowsweeps", "Number of the grow sweeps (used for the truncation and noise parameters)", 2);
-        add_option("nmainsweeps", "Number of main sweeps (used for the truncation and noise parameters)", 5);
+        add_option("nsweeps", "Overall number of sweeps of the calculation", 10);
+        add_option("ngrowsweeps", "Number of the grow sweeps (used for the initial truncation and noise parameters)", 2);
+        add_option("nmainsweeps", "Number of main sweeps (used for the main truncation and noise parameters)", 5);
 
         // Setting to terminate DMRG before nsweeps are completed
         add_option("conv_thresh", "Energy convergence threshold to stop the simulation (use same units as integral file is provided in)", value(-1));
@@ -82,10 +63,11 @@ private:
         add_option("alpha_main", "Scaling factor of the noise added to perturb the MPS update during the optimization/evolution during nmainweeps", value(1e-4));
         add_option("alpha_final", "Scaling factor of the noise added to perturb the MPS update during the optimization/evolution during the remainder of nsweeps", value(1e-8));
 
-        // MPS initialization settings 
+        // MPS initialization settings
+        // MPS initialization settings
         add_option("init_type", "Initialization type of the initial guess MPS. The default is random, also possible are const, basis_state*/hf, etc.", value("default"));
         add_option("init_state_type", "Type of provided states, can be [csf] for SU2 calcultions, or [det] by default", value("det"));
-        add_option("init_coeffs", "Coefficients for coherent init", value(""));
+        add_option("init_coeffs", "Comma-separated list of coefficients for coherent init", value(""));
         add_option("init_file", "Filename(s) for coherent initalization", value(""));
         add_option("init_basis_state", "Local indices (ONV) for basis state init (used if [init_type] is [basis_state_generic])", value(""));
         add_option("init_space", "Occupation up to which the initial guess MPS should be populated (used if [init_type] is [basis_state_generic_*])", value(""));
@@ -98,13 +80,15 @@ private:
         add_option("lattice_library", "", value("coded"));
         add_option("CONSERVED_QUANTUMNUMBERS", "", value("Nup,Ndown"));
         add_option("orbital_order", "Comma separated list of orbital numbers");
-        
+
+
         // Settings for model
         add_option("MODEL","Type of Hamiltonian", value("quantum_chemistry"));
         add_option("symmetry", "Total symmetry group of the MPS, e.g. 2u1,2u1pg,su2u1,su2u1pg", value("su2u1pg"));
         add_option("model_library", "", value("coded"));
         add_option("model_file", "path to model parameters", value(""));
-        
+
+
         // Settings for integral read-in
         add_option("integral_file", "Path to model parameters, e.g. FCIDUMP-style integral file", value("FCIDUMP"));
         add_option("integral_cutoff", "Ignore integrals below a certain magnitude", value(0));
@@ -124,7 +108,8 @@ private:
         add_option("donotsave", "", value(0));
 
         add_option("use_compressed", "", value(0));
-        
+
+
         add_option("entanglement_spectra", "", value(0));
 
         add_option("ngrainings", "", value(0));
@@ -137,6 +122,7 @@ private:
         add_option("MEASURE[Entropy]", "", value(false));
         add_option("MEASURE[ChemEntropy]", "Evaluate all expectation valus required for a mututal information calculation. Only available for 2u1(pg)", value(false));
         add_option("MEASURE[Renyi2]", "", value(false));
+        add_option("MEASURE[Autocorrelation]", "", value(0));
         add_option("ALWAYS_MEASURE", "comma separated list of measurements", value(""));
 
         // Electronic-structure calculations parameters
@@ -146,19 +132,20 @@ private:
         add_option("spin", "Total spin of target state in su2u1(pg) calculation as int 2*S, so use 0 for singlet, 1 for doublet, and 2 for triplet");
         add_option("nelec", "Total number of electrons in su2u1(pg) calculation");
 
-        // canonical vDMRG-related parameters for the Watson Hamiltonian
-        add_option("watson_max_coupling", "Maximum many-body coupling to be included in the definition of the PES in canonical quantization", value(ORDER_NONE));
+        // Canonical vDMRG-related parameters for the Watson Hamiltonian
+        add_option("watson_max_coupling", "Maximum many-body coupling to be included in the definition of the PES in canonical quantization", 6);
         add_option("watson_max_coupling_input", "Maximum many-body coupling allowed to appear in the input file", value(ORDER_NONE));
         add_option("watson_coordinate_type", "Type of coordinate used for the Hamiltonian definition", value("cartesian"));
         add_option("Nmax", "Maximum excitation degree for each mode in the canonical quantization-based vDMRG, either single integer or comma separated list with the number of basis functions per mode", value(6));
-     
+
+
         // n-mode vDMRG related parameters
         add_option("nmode_dumpIntegral", "If == yes, store the integrals in the result file", value("no"));
         add_option("nmode_num_modes", "Number of modes of the Hamiltonian expressed in the n-mode representation");
         add_option("nmode_max_coupling", "Maximum many-body coupling order in the potential operator", value(3));
         add_option("nmode_num_basis", "Comma separated list with the number of basis functions per mode");
 
-        // Pre-BO settings
+        // Pre-BO
         add_option("PreBO_MaxBondDimVector", "Give a maximum bond dimension for each particle type.");
         add_option("PreBO_ParticleTypeVector", "Number of particles per type");
         add_option("PreBO_FermionOrBosonVector", "1 if Fermion, 0 if Boson");
@@ -166,13 +153,16 @@ private:
         add_option("PreBO_InitialStateVector", "Number of particles in alpha/beta state for each particle.");
 
         // Vibronic settings
-        add_option("J_coupling", "Coulomb coupling defining the excitonic Hamiltonian", value(0.));
-        add_option("J_excitation", "Scaling factor for the single-state component of the Hamiltonian", value(0.));
-        add_option("J_interaction", "Type of Coulomb coupling. Allowed values: nn (nearest-neighbour) or all (all excitons are coupled)", value("nn"));
-        add_option("vibronic_nstates", "Number of the electronic states entering the vibronic Hamiltonian");
-        add_option("vibronic_nmodes", "Number of modes per molecule included in the vibronic Hamiltonian");
+        add_option("vibronic_J_coupling", "Coulomb coupling defining the excitonic Hamiltonian", value(0.));
+        add_option("vibronic_J_excitation", "Scaling factor for the single-state component of the Hamiltonian", value(0.));
+        add_option("vibronic_J_interaction_type", "Type of Coulomb coupling. Allowed values: nn (nearest-neighbour) or all (all molecules are coupled)", value("nn"));
+        add_option("vibronic_num_elestates", "Number of the electronic states entering the vibronic Hamiltonian");
+        add_option("vibronic_num_vibmodes", "Number of vibrational modes per molecule included in the vibronic Hamiltonian");
         add_option("vibronic_sorting", "Method to map the sites onto the DMRG lattice. Can be either equal to 'firstele', or to 'intertwined'", "firstele");
-        add_option("n_excitons", "Number of molecule composing the molecular aggregate");
+        add_option("vibronic_num_molecules", "Number of molecules composing the molecular aggregate");
+        add_option("vibronic_num_excitons", "Number of excitons", value(1));
+        add_option("vibronic_num_connectingmodes", "Number of vibrational modes connecting two monomers", value(0));
+        add_option("vibronic_max_coupling", "Maximum power of operators in the Hamiltonian", value(2));
 
         // TD-related parameters
         add_option("propagator_accuracy", "Accuracy of the iterative approximation of the time-evolution operator", value(1.0E-10));
@@ -188,6 +178,7 @@ private:
         add_option("determinant_threshold", "Threshold for the determinant-related tool", 0.);
 
         // SRCAS settings
+        add_option("srcas_veryVerbose", "If == yes, SRCAS will print output for each new sample", value("no"));
         add_option("srcas_targetCompleteness", "Desired completness for SRCAS to terminate sampling", value(0.99));
         add_option("srcas_maxNumIterations", "Maximum number of macroiterations until SRCAS sampling is terminated", value(10));
         add_option("srcas_numSamples", "Number of samples in each SRCAS macroiteration", value(10000));
@@ -229,6 +220,15 @@ private:
         add_option("feast_verbose", "If yes, activate verbose output for FEAST", value("no"));
         add_option("feast_standard_deviation_threshold", "If set, uses this threshold to accept/reject an eigenpair");
         add_option("feast_print_timings", "If equal to yes, prints timings spent in each step", value("yes"));
+
+        // Parameters related to parallelization
+        add_option("parallelize_measurements", "If true, measurements will be executed in parallel by OPENMP", value(false));
+
+        //coherent initialization
+        add_option("init_state_type", "Type of provided states, can be [csf] for SU2 calcultions, or [det] by default", value("det"));
+        add_option("init_file", "Filename(s) for coherent initalization", value(""));
+
+
     }
 };
 

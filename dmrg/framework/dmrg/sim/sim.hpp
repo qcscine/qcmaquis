@@ -1,29 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2011-2013 by Bela Bauer <bauerb@phys.ethz.ch>
- *                            Michele Dolfi <dolfim@phys.ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #include <boost/algorithm/string.hpp>
 
@@ -173,6 +153,7 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
         mps = MPS<Matrix, SymmGroup>(lat.size(), *(model.initializer(lat, parms)));
     }
 
+    all_measurements << autocorrelation_measurements<Matrix, SymmGroup>(parms, mps);
     assert(mps.length() == lat.size());
 
     /// Update parameters - after checks have passed
@@ -251,8 +232,21 @@ std::string sim<Matrix, SymmGroup>::results_archive_path(status_type const& stat
 template <class Matrix, class SymmGroup>
 void sim<Matrix, SymmGroup>::measure(std::string archive_path, measurements_type & meas)
 {
+    #ifdef MAQUIS_OPENMP
+    if(parms["parallelize_measurements"]){
+        #pragma omp parallel for schedule(dynamic)
+        for (typename measurements_type::iterator it = meas.begin(); it < meas.end(); it++) {
+        MPS<Matrix, SymmGroup> mpsCopy = mps; // this is required as the measurements might change the pairing of the mps
+        // note that omp firstprivate cannot be used since the mps does apparently not fulfill the necessary requirements
+        measure_and_save<Matrix, SymmGroup> ms(rfile(), archive_path, mpsCopy);
+        ms(*it);
+        }
+    }
+    else std::for_each(meas.begin(), meas.end(), measure_and_save<Matrix, SymmGroup>(rfile(), archive_path, mps)); 
+    #else
     std::for_each(meas.begin(), meas.end(), measure_and_save<Matrix, SymmGroup>(rfile(), archive_path, mps));
-
+    #endif
+    
     // TODO: move into special measurement
     std::vector<int> * measure_es_where = NULL;
     entanglement_spectrum_type * spectra = NULL;

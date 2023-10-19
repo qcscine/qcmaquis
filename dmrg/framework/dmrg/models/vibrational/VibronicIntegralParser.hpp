@@ -1,28 +1,9 @@
-/*****************************************************************************
- *
- * QCMaquis DMRG Project
- *
- * Copyright (C) 2021 Laboratory for Physical Chemistry, ETH Zurich
- *               2021- by Alberto Baiardi <abaiardi@ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- * 
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef VIBRONIC_PARSE_INTEGRALS_H
 #define VIBRONIC_PARSE_INTEGRALS_H
@@ -95,7 +76,7 @@ parseIntegralVibronic(BaseParameters& parms, const Lattice& lat)
     std::vector<T> matrix_elements;
     std::vector<chem::index_type<chem::Hamiltonian::Vibronic>> indices;
     // Variable initialization
-    int n_states = parms["vibronic_nstates"];
+    int n_states = parms["vibronic_num_elestates"];
     int L_lattice = lat.size();
     // == Parses orbital data ==
     std::string integral_file = parms["integral_file"];
@@ -142,9 +123,8 @@ parseIntegralVibronic(BaseParameters& parms, const Lattice& lat)
  * 
  * The integral file is expected to be given in the following format:
  * 
- *  i   i  coeff --> harmonic potential term
- * ...
- * -i  -i  coeff --> harmonic kinetic term
+ *  i   i  coeff --> harmonic potential termmatrix_elements.push_back(t.second);
+            indices.push_back(t.first);
  * ...
  *  i   0  coeff --> LVC coupling term
  * 
@@ -185,6 +165,41 @@ inline std::pair<std::vector<chem::index_type<chem::Hamiltonian::Excitonic>>, st
     }
     return std::make_pair(indices, matrix_elements);
 }
+
+//VAL(i): extended Excitonic Hamiltonian parser
+template<class T>
+inline std::pair< std::vector<std::vector<int>>, std::vector<T> > 
+    parseIntegralExcitonicExtended(BaseParameters& parms, const Lattice& lat) 
+{
+    // Types and variables definition
+    using pos_t = Lattice::pos_t;
+    std::vector<T> matrix_elements;
+    std::string integral_file = parms["integral_file"];
+    if (!boost::filesystem::exists(integral_file))
+        throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
+    std::ifstream orb_file;
+    orb_file.open(integral_file.c_str());
+    // -- MAIN LOOP --
+    std::string tmp;
+    std::vector< std::string > line_splitted;
+    std::vector<int> indices_tmp;
+    std::vector<std::vector<int>> indices;  
+    while (std::getline(orb_file, tmp)) {
+        boost::trim_left(tmp);
+        boost::trim_right(tmp);
+        boost::split(line_splitted, tmp, boost::is_any_of(" "), boost::token_compress_on); //be careful with tabs. use spaces, otherwise FCIDUMP file is not read in properly        
+        double coefficient = atof(line_splitted[0].c_str());
+        for (std::size_t idx = 1; idx < line_splitted.size(); idx++){
+            indices_tmp.push_back(std::stoi(line_splitted[idx]));
+        }
+        indices.push_back(indices_tmp);
+        matrix_elements.push_back(coefficient);
+        indices_tmp.clear();
+    }
+    return std::make_pair(indices, matrix_elements);
+}
+
+//VAL(f)
 
 } // detail
 } // Vibrational

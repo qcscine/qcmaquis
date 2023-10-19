@@ -1,28 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2021 Institute for Theoretical Physics, ETH Zurich
- *               2021- by Alberto Baiardi <abaiardi@ethz.ch>
- * 
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- * 
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef MODELS_EXCITONIC_U1_H
 #define MODELS_EXCITONIC_U1_H
@@ -38,7 +19,7 @@
  * @brief Class representing the Holstein-Hubbard Hamiltonian.
  * 
  * This Hamiltonian describes an excitonic system composed
- * by N excitons, each one with the ground electronic state
+ * by N monomers, each one with the ground electronic state
  * and one electronically excited state, and a Coulomb term
  * that couples them via nearest-neighbour couplings.
  * 
@@ -66,40 +47,42 @@ public:
     /** 
      * @brief Model representing an Holstein-Hubbard Hamiltonian
      * In the Holstein-Hubbard Hamiltonian, we have multiple monomers, each one described by
-     * Harmonic PESs, where the excited states are modelled with the LVC model.
+     * harmonic PESs, where the excited states are modelled with the LVC model.
      * Moreover, off-diagonal coordinate-independent electronic coupling terms are present.
      */
     HolsteinHubbardExcitonicHamiltonian (const Lattice& lat_, BaseParameters & model_) 
-        : lat(lat_), model(model_), tag_handler(new table_type()), L_(model["L"]), n_ele_states_(model["vibronic_nstates"]),
-          n_vib_states_(model["vibronic_nmodes"]), n_particles_(model["n_excitons"]), phys_indexes(0), J_(0.),
+        : lat(lat_), model(model_), tag_handler(new table_type()), L_(model["L"]), n_ele_states_(model["vibronic_num_elestates"]),
+          n_vib_states_(model["vibronic_num_vibmodes"]), n_particles_(model["vibronic_num_molecules"]), phys_indexes(0), J_(0.),
           epsilon_(1.), only_nn_(false)
     {
         // Maximum order of the coupling terms that are supported.
         // For the excitonic Hamiltonian, this will be 
         maxCoupling = chem::getIndexDim(chem::Hamiltonian::Excitonic);
         // Vibronic interaction definition
-        J_ = model["J_coupling"].as<value_type>();
-        epsilon_ = model["J_excitation"].as<value_type>();
-        if (model["J_interaction"] == "nn")
+        J_ = model["vibronic_J_coupling"].as<value_type>();
+        epsilon_ = model["vibronic_J_excitation"].as<value_type>();
+        if (model["vibronic_J_interaction_type"] == "nn")
             only_nn_ = true;
         // Variable definition
         std::size_t nMax = model["Nmax"];
+        //  Note that, since we have two different types of sites, we also have different sets of
+        //  operators for electrons and for the vibrations
         op_t ident_vib_op, ident_ele_op;
         op_t create_ele_op, destroy_ele_op, count_ele_op;
         op_t position_vib_op, momentum_vib_op;
         // Definition of the physical dimensions.
-        // First we manage the dimensions for the vibrations, the the ones of the nuclei.
+        // First we manage the dimensions for the vibrations, then the ones of the nuclei.
         phys_indexes.resize(2) ;
-        phys_indexes[0].insert(std::make_pair(0, nMax));
-        phys_indexes[1].insert(std::make_pair(0, 1));
-        phys_indexes[1].insert(std::make_pair(1, 1));
+        phys_indexes[0].insert(std::make_pair(0, 1));
+        phys_indexes[0].insert(std::make_pair(1, 1));
+        phys_indexes[1].insert(std::make_pair(0, nMax));
         // Registering the electronic operators
         ident_ele_op.insert_block(Matrix(1, 1, 1), 0, 0);
         ident_ele_op.insert_block(Matrix(1, 1, 1), 1, 1);
         create_ele_op.insert_block(Matrix(1, 1, 1), 0, 1);
         destroy_ele_op.insert_block(Matrix(1, 1, 1), 1, 0);
         count_ele_op.insert_block(Matrix(1, 1, 1), 1, 1);
-        //
+        // Creation of operator tag table for the electronic operators
         ident_ele = tag_handler->register_op(ident_ele_op, tag_detail::bosonic);
         create_ele = tag_handler->register_op(create_ele_op, tag_detail::bosonic);
         destroy_ele = tag_handler->register_op(destroy_ele_op, tag_detail::bosonic);
@@ -117,6 +100,7 @@ public:
         position_vib_op.insert_block(mpos, 0, 0);
         momentum_vib_op.insert_block(mmom, 0, 0);
         ident_vib_op.insert_block(mident, 0, 0);
+        // Creation of operator tag table for the vibronic operators
         ident_vib = tag_handler->register_op(ident_vib_op, tag_detail::bosonic);
         // -- Creates the powers of the position/momentum operator --
         auto powersOfPositions_op = VibrationalHelpers<Matrix, U1>::generatePowersOfPositionOperator(maxCoupling, nMax, ident_vib_op, position_vib_op);
@@ -139,16 +123,19 @@ public:
         // We first loop over the number of molecules of the aggregate, and then over the
         // terms entering the vibronic Hamiltonian.
         for (int i_body = 0; i_body < n_particles_; i_body++) {
-            std::vector<int> vec_jnk(maxCoupling);
+            std::vector<int> vec_jnk(2);
             vec_jnk[0] = i_body;
             // Loop over the Hamiltonian terms
+            // Add the vibrational contributions
             for (int idx = 0; idx < hamiltonianTerms.first.size(); idx++) {
+                // Prepares the vectors to be employed when building the Hamiltonian
                 std::vector<tag_type> operators;
                 std::vector<pos_t> positions;
                 for (int op_vib = 0; op_vib < maxCoupling; op_vib++) {
+                    // Chooses between position and momentum operators
                     if (hamiltonianTerms.first[idx][op_vib] < 0) {
                         operators.push_back(momentumPowers[1]);
-                        vec_jnk[1] = -hamiltonianTerms.first[idx][op_vib]-1;
+                        vec_jnk[1] = abs(hamiltonianTerms.first[idx][op_vib])-1;
                         positions.push_back(lat.get_prop<int>("vibindex", vec_jnk));
                     }
                     else if (hamiltonianTerms.first[idx][op_vib] > 0) {
@@ -157,10 +144,19 @@ public:
                         positions.push_back(lat.get_prop<int>("vibindex", vec_jnk));
                     }
                 }
+                // Add electronic contribution
                 // Add the count operator for the specific excited states.
-                vec_jnk[1] = 0;
-                positions.push_back(lat.get_prop<int>("eleindex", vec_jnk));
-                operators.push_back(count_ele);
+                // TODO Note that this is hardcoded for the moment
+                if (operators.size() == 1) {
+                    vec_jnk[1] = 0;
+                    positions.push_back(lat.get_prop<int>("eleindex", vec_jnk));
+                    operators.push_back(count_ele);
+                }
+                else {
+                    vec_jnk[1] = 0;
+                    positions.push_back(lat.get_prop<int>("eleindex", vec_jnk));
+                    operators.push_back(ident_ele);
+                }
                 // Builds the term of the Hamiltonian
                 modelHelper<Matrix, U1>::add_term(positions, operators, hamiltonianTerms.second[idx], tag_handler, this->terms_, true);
             }
@@ -211,9 +207,9 @@ public:
     {
         tag_type ret ;
         if (type == 0)
-            ret = ident_vib;
-        else
             ret = ident_ele;
+        else
+            ret = ident_vib;
         return ret ;
     }
     
@@ -222,20 +218,16 @@ public:
     {
         tag_type ret ;
         if (type == 0)
-          ret = ident_vib;
-        else if (type == 1)
           ret = ident_ele;
+        else if (type == 1)
+          ret = ident_vib;
         else
           throw std::runtime_error("Site type not recognized") ;
         return ret ;
     }
 
     /** @brief Identity matrix getter */
-    typename U1::charge total_quantum_numbers(BaseParameters & parms) const
-    {
-        // ALB Note that here we allow at most 1 particle to be excited.
-        return 1;
-    }
+    typename U1::charge total_quantum_numbers(BaseParameters & parms) const { return parms["vibronic_num_excitons"]; }
 
     /** @brief Getter for the operator associated with a given string */
     tag_type get_operator_tag(std::string const & name, size_t type) const
@@ -286,8 +278,8 @@ public:
                 // Bonds element (the actual operator involved in the measurement)
                 bond_element ops;
                 op_vec local_op_vec;
-                local_op_vec.push_back(tag_handler->get_op(ident_vib));
                 local_op_vec.push_back(tag_handler->get_op(count_ele));
+                local_op_vec.push_back(tag_handler->get_op(ident_vib));
                 ops.push_back(std::make_pair(local_op_vec, false));
                 meas.push_back(new measurements::local_at<Matrix, U1>(name, lat, pos_local, identities_local,
                                                                       fillings_local, ops));

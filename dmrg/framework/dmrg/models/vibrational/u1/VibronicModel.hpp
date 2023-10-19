@@ -1,28 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2021 Institute for Theoretical Physics, ETH Zurich
- *               2021- by Alberto Baiardi <abaiardi@ethz.ch>
- * 
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- * 
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef MODELS_VIBRONIC_U1_H
 #define MODELS_VIBRONIC_U1_H
@@ -62,7 +43,7 @@ public:
     /** @brief Class constructor */
     VibronicModel(const Lattice& lattice_, BaseParameters& parameters_)
       : lat(lattice_), parameters(parameters_), tag_handler(new table_type()), L_(parameters_["L"]),
-        n_ele_states_(parameters_["vibronic_nstates"]), n_vib_states_(parameters_["vibronic_nmodes"])
+        n_ele_states_(parameters_["vibronic_num_elestates"]), n_vib_states_(parameters_["vibronic_num_vibmodes"])
     {
         // Variable definition
         int nMax = parameters_["Nmax"];
@@ -73,9 +54,9 @@ public:
         // Note that the physical dimension for the vibrations coupled the 0 QC with
         // itself since it cannot generate electronic excitations
         phys.resize(2);
-        phys[0].insert(std::make_pair(0, nMax));
-        phys[1].insert(std::make_pair(0, 1));
-        phys[1].insert(std::make_pair(1, 1));
+        phys[0].insert(std::make_pair(0, 1)); // empty
+        phys[0].insert(std::make_pair(1, 1)); // occupied
+        phys[1].insert(std::make_pair(0, nMax)); // vibrational
         // Registering the electronic operators
         ident_ele_op.insert_block(Matrix(1, 1, 1), 0, 0);
         ident_ele_op.insert_block(Matrix(1, 1, 1), 1, 1);
@@ -170,9 +151,9 @@ public:
     {
         tag_type ret;
         if (type == 0)
-            ret = ident_vib;
-        else if (type == 1)
             ret = ident_ele;
+        else if (type == 1)
+            ret = ident_vib;
         else
             throw std::runtime_error("Site type not recognized");
         return ret;
@@ -183,16 +164,16 @@ public:
     {
         tag_type ret;
         if (type == 0)
-            ret = ident_vib;
-        else if (type == 1)
             ret = ident_ele;
+        else if (type == 1)
+            ret = ident_vib;
         else
             throw std::runtime_error("Site type not recognized");
         return ret;
     }
 
     // Total quantum number which must be obtained at the end of the MPS. Should be 1 in all cases.
-    typename U1::charge total_quantum_numbers(BaseParameters & parms) const { return 1; }
+    typename U1::charge total_quantum_numbers(BaseParameters & parms) const { return parms["vibronic_num_excitons"]; }
 
     /** @brief Getter for the operator associated with a given string */
     tag_type get_operator_tag(std::string const & name, size_t type) const
