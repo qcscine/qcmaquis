@@ -4,7 +4,7 @@ nmainsweeps                      = 2
 max_bond_dimension               = 20
 
 truncation_initial               = 0
-truncation_main                 = 0
+truncation_main                  = 0
 
 optimization                     = twosite 
 symmetry                         = none

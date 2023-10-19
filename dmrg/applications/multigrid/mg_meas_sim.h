@@ -99,7 +99,7 @@ public:
             ar["/spectrum/results/Energy/mean/value"] << std::vector<double>(1, energy);
         }
         
-        if (parms["MEASURE[EnergyVariance]"] > 0) {
+        if (parms["MEASURE[EnergyVariance]"]) {
             MPO<Matrix, SymmGroup> mpo2 = square_mpo(mpo);
             mpo2.compress(1e-12);
             

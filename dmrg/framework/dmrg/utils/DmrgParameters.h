@@ -42,11 +42,11 @@ private:
         add_option("sweep_bond_dimensions", "Comma-seperated list of n bond dimensions to be used in the n first sweeps");
 
         // Settings for further truncating than the maximum bond dimension
-        add_option("truncation_initial", "Initial value for the truncation error during ngrowsweeps", value(1e-16));
-        add_option("truncation_main", "Value for the truncation error after ngrowsweeps (not only nmainsweeps, but the entire remainder of the nsweeps)", value(1e-16));
+        add_option("truncation_initial", "Initial value for the truncation error, interpolated during ngrowsweeps", value(1e-16));
+        add_option("truncation_main", "Final value for the truncation error during the rest of the nsweeps-ngrowsweeps", value(1e-16));
 
         // Settings related to the MPS optimization algorithm
-        add_option("optimization", "singlesite or twosite", value("twosite"));
+        add_option("optimization", "ALS sweeping modality: singlesite or twosite", value("twosite"));
         add_option("twosite_truncation", "`svd` on the two-site mps or `heev` on the reduced density matrix (with alpha factor)", value("svd"));
 
         // Number of sweeps for different calculation phases
@@ -56,7 +56,7 @@ private:
 
         // Setting to terminate DMRG before nsweeps are completed
         add_option("conv_thresh", "Energy convergence threshold to stop the simulation (use same units as integral file is provided in)", value(-1));
-        add_option("run_seconds", "", value(0));
+        add_option("run_seconds", "Maximum time in seconds to run the calculation for, activate by setting a limit > 0", value(0));
 
         // Noise to be added to the MPS during the optimization/evolution
         add_option("alpha_initial", "Scaling factor of the noise added to perturb the MPS update during the optimization/evolution during ngrowsweeps", value(1e-2));
@@ -66,8 +66,9 @@ private:
         // MPS initialization settings
         // MPS initialization settings
         add_option("init_type", "Initialization type of the initial guess MPS. The default is random, also possible are const, basis_state*/hf, etc.", value("default"));
-        add_option("init_coeff", "Comma-separated list of coefficients for coherent init", value(""));
-        add_option("init_coeff", "Comma-separated list of coefficients for coherent init", value(""));
+        add_option("init_state_type", "Type of provided states, can be [csf] for SU2 calcultions, or [det] by default", value("det"));
+        add_option("init_coeffs", "Comma-separated list of coefficients for coherent init", value(""));
+        add_option("init_file", "Filename(s) for coherent initalization", value(""));
         add_option("init_basis_state", "Local indices (ONV) for basis state init (used if [init_type] is [basis_state_generic])", value(""));
         add_option("init_space", "Occupation up to which the initial guess MPS should be populated (used if [init_type] is [basis_state_generic_*])", value(""));
         add_option("ci_level", "Number of electrons excited from HF determinant", "1,2,3,4,5,6");
@@ -101,7 +102,6 @@ private:
         // Storing/updating settings
         add_option("resultfile", "Path and name of file in which to store the results");
         add_option("chkpfile", "Path and name of folder in which to store the MPS");
-        add_option("measure_each", "Compute the expectation values every 2*measure_each sweeps", value(1));
         add_option("chkp_each", "Update the checkpoint every 2*chkp_each sweeps", value(1));
         add_option("storagedir", "Scratch directory for temporary files", value(""));
 
@@ -116,8 +116,9 @@ private:
         add_option("finegrain_optim", "", value(false));
 
         // Measurement related settings
+        add_option("measure_each", "Compute the expectation values every 2*measure_each sweeps", value(1));
         add_option("MEASURE[Energy]", "", value(true));
-        add_option("MEASURE[EnergyVariance]", "", value(0));
+        add_option("MEASURE[EnergyVariance]", "", value(false));
         add_option("MEASURE[Entropy]", "", value(false));
         add_option("MEASURE[ChemEntropy]", "Evaluate all expectation valus required for a mututal information calculation. Only available for 2u1(pg)", value(false));
         add_option("MEASURE[Renyi2]", "", value(false));
@@ -189,19 +190,19 @@ private:
         add_option("ortho_states", "Comma-separated list of checkpoint names to which to orthogonalize to");
 
         // Solution of linear systems
-        add_option("linsystem_precond", "If yes, applies a preconditioner to the linear system solver", value("no"));
-        add_option("linsystem_init", "Initial guess for the Krylov basis (either [zero] for a zero MPS or [mps] for the rhs", value("last"));
+        add_option("linsystem_precond", "If set to [diagonal], applies a diagonal preconditioner to the linear system solver", value("no"));
+        add_option("linsystem_init", "Initial guess for the Krylov basis (either [zero] for a zero MPS or [last] for the rhs)", value("last"));
         add_option("linsystem_max_it", "Maximum number of times the iterative linear system solver is repeated (if >1, does basically restarted GMRES", value(1));
         add_option("linsystem_tol", "Threshold for the error - if the error falls below [linsystem_tol], the iterative procedure is stopped", value(1.0E-5));
         add_option("linsystem_krylov_dim", "Maximum dimension of the Krylov subspace for the iterative solution of the linear system", value(50));
         add_option("linsystem_solver", "Algorithm to be used to solve the linear system (possible values [GMRES] and [MINRES])", value("GMRES"));
         add_option("linsystem_exact_error", "If yes, calculates the exact error associated with the solution to the linear system", value("no"));
-        add_option("linsystem_verbose", "If yes, prints detail of the sweep, otherwise, just prints a summary at the end", value("yes"));
+        add_option("linsystem_verbose", "If yes, prints detail of the sweep", value("yes"));
+        add_option("linsystem_noise", "If set to yes, activates the noise. By default this option is deactivated.", value("yes"));
 
         // Parameters related to DMRG[IPI]
         add_option("ipi_sweep_overlap_threshold", "If the overlap between the MPSs calculated at two consecutive iterations is below this threshold, stops", value(1.0E-10));
         add_option("ipi_sweep_energy_threshold", "Threshold on the energy difference below which the IPI iterations are defined as converged", value(1.0E-10));
-        add_option("ipi_sweeps_per_system", "Maximum number of sweeps used to solve one linear system for DMRG[IPI]");
         add_option("ipi_shift", "Shift parameter for the DMRG[IPI] algorithm");
         add_option("ipi_iterations", "Maximum number of macroiterations for the DMRG[IPI] calculation");
 
@@ -213,8 +214,8 @@ private:
         add_option("feast_num_points", "Number of quadrature points for approximating the integral", value(8));
         add_option("feast_integral_type", "`full' for the complete integration, `half' for the semicircle integration", value("full"));
         add_option("feast_truncation_type", "`each' for truncating the MPS after each sum, `end' if the truncation must be done only at the end", value("end"));
-        add_option("feast_overlap_convergence_threshold", "Threshold to assess the convergence of the FEAST procedure", value(1.0E-5));
-        add_option("feast_energy_convergence_threshold", "Threshold to assess the convergence of the FEAST procedure", value(1.0E-5));
+        add_option("feast_overlap_convergence_threshold", "Overlap threshold to assess the convergence of the FEAST procedure", value(1.0E-5));
+        add_option("feast_energy_convergence_threshold", "Energy threshold to assess the convergence of the FEAST procedure", value(1.0E-5));
         add_option("feast_calculate_standard_deviation", "If yes, calculates the standard deviation associated with each FEAST state.", value("no"));
         add_option("feast_verbose", "If yes, activate verbose output for FEAST", value("no"));
         add_option("feast_standard_deviation_threshold", "If set, uses this threshold to accept/reject an eigenpair");
