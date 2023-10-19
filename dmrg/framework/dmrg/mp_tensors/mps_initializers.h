@@ -121,7 +121,7 @@ class basis_mps_init_generic : public mps_initializer<Matrix, SymmGroup>
      */
     basis_mps_init_generic(BaseParameters & params_, const std::vector<Index<SymmGroup> >& phys_dims_,
                            typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
-        : sym(params_["symmetry"].as<std::string>()), sym(params_["symmetry"].as<std::string>()), phys_dims(phys_dims_),
+        : sym(params_["symmetry"].as<std::string>()), phys_dims(phys_dims_),
           right_end(right_end_), site_type(site_type_), params(params_)
     {
       std::string states = params["init_basis_state"].template as<std::string>();
