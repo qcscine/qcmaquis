@@ -402,6 +402,7 @@ public:
   static void StoreToFile(serializable<T>& t) {
     if (enabled()) {
       t.StoreToFile();
+    }
   }
 
   /** @brief Drops the memory associated with a serializable object */
