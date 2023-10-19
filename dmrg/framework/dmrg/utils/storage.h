@@ -400,7 +400,7 @@ public:
   /** @brief Stores a serializable object on disk */
   template<class T>
   static void StoreToFile(serializable<T>& t) {
-    if (enabled())
+    if (enabled()) {
       t.StoreToFile();
   }
 

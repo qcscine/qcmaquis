@@ -110,9 +110,6 @@ if (BUILD_OPENMOLCAS_INTERFACE)
     endif()
 endif()
 
-# set(BLAS_LAPACK_SELECTOR "auto" CACHE STRING "Linear algebra library selector")
-# set_property(CACHE BLAS_LAPACK_SELECTOR PROPERTY STRINGS auto manual mkl_sequential mkl_parallel veclib openblas)
-
 include(BlasLapack)
 
 # QCMaquis manual
