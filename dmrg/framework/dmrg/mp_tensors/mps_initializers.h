@@ -150,7 +150,7 @@ class basis_mps_init_generic : public mps_initializer<Matrix, SymmGroup>
     /** @brief Operator (), called when the MPS is constructed */
     void operator()(MPS<Matrix, SymmGroup> & mps)
     {
-      // assert(basis_index.size() == mps.length());
+      assert(basis_index.size() == mps.length());
       auto state = HelperClassBasisVectorConverter<SymmGroup>::GenerateIndexFromString(params, basis_index, phys_dims, site_type, mps.length());
       if (sym=="su2u1" || sym=="su2u1pg") { // SU2 electronic case --> special because of spin symmetries etc --> directly use state_mps_cd
         mps = state_mps_cd<Matrix>(state, phys_dims, site_type, right_end, 1, false);
@@ -306,7 +306,7 @@ class coherent_mps_init : public mps_initializer<Matrix, SymmGroup>
         stateFile.close();
       } else {
         boost::split(list_dets, params["init_basis_state"].str(), boost::is_any_of("|"));
-        coeffs = params_["init_coeff"].as<std::vector<double> >();
+        coeffs = params_["init_coeffs"].as<std::vector<double> >();
       }
 
       for (int i = 0; i < list_dets.size(); i++) {
