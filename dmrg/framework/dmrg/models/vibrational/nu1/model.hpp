@@ -297,12 +297,10 @@ private:
         pos.reserve(ham_term.size());
         do {
             // Retrieves matrix element
-            // auto offset = lattice.get_prop<int>("sublatticePos", ham_term[2*jCont]-1);
-            // auto index  = ham_term[2*jCont+1] + offset;
             auto index = lattice.get_prop<int>("absolutePositionInLattice", ham_term[2*jCont]-1, ham_term[2*jCont+1]);
             assert(index < lattice_size);
             pos.push_back(index);
-            if (jCont % 2 == 0)
+            if (jCont % 2 == 0) // since operators always come pairwise per mode
                ops.push_back(create[siteTypes[index]]);
             else
                ops.push_back(destroy[siteTypes[index]]);
