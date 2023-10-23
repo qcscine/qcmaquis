@@ -140,15 +140,17 @@ public:
 
     void create_terms() override {
         std::cout << "Parsing integral file" << std::endl;
-        auto Hamiltonian_term = Vibrational::detail::NModeIntegralParser<value_type>(parameters, lattice);
+        auto Hamiltonian_term = Vibrational::detail::NModeIntegralParser<double>(parameters, lattice);
         int hamiltonianSize = Hamiltonian_term.first.size();
         std::cout << "Processing Second-Quantization Hamiltonian" << std::endl;
         for (int iTerm = 0; iTerm < hamiltonianSize; iTerm++) {
             positions_type positions;
             operators_type operators;
             convertLineToOperators(Hamiltonian_term.first[iTerm], positions, operators);
-            if (positions.size()/2 <= maxCouplingDegree)
-                modelHelper<Matrix, NU1>::add_term(positions, operators, Hamiltonian_term.second[iTerm], tag_handler, this->terms_);
+            if (positions.size()/2 <= maxCouplingDegree) {
+                auto matrixElement = static_cast<value_type>(Hamiltonian_term.second[iTerm]);
+                modelHelper<Matrix, NU1>::add_term(positions, operators, matrixElement, tag_handler, this->terms_);
+            }
         }
         std::cout << "Second-Quantization Hamiltonian processed" << std::endl;
     }
@@ -295,12 +297,10 @@ private:
         pos.reserve(ham_term.size());
         do {
             // Retrieves matrix element
-            // auto offset = lattice.get_prop<int>("sublatticePos", ham_term[2*jCont]-1);
-            // auto index  = ham_term[2*jCont+1] + offset;
             auto index = lattice.get_prop<int>("absolutePositionInLattice", ham_term[2*jCont]-1, ham_term[2*jCont+1]);
             assert(index < lattice_size);
             pos.push_back(index);
-            if (jCont % 2 == 0)
+            if (jCont % 2 == 0) // since operators always come pairwise per mode
                ops.push_back(create[siteTypes[index]]);
             else
                ops.push_back(destroy[siteTypes[index]]);
@@ -309,6 +309,7 @@ private:
         while (2*jCont < ham_term.size() && ham_term[2*jCont] != -1);
     }
 
+private:
     const Lattice& lattice;
     int lattice_size, num_modes, maxCouplingDegree;
     BaseParameters& parameters;

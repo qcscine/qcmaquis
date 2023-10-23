@@ -149,7 +149,7 @@ int main(int argc, char ** argv)
         tim_optim_jcd.end();
         
         double alpha = parms["alpha_main"];
-        double cutoff = parms["truncation_final"];
+        double cutoff = parms["truncation_main"];
         std::size_t Mmax = parms["max_bond_dimension"];
         
         /// Optimization: grow alpha

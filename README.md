@@ -62,6 +62,7 @@ To install QCMaquis with the OpenMOLCAS interface, download OpenMOLCAS from the 
 ## Documentation
 
 A detailed installation guide and manual for QCMaquis (and its components) can be found in the `doc` subdirectory. Compile QCMaquis with the `BUILD_MANUAL` CMake option to obtain the documentation in the PDF format.
+Note that two manuals are generated: `qcmaquis_manual.pdf`, which presents the OpenMolcas/QCMaquis interface, and `qcmaquis_manual_standalone.pdf`, which describes the functionalities of QCMaquis as a standalone software.
 
 ## Support
 

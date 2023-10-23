@@ -1,28 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2021 Institute for Theoretical Physics, ETH Zurich
- *               2021 by Robin Feldmann <robin.feldmann@phys.chem.ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef MAQUIS_DMRG_PREBO_MUTUAL_INFORMATION_H
 #define MAQUIS_DMRG_PREBO_MUTUAL_INFORMATION_H
@@ -35,6 +16,7 @@
 #include "dmrg/models/prebo/nu1/model.hpp"
 #include "dmrg/models/prebo/prebo_TermGenerator.hpp"
 /* external */
+#include <cmath>
 #include <alps/numeric/matrix/algorithms.hpp>
 
 #ifdef DMRG_PREBO
@@ -132,7 +114,7 @@ namespace measurements {
                                 }
                                 double entropy = 0;
                                 for (auto const w: OneOrbRDM) {
-                                    if (!isnan(w))
+                                    if (!std::isnan(w))
                                         trace += w;
                                     if (w > 1e-15)
                                         entropy += w * std::log(w);
@@ -171,7 +153,7 @@ namespace measurements {
                                     MPO<Matrix, NU1> mpo = mpom.create_mpo();
                                     MPO<Matrix, NU1> mpoc = mpo;
                                     w = maquis::real(expval(ket_mps, mpoc));
-                                    if (!isnan(w))
+                                    if (!std::isnan(w))
                                         trace += w;
                                     if (w > 1e-15)
                                         entropy += w * std::log(w);
@@ -220,7 +202,7 @@ namespace measurements {
                                     alps::numeric::vector<double> evals(block.num_rows(), 0.0);
                                     alps::numeric::syev(block, evecs, evals);
                                     for (size_t it = 0; it < evals.size(); it++) {
-                                        if (!isnan(evals(it)))
+                                        if (!std::isnan(evals(it)))
                                             trace += evals(it);
                                         if (evals(it) > 1e-15)
                                             entropy += evals(it) * std::log(evals(it));
@@ -270,7 +252,7 @@ namespace measurements {
                                     alps::numeric::vector<double> evals(block.num_rows(), 0.0);
                                     alps::numeric::syev(block, evecs, evals);
                                     for (size_t it = 0; it < evals.size(); it++) {
-                                        if (!isnan(evals(it)))
+                                        if (!std::isnan(evals(it)))
                                             trace += evals(it);
                                         if (evals(it) > 1e-15)
                                             entropy += evals(it) * std::log(evals(it));
@@ -289,7 +271,7 @@ namespace measurements {
                                     MPO<Matrix, NU1> mpo = mpom.create_mpo();
                                     MPO<Matrix, NU1> mpoc = mpo;
                                     w = maquis::real(expval(ket_mps, mpoc));
-                                    if (!isnan(w))
+                                    if (!std::isnan(w))
                                         trace += w;
                                     if (w > 1e-15)
                                         entropy += w * std::log(w);
@@ -424,7 +406,7 @@ namespace measurements {
                                     alps::numeric::vector<double> evals(block.num_rows(), 0.0);
                                     alps::numeric::syev(block, evecs, evals);
                                     for (size_t it = 0; it < evals.size(); it++) {
-                                        if (!isnan(evals(it)))
+                                        if (!std::isnan(evals(it)))
                                             trace += evals(it);
                                         if (evals(it) > 1e-15)
                                             entropy += evals(it) * std::log(evals(it));
@@ -443,7 +425,7 @@ namespace measurements {
                                     MPO<Matrix, NU1> mpo = mpom.create_mpo();
                                     MPO<Matrix, NU1> mpoc = mpo;
                                     w = maquis::real(expval(ket_mps, mpoc));
-                                    if (!isnan(w))
+                                    if (!std::isnan(w))
                                         trace += w;
                                     if (w > 1e-15)
                                         entropy += w * std::log(w);
@@ -492,7 +474,7 @@ namespace measurements {
                                     alps::numeric::vector<double> evals(block.num_rows(), 0.0);
                                     alps::numeric::syev(block, evecs, evals);
                                     for (size_t it = 0; it < evals.size(); it++) {
-                                        if (!isnan(evals(it)))
+                                        if (!std::isnan(evals(it)))
                                             trace += evals(it);
                                         if (evals(it) > 1e-15)
                                             entropy += evals(it) * std::log(evals(it));
@@ -542,7 +524,7 @@ namespace measurements {
                                     alps::numeric::vector<double> evals(block.num_rows(), 0.0);
                                     alps::numeric::syev(block, evecs, evals);
                                     for (size_t it = 0; it < evals.size(); it++) {
-                                        if (!isnan(evals(it)))
+                                        if (!std::isnan(evals(it)))
                                             trace += evals(it);
                                         if (evals(it) > 1e-15)
                                             entropy += evals(it) * std::log(evals(it));
@@ -561,7 +543,7 @@ namespace measurements {
                                     MPO<Matrix, NU1> mpo = mpom.create_mpo();
                                     MPO<Matrix, NU1> mpoc = mpo;
                                     w = maquis::real(expval(ket_mps, mpoc));
-                                    if (!isnan(w))
+                                    if (!std::isnan(w))
                                         trace += w;
                                     if (w > 1e-15)
                                         entropy += w * std::log(w);
@@ -582,7 +564,7 @@ namespace measurements {
                                         MPO<Matrix, NU1> mpo = mpom.create_mpo();
                                         MPO<Matrix, NU1> mpoc = mpo;
                                         auto w = maquis::real(expval(ket_mps, mpoc));
-                                        if (!isnan(w))
+                                        if (!std::isnan(w))
                                             trace += w;
                                         if (w > 1e-15)
                                             entropy += w * std::log(w);

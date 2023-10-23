@@ -1,32 +1,14 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2021 Institute for Theoretical Physics, ETH Zurich
- *               2021 by Alberto Baiardi <abaiardi@ethz.ch>
- * 
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- * 
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #define BOOST_TEST_MODULE TimeEvolutionSweep
 
 #include <boost/test/included/unit_test.hpp>
+#include <boost/mpl/list.hpp>
 #include <boost/mpl/assert.hpp>
 #include "utils/fpcomparison.h"
 #include <iostream>
@@ -60,7 +42,6 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestConstructorSingleSiteEvolution, S, symmetri
     auto model = Model<cmatrix, S>(lat, parametersH2FourOrbitals);
     auto mpo = make_mpo(lat, model);
     auto mps = MPS<cmatrix, S>(lat.size(), *(model.initializer(lat, parametersH2FourOrbitals)));
-    auto latticeSize = mpo.length();
     mps.normalize_right();
     // Prepares the boundaries
     time_stopper stop_callback(10000.);
@@ -80,7 +61,6 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestConstructorTwoSiteEvolution, S, symmetries,
     auto model = Model<cmatrix, S>(lat, parametersH2FourOrbitals);
     auto mpo = make_mpo(lat, model);
     auto mps = MPS<cmatrix, S>(lat.size(), *(model.initializer(lat, parametersH2FourOrbitals)));
-    auto latticeSize = mpo.length();
     mps.normalize_right();
     // Prepares the boundaries
     time_stopper stop_callback(10000.);
@@ -100,7 +80,6 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestSingleSiteImaginaryTimeVsTI, S, symmetries,
     auto model = Model<cmatrix, S>(lat, parametersH2FourOrbitalsImaginary);
     auto mpo = make_mpo(lat, model);
     auto mps = MPS<cmatrix, S>(lat.size(), *(model.initializer(lat, parametersH2FourOrbitalsImaginary)));
-    auto latticeSize = mpo.length();
     mps.normalize_right();
     // Prepares the boundaries
     time_stopper stop_callback(10000.);
@@ -127,7 +106,6 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestTwoSiteImaginaryTimeVsTI, S, symmetries, Te
     auto model = Model<cmatrix, S>(lat, parametersH2FourOrbitalsImaginary);
     auto mpo = make_mpo(lat, model);
     auto mps = MPS<cmatrix, S>(lat.size(), *(model.initializer(lat, parametersH2FourOrbitalsImaginary)));
-    auto latticeSize = mpo.length();
     mps.normalize_right();
     // Prepares the boundaries
     time_stopper stop_callback(10000.);
@@ -160,7 +138,6 @@ BOOST_FIXTURE_TEST_CASE(TestTwoSiteRealTimeVsTIRelativistic, TestTimeEvolverFixt
     auto model = Model<cmatrix, S>(lat, parametersRelativistic);
     auto mpo = make_mpo(lat, model);
     auto mps = MPS<cmatrix, S>(lat.size(), *(model.initializer(lat, parametersRelativistic)));
-    auto latticeSize = mpo.length();
     mps.normalize_right();
     // We modify the parameters taken from the fixture class, which are set on the 
     // imaginary-time case.
@@ -190,7 +167,6 @@ BOOST_FIXTURE_TEST_CASE(TestSingleSiteImaginaryTimeVsTIRelativistic, TestTimeEvo
     auto model = Model<cmatrix, S>(lat, parametersRelativistic);
     auto mpo = make_mpo(lat, model);
     auto mps = MPS<cmatrix, S>(lat.size(), *(model.initializer(lat, parametersRelativistic)));
-    auto latticeSize = mpo.length();
     mps.normalize_right();
     // Prepares the boundaries
     time_stopper stop_callback(10000.);

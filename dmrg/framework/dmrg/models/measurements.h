@@ -1,28 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2013-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef MEASUREMENTS_H
 #define MEASUREMENTS_H
@@ -59,17 +40,29 @@ public:
 
     void operator()(measurement<Matrix, SymmGroup> & meas) const
     {
-        maquis::cout << "Measuring " << meas.name() << std::endl;
+        #ifdef MAQUIS_OPENMP
+        #pragma omp critical
+        #endif
+        {
+            maquis::cout << "Measuring " << meas.name() << std::endl;
+        }
+
         meas.eigenstate_index() = eigenstate;
         meas.evaluate(mps, rmps);
-        if (!rfile.empty() && !archive_path.empty())
+        
+        #ifdef MAQUIS_OPENMP
+        #pragma omp critical
+        #endif
         {
-            storage::archive ar(rfile, "w");
-            ar[archive_path] << meas;
-        }
-        else
-        {
-            throw std::runtime_error("Result filename or archive path not specified. Cannot save to file.");
+            if (!rfile.empty() && !archive_path.empty())
+            {
+                storage::archive ar(rfile, "w");
+                ar[archive_path] << meas;
+            }
+            else
+            {
+                throw std::runtime_error("Result filename or archive path not specified. Cannot save to file.");
+            }
         }
     }
 
@@ -177,6 +170,18 @@ overlap_measurements(BaseParameters const & parms, boost::optional<size_t> sweep
             std::string name = what.str(1), bra_chkp = it.second;
             meas.push_back( new measurements::overlap<Matrix, SymmGroup>(name, bra_chkp) );
         }
+    }
+    return meas;
+}
+
+template <class Matrix, class SymmGroup>
+boost::ptr_vector<measurement<Matrix, SymmGroup> >
+autocorrelation_measurements(BaseParameters& parms, const MPS< Matrix, SymmGroup>& mpsReference)
+{
+    boost::ptr_vector<measurement<Matrix, SymmGroup> > meas;
+    if (parms.is_set("MEASURE[Autocorrelation]")) {
+        if (parms["MEASURE[Autocorrelation]"] == 1)
+            meas.push_back(new measurements::overlap<Matrix, SymmGroup>("Autocorrelation", mpsReference));
     }
     return meas;
 }

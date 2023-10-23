@@ -56,7 +56,7 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Ethylene_nMode, EthyleneNModeFixture)
 {
 #ifdef HAVE_NU1
 #if DMRG_NUMSYMM == 12
-    parametersEthyleneNMode.set("init_state", "basis_state_generic");
+    parametersEthyleneNMode.set("init_type", "basis_state_generic");
     parametersEthyleneNMode.set("init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0");
     parametersEthyleneNMode.set("nsweeps", 50);
     parametersEthyleneNMode.set("ngrowsweeps", 10);
@@ -66,7 +66,7 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Ethylene_nMode, EthyleneNModeFixture)
     parametersEthyleneNMode.set("alpha_main", 1.0E-15);
     parametersEthyleneNMode.set("alpha_final", 0);
     parametersEthyleneNMode.set("truncation_initial", 1.0E-20);
-    parametersEthyleneNMode.set("truncation_final", 1.0E-20);
+    parametersEthyleneNMode.set("truncation_main", 1.0E-20);
     parametersEthyleneNMode.set("eigensolver", "IETL_JCD");
     parametersEthyleneNMode.set("optimization", "singlesite");
     // Creates the interface

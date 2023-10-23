@@ -1,28 +1,9 @@
-/*****************************************************************************
-*
-* ALPS MPS DMRG Project
-*
-* Copyright (C) 2021 Institute for Theoretical Physics, ETH Zurich
-*               2021-   Alberto Baiardi <abaiardi@ethz.ch>
-*
-* This software is part of the ALPS Applications, published under the ALPS
-* Application License; you can use, redistribute it and/or modify it under
-* the terms of the license, either version 1 or (at your option) any later
-* version.
-*
-* You should have received a copy of the ALPS Application License along with
-* the ALPS Applications; see the file LICENSE.txt. If not, the license is also
-* available from http://alps.comp-phys.org/.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
-* SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
-* FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
-* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-* DEALINGS IN THE SOFTWARE.
-*
-*****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 // This files contains the tests that check the functionality of the 
 // methods stored in the [mps_mpo_ops] files and that are generic, 
@@ -63,11 +44,11 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPS_MPO_Hermitian_Left_Electronic, S, sym
     auto mpsHF = MPS<matrix, S>(lattice.size(), *(modelHF.initializer(lattice, parametersBenzene)));
     // Generates the const guess. Note that the bond dimension will be != than that of the HF 
     // guess, so we check that the contraction routines work also for MPS with different bond dimension.
-    parametersBenzene.set("init_state", "const");
+    parametersBenzene.set("init_type", "const");
     auto modelConst = Model<matrix, S>(lattice, parametersBenzene);
     auto mpsConst = MPS<matrix, S>(lattice.size(), *(modelConst.initializer(lattice, parametersBenzene)));
     // Generates the default guess
-    parametersBenzene.set("init_state", "default");
+    parametersBenzene.set("init_type", "default");
     auto modelDefault = Model<matrix, S>(lattice, parametersBenzene);
     auto mpsDefault = MPS<matrix, S>(lattice.size(), *(modelDefault.initializer(lattice, parametersBenzene)));
     // Calculates the MPO (any model would work here)
@@ -95,11 +76,11 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPS_MPO_Hermitian_Right_Electronic, S, sy
     auto mpsHF = MPS<matrix, S>(lattice.size(), *(modelHF.initializer(lattice, parametersBenzene)));
     // Generates the const guess. Note that the bond dimension will be != than that of the HF 
     // guess, so we check that the contraction routines work also for MPS with different bond dimension.
-    parametersBenzene.set("init_state", "const");
+    parametersBenzene.set("init_type", "const");
     auto modelConst = Model<matrix, S>(lattice, parametersBenzene);
     auto mpsConst = MPS<matrix, S>(lattice.size(), *(modelConst.initializer(lattice, parametersBenzene)));
     // Generates the default guess
-    parametersBenzene.set("init_state", "default");
+    parametersBenzene.set("init_type", "default");
     auto modelDefault = Model<matrix, S>(lattice, parametersBenzene);
     auto mpsDefault = MPS<matrix, S>(lattice.size(), *(modelDefault.initializer(lattice, parametersBenzene)));
     // Calculates the MPO (any model would work here)

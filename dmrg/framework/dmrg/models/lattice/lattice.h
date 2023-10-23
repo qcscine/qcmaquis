@@ -1,30 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2011-2013 by Bela Bauer <bauerb@phys.ethz.ch>
- *                            Michele Dolfi <dolfim@phys.ethz.ch>
- *               2020-2021 by Robin Feldmann <robinfe@phys.chem.ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef LATTICE_H
 #define LATTICE_H
@@ -82,7 +61,8 @@ public:
 
     virtual pos_t size() const = 0;
     
-    virtual int maximum_vertex_type() const = 0;
+    /** @brief Getter for the number of types available in the lattice */
+    virtual int getMaxType() const = 0;
 
 };
 
@@ -134,7 +114,8 @@ public:
 
     pos_t size() const { return impl_->size(); }
 
-    int maximum_vertex_type() const { return impl_->maximum_vertex_type(); };
+    /** @brief Getter for the number of types available in the lattice */
+    int getMaxType() const { return impl_->getMaxType(); };
 
 private:
     impl_ptr impl_;

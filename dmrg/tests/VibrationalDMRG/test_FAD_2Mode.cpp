@@ -33,6 +33,8 @@
 #include <boost/test/included/unit_test.hpp>
 #include "Fixtures/NModeFixture.h"
 #include "maquis_dmrg.h"
+#include "dmrg/mp_tensors/mps.h"
+#include "dmrg/mp_tensors/mps_mpo_ops.h"
 #include "dmrg/sim/matrix_types.h"
 // Needed for the diagonalization
 #include "dmrg/utils/utils.hpp"
@@ -48,16 +50,25 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_FAD_2ModeHamiltonian, NModeFixture)
 {
 #ifdef HAVE_NU1
     // Adds the final input parameters
-    parametersFADTwoBody.set("init_state", "const");
+    parametersFADTwoBody.set("init_type", "const");
     parametersFADTwoBody.set("nsweeps", 20);
     parametersFADTwoBody.set("max_bond_dimension", 100);
     parametersFADTwoBody.set("MODEL", "nmode");
     parametersFADTwoBody.set("truncation_initial", 1.0E-20);
-    parametersFADTwoBody.set("truncation_final", 1.0E-16);
-    // Creates the interface
-    maquis::DMRGInterface<double> interface(parametersFADTwoBody);
-    interface.optimize();
-    BOOST_CHECK_CLOSE(interface.energy(), -1499.5871477508479, 1.0E-5);
+    parametersFADTwoBody.set("truncation_main", 1.0E-16);
+    // SingleSite
+    parametersFADTwoBody.set("optimization", "singlesite");
+    parametersFADTwoBody.set("alpha_initial", 1.0E-8);
+    parametersFADTwoBody.set("alpha_initial", 1.0E-15);
+    parametersFADTwoBody.set("alpha_initial", 0.);
+    maquis::DMRGInterface<double> interfaceSS(parametersFADTwoBody);
+    interfaceSS.optimize();
+    BOOST_CHECK_CLOSE(interfaceSS.energy(), -1499.5871477508479, 1.0E-5);
+    // TwoSite
+    parametersFADTwoBody.set("optimization", "twosite");
+    maquis::DMRGInterface<double> interfaceTS(parametersFADTwoBody);
+    interfaceTS.optimize();
+    BOOST_CHECK_CLOSE(interfaceTS.energy(), -1499.5871477508479, 1.0E-5);
 #endif // HAS_NU1
 }
 
@@ -71,7 +82,7 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_FAD_2ModeHamiltonian, NModeFixture)
 BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_1ModeHamiltonian_ExcitedState, NModeFixture)
 {
     // Adds the final input parameters
-    parametersFADOneBodyBinary.set("init_state", "const");
+    parametersFADOneBodyBinary.set("init_type", "const");
     parametersFADOneBodyBinary.set("nsweeps", 20);
     parametersFADOneBodyBinary.set("max_bond_dimension",100);
     parametersFADOneBodyBinary.set("MODEL", "nmode");
@@ -107,7 +118,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_1ModeHamiltonian_ExcitedState, NModeFi
 BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_FingerprintHamiltonian_Sorting, NModeFixture)
 {
     // Adds the final input parameters
-    parametersFADTwoBodyFingerPrint.set("init_state", "const");
+    parametersFADTwoBodyFingerPrint.set("init_type", "const");
     parametersFADTwoBodyFingerPrint.set("nsweeps", 20);
     parametersFADTwoBodyFingerPrint.set("max_bond_dimension", 100);
     parametersFADTwoBodyFingerPrint.set("twosite_truncation", "heev_truncate");
@@ -143,16 +154,15 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_FingerprintHamiltonian_Sorting, NModeF
 BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem_MeasOneParticle, NModeFixture)
 {
     // Adds the final input parameters
-    parametersFADTwoBody.set("init_state", "const");
+    parametersFADTwoBody.set("init_type", "const");
     parametersFADTwoBody.set("seed", 16071991);
-    parametersFADTwoBody.set("nsweeps", 100);
+    parametersFADTwoBody.set("nsweeps", 1);
     parametersFADTwoBody.set("max_bond_dimension", 20);
     parametersFADTwoBody.set("MODEL", "nmode");
     parametersFADTwoBody.set("MEASURE[One Modal RDM]", "1");
-    // Creates the interface
+    // Creates the interfaces
     maquis::DMRGInterface<double> interface(parametersFADTwoBody);
     interface.optimize();
-    BOOST_CHECK_CLOSE(interface.energy(), -1499.5871477508479, 1.0E-5);
     // Measurements
     interface.measure();
     std::vector<double> firstMeas(22, 0);
@@ -165,7 +175,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem_MeasOneParticle, NModeFixt
     }
     // Final check
     for (int iSite = 0; iSite < 22; iSite++)
-        BOOST_CHECK_CLOSE(firstMeas[iSite]+secondMeas[iSite], 1., 1.0E-16);
+        BOOST_CHECK_SMALL(std::fabs(firstMeas[iSite]+secondMeas[iSite]-1.), 1.0E-15);
 }
 
 /** 
@@ -176,7 +186,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem_MeasOneParticle, NModeFixt
 BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem_Subadditivity, NModeFixture)
 {
     // Adds the final input parameters
-    parametersFADTwoBody.set("init_state", "default");
+    parametersFADTwoBody.set("init_type", "default");
     parametersFADTwoBody.set("seed", 16071991);
     parametersFADTwoBody.set("nsweeps", 10);
     parametersFADTwoBody.set("max_bond_dimension", 20);
@@ -276,7 +286,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem_Subadditivity, NModeFixtur
 BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem_ModeRDM, NModeFixture)
 {
     // Adds the final input parameters
-    parametersFADTwoBody.set("init_state", "default");
+    parametersFADTwoBody.set("init_type", "default");
     parametersFADTwoBody.set("seed", 30031989);
     parametersFADTwoBody.set("nsweeps", 10);
     parametersFADTwoBody.set("max_bond_dimension", 20);

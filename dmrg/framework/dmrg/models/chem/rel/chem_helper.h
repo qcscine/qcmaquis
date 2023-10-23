@@ -1,29 +1,9 @@
-/*****************************************************************************
- *
- * QCMaquis DMRG Project
- *
- * Copyright (C) 2013 Laboratory for Physical Chemistry, ETH Zurich
- *               2012-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
- *
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef REL_QC_CHEM_DETAIL_H
 #define REL_QC_CHEM_DETAIL_H
@@ -41,13 +21,14 @@ namespace detail {
         typedef ::term_descriptor<value_type> term_descriptor;
         typedef typename TagHandler<M, S>::tag_type tag_type;
         typedef Lattice::pos_t pos_t;
+        using InputType = std::complex<double>;
 
         RelChemHelper(BaseParameters & parms, Lattice const & lat_,
                    std::vector<tag_type> const & ident_, std::vector<tag_type> const & fill_,
                    std::shared_ptr<TagHandler<M, S> > tag_handler_)
             : lat(lat_), ident(ident_), fill(fill_), tag_handler(tag_handler_)
         {
-			boost::tie(idx_, matrix_elements) = parse_integrals<value_type,S>(parms, lat);
+			boost::tie(idx_, matrix_elements) = parse_integrals<InputType, S>(parms, lat);
 
             for (std::size_t m=0; m < matrix_elements.size(); ++m) {
                 IndexTuple pos;
@@ -132,12 +113,9 @@ namespace detail {
         std::vector<tag_type> const & fill;
         std::shared_ptr<TagHandler<M, S> > tag_handler;
         Lattice const & lat;
-
         std::vector<value_type> matrix_elements;
         alps::numeric::matrix<Lattice::pos_t> idx_;
-
-        std::map<IndexTuple, value_type> coefficients;
-
+        std::map<IndexTuple, InputType> coefficients;
         std::map<EightTuple, term_descriptor> four_terms;
         std::map<SixTuple, term_descriptor> three_terms;
         std::map<IndexTuple, term_descriptor> two_terms;

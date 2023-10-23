@@ -1,6 +1,6 @@
 max_bond_dimension = 200
 
-truncation_final = 1e-10
+truncation_main = 1e-10
 
 resultfile = results.h5
 chkpfile = results.h5

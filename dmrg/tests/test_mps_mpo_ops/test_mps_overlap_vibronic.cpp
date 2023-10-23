@@ -1,28 +1,9 @@
-/*****************************************************************************
-*
-* ALPS MPS DMRG Project
-*
-* Copyright (C) 2022 Institute for Theoretical Physics, ETH Zurich
-*               2022 Alberto Baiardi <abaiardi@ethz.ch>
-*
-* This software is part of the ALPS Applications, published under the ALPS
-* Application License; you can use, redistribute it and/or modify it under
-* the terms of the license, either version 1 or (at your option) any later
-* version.
-*
-* You should have received a copy of the ALPS Application License along with
-* the ALPS Applications; see the file LICENSE.txt. If not, the license is also
-* available from http://alps.comp-phys.org/.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
-* SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
-* FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
-* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-* DEALINGS IN THE SOFTWARE.
-*
-*****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #define BOOST_TEST_MODULE MPSOverlapVibronic
 
@@ -46,13 +27,13 @@ BOOST_FIXTURE_TEST_CASE( Test_MPS_Overlap_Vibronic, VibronicFixture )
 #ifdef HAVE_U1
     // ONV1 
     parametersExcitonicAggregate.set("vibronic_sorting", "intertwined");
-    parametersExcitonicAggregate.set("init_state", "basis_state_generic");
+    parametersExcitonicAggregate.set("init_type", "basis_state_generic");
     parametersExcitonicAggregate.set("init_basis_state", "1,1,1,2,3,4,1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0");
     auto excitonicLattice = Lattice(parametersExcitonicAggregate);
     auto excitonicModel = Model<matrix, U1>(excitonicLattice, parametersExcitonicAggregate);
     auto mpsHF1 = MPS<matrix, U1>(excitonicLattice.size(), *(excitonicModel.initializer(excitonicLattice, parametersExcitonicAggregate)));
     // ONV2
-    parametersExcitonicAggregate.set("init_state", "basis_state_generic");
+    parametersExcitonicAggregate.set("init_type", "basis_state_generic");
     parametersExcitonicAggregate.set("init_basis_state", "0,1,1,2,3,4,1,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0");
     excitonicLattice = Lattice(parametersExcitonicAggregate);
     excitonicModel = Model<matrix, U1>(excitonicLattice, parametersExcitonicAggregate);
@@ -74,9 +55,9 @@ BOOST_FIXTURE_TEST_CASE( Test_MPS_Overlap_Hermitian_Excitonic, VibronicFixture )
     auto lattice = Lattice(parametersExcitonicAggregate);
     auto model = Model<matrix, U1>(lattice, parametersExcitonicAggregate);
     // Modifies the init parameters to create two different MPSs
-    parametersExcitonicAggregate.set("init_state", "const");
+    parametersExcitonicAggregate.set("init_type", "const");
     auto mpsConst = MPS<matrix, U1>(lattice.size(), *(model.initializer(lattice, parametersExcitonicAggregate)));
-    parametersExcitonicAggregate.set("init_state", "default");
+    parametersExcitonicAggregate.set("init_type", "default");
     auto mpsDefault = MPS<matrix, U1>(lattice.size(), *(model.initializer(lattice, parametersExcitonicAggregate)));
     // Calculates the overlap
     double overlapOriginal = overlap(mpsConst, mpsDefault);

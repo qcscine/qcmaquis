@@ -1,29 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2011-2013 by Bela Bauer <bauerb@phys.ethz.ch>
- *                            Michele Dolfi <dolfim@phys.ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #include <boost/algorithm/string.hpp>
 
@@ -99,46 +79,52 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
       restore = true;
 
     // Load MPS from checkpoint
-    if (restore) {
-      // Check possible orbital order in existing MPS before(!) model initialization
-      if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "props.h5"))
-        maquis::checks::orbital_order_check(parms, referenceName);
-      //
-      storage::archive ar_in(referenceName+"/props.h5");
-      if (ar_in.is_scalar("/status/sweep") && !loadFromOtherChkp)
-      {
-          ar_in["/status/sweep"] >> init_sweep;
-          if (ar_in.is_data("/status/site") && ar_in.is_scalar("/status/site"))
-              ar_in["/status/site"] >> init_site;
-          if (init_site == -1)
-              ++init_sweep;
-          maquis::cout << "Will start again at site " << init_site << " in sweep " << init_sweep << std::endl;
-      }
-      // load checkpoint
-      maquis::cout << "Loading checkpoint from " << p.c_str() << std::endl;
-      maquis::checks::symmetry_check(parms, referenceName);
-      load(referenceName, mps);
-      // Try to load some necessary parameters from checkpoint if they're not found in the input file
-      if (parms["MODEL"] == "quantum chemistry") {
-        std::vector<std::string> parms_toload{ "L", "site_types", "orbital_order", "symmetry"};
-        if (hasSU2) {
-            parms_toload.push_back("nelec");
-            parms_toload.push_back("spin");
+    if (!chkpfile.empty())
+    {
+        boost::filesystem::path p(chkpfile);
+        if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5"))
+        {
+            storage::archive ar_in(chkpfile+"/props.h5");
+            restore = true;
+            if (ar_in.is_scalar("/status/sweep"))
+            {
+                ar_in["/status/sweep"] >> init_sweep;
+
+                if (ar_in.is_data("/status/site") && ar_in.is_scalar("/status/site"))
+                    ar_in["/status/site"] >> init_site;
+
+                if (init_site == -1)
+                    ++init_sweep;
+
+                maquis::cout << "Will start again at site " << init_site << " in sweep " << init_sweep << std::endl;
+            }
+            // load checkpoint
+            maquis::cout << "Loading checkpoint from " << p.c_str() << std::endl;
+            maquis::checks::symmetry_check(parms, chkpfile);
+            load(chkpfile, mps);
+
+            // Try to load some necessary parameters from checkpoint if they're not found in the input file
+            if (parms["MODEL"] == "quantum_chemistry") {
+                std::vector<std::string> parms_toload{ "L", "site_types", "orbital_order", "symmetry"};
+                if (hasSU2) {
+                    parms_toload.push_back("nelec");
+                    parms_toload.push_back("spin");
+                }
+                else if(has2U1) {
+                    parms_toload.push_back("u1_total_charge1");
+                    parms_toload.push_back("u1_total_charge2");
+                }
+                if (hasPG)
+                    parms_toload.push_back("irrep");
+                // Try loading integrals too, unless integral_file is set
+                // TODO: use this also with "integrals"
+                if (!parms.is_set("integral_file") && !parms.is_set("integrals"))
+                    parms_toload.push_back("integrals_binary");
+                //
+                sim_detail::load_if_not_exists(parms_toload, parms, ar_in);
+                sim_detail::print_important_parameters<SymmGroup>(parms);
+            }
         }
-        else if(has2U1) {
-            parms_toload.push_back("u1_total_charge1");
-            parms_toload.push_back("u1_total_charge2");
-        }
-        if (hasPG)
-            parms_toload.push_back("irrep");
-        // Try loading integrals too, unless integral_file is set
-        // TODO: use this also with "integrals"
-        if (!parms.is_set("integral_file") && !parms.is_set("integrals"))
-            parms_toload.push_back("integrals_binary");
-        //
-        sim_detail::load_if_not_exists(parms_toload, parms, ar_in);
-        sim_detail::print_important_parameters<SymmGroup>(parms);
-      }
     }
 
     // Initialise Wigner cache for SU2
@@ -170,19 +156,19 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
     // Final check on the checkpoint MPS after model has been initialised
     // Otherwise, does a fresh MPS initialization
     if (restore) {
-        maquis::checks::right_end_check(referenceName, mps, model.total_quantum_numbers(parms));
+        maquis::checks::right_end_check(chkpfile, mps, model.total_quantum_numbers(parms));
     }
     else {
         mps = MPS<Matrix, SymmGroup>(lat.size(), *(model.initializer(lat, parms)));
     }
 
+    all_measurements << autocorrelation_measurements<Matrix, SymmGroup>(parms, mps);
     assert(mps.length() == lat.size());
 
     /// Update parameters - after checks have passed
     if (!rfile().empty())
     {
         storage::archive ar(rfile(), "w");
-
         ar["/parameters"] << parms;
         ar["/version"] << DMRG_VERSION_STRING;
     }
@@ -220,15 +206,20 @@ sim<Matrix, SymmGroup>::~sim()
 }
 
 template <class Matrix, class SymmGroup>
-void sim<Matrix, SymmGroup>::checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, status_type const& status)
-{
-    if (!dns && !chkpfile.empty()) {
+void sim<Matrix, SymmGroup>::checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, status_type const& status, std::string filename)
+{   
+    std::string chkpfilename;
+    if (filename.empty())
+        chkpfilename = chkpfolder();
+    else
+        chkpfilename = chkpfolder() + "_" + filename;
+    if (!dns && !chkpfilename.empty()) {
         /// save state to chkp dir
-        save(chkpfile, state);
+        save(chkpfilename, state);
 
         /// save status
         if(!parallel::master()) return;
-        storage::archive ar(chkpfile+"/props.h5", "w");
+        storage::archive ar(chkpfilename+"/props.h5", "w");
         ar["/status"] << status;
     }
 }
@@ -250,8 +241,21 @@ std::string sim<Matrix, SymmGroup>::results_archive_path(status_type const& stat
 template <class Matrix, class SymmGroup>
 void sim<Matrix, SymmGroup>::measure(std::string archive_path, measurements_type & meas)
 {
+    #ifdef MAQUIS_OPENMP
+    if(parms["parallelize_measurements"]){
+        #pragma omp parallel for schedule(dynamic)
+        for (typename measurements_type::iterator it = meas.begin(); it < meas.end(); it++) {
+        MPS<Matrix, SymmGroup> mpsCopy = mps; // this is required as the measurements might change the pairing of the mps
+        // note that omp firstprivate cannot be used since the mps does apparently not fulfill the necessary requirements
+        measure_and_save<Matrix, SymmGroup> ms(rfile(), archive_path, mpsCopy);
+        ms(*it);
+        }
+    }
+    else std::for_each(meas.begin(), meas.end(), measure_and_save<Matrix, SymmGroup>(rfile(), archive_path, mps)); 
+    #else
     std::for_each(meas.begin(), meas.end(), measure_and_save<Matrix, SymmGroup>(rfile(), archive_path, mps));
-
+    #endif
+    
     // TODO: move into special measurement
     std::vector<int> * measure_es_where = NULL;
     entanglement_spectrum_type * spectra = NULL;

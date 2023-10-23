@@ -1,30 +1,9 @@
-/*****************************************************************************
- *
- * ALPS Project: Algorithms and Libraries for Physics Simulations
- *
- * ALPS Libraries
- *
- * Copyright (C) 2021 by Alberto Baiardi <abaiardi@ethz.ch>
- *
- * This software is part of the ALPS libraries, published under the ALPS
- * Library License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Library License along with
- * the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef MAQUIS_DMRG_RKEVOLVER_H
 #define MAQUIS_DMRG_RKEVOLVER_H
@@ -42,32 +21,32 @@ class RKEvolver : public TimeEvolutionAlgorithm<Matrix, SymmGroup> {
   /* Types definition */
   using base = TimeEvolutionAlgorithm<Matrix, SymmGroup>;
   using scalar_type = typename MPSTensor<Matrix, SymmGroup>::scalar_type;
-  using time_type = typename base::time_type;
+  using TimeType = typename base::time_type;
   using base::has_td_part_;
   using base::is_imag_;
   using base::time_step_;
   using base::apply_hamiltonian;
 
-  /* Class constructor */
-  RKEvolver(time_type time_step, bool has_td_part, bool is_imag) : base(time_step, has_td_part, is_imag) {};
+  /** @brief Class constructor */
+  RKEvolver(TimeType time_step, bool has_td_part, bool is_imag) : base(time_step, has_td_part, is_imag) {};
 
-  /* Time-evolution method. Interfaces calling the main kernel routine */
+  /** @brief Evolution of a MPSTensor */
   void evolve(SiteProblem<Matrix, SymmGroup> const& site_problem, MPSTensor<Matrix, SymmGroup>& matrix,
-              bool is_forward, time_type time_current, time_type time_step) const
-  {
+              bool is_forward, TimeType time_current, TimeType time_step) const override final {
     this->evolve_kernel(site_problem, matrix, is_forward, time_current, time_step);
-  };
-  void evolve(ZeroSiteProblem<Matrix, SymmGroup> const& site_problem, block_matrix<Matrix, SymmGroup>& matrix,
-              bool is_forward, time_type time_current, time_type time_step) const
-  {
-    this->evolve_kernel(site_problem, matrix, is_forward, time_current, time_step);
-  };
- private:
+  }
 
+  /** @brief Evolution of a ZeroSite Tensor */
+  void evolve(ZeroSiteProblem<Matrix, SymmGroup> const& site_problem, block_matrix<Matrix, SymmGroup>& matrix,
+              bool is_forward, TimeType time_current, TimeType time_step) const override final {
+    this->evolve_kernel(site_problem, matrix, is_forward, time_current, time_step);
+  }
+
+ private:
   /* Kernel for the time evolution */
   template<class SiteProblem, class MatrixType>
-  void evolve_kernel(SiteProblem const& site_problem, MatrixType& matrix, bool is_forward, time_type time_current,
-                     time_type time_step) const;
+  void evolve_kernel(SiteProblem const& site_problem, MatrixType& matrix, bool is_forward, TimeType time_current,
+                     TimeType time_step) const;
 
   /* Routine for the rescaling of the matrix to obtain, in the end, a complex value */
   template< class ArgType, class MatrixType, typename std::enable_if< std::is_same<double, ArgType >::value>::type * = nullptr >
