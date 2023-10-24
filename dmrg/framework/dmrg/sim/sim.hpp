@@ -63,24 +63,15 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
     dmrg_random::engine.seed(parms["seed"]);
 
     // Figures out 1) whether the MPS should be restored and 2) the file where to look into
-    bool loadFromOtherChkp = false;
     std::string referenceName;
-    if (parms.is_set("initfile")) {
-      loadFromOtherChkp = true;
-      referenceName = parms["initfile"].as<std::string>();
+    if (parms.is_set("init_ckpt")) {
+      chkpfile = parms["init_ckpt"].as<std::string>();
     }
-    else if (!chkpfile.empty()) {
-      referenceName = chkpfile;
-    }
-    
-    // Checks if the reference checkpoint actually exists
-    boost::filesystem::path p(referenceName);
-    if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5"))
-      restore = true;
 
     // Load MPS from checkpoint
     if (!chkpfile.empty())
     {
+        // Checks if the reference checkpoint actually exists
         boost::filesystem::path p(chkpfile);
         if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5"))
         {
