@@ -118,7 +118,7 @@ right_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
     ret.resize(mpo.row_dim());
     index_type loop_max = mpo.row_dim();
     omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
-        parallel::guard group(scheduler(b1), parallel::groups_granularity);
+        //parallel::guard group(scheduler(b1), parallel::groups_granularity);
         Kernel()(b1, ret[b1], right, t, mpo, mps.data().basis(), mps.data().basis(),
                  left_i, out_right_i, in_left_pb, out_right_pb, true);
     });
