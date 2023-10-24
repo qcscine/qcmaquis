@@ -118,8 +118,8 @@ if (BUILD_OPENMOLCAS_INTERFACE)
     endif()
 endif()
 
-# set(BLAS_LAPACK_SELECTOR "auto" CACHE STRING "Linear algebra library selector")
-# set_property(CACHE BLAS_LAPACK_SELECTOR PROPERTY STRINGS auto manual mkl_sequential mkl_parallel veclib openblas)
+set(BLAS_LAPACK_SELECTOR "auto" CACHE STRING "Linear algebra library selector")
+set_property(CACHE BLAS_LAPACK_SELECTOR PROPERTY STRINGS auto manual mkl_sequential mkl_parallel veclib openblas)
 
 include(BlasLapack)
 
@@ -264,7 +264,8 @@ if((DMRG_HAS_SU2U1) OR (DMRG_HAS_SU2U1PG))
 endif()
 
 # BLAS/LAPACK selector
-find_package(MAQUISLapack)
+# find_package(MAQUISLapack)
+set(MAQUISLapack_LIBRARIES ${LAPACK_LIBRARIES})
 message(STATUS "Lapack include:  ${MAQUISLapack_INCLUDE_DIRS}")
 message(STATUS "Lapack lib dirs: ${MAQUISLapack_LIB_DIRS}")
 message(STATUS "Lapack libs:     ${MAQUISLapack_LIBRARIES}")
@@ -441,6 +442,17 @@ add_subdirectory(lib/maquis_dmrg)
 # ==============
 
 add_subdirectory(applications)
+
+# ##############################################################################
+# Python bindings
+# ##############################################################################
+# option(PYTHON_BINDINGS "Build python interface" OFF)
+# if(PYTHON_BINDINGS)
+#   add_subdirectory(external/pybind11)
+#   pybind11_add_module(_dmrg
+#                       ${CMAKE_CURRENT_SOURCE_DIR}/python/QcmaquisPython.cpp)
+#   target_link_libraries(_dmrg PUBLIC maquis_dmrg)
+# endif()
 
 # =======
 #  TESTS
