@@ -62,8 +62,7 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
 
     dmrg_random::engine.seed(parms["seed"]);
 
-    // Figures out 1) whether the MPS should be restored and 2) the file where to look into
-    std::string referenceName;
+    // Figures out the file where to look into
     if (parms.is_set("init_ckpt")) {
       chkpfile = parms["init_ckpt"].as<std::string>();
     }
@@ -163,7 +162,7 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
         ar["/parameters"] << parms;
         ar["/version"] << DMRG_VERSION_STRING;
     }
-    if (!dns && !referenceName.empty())
+    if (!dns && !chkpfile.empty())
     {
         if (!boost::filesystem::exists(chkpfile))
             boost::filesystem::create_directory(chkpfile);
