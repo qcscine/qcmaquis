@@ -30,11 +30,12 @@
 #define MAQUIS_DMRG_H
 
 #include "maquis_dmrg_detail.h"
+#include "integral_helper.h"
 
 using chem::Hamiltonian;
 
 namespace maquis {
-    
+
 // Types for measurement results
 // meas_with_results_type: one measurement = pair of vectors with labels and results
 template <typename ScalarType>
@@ -44,12 +45,14 @@ using meas_with_results_type = std::pair<std::vector<std::vector<int> >, std::ve
 template <typename ScalarType>
 using results_map_type = std::map<std::string, meas_with_results_type<ScalarType> >;
 
-template <typename ScalarType> // real or complex
+template <typename ScalarType, Hamiltonian HamiltonianType = Hamiltonian::Electronic> // real or complex
 class DMRGInterface
 {
 public:
-    typedef maquis::meas_with_results_type<ScalarType> meas_with_results_type;
-    typedef maquis::results_map_type<ScalarType> results_map_type;
+  using meas_with_results_type = maquis::meas_with_results_type<ScalarType>;
+  using results_map_type = maquis::results_map_type<ScalarType>;
+  // using CICoefficientsType = std::pair<std::string, std::string>;
+  // using OutputType = std::unordered_map<CICoefficientsType, V, boost::hash<CICoefficientsType>>;
 
     /** @brief Class constructor */
     explicit DMRGInterface(DmrgParameters& parms_);
@@ -83,7 +86,7 @@ public:
 
     /** @brief Getter for an obtject storing the statistics of the optimization */
     results_collector& get_iteration_results();
-            
+
     /** @brief Gets how many sweeps have been run */
     int get_last_sweep();
 
@@ -98,7 +101,10 @@ public:
 
     /** @brief Getter for the measurements */
     const results_map_type & measurements();
-
+    // #ifdef TRANSCORR_INTEGRALSC
+    using tc_integral_map = integral_map<ScalarType, Hamiltonian::Electronic, chem::HamiltonianTransformation::Transcorrelated>;
+    void update_tc_integrals(const tc_integral_map & integrals);
+    // #endif
     /** @brief Updates the integrals and re-initialize the model */
     void update_integrals(std::string fileName);
     void update_integrals(const integral_map<ScalarType> & integrals);
