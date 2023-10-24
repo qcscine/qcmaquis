@@ -61,17 +61,16 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
     bool hasSU2 = symm_traits::HasSU2<SymmGroup>::value;
 
     dmrg_random::engine.seed(parms["seed"]);
-    // check possible orbital order in existing MPS before(!) model initialization
-    if (!chkpfile.empty())
-    {
-        boost::filesystem::path p(chkpfile);
-        if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "props.h5"))
-            maquis::checks::orbital_order_check(parms, chkpfile);
+
+    // Figures out the file where to look into
+    if (parms.is_set("init_ckpt")) {
+      chkpfile = parms["init_ckpt"].as<std::string>();
     }
 
     // Load MPS from checkpoint
     if (!chkpfile.empty())
     {
+        // Checks if the reference checkpoint actually exists
         boost::filesystem::path p(chkpfile);
         if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5"))
         {
