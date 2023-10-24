@@ -187,7 +187,7 @@ namespace contraction {
          */
         void populateData() {
             int loop_max = left.aux_dim();
-            parallel::scheduler_permute scheduler(mpo.placement_l, parallel::groups_granularity);
+            //parallel::scheduler_permute scheduler(mpo.placement_l, parallel::groups_granularity);
             // Loop over the elements
              omp_for(int b1, parallel::range(0,loop_max), {
                 // exploit single use sparsity (delay multiplication until the object is used)
