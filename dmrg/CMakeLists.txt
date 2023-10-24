@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.9)
 
 ######################################################################
 # Machine Config
@@ -446,13 +446,14 @@ add_subdirectory(applications)
 # ##############################################################################
 # Python bindings
 # ##############################################################################
-# option(PYTHON_BINDINGS "Build python interface" OFF)
-# if(PYTHON_BINDINGS)
-#   add_subdirectory(external/pybind11)
-#   pybind11_add_module(_dmrg
-#                       ${CMAKE_CURRENT_SOURCE_DIR}/python/QcmaquisPython.cpp)
-#   target_link_libraries(_dmrg PUBLIC maquis_dmrg)
-# endif()
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+option(PYTHON_BINDINGS "Build python interface" OFF)
+if(PYTHON_BINDINGS)
+    include(ImportPybind11)
+    import_pybind11()
+    pybind11_add_module(_dmrg ${CMAKE_CURRENT_SOURCE_DIR}/python/QcmaquisPython.cpp)
+    target_link_libraries(_dmrg PUBLIC maquis_dmrg)
+endif()
 
 # =======
 #  TESTS
@@ -607,6 +608,7 @@ install(FILES
             framework/dmrg/utils/DmrgOptions.h
             framework/dmrg/utils/BaseParameters.h
             framework/dmrg/utils/results_collector.h
+        framework/dmrg/utils/parameter_proxy.h
         DESTINATION include/framework/dmrg/utils
         COMPONENT headers
     )
