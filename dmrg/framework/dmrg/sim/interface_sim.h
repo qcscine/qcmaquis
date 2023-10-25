@@ -14,7 +14,6 @@
 #include <sys/stat.h>
 
 #include "dmrg/sim/sim.h"
-// #include "dmrg/optimize/optimize.h"
 #include "dmrg/evolve/TimeEvolutionSweep.h"
 #include "dmrg/mp_tensors/mpo_times_mps.hpp"
 #include "dmrg/models/chem/measure_transform.hpp"
@@ -75,7 +74,6 @@ public:
   }
 
   /** @brief Runs a FEAST simulation */
-  // TODO: fix the MPS that is actually extracted -- it should be not necessarily th 0-th one.
   void runFEASTSimulation() {
 #ifdef DMRG_FEAST
     try {
