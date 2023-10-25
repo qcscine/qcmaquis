@@ -453,6 +453,22 @@ if(PYTHON_BINDINGS)
     import_pybind11()
     pybind11_add_module(_dmrg ${CMAKE_CURRENT_SOURCE_DIR}/python/QcmaquisPython.cpp)
     target_link_libraries(_dmrg PUBLIC maquis_dmrg)
+    set_target_properties(_dmrg PROPERTIES LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/python_module)
+
+    # copy files
+    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/python/scine_qcmaquis DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/python_module)
+    # add_custom_command(TARGET _dmrg POST_BUILD
+    #     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:UtilsOSModule> ${CMAKE_CURRENT_BINARY_DIR}/scine_utilities
+    #     COMMENT "Copying UtilsOS module into python package directory"
+    # )
+    # pip install
+    # install(CODE
+    #   "execute_process(COMMAND ${PYTHON_EXECUTABLE} -m pip install --prefix=${CMAKE_INSTALL_PREFIX} --upgrade ${CMAKE_CURRENT_BINARY_DIR}
+    #                    RESULT_VARIABLE retcode)
+    #    if(NOT \$\{retcode\} EQUAL 0)
+    #      message(FATAL_ERROR \"Fatal error when installing Python module using PIP.\")
+    #    endif()"
+    # )
 endif()
 
 # =======
