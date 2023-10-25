@@ -47,10 +47,12 @@ SRCAS<ScalarType>::SRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceTy
             detSpace_ = std::move(tmpVec);
         }
     } else if (parms_["MODEL"] == "quantum_chemistry") {
-        if (parms_["symmetry"]=="su2u1" || parms_["symmetry"]=="su2u1pg")
+        if (parms_["symmetry"]=="su2u1" || parms_["symmetry"]=="su2u1pg") {
             numParticles_ = parms_["nelec"];
-        else
+            maquis::cout << "WARNING: SU2 symmetry is not properly supported in SRCAS (yet)!" << std::endl;
+        } else {
             numParticles_ = int(parms_["u1_total_charge1"])+ int(parms_["u1_total_charge2"]);
+        }
         maxDetStr_ = "4";
         for (int i=1; i<parms_["L"]; i++) {
             maxDetStr_ += ",4";
