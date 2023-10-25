@@ -8,11 +8,13 @@
 #define BOOST_TEST_MODULE MPS_INITIALIZER_VIBRATIONAL
 
 #ifdef DMRG_VIBRATIONAL
-
-#include <iostream>
-#include <boost/test/included/unit_test.hpp>
 #include "Fixtures/NModeFixture.h"
 #include "Fixtures/WatsonFixture.h"
+#endif
+#ifdef DMRG_VIBRONIC
+#include "Fixtures/VibronicFixture.h"
+#endif
+
 #include "dmrg/models/model.h"
 #include "dmrg/models/lattice/lattice.h"
 #include "dmrg/mp_tensors/mps_initializers_helper.h"
@@ -20,6 +22,11 @@
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/models/generate_mpo.hpp"
+
+#include <iostream>
+#include <boost/test/included/unit_test.hpp>
+
+#ifdef DMRG_VIBRATIONAL
 
 BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_Helper_NU1, NModeFixture)
 {
@@ -171,14 +178,16 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_Coherent, WatsonFixture)
 
 
 #endif // HAVE_NONE
+#endif // DMRG_VIBRATIONAL
 
 
-#ifdef HAVE_U1
+#ifdef DMRG_VIBRONIC
 
 /** @brief Tests the coherent initialization of an MPS in the excitonicextended model */
-BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_Coherent_EE, parametersSimpleCoherent)
+BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_Coherent_ExitonicExtended, VibronicFixture)
 {
-  using Symmetry = TrivialGroup; //correct?
+#ifdef HAVE_U1
+  using Symmetry = U1;
   auto lattice = Lattice(parametersSimpleCoherent);
   int latticeSize = lattice.size();
   auto eeModel = Model<matrix, Symmetry>(lattice, parametersSimpleCoherent); //excitonicextended (EE) model
@@ -202,9 +211,8 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_Coherent_EE, parametersSimp
   auto energyTwo = expval(mpsStateTwo, mpo)/norm(mpsStateTwo);
   auto energyCoherent = expval(mpsCoherent, mpo)/norm(mpsCoherent);
   //
-  BOOST_CHECK_CLOSE(energyGS+energyES, 2*energyCoherent, 1.0E-10);
+  BOOST_CHECK_CLOSE(energyOne+energyTwo, 2*energyCoherent, 1.0E-10);
+#endif // HAVE_U1
 }
 
-#endif // HAVE_U1
-
-#endif // DMRG_VIBRATIONAL
+#endif // DMRG_VIBRONIC
