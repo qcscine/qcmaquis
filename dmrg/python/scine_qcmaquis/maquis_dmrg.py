@@ -5,11 +5,10 @@ from typing import Any, List, Tuple, Union
 import numpy as np
 
 # pylint: disable=import-error
-from dmrg.python.dmrg_wrapper import DmrgWrapper
-from dmrg.python.integral_wrapper import (ComplexTCIntegralMap, IntegralMap, IntegralMapWrapper, IntegralType,
-                                          TCIntegralMap)
-from dmrg.python.parameters_wrapper import ExcitedStates, ParametersWrapper
-from dmrg.python.utils.ci_coeffs import *
+from .dmrg_wrapper import DmrgWrapper
+from .integral_wrapper import ComplexTCIntegralMap, IntegralMap, IntegralMapWrapper, IntegralType, TCIntegralMap
+from .parameters_wrapper import ExcitedStates, ParametersWrapper
+from .utils.ci_coeffs import *
 
 # pylint: enable=import-error
 

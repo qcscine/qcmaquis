@@ -6,8 +6,11 @@ from typing import List
 # pylint: disable=import-error
 from _dmrg import DmrgComplex, DmrgReal
 
-from dmrg.python.integral_wrapper import ComplexTCIntegralMap, IntegralMapWrapper, TCIntegralMap
-from dmrg.python.parameters_wrapper import ParametersWrapper
+from .integral_wrapper import ComplexTCIntegralMap, IntegralMapWrapper, TCIntegralMap
+from .parameters_wrapper import ParametersWrapper
+
+# from _dmrg import DmrgReal
+
 
 # pylint: enable=import-error
 

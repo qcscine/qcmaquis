@@ -143,7 +143,7 @@ class IntegralsParser:
     corresponding to the integral.
     """
 
-    @ dataclass
+    @dataclass
     class FcidumpValues:
         """Store data values from FCIDUMP header.
 

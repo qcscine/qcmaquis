@@ -1,4 +1,7 @@
-def make_hf_occ(norb: int, nocc: int) -> list[int]:
+from typing import List, Tuple
+
+
+def make_hf_occ(norb: int, nocc: int) -> List[int]:
     """
     Create restricted hartree fock determinant.
 
@@ -19,7 +22,7 @@ def make_hf_occ(norb: int, nocc: int) -> list[int]:
     return hf_list
 
 
-def exciste_elec(from_orb: int, to_orb: int, hf_occ: list[int]) -> list[int]:
+def exciste_elec(from_orb: int, to_orb: int, hf_occ: List[int]) -> List[int]:
     """
     Promote one electron from the occupied to the virtual space.
 
@@ -95,7 +98,7 @@ def make_qcmaquis_string(alpha, beta):
     return qcmaquis_str, sign
 
 
-def make_ref(nocc: int, norb: int,) -> tuple[str, int]:
+def make_ref(nocc: int, norb: int,) -> Tuple[str, int]:
     """
     Make the reference string for qcmaquis.
 
