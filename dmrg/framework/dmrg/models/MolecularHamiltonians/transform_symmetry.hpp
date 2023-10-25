@@ -208,7 +208,7 @@ struct transform_mps<Matrix, SymmGroup, symm_traits::enable_if_su2_t<SymmGroup> 
     MPS<Matrix, SymmOut> operator()(MPS<Matrix, SymmGroup> mps_in, int Nup, int Ndown)
     {
         BaseParameters parms;
-        parms.set("init_bond_dimension", 1000);
+        parms.set("init_bond_dimension", 250);
         parms.set("site_types", chem::detail::infer_site_types(mps_in));
 
         Lattice::pos_t L = mps_in.size();
