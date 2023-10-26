@@ -6,56 +6,7 @@ from typing import Any, Dict, Tuple
 # pylint: disable=import-error
 from _dmrg import DmrgParameters
 
-# from _dmrg import Dmrg, DmrgParameters, IntegralMap
-
 # pylint: enable=import-error
-
-# class DmrgWrapper:
-#     """Wrapper for Dmrg Python Interface."""
-#
-#     def __init__(self):
-#         """Construct Wrapper."""
-#         self._dmrg: Dmrg = None
-#
-#     def get_dmrg(self) -> Dmrg:
-#         """Get dmrg object."""
-#         return self._dmrg
-#
-#     def set_parameters(self, parameters: DmrgParameters):
-#         """Initialize Dmrg object with DmrgParameters."""
-#         self._dmrg = Dmrg(parameters)
-#
-#
-# class IntegralType(Enum):
-#     """Set type for reading integrals."""
-#     CONVENTIONAL = 1
-#     TRANSCORRLEATED = 2
-#
-#
-# class IntegralMapWrapper:
-#     """Wrapper for IntegralMap Python Interface."""
-#
-#     def __init__(self, ):
-#         self._integral_map = IntegralMap()
-#         self._type = IntegralType.CONVENTIONAL
-#
-#     def set_type(self, integral_type: IntegralType):
-#         """Set the integral type."""
-#         self._type = integral_type
-#
-#     def fill_from_fcidump(self, fcidump: str):
-#         """Fill IntegralMap from an FCIDUMP."""
-#
-#     def fill_from_pyscf(self, pyscf_wavefunction):
-#         """Fill IntegralMap from a PySCF wavefunction."""
-#
-#     def get(self) -> IntegralMap:
-#         """Get IntegralMap Python Interface."""
-#         return self._integral_map
-#
-#     def update_integrals(self, integral_map: IntegralMap):
-#         """Replace integral_map with new map."""
-#         self._integral_map = integral_map
 
 
 class ExcitedStates(Enum):
@@ -86,10 +37,22 @@ class ParametersWrapper:
         """for reference, same as dmrg parameters but native python"""
         self._checkpoint_path = "checkpoint_gs"
         """name and path to store the checkpoint file."""
+        self._results_path = "results_file.h5"
+        """name and path to store the results file."""
         self._excited_state_name = self._checkpoint_path[:-3] + "ex0"
         """name for excited states checkpoint files."""
         # set default parameters
         self._set_defaults()
+
+    def set_result_path(self, path: str):
+        """Set path and name to checkpoint file.
+
+        Parameters
+        ----------
+        path : str
+            the path
+        """
+        self.set("resultfile", path)
 
     def set_checkpoint_path(self, path: str):
         """Set path and name to checkpoint file.
@@ -100,6 +63,7 @@ class ParametersWrapper:
             the path
         """
         self._checkpoint_path = path
+        self.set("chkpfile", self._checkpoint_path)
 
     def _set_defaults(self):
         """Set default parameters.
@@ -125,11 +89,18 @@ class ParametersWrapper:
         self.set("MODEL", "quantum_chemistry")
         self.set("init_type", "default")
         self.set("irrep", 0)
-        self.set("nsweeps", 20)
-        self.set("max_bond_dimension", 2000)
+        self.set("nsweeps", 100)
+        # should be okay, due to truncation
+        self.set("max_bond_dimension", 3000)
         self.set("optimization", "twosite")
-        self.set("symmetry", "2u1pg")
-        # self.set("symmetry", "su2u1pg")
+        self.set("truncation_initial", 1e-6)
+        self.set("truncation_final", 1e-10)
+        self.set("conv_thresh", 1e-6)
+        # TODO: this alpha is noise ???
+        self.set("alpha_main", 1e-6)
+        self.set("alpha_final", 1e-16)
+        # self.set("symmetry", "2u1pg")
+        self.set("symmetry", "su2u1pg")
         self.set("CONSERVED_QUANTUMNUMBERS", "Nup,Ndown")
         self.set("lattice_library", "coded")
         self.set("model_library", "coded")
@@ -141,7 +112,7 @@ class ParametersWrapper:
         # already in constructor
         # Here we update the integrals later anyways with a new integral map
         # TODO: change this behavior in qcmaquis
-        self.set("integrals", "   1.58753163271              1     1     1     1")
+        self.set("integrals", "   0.00000000000              1     1     1     1")
 
     def _make_site_types(self, n_orbitals: int):
         """Generate the string for site types.
@@ -276,6 +247,9 @@ class ParametersWrapper:
         self.set("MEASURE[1rdm]", True)
         self.set("MEASURE[2rdm]", True)
 
+    def set_entropies(self):
+        self.set("MEASURE[ChemEntropy]", True)
+
     def set_system(self, n_orbitals: int, n_electrons: int, spin: int = 0):
         """Set system specifics.
 
@@ -290,8 +264,8 @@ class ParametersWrapper:
         """
         # if spin != 0:
         #     raise ValueError("Only implemented for singlet.")
-        self.set("u1_total_charge1", int(n_electrons / 2))
-        self.set("u1_total_charge2", int(n_electrons / 2))
+        self.set("u1_total_charge1", int(n_electrons / 2) + int(spin / 2))
+        self.set("u1_total_charge2", int(n_electrons / 2) - int(spin / 2))
         self.set("spin", spin)
         self.set("nelec", n_electrons)
         self.set("L", n_orbitals)
@@ -306,8 +280,6 @@ class ParametersWrapper:
 
     def _make_hf_occupation(self, n_orbitals: int, n_electrons: int, spin: int = 0):
         """Make Hf occupation."""
-        # if spin != 0:
-        #     raise ValueError("Only implemented for singlet.")
 
         occupation = ""
         for _ in range(n_orbitals):
@@ -340,6 +312,10 @@ class ParametersWrapper:
 
         self._parameters.erase(parameter_name)
 
-    def _get_parameters(self) -> DmrgParameters:
+    def get_parameters(self) -> DmrgParameters:
         """Get DmrgParameters  object."""
         return self._parameters
+
+    def get_parameters_dict(self) -> Dict[str, Any]:
+        """Get dict with parameters."""
+        return self._parameter_dict

@@ -6,7 +6,7 @@ from typing import List
 # pylint: disable=import-error
 from _dmrg import DmrgComplex, DmrgReal
 
-from .integral_wrapper import ComplexTCIntegralMap, IntegralMapWrapper, TCIntegralMap
+from .integral_wrapper import ComplexTCIntegralMap, IntegralMapWrapper  # , TCIntegralMap
 from .parameters_wrapper import ParametersWrapper
 
 # from _dmrg import DmrgReal
@@ -49,19 +49,18 @@ class DmrgWrapper:
         """Initialize Dmrg object with DmrgParameters."""
         # in case new measurements appear in parameters
         self._measure_flag = False
-        # pylint: disable=protected-access
-        if "transcorrelated_hamiltonian" in parameters._parameter_dict:
+        if "transcorrelated_hamiltonian" in parameters.get_parameters_dict():
             self._run_option = RunOptions.EVOLVE
-            self._dmrg = DmrgComplex(parameters._get_parameters())
-        elif "feast_num_states" in parameters._parameter_dict:
+            self._dmrg = DmrgComplex(parameters.get_parameters())
+        elif "feast_num_states" in parameters.get_parameters_dict():
             self._run_option = RunOptions.FEAST
-            self._feast_states = parameters._parameter_dict["feast_num_states"]
-            self._dmrg = DmrgComplex(parameters._get_parameters())
+            self._feast_states = parameters.get_parameters_dict()["feast_num_states"]
+            self._dmrg = DmrgComplex(parameters.get_parameters())
         else:
-            self._dmrg = DmrgReal(parameters._get_parameters())
-        # pylint: enable=protected-access
+            self._dmrg = DmrgReal(parameters.get_parameters())
 
     def get_fiedler(self, hf_occupations: List[List[int]] = None, n_states: int = None):
+        raise NotImplementedError("Fiedler ordering is currently not supported by the interface")
         if self._dmrg is None:
             raise ValueError("Set parameters before running dmrg!")
 
@@ -72,7 +71,6 @@ class DmrgWrapper:
 
         # fiedler_calculator = self._dmrg
         zero_based_fiedler_string = self._dmrg.fiedler_order(n_states, hf_occupations, "fiedler")
-        print("huihuhuh")
         fiedler_string = ""
         for i in zero_based_fiedler_string.split(","):
             fiedler_string += str(int(i) + 1) + ","
@@ -88,7 +86,6 @@ class DmrgWrapper:
         if self._dmrg is None:
             raise ValueError("Set parameters before running dmrg!")
         if type(integral_map.get()) is ComplexTCIntegralMap:
-            print("hihi")
             self._dmrg.update_tc_integrals(integral_map.get())
         else:
             print("haha")
@@ -100,13 +97,10 @@ class DmrgWrapper:
         if self._dmrg is None:
             raise ValueError("Set parameters before running dmrg!")
         if self._run_option == RunOptions.OPTIMIZE:
-            print("optimize")
             self._dmrg.optimize()
         elif self._run_option == RunOptions.EVOLVE:
-            print("evolve")
             self._dmrg.evolve()
         elif self._run_option == RunOptions.FEAST:
-            # self._dmrg.optimize()
             self._dmrg.runFEAST()
         self._run_flag = True
 
@@ -126,6 +120,10 @@ class DmrgWrapper:
             return energies
         return self._dmrg.energy()
 
+    def entropies(self):
+        self._dmrg.measure()
+        return self._dmrg.mutinf()
+
     def measure(self):
         """Measure set measurements."""
         if self._run_flag is False:
@@ -136,7 +134,6 @@ class DmrgWrapper:
         self._dmrg.measure()
 
     def get_ci_coefficient(self, det_string: str) -> float:
-        # print(det_string)
         return self._dmrg.getCICoefficient(det_string)
 
     def onerdm(self):
@@ -145,6 +142,6 @@ class DmrgWrapper:
         return self._dmrg.onerdm()
 
     def twordm(self):
-        """Get 1rdm."""
+        """Get 2rdm."""
         self.measure()
         return self._dmrg.twordm()
