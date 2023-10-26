@@ -8,7 +8,8 @@ import numpy as np
 from .dmrg_wrapper import DmrgWrapper
 from .integral_wrapper import ComplexTCIntegralMap, IntegralMap, IntegralMapWrapper, IntegralType, TCIntegralMap
 from .parameters_wrapper import ExcitedStates, ParametersWrapper
-from .utils.ci_coeffs import *
+from .utils.ci_coeffs import (make_doubles_aa, make_doubles_ab, make_doubles_bb, make_ref, make_singles_aa,
+                              make_singles_bb)
 
 # pylint: enable=import-error
 
@@ -33,6 +34,7 @@ class MaquisDmrg:
     _energy : Union[float, List[float]]
         the energy of one or more states
     """
+    # TODO: add __slots__
 
     def __init__(self):
         """Construct Wrapper."""
@@ -69,6 +71,10 @@ class MaquisDmrg:
         """
         self._parameters.set(parameter_name, parameter_value)
 
+    def set_bond_dimension(self, bond_dimension: int):
+        """Set bond dimension."""
+        self._parameters.set("max_bond_dimension", bond_dimension)
+
     def set_excited_states(
         self,
         method: ExcitedStates = ExcitedStates.ORTHO,
@@ -86,6 +92,9 @@ class MaquisDmrg:
             self._parameters.set_excited_states_ortho(n_excited_states)
         elif method == ExcitedStates.FEAST:
             raise ValueError("Feast is not implemented yet")
+
+    def set_entropies(self):
+        self._parameters.set_entropies()
 
     def set_orbital_optimization(self):
         """Enable orbital optimization.
@@ -105,6 +114,10 @@ class MaquisDmrg:
         self._transcorrelated = True
         self._parameters.set_transcorrelation_values()
         self._integral_map.set_type(IntegralType.TRANSCORRLEATED)
+
+    def get_entropies(self):
+        self._dmrg.measure()
+        return self._dmrg.entropies()
 
     def get_reduced_density_matrices(self) -> Tuple[np.ndarray, np.ndarray]:
         """Get 1 and 2 RDM.
@@ -167,17 +180,21 @@ class MaquisDmrg:
         n_electrons : int
             the number of electrons in the active space
         spin : int, default = 0
-            the total spin in the active space
+            the total spin in the active space, e.g. 2S
         n_states : int, default = None
             number of orthogonal states
         """
         for i in self._parameters._parameter_dict:
             print(i, self._parameters._parameter_dict[i])
+
+        # excited states
+        # TODO: If should not be required here ...
         if n_states is not None:
             self._energy = []
             self._parameters.set_system(n_orbitals, n_electrons, spin)
             self._parameters.set_excited_states_ortho(0)
 
+            # fiedler needs to be implemented in the interface
             if fiedler is True:
                 raise NotImplementedError
                 # fiedler_orderer = DmrgWrapper()
@@ -210,10 +227,12 @@ class MaquisDmrg:
                 self._dmrg.run()
                 self._energy.append(self._dmrg.get_energy())
 
+        # ground state only
         else:
 
             self._parameters.set_system(n_orbitals, n_electrons, spin)
 
+            # fiedler needs to be implemented in the interface
             if fiedler is True:
                 raise NotImplementedError
                 # fiedler_orderer = DmrgWrapper()
@@ -227,21 +246,10 @@ class MaquisDmrg:
 
             # self._parameters.set("orbital_order", "1,2")
             self._dmrg.set_parameters(self._parameters)
-            print("++++++++++++++++++++++++++++++++++++++++++++++++++")
             if "integral_file" not in self._parameters._parameter_dict:
                 self._dmrg.set_integrals(self._integral_map)
-            print("++++++++++++++++++++++++++++++++++++++++++++++++++")
             self._dmrg.run()
             self._energy = self._dmrg.get_energy()
-        # self._parameters.set_system(n_orbitals, n_electrons, spin)
-        # self._dmrg.set_parameters(self._parameters.get())
-        # self._dmrg.get_dmrg().update_integrals(self._integral_map.get())
-
-        # if self._transcorrelated or self._excited_states:
-        #    self._dmrg.get_dmrg().evolve()
-        # else:
-        #    self._dmrg.get_dmrg().optimize()
-        # self._energy = self._dmrg.get_dmrg().energy()
 
     def update_integrals(self, integral_map: IntegralMap):
         """Update integrals.
@@ -271,6 +279,7 @@ class MaquisDmrg:
         """
         self._integral_map.fill_from_pyscf(core_value, one_body, two_body, norb)
 
+    # unused
     def dummy_run_excited_states(self, n_excited_states: int):
         """Dummy function."""
         energies = []
@@ -297,9 +306,6 @@ class MaquisDmrg:
                 coeff_aa = self._dmrg.get_ci_coefficient(singles_aa_string)
                 singles_bb_string, sign_bb = make_singles_bb(nocc, norb, i, a)
                 coeff_bb = self._dmrg.get_ci_coefficient(singles_bb_string)
-                # print(i, a)
-                print(singles_aa_string, coeff_aa)
-                print(singles_bb_string, coeff_bb)
                 singles[i * 2, a * 2] = coeff_aa.real
                 singles[i * 2 + 1, a * 2 + 1] = coeff_bb.real
 
@@ -321,12 +327,10 @@ class MaquisDmrg:
                         doubles[i * 2, j * 2 + 1, a * 2, b * 2 + 1] = coeff_ab.real
                         doubles[i * 2 + 1, j * 2, a * 2 + 1, b * 2] = coeff_ab.real
 
-                        # print(i, j, a, b)
-
-                        if nocc > 1 and nvir > 1:
-                            print(doubles_aa_string, coeff_aa)
-                            print(doubles_bb_string, coeff_bb)
-                        print(doubles_ab_string, coeff_ab)
+                        # if nocc > 1 and nvir > 1:
+                        #     print(doubles_aa_string, coeff_aa)
+                        #     print(doubles_bb_string, coeff_bb)
+                        # print(doubles_ab_string, coeff_ab)
         return coeff_hf, singles, doubles
 
 
