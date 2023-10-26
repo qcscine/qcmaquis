@@ -55,7 +55,7 @@ public:
     */
     NModeModelCompact(const Lattice& lattice_, BaseParameters& parameters_, bool verbose)
             : lattice(lattice_), parameters(parameters_), tag_handler(new table_type()), phys_indexes(0) //check whether everything needed is here
-  {
+    {
         // Loads in the relevant parameters
         lattice_size = parameters_["L"].as<int>();
         numModes = parameters_["nmode_num_modes"].as<int>();
@@ -101,6 +101,10 @@ public:
         //gerenate matrices
         //if all modes have the same modal basis size
         if(nModalsUnique.size() == 1){
+            ident.reserve(nModalsVec[0]);
+            create.reserve(nModalsVec[0]);
+            create.reserve(nModalsVec[0]);
+            destroy.reserve(nModalsVec[0]);
             int overallDimension = nModalsVec[0];
             Matrix mident(overallDimension, overallDimension, 0.), mcount(overallDimension, overallDimension, 0.);
             std::vector <Matrix> mcreateVec;
@@ -145,6 +149,14 @@ public:
             modelHelper<Matrix, TrivialGroup>::registerHermitianConjugates(create, destroy, tag_handler);
         }
         else { //if the modal bases of the various modes are of different size
+            int sum = 0;
+            for (const int& element : nModalsUnique) {
+                sum += element;
+            }
+            ident.reserve(sum);
+            create.reserve(sum);
+            create.reserve(sum);
+            destroy.reserve(sum);
             for (const auto& nModals_idx: nModalsUnique) {
                 int overallDimension = nModalsVec[nModals_idx];
                 Matrix mident(overallDimension, overallDimension, 0.), mcount(overallDimension, overallDimension, 0.);
@@ -190,7 +202,7 @@ public:
             // Registers the hermitian pairs
             modelHelper<Matrix, TrivialGroup>::registerHermitianConjugates(create, destroy, tag_handler);
         }
-        
+           
     } //end of constructor
 
   /**
@@ -202,6 +214,7 @@ public:
         std::cout << "Parsing integral file" << std::endl;
         auto HamiltonianTerms = Vibrational::detail::NModeIntegralParser<double>(parameters, lattice);
         int hamiltonianSize = HamiltonianTerms.first.size();
+        std::cout << "size of vector Hamiltonian_term : " << hamiltonianSize << std::endl;
         std::cout << "Processing Second-Quantization Hamiltonian" << std::endl;
         for (int iTerm = 0; iTerm < hamiltonianSize; iTerm++) {
             positions_type positions;
@@ -220,7 +233,7 @@ public:
 
     /** @brief Getter for the identity operator */
     tag_type identity_matrix_tag(size_t type) const override {
-        std::set<int> nModalsUnique(nModalsVec.begin(), nModalsVec.end());
+        //std::set<int> nModalsUnique(nModalsVec.begin(), nModalsVec.end());
         if(nModalsUnique.size() == 0) return ident[0];
         else{
             std::set<int>::iterator it = nModalsUnique.find(nModalsVec[type]);
@@ -232,7 +245,7 @@ public:
 
     /** @brief Getter for the count operator */
     tag_type count_matrix_tag(size_t type) const {
-        std::set<int> nModalsUnique(nModalsVec.begin(), nModalsVec.end());
+        //std::set<int> nModalsUnique(nModalsVec.begin(), nModalsVec.end());
         if(nModalsUnique.size() == 0) return ident[0];
         else{
             std::set<int>::iterator it = nModalsUnique.find(nModalsVec[type]);
@@ -270,11 +283,11 @@ public:
     /** @brief Getter for the tag_handler */
     table_ptr operators_table() const override { return tag_handler; }
 
-      /** @brief Update the model with the new parameters */
-     void update(BaseParameters const &p) override {
+    /** @brief Update the model with the new parameters */
+    void update(BaseParameters const &p) override {
       // TODO: update this->terms_ with the new parameters
       throw std::runtime_error("update() not yet implemented or this model.");
-  }
+    }
 
     measurements_type measurements() const override {//TODO
         measurements_type meas;
@@ -291,12 +304,12 @@ private:
         int jCont = 0;
         ops.reserve(ham_term.size());
         pos.reserve(ham_term.size());
-        std::set<int> nModalsUnique(nModalsVec.begin(), nModalsVec.end());
+        //std::set<int> nModalsUnique(nModalsVec.begin(), nModalsVec.end());
         if (nModalsUnique.size() == 1){ //if all modes have the same size physical basis
             do {
                 // Retrieves matrix element
                 auto mode = ham_term[2*jCont]-1; //mode number
-                auto modal = ham_term[2*jCont+1]-1; //modal number
+                auto modal = ham_term[2*jCont+1]-1; //modal number 
                 assert(mode < lattice_size);
                 pos.push_back(mode);
                 if (jCont % 2 == 0)
@@ -323,9 +336,8 @@ private:
                 for (auto it = nModalsUnique.begin(); it != nModalsUnique.end() && currentIndex < indexInSet; ++it, ++currentIndex) {
                     sumOfDimensions += *it;
                 }
-                //continue 
                 if (jCont % 2 == 0)
-                    ops.push_back(create[sumOfDimensions+modal]); //not sure about this vector access
+                    ops.push_back(create[sumOfDimensions+modal]);
                 else
                     ops.push_back(destroy[sumOfDimensions+modal]); 
                 jCont += 1;
@@ -357,6 +369,8 @@ private:
     std::vector<int> nModalsVec;
     /**variable containing the total number of operator pairs needed per mode*/
     int numOperators;
+    /**set containing the unique dimensions of the required oeprators*/
+    std::set<int> nModalsUnique;
 };
 
 #endif // DMRG_VIBRATIONAL

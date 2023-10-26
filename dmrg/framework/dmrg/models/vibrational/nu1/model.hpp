@@ -142,6 +142,7 @@ public:
         std::cout << "Parsing integral file" << std::endl;
         auto Hamiltonian_term = Vibrational::detail::NModeIntegralParser<double>(parameters, lattice);
         int hamiltonianSize = Hamiltonian_term.first.size();
+        std::cout << "size of vector Hamiltonian_term : " << hamiltonianSize << std::endl;
         std::cout << "Processing Second-Quantization Hamiltonian" << std::endl;
         for (int iTerm = 0; iTerm < hamiltonianSize; iTerm++) {
             positions_type positions;
