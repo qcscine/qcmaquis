@@ -81,7 +81,8 @@ PYBIND11_MODULE(_dmrg, module) {
       .def("fourrdm", &maquis::DMRGInterface<double>::fourrdm)
       .def("measure_and_save_3drm", &maquis::DMRGInterface<double, chem::Hamiltonian::Electronic>::measure_and_save_3rdm)
       .def("measure_and_save_4drm", &maquis::DMRGInterface<double, chem::Hamiltonian::Electronic>::measure_and_save_4rdm)
-      .def("mutinf", &maquis::DMRGInterface<double>::mutinf)
+      // mutinf is not stored in measurements yet
+      // .def("mutinf", &maquis::DMRGInterface<double>::mutinf)
       .def("measure_and_save_trans3rdm", &maquis::DMRGInterface<double>::measure_and_save_trans3rdm)
       .def("overlap", &maquis::DMRGInterface<double>::overlap)
       // .def("getCICoefficients", &maquis::DMRGInterface<double, chem::Hamiltonian::Electronic>::getCICoefficients)
@@ -113,7 +114,8 @@ PYBIND11_MODULE(_dmrg, module) {
       .def("fourrdm", &maquis::DMRGInterface<std::complex<double>>::fourrdm)
       // .def("measure_and_save_3drm", &maquis::DMRGInterface<std::complex<double>, chem::Hamiltonian::Electronic>::measure_and_save_3rdm)
       // .def("measure_and_save_4drm", &maquis::DMRGInterface<std::complex<double>, chem::Hamiltonian::Electronic>::measure_and_save_4rdm)
-      .def("mutinf", &maquis::DMRGInterface<std::complex<double>>::mutinf)
+      // mutinf is not stored in measurements yet
+      // .def("mutinf", &maquis::DMRGInterface<std::complex<double>>::mutinf)
       .def("measure_and_save_trans3rdm", &maquis::DMRGInterface<std::complex<double>>::measure_and_save_trans3rdm)
       .def("overlap", &maquis::DMRGInterface<std::complex<double>>::overlap)
       // .def("getCICoefficients", &maquis::DMRGInterface<std::complex<double>, chem::Hamiltonian::Electronic>::getCICoefficients)
