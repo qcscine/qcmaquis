@@ -11,6 +11,7 @@
 #ifdef DMRG_VIBRATIONAL
 
 #include <set>
+#include <cmath>
 #include <sstream>
 #include <functional>
 #include <numeric>
@@ -216,12 +217,17 @@ public:
         int hamiltonianSize = HamiltonianTerms.first.size();
         std::cout << "size of vector Hamiltonian_term : " << hamiltonianSize << std::endl;
         std::cout << "Processing Second-Quantization Hamiltonian" << std::endl;
+        bool isCoupled;
         for (int iTerm = 0; iTerm < hamiltonianSize; iTerm++) {
             positions_type positions;
             operators_type operators;
-            convertLineToOperators(HamiltonianTerms.first[iTerm], positions, operators);
+            convertLineToOperators(HamiltonianTerms.first[iTerm], positions, operators, isCoupled);
             if (positions.size()/2 <= maxCouplingDegree) { //How about this?
                 auto matrixElement = static_cast<value_type>(HamiltonianTerms.second[iTerm]);
+                if(isCoupled){
+                    matrixElement = sqrt(matrixElement);
+                    std::cout << "isCoupled" << std::endl;
+                }
                 modelHelper<Matrix, TrivialGroup>::add_term(positions, operators, matrixElement, tag_handler, this->terms_);
             }
         }
@@ -298,15 +304,18 @@ public:
 private:
 
     template<class IntegralContainer>
-    void convertLineToOperators(const IntegralContainer& ham_term, positions_type& pos, operators_type& ops) //adapt ops pushed back
+    void convertLineToOperators(const IntegralContainer& ham_term, positions_type& pos, operators_type& ops, bool& isCoupled) //adapt ops pushed back
     {
         assert (ham_term.size() % 2 == 0);
         int jCont = 0;
         ops.reserve(ham_term.size());
         pos.reserve(ham_term.size());
+        isCoupled = false;
+        std::cout << "entered convertLineToOperators" << std::endl;
         //std::set<int> nModalsUnique(nModalsVec.begin(), nModalsVec.end());
         if (nModalsUnique.size() == 1){ //if all modes have the same size physical basis
             do {
+                std::cout << "entered do statement in convertLineToOperators (if)" << std::endl;
                 // Retrieves matrix element
                 auto mode = ham_term[2*jCont]-1; //mode number
                 auto modal = ham_term[2*jCont+1]-1; //modal number 
@@ -317,11 +326,16 @@ private:
                 else
                     ops.push_back(destroy[modal]); 
                 jCont += 1;
+                std::cout << "jCont is:" << jCont << std::endl;
             }
             while (2*jCont < ham_term.size() && ham_term[2*jCont] != -1);
         }
         else{ //if physical bases have different sizes
             do {
+                std::cout << "entered do statement in convertLineToOperators (else)" << std::endl;
+                for(i = 0; i < nMaxUnique.size(); i++){
+                    std::cout << i << "th element of nMaxUnique is : " << nMaxUnique[i] << std::endl;
+                }
                 auto mode = ham_term[2*jCont]-1; //mode number
                 auto modal = ham_term[2*jCont+1]-1; //modal number
                 assert(mode < lattice_size);
