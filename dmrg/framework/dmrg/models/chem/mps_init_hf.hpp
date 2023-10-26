@@ -87,13 +87,6 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
             mps[i].multiply_by_scalar(1. / mps[i].scalar_norm());
         }
 
-        //mps = compression::l2r_compress(mps, init_bond_dimension, 1e-6);
-
-        //maquis::cout << "\nMPS AFTER COMPRESSION:\n";
-        //for(int i = 0; i < mps.length(); ++i) {
-        //    maquis::cout << "mps[" << i << "]:\n" << mps[i] << std::endl;
-        //    maquis::cout << mps[i].scalar_norm() << std::endl;
-        //}
     }
 
     BaseParameters parms;

@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+#/**
+# * @file
+# * @copyright This code is licensed under the 3-clause BSD license.
+# *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+# *            See LICENSE.txt for details.
+# */
+
 from enum import Enum
 import h5py
 import math

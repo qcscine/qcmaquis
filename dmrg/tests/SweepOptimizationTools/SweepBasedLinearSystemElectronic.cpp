@@ -31,8 +31,8 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedLinearSystemSS_Electronic_Benzene, Benzen
   auto benzeneLattice = Lattice(parametersBenzene);
   auto benzeneModel = Model<matrix, TwoU1PG>(benzeneLattice, parametersBenzene);
   auto benzeneMPO = make_mpo(benzeneLattice, benzeneModel);
-  parametersBenzene.set("init_type", "hf");
-  parametersBenzene.set("hf_occ", "4,4,4,1,1,1");
+  parametersBenzene.set("init_type", "basis_state_generic");
+  parametersBenzene.set("init_basis_state", "4,4,4,1,1,1");
   auto hfBenzeneMPS = MPS<matrix, TwoU1PG>(benzeneLattice.size(), *(benzeneModel.initializer(benzeneLattice, parametersBenzene)));
   hfBenzeneMPS.normalize_right();
   // Calculates the energy via the interface
@@ -42,13 +42,13 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedLinearSystemSS_Electronic_Benzene, Benzen
   interfaceBenzene.optimize();
   double energyFromInterface = interfaceBenzene.energy();
   // Parameters that are specific for the solution of the linear system.
-  parametersBenzene.set("linsystem_precond", "no");
-  parametersBenzene.set("linsystem_init", "mps");
+  parametersBenzene.set("linsystem_precond", "diagonal");
+  parametersBenzene.set("linsystem_init", "last");
   parametersBenzene.set("linsystem_max_it", 1);
   parametersBenzene.set("linsystem_tol", 1.0E-10);
-  parametersBenzene.set("linsystem_krylov_dim", 100);
+  parametersBenzene.set("linsystem_krylov_dim", 20);
   parametersBenzene.set("linsystem_solver", "GMRES");
-  parametersBenzene.set("linsystem_exact_error", "yes");
+  parametersBenzene.set("linsystem_exact_error", "no");
   // Set the shift of DMRG[IPI] as the energy - 1 Hartree
   parametersBenzene.set("nsweeps", 3);
   parametersBenzene.set("ipi_shift", energyFromInterface-0.1);
@@ -91,10 +91,10 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedLinearSystemTS_Interface_Electronic_Benze
   double shiftGS = energyFromOptimizerGS-(energyFromOptimizerES-energyFromOptimizerGS)/10.;
   parametersBenzene.set("ipi_shift", shiftGS);
   parametersBenzene.set("ipi_sweep_threshold", 1.0E-5);
-  parametersBenzene.set("ipi_sweeps_per_system", 2);
+  parametersBenzene.set("nsweeps", 2);
   parametersBenzene.set("ipi_iterations", 10);
   parametersBenzene.set("linsystem_precond", "no");
-  parametersBenzene.set("linsystem_init", "mps");
+  parametersBenzene.set("linsystem_init", "last");
   parametersBenzene.set("linsystem_max_it", 1);
   parametersBenzene.set("linsystem_tol", 1.0E-10);
   parametersBenzene.set("linsystem_krylov_dim", 30);

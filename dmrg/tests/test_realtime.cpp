@@ -78,7 +78,6 @@ BOOST_FIXTURE_TEST_CASE(TestRealTime, BenzeneFixture)
  * and prepares the initial state to be the HF state, then the dynamics "populates"
  * the doubly-excited state, and the dynamics follows a Rabi oscillation pattern.
  */
-/*
 #ifdef HAVE_TwoU1PG
 BOOST_FIXTURE_TEST_CASE(TestRabiOscillation, H2Fixture)
 {
@@ -89,25 +88,24 @@ BOOST_FIXTURE_TEST_CASE(TestRabiOscillation, H2Fixture)
   // Check first that the HF state and the doubly excited state of H2 do not interact
   // with the single excitation (for the HF determinant, they should because of the Brillouin
   // theorem. For the doubly-excited state, they should because of symmetry).
-  parametersH2.set("init_state", "hf");
-  parametersH2.set("hf_occ", "4,1");
+  parametersH2.set("init_type", "basis_state_generic");
+  parametersH2.set("init_basis_state", "4,1");
   auto mpsHF = MPS<matrix, TwoU1PG>(latticeH2.size(), *(modelHF.initializer(latticeH2, parametersH2)));
   // Single excitations
-  parametersH2.set("hf_occ", "2,3");
+  parametersH2.set("init_basis_state", "2,3");
   auto mpsSingle1 = MPS<matrix, TwoU1PG>(latticeH2.size(), *(modelHF.initializer(latticeH2, parametersH2)));
-  parametersH2.set("hf_occ", "3,2");
+  parametersH2.set("init_basis_state", "3,2");
   auto mpsSingle2 = MPS<matrix, TwoU1PG>(latticeH2.size(), *(modelHF.initializer(latticeH2, parametersH2)));
   // Double excitation
-  parametersH2.set("hf_occ", "1,4");
+  parametersH2.set("init_basis_state", "1,4");
   auto mpsDouble = MPS<matrix, TwoU1PG>(latticeH2.size(), *(modelHF.initializer(latticeH2, parametersH2)));
   // Does the actual checks
-  BOOST_CHECK_SMALL(expval(mpsHF, mpsSingle1, mpo), 1.0E-15);
-  BOOST_CHECK_SMALL(expval(mpsHF, mpsSingle2, mpo), 1.0E-15);
-  BOOST_CHECK_SMALL(expval(mpsDouble, mpsSingle1, mpo), 1.0E-15);
-  BOOST_CHECK_SMALL(expval(mpsDouble, mpsSingle2, mpo), 1.0E-15);
+  BOOST_CHECK_SMALL(expval(mpsHF, mpsSingle1, mpo), 1.0E-12);
+  BOOST_CHECK_SMALL(expval(mpsHF, mpsSingle2, mpo), 1.0E-12);
+  BOOST_CHECK_SMALL(expval(mpsDouble, mpsSingle1, mpo), 1.0E-12);
+  BOOST_CHECK_SMALL(expval(mpsDouble, mpsSingle2, mpo), 1.0E-12);
 }
 #endif // HAVE_TwoU1PG
-*/
 
 #ifdef HAVE_U1DG
 

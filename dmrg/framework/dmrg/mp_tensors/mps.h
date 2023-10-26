@@ -162,10 +162,18 @@ MPS<Matrix, SymmGroup> join_general(MPS<Matrix, SymmGroup> const & a,
 template<class Matrix, class SymmGroup>
 MPS<Matrix, SymmGroup> joinAndTruncate(MPS<Matrix, SymmGroup> & a,
                                        MPS<Matrix, SymmGroup> & b,
-                                       int mMax)
+                                       int mMax,
+                                       typename MPSTensor<Matrix, SymmGroup>::scalar_type alpha=1.,
+                                       typename MPSTensor<Matrix, SymmGroup>::scalar_type beta=1.)
+
 
 {
     assert( a.length() == b.length() );
+
+    MPSTensor<Matrix, SymmGroup> aright=a[a.length()-1], bright=b[a.length()-1];
+    aright.multiply_by_scalar(alpha);
+    bright.multiply_by_scalar(beta);
+
     int nOfSites = a.length();
     MPS<Matrix, SymmGroup> ret(nOfSites);
 #pragma omp parallel for
@@ -173,7 +181,7 @@ MPS<Matrix, SymmGroup> joinAndTruncate(MPS<Matrix, SymmGroup> & a,
         if (p == 0)
             ret[0] = join(a[0], b[0], l_boundary_f);
         else if (p == nOfSites-1)
-            ret[nOfSites-1] = join(a[nOfSites-1], b[nOfSites-1], r_boundary_f);
+            ret[nOfSites-1] = join(aright, bright, r_boundary_f);
         else
             ret[p] = join(a[p], b[p]);
     }

@@ -13,6 +13,7 @@
 
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/indexing.h"
+#include <Eigen/Dense>
 //#include "solver.h"
 
 enum boundary_flag_t {no_boundary_f,l_boundary_f,r_boundary_f};
@@ -33,6 +34,7 @@ public:
     typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
     typedef typename maquis::traits::real_type<Matrix>::type real_type;
     typedef typename Matrix::value_type value_type;
+    using EigenVectorType = Eigen::Matrix<value_type, Eigen::Dynamic, 1>;
     typedef double magnitude_type; // should become future (todo: Matthias, 30.04.12 / scalar-value types)
     typedef std::size_t size_type;
     using BlockMatrixType = block_matrix<Matrix, SymmGroup>;
@@ -108,6 +110,10 @@ public:
 
     void make_left_paired() const;
     void make_right_paired() const;
+    
+    // Eigen-specific methods
+    EigenVectorType getEigenRepresentation() const;
+    void fillWithEigenVector(const EigenVectorType& inputVector);
 
     void clear();
     void conjugate_inplace();

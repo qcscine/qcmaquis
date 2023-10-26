@@ -114,6 +114,7 @@ parseIntegralVibronic(BaseParameters& parms, const Lattice& lat)
             indices.push_back(t.first);
         }
     }
+    orb_file.close();
     return std::make_pair(indices, matrix_elements);
 }
 
@@ -122,8 +123,9 @@ parseIntegralVibronic(BaseParameters& parms, const Lattice& lat)
  * 
  * The integral file is expected to be given in the following format:
  * 
- *  i   i  coeff --> harmonic potential termmatrix_elements.push_back(t.second);
-            indices.push_back(t.first);
+ *  i   i  coeff --> harmonic potential term
+ * ...
+ * -i  -i  coeff --> harmonic kinetic term
  * ...
  *  i   0  coeff --> LVC coupling term
  * 

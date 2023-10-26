@@ -10,13 +10,14 @@
 
 #include <complex>
 #include <tuple>
-// #include <Eigen/Core>
-// #include <Eigen/Dense>
-// #include <Eigen/IterativeLinearSolvers>
-// #include <unsupported/Eigen/IterativeSolvers>
-// #include <Eigen/Eigenvalues>
+#include <Eigen/Core>
+#include <Eigen/Dense>
+#include <Eigen/IterativeLinearSolvers>
+#include <unsupported/Eigen/IterativeSolvers>
+#include <Eigen/Eigenvalues>
 #include <boost/numeric/bindings/lapack.hpp>
 #include "linsolver_helper.h"
+#include "LinSolverWrapper.h"
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/siteproblem.h"
 
@@ -47,10 +48,32 @@ public:
    */
   LinSolver(std::shared_ptr<SiteProblem<Matrix, SymmGroup>> sp, const MPSTensorType& initialMPS,
             const MPSTensorType& rhsMPS, ScalarType shift, BaseParameters & parms,
-            std::shared_ptr<block_matrix<Matrix, SymmGroup>> precond, bool verbose)
-    : sp_(sp), parms_(parms), rhsMPS_(rhsMPS), shift_(shift), precond_(precond), verbose_(verbose)
+            std::shared_ptr<block_matrix<Matrix, SymmGroup>> precond, bool verbose, RealType coreEnergy = 0)
+    : sp_(sp), parms_(parms), rhsMPS_(rhsMPS), shift_(shift), precond_(precond), verbose_(verbose), coreEnergy_(coreEnergy)
     //, isFolded_(false)
   {
+    // Which linsolver
+    if (parms_["linsystem_solver"] == "GMRES") {
+      if (verbose_) maquis::cout << " - Solving the linear system with ALPS-based GMRES" << std::endl;
+    } else if (parms_["linsystem_solver"] == "MINRES") {
+      if (verbose_) maquis::cout << " - Solving the linear system with ALPS-based MINRES" << std::endl;
+    } else if ((parms_["linsystem_solver"] == "GMRES_EIGEN") || (parms_["linsystem_solver"] == "BiCGSTAB_EIGEN")) {
+      if (parms_["linsystem_solver"] == "GMRES_EIGEN") {
+        if (verbose_) maquis::cout << " - Solving the linear system with Eigen-based GMRES" << std::endl;
+      } else if (parms_["linsystem_solver"] == "BiCGSTAB_EIGEN") {
+        if (verbose_) maquis::cout << " - Solving the linear system with Eigen-based BiCGSTAB" << std::endl;
+      }
+      if (parms_["linsystem_precond"] == "no") {
+        if (verbose_) maquis::cout << " - Deactivating preconditioning" << std::endl;
+      } else if (parms_["linsystem_precond"] == "diagonal") {
+        if (verbose_) maquis::cout << " - Activating diagonal preconditioning" << std::endl;
+      } else {
+        throw std::runtime_error("[linsystem_precond] parameter not recognized");
+      }
+    } else {
+      throw std::runtime_error("[linsystem_solver] parameter not recognized");
+    }
+
     if (parms_["linsystem_init"] == "zero")
       currentSolution_ = 0.*initialMPS;
     else
@@ -75,12 +98,26 @@ public:
       maquis::cout << std::endl;
     }
     for (int iCycle = 0; iCycle < numberOfMacroIterations_; iCycle++) {
-      if (parms_["linsystem_solver"] == "GMRES")
+      if (parms_["linsystem_solver"] == "GMRES") {
         gmres();
-      else if (parms_["linsystem_solver"] == "MINRES")
+      } else if (parms_["linsystem_solver"] == "MINRES") {
         minres();
-      else
+      }
+      else if (parms_["linsystem_solver"] == "GMRES_EIGEN" ) {
+        if (parms_["linsystem_precond"] == "no") {
+          eigenLinearSolver<EigenSolverType::GMRES, PreconditionerType::IdentityPreconditioner>();
+        } else if (parms_["linsystem_precond"] == "diagonal") {
+          eigenLinearSolver<EigenSolverType::GMRES, PreconditionerType::DiagonalPreconditioner>();
+        }
+      } else if (parms_["linsystem_solver"] == "BiCGSTAB_EIGEN" ) {
+        if (parms_["linsystem_precond"] == "no") {
+          eigenLinearSolver<EigenSolverType::BiCGSTAB, PreconditionerType::IdentityPreconditioner>();
+        } else if (parms_["linsystem_precond"] == "diagonal") {
+          eigenLinearSolver<EigenSolverType::BiCGSTAB, PreconditionerType::DiagonalPreconditioner>();
+        }
+      } else {
         throw std::runtime_error("[linsystem_solver] parameter not recognized");
+      }
     }
     auto tmp3 = applyOperator(currentSolution_);
     auto finalError = ietl::two_norm(tmp3-rhsMPS_);
@@ -89,11 +126,10 @@ public:
       maquis::cout << " Final ||Ax - b|| norm =  " << finalError << std::endl;
     }
     // == Finalization ==
-    // ietl::mult(sp, x, tmp2, 0, false);
     ietl::mult(*sp_, currentSolution_, tmp3);
     auto en = maquis::real(ietl::dot(currentSolution_, tmp3) / ietl::dot(currentSolution_, currentSolution_));
     if (verbose_) {
-      maquis::cout << " Final energy = " << en << std::endl;
+      maquis::cout << " Final energy = " << en + coreEnergy_ << std::endl;
       maquis::cout << std::endl;
     }
     maquis::cout.precision(prec);
@@ -105,16 +141,31 @@ public:
 
 protected:
 
+  /** @brief Solves the linear system with eigen */
+  template<EigenSolverType EigenSolver, PreconditionerType Preconditioner>
+  void eigenLinearSolver() {
+    using MatrixWrapperType = LinearSolverWrapper<Matrix, SymmGroup>;
+    using SolverType = typename EigenSolverTraitClass<MatrixWrapperType, EigenSolver, Preconditioner>::SolverType;
+    auto matrixFreeWrapper_ = MatrixWrapperType(sp_, rhsMPS_, precond_, shift_);
+    SolverType solver;
+    solver.setTolerance(gmresTol_);
+    solver.setMaxIterations(krylovDim_);
+    solver.compute(matrixFreeWrapper_);
+    // suppose unitary variance matrix to generate initial guess
+    Eigen::Matrix<ScalarType, Eigen::Dynamic, 1> initialEigenMatrix = currentSolution_.getEigenRepresentation();
+    Eigen::Matrix<ScalarType, Eigen::Dynamic, 1> rhsMatrix = rhsMPS_.getEigenRepresentation();
+    Eigen::Matrix<ScalarType, Eigen::Dynamic, 1> newEigenVector = solver.solveWithGuess(rhsMatrix, initialEigenMatrix);
+    maquis::cout << std::endl;
+    maquis::cout << " - Linear solver converged after " << solver.iterations() << " iterations." << std::endl;
+    maquis::cout << " - Final error: " << solver.error() << std::endl;
+    currentSolution_.fillWithEigenVector(newEigenVector);
+  }
+
   /**
    * @brief Solve the local linear system with the GMRES algorithm.
    * The implementation is based on Saad's book on iterative methods.
    */
   void gmres() {
-    if (verbose_) {
-      maquis::cout << " ------------------------------------- " << std::endl;
-      maquis::cout << " Iteration  | Rel. error estimate      " << std::endl;
-      maquis::cout << " ------------------------------------- " << std::endl;
-    }
     // Sets up the initial value of all parameters.
     int iter = 0;
     bool exit = false;
@@ -155,12 +206,15 @@ protected:
       }
     }
     y[0] = residual[0];
+    if (verbose_ && (residual[iter] > gmresTol_)) {
+      maquis::cout << " ------------------------------------- " << std::endl;
+      maquis::cout << " Iteration  | Rel. error estimate      " << std::endl;
+      maquis::cout << " ------------------------------------- " << std::endl;
+      maquis::cout << std::setw(5) << iter << "          " << std::setw(15) << std::scientific
+                   << residual[iter] << std::endl;
+    }
     // == MAIN LOOP ==
     while (residual[iter] > gmresTol_ && iter < krylovDim_-1 && !exit) {
-      if (verbose_) {
-        maquis::cout << std::setw(5) << iter << "          " << std::setw(15) << std::scientific
-                     << residual[iter] << std::endl;
-      }
       // Begin of the Arnoldi part
       auto Av = applyOperator(vecSpace[iter]);
       if (iter > 0) {
@@ -208,6 +262,10 @@ protected:
       std::tie(y[iter], y[iter+1]) = givensRotations[iter].apply(y[iter], y[iter+1]);
       residual.push_back(std::abs(y[iter+1])/rhsNorm_);
       iter += 1;
+      if (verbose_) {
+        maquis::cout << std::setw(5) << iter << "          " << std::setw(15) << std::scientific
+                     << residual[iter] << std::endl;
+      }
     }
     // Final back-substitution
     if (iter != 0) {
@@ -410,6 +468,7 @@ private:
   RealType rhsNorm_;                                         // Norm of the rhs term.
   static constexpr double zeroThresh_ = 1.0E-16;             // Numerical zero
   bool verbose_;                                             // Verbosity flag
+  RealType coreEnergy_;                                      // Core energy to be added to local result (nonzero for electronic problems)
 };
 
 #endif

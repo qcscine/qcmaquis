@@ -12,36 +12,6 @@
 
 #include "dmrg/models/chem/cideas/cideas.hpp"
 
-
-// namespace chem
-// {
-//     namespace detail
-//     {
-//         template <class V>
-//         inline
-//         BaseParameters set_su2u1_parameters(int L, int Nel, int spin, const chem::integral_map<V> & integrals, const std::vector<int> & site_types)
-//         {
-//             BaseParameters parms;
-
-//             parms.set("L", L);
-//             parms.set("nelec", Nel);
-//             parms.set("spin", spin);
-
-//             // take care of site types
-//             std::string site_types_str;
-//             assert(site_types.size() == L);
-//             for (int i = 0; i < L; i++)
-//                 site_types_str += std::to_string(site_types[i]) + ((i < L - 1) ? "," : "") ;
-//             parms.set("site_types", site_types_str);
-
-//             // integrals
-//             parms.set("integrals_binary", chem::serialize(integrals));
-
-//             return parms;
-//         }
-//     }
-// }
-
 namespace maquis
 {
     template <class V>
@@ -111,8 +81,6 @@ namespace maquis
                     // set correct checkpoints and result file names
                     std::string chkpfile = checkpoint_name(pname_guess_, i);
                     parms_.set("chkpfile", chkpfile);
-                    // std::string rfile = pname_guess_ + ".results_state." + std::to_string(i) + ".h5";
-                    // parms_.set("rfile", rfile);
 
                     // set HF occupation
                     if (!hf_occupations.empty())
@@ -231,7 +199,6 @@ namespace maquis
 
                 // add 1 to each element because in the parameters our counting starts with 1
                 for (auto&& n: order) n++;
-                // std::transform(order.begin(), order.end(), order.begin(), [](int i){ return i+1; });
 
                 // convert the ordering into a string
                 return vector_tostring(order);

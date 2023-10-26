@@ -4,7 +4,7 @@ nmainsweeps                      = 5
 max_bond_dimension               = 50
 
 truncation_initial               = 0
-truncation_main                 = 0
+truncation_main                  = 0
 
 optimization                     = twosite
 symmetry                         = none
@@ -31,7 +31,7 @@ linsystem_max_it                 = 1
 linsystem_tol                    = 1.0E-10
 linsystem_krylov_dim             = 10
 linsystem_solver                 = "GMRES"
-linsystem_precond                = "yes"
+linsystem_precond                = "diagonal"
 
 // -- FEAST-related options --
 feast_num_states                 = 1

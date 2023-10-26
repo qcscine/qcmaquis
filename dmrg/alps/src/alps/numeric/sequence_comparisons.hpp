@@ -33,9 +33,11 @@
 
 #include <boost/utility/enable_if.hpp>
 #include <boost/lambda/lambda.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 #include <algorithm>
+
+using namespace boost::placeholders;
 
 namespace alps {
 namespace numeric {

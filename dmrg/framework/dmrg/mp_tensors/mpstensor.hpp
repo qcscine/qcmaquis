@@ -701,3 +701,35 @@ void MPSTensor<Matrix, SymmGroup>::add_block_to_column(block_matrix<Matrix, Symm
         this->data_.add_block_to_column(bm, bm.get_left_charge(idx), bm.get_right_charge(idx));
     }
 }
+
+template<class Matrix, class SymmGroup>
+typename MPSTensor<Matrix, SymmGroup>::EigenVectorType 
+         MPSTensor<Matrix, SymmGroup>::getEigenRepresentation() const
+{
+    auto retVector = EigenVectorType(num_elements());
+    int jCont = 0;
+    for (int idx = 0; idx < this->data().n_blocks(); idx++) {
+        for (int iRow = 0; iRow < num_rows(this->data()[idx]); iRow++) {
+            for (int iCol = 0; iCol < num_cols(this->data()[idx]); iCol++) {
+                retVector[jCont] = this->data()[idx](iRow, iCol);
+                jCont++;
+            }
+        }
+    }
+    return retVector;
+}
+
+template<class Matrix, class SymmGroup>
+void MPSTensor<Matrix, SymmGroup>::fillWithEigenVector(const EigenVectorType& inputVector)
+{
+    assert(inputVector.rows() == this->num_elements());
+    int jCont = 0;
+    for (int idx = 0; idx < this->data().n_blocks(); idx++) {
+        for (int iRow = 0; iRow < num_rows(this->data()[idx]); iRow++) {
+            for (int iCol = 0; iCol < num_cols(this->data()[idx]); iCol++) {
+                this->data()[idx](iRow, iCol) = inputVector[jCont];
+                jCont++;
+            }
+        }
+    }
+}

@@ -1,4 +1,12 @@
 #!/usr/bin/python
+
+#/**
+# * @file
+# * @copyright This code is licensed under the 3-clause BSD license.
+# *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+# *            See LICENSE.txt for details.
+# */
+
 import argparse
 import math
 import numpy as np
