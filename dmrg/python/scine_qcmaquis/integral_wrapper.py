@@ -40,6 +40,7 @@ class IntegralMapWrapper:
     _parser : IntegralsParser
         handler to parse integrals
     """
+    # TODO: add __slots__
 
     def __init__(self, ):
         """Constructor."""
@@ -69,7 +70,7 @@ class IntegralMapWrapper:
 
     def fill_from_fcidump(self, fcidump: str):
         """Fill IntegralMap from an FCIDUMP."""
-        raise NotImplementedError
+        raise NotImplementedError("integrals from fcidump are not yet supported")
 
     def fill_from_pyscf(self, core_value: float, one_body: np.ndarray, two_body: np.ndarray, norb: int):
         """Fill IntegralMap from a PySCF wavefunction.
@@ -112,7 +113,6 @@ class IntegralMapWrapper:
 
     def update_from_parsing(self, transcorrelated=False):
         """Smth."""
-        print("888888888888888888888888")
         if transcorrelated is False:
             self._integral_map = IntegralMap()
             for key in self._parser.get_unique_indices():
@@ -165,6 +165,7 @@ class IntegralsParser:
             integrals are in spin orbitals
         """
 
+        # TODO: use regex for fcidump parsing
         def __init__(self):
             self.norb: int
             """Number of orbitals."""
@@ -181,6 +182,8 @@ class IntegralsParser:
             self.unrestricted = False
             """Integrals are in spin orbital basis."""
 
+    # TODO add __slots__
+    # TODO interface to Hamiltonian in CC code
     def __init__(self):
         """Constructor."""
         self._unique_term: Dict(Tuple[int, int, int, int], float) = {}
@@ -325,6 +328,7 @@ class IntegralNotation(Enum):
 
 class IntegralUtils:
     """Converte Integrals from extern to qcmaquis notation."""
+    # TODO add __slots__
 
     def __init__(self):
         self._notation = IntegralNotation.CHEMISTRY
