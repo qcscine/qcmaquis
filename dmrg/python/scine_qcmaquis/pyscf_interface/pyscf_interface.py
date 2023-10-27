@@ -93,6 +93,9 @@ class QcMaquis:
         """Max number of sweeps."""
         self.bond_dim = 250
         """Bond dimension."""
+        self.initial_truncation_thresh = 1e-6
+
+        self.final_truncation_thresh = 1e-10
 
         # Set other parameters directly through qcmaquis parameters
 
@@ -186,6 +189,13 @@ class QcMaquis:
         #         energy[i] = ener.real
         return energy
 
+    def _set_parameters(self):
+        self.dmrg.set_bond_dimension(self.bond_dim)
+        self.dmrg.set_parameter("conv_thresh", self.energy_threshold)
+        self.dmrg.set_parameter("nsweeps", self.nsweeps)
+        self.dmrg.set_parameter("truncation_initial", self.initial_truncation_thresh)
+        self.dmrg.set_parameter("truncation_final", self.final_truncation_thresh)
+
     def kernel(self, h1e, eri, norb, nelec, ci0=None, ecore=0, **kwargs):
         """Kernel function for pyscf.
 
@@ -204,10 +214,7 @@ class QcMaquis:
 
         # enable 1 and 2 rdm
         self.dmrg.set_orbital_optimization()
-
-        self.dmrg.set_bond_dimension(self.bond_dim)
-        self.dmrg.set_parameter("conv_thresh", self.energy_threshold)
-        self.dmrg.set_parameter("nsweeps", self.nsweeps)
+        self._set_parameters()
 
         # enable chementropy measurement
         if self.measure_entropies is True:
