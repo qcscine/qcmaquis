@@ -127,8 +127,11 @@ class QcMaquis:
         """
         # in case of feast there is no rdm
         try:
-            with pyscf.lib.capture_stdout() as stdout:
+            if self.verbose > 4:
                 maquis_rdm1, maquis_rdm2 = self.dmrg.get_reduced_density_matrices()
+            else:
+                with pyscf.lib.capture_stdout() as stdout:
+                    maquis_rdm1, maquis_rdm2 = self.dmrg.get_reduced_density_matrices()
         # in case measurement failed
         # TODO: check if this is correct
         except RuntimeError:
