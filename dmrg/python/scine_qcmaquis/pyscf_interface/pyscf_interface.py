@@ -81,7 +81,7 @@ class QcMaquis:
         """Path for qcmaquis dumps."""
         self.measure_entropies = False
         """Enable measurements for s1, s2 and mut inf."""
-        self.checkpoint_name = "qcmaquis_checkpoint"
+        self.checkpoint_name = "qcmaquis_checkpoint.h5"
         """Name of qcmaquis checkpoint."""
         self.results_name = "qcmaquis_result_file.h5"
         """Name of qcmaquis results file."""
@@ -230,11 +230,20 @@ class QcMaquis:
 
         nelec, spin2 = self._check_spin(nelec)
 
-        if self.verbose > 4:
-            self.dmrg.run(norb, nelec, spin2, n_states=self.n_states, fiedler=self.fiedler)
-        else:
-            with pyscf.lib.capture_stdout() as stdout:
+        if not os.path.exists(self.results_name):
+            if self.verbose > 4:
                 self.dmrg.run(norb, nelec, spin2, n_states=self.n_states, fiedler=self.fiedler)
+            else:
+                with pyscf.lib.capture_stdout() as stdout:
+                    self.dmrg.run(norb, nelec, spin2, n_states=self.n_states, fiedler=self.fiedler)
+        else:
+            print(f"""No DMRG calculation required.
+MPS is loaded from: {self.checkpoint_name} in {os.getcwd()}""")
+            if self.verbose > 4:
+                self.dmrg.init_dmrg(self.checkpoint_name, norb, nelec, spin2)
+            else:
+                with pyscf.lib.capture_stdout() as stdout:
+                    self.dmrg.init_dmrg(self.checkpoint_name, norb, nelec, spin2)
 
         energy = self._get_energy()
         fakewfn_by_rdm2 = self._get_rdm2(norb)

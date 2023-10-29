@@ -293,6 +293,14 @@ class MaquisDmrg:
             energies.append(self.get_energy())
         print(energies)
 
+    def init_dmrg(self, checkpoint: str, norb: int, nelec: int, spin: int):
+        self._parameters.set_system(norb, nelec, spin)
+        self._parameters.set_checkpoint_path(checkpoint)
+        self._dmrg.set_parameters(self._parameters)
+
+    def get_ci_coefficient(self, determinant_string: str):
+        return self._dmrg.get_ci_coefficient(determinant_string)
+
     def get_singles_and_doubles(self, nocc: int, norb: int):
         nvir = norb - nocc
         hf_string, sign = make_ref(nocc, norb)
