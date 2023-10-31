@@ -45,6 +45,9 @@ public:
     value_type const & operator[](size_t i) const;
     value_type& operator[](size_t i);
 
+    template <class Matrix_, class SymmGroup_>
+    friend std::ostream& operator<<(std::ostream& os, MPS<Matrix_, SymmGroup_> const & mps);
+
     void resize(size_t L);
 
     const_iterator begin() const {return data_.begin();}

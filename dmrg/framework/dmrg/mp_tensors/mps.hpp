@@ -74,6 +74,16 @@ typename MPS<Matrix, SymmGroup>::value_type& MPS<Matrix, SymmGroup>::operator[](
 }
 
 template<class Matrix, class SymmGroup>
+std::ostream& operator<<(std::ostream& os, MPS<Matrix, SymmGroup> const & mps)
+{
+    for (int i=0; i<mps.length(); i++) {
+      os << "Site: " << i << std::endl;
+      os << mps[i] << std::endl;
+    }
+    return os;
+}
+
+template<class Matrix, class SymmGroup>
 void MPS<Matrix, SymmGroup>::resize(size_t L)
 {
     // if canonized_i < L and L < current L, we could conserve canonized_i
