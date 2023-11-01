@@ -89,6 +89,12 @@ public:
         }
         // Decides how many different dimensions there are
         std::set<int> nModalsUnique(nModalsVec.begin(), nModalsVec.end());
+        //comvert std::set to std::vector
+        std::vector<int> nModalsUniqueVec(nModalsUnique.begin(), nModalsUnique.end());
+                for(int i = 0; i < nModalsUniqueVec.size(); i++){
+            std::cout << i << "th element of numModalsUnique is : " << nModalsUniqueVec[i] << std::endl;
+        }
+        std::cout << "size of set: " << nModalsUnique.size() << std::endl;
         // Loads the vector with the site types
         siteTypes.reserve(lattice_size);
         for (int iSite = 0; iSite < lattice_size; iSite++) {
@@ -102,11 +108,11 @@ public:
         //gerenate matrices
         //if all modes have the same modal basis size
         if(nModalsUnique.size() == 1){
-            ident.reserve(nModalsVec[0]);
-            create.reserve(nModalsVec[0]);
-            create.reserve(nModalsVec[0]);
-            destroy.reserve(nModalsVec[0]);
-            int overallDimension = nModalsVec[0];
+            //ident.reserve(nModalsVec[0]);
+            //create.reserve(nModalsVec[0]);
+            //create.reserve(nModalsVec[0]);
+            //destroy.reserve(nModalsVec[0]);
+            int overallDimension = nModalsVec[0] + 1;
             Matrix mident(overallDimension, overallDimension, 0.), mcount(overallDimension, overallDimension, 0.);
             std::vector <Matrix> mcreateVec;
             std::vector <Matrix> mdestroyVec;
@@ -148,16 +154,19 @@ public:
             destroy = modelHelper<Matrix, TrivialGroup>::register_all_types(destroy_op, tag_detail::bosonic, tag_handler); 
             // Registers the hermitian pairs
             modelHelper<Matrix, TrivialGroup>::registerHermitianConjugates(create, destroy, tag_handler);
+            std::cout << "size of create is : " << create.size() << std::endl;
+            std::cout << "size of destroy is : " << destroy.size() << std::endl;
+            std::cout << "element of create : " << create[-1] << std::endl;
         }
         else { //if the modal bases of the various modes are of different size
             int sum = 0;
             for (const int& element : nModalsUnique) {
                 sum += element;
             }
-            ident.reserve(sum);
-            create.reserve(sum);
-            create.reserve(sum);
-            destroy.reserve(sum);
+            //ident.reserve(sum);
+            //create.reserve(sum);
+            //create.reserve(sum);
+            //destroy.reserve(sum);
             for (const auto& nModals_idx: nModalsUnique) {
                 int overallDimension = nModalsVec[nModals_idx];
                 Matrix mident(overallDimension, overallDimension, 0.), mcount(overallDimension, overallDimension, 0.);
@@ -217,21 +226,28 @@ public:
         int hamiltonianSize = HamiltonianTerms.first.size();
         std::cout << "size of vector Hamiltonian_term : " << hamiltonianSize << std::endl;
         std::cout << "Processing Second-Quantization Hamiltonian" << std::endl;
-        bool isCoupled;
+        std::set<int> nModalsUnique(nModalsVec.begin(), nModalsVec.end());
+        int iterations = 0;
+        std::ofstream outputFile("terms.txt");
         for (int iTerm = 0; iTerm < hamiltonianSize; iTerm++) {
+            //write to output
             positions_type positions;
             operators_type operators;
-            convertLineToOperators(HamiltonianTerms.first[iTerm], positions, operators, isCoupled);
+            bool last = 0;
+            bool first = 0;
+            if (iTerm == hamiltonianSize-1) last = 1;
+            if (iTerm == 0) first = 1;
+            convertLineToOperators(HamiltonianTerms.first[iTerm], positions, operators, last, first, outputFile);
             if (positions.size()/2 <= maxCouplingDegree) { //How about this?
                 auto matrixElement = static_cast<value_type>(HamiltonianTerms.second[iTerm]);
-                if(isCoupled){
-                    matrixElement = sqrt(matrixElement);
-                    std::cout << "isCoupled" << std::endl;
-                }
                 modelHelper<Matrix, TrivialGroup>::add_term(positions, operators, matrixElement, tag_handler, this->terms_);
+                if(iTerm == hamiltonianSize-1 || iTerm == 0) std::cout << "matrix element is : " << matrixElement << std::endl;
+                outputFile << std::fixed << std::setprecision(8) << matrixElement << std::endl;
             }
         }
+        std::cout << "numIterations " << iterations << std::endl;
         std::cout << "Second-Quantization Hamiltonian processed" << std::endl;
+        outputFile.close();
     }
 
     /** @brief Getter for the physical dimension of a given type */
@@ -239,7 +255,7 @@ public:
 
     /** @brief Getter for the identity operator */
     tag_type identity_matrix_tag(size_t type) const override {
-        //std::set<int> nModalsUnique(nModalsVec.begin(), nModalsVec.end());
+        std::set<int> nModalsUnique(nModalsVec.begin(), nModalsVec.end());
         if(nModalsUnique.size() == 0) return ident[0];
         else{
             std::set<int>::iterator it = nModalsUnique.find(nModalsVec[type]);
@@ -251,7 +267,7 @@ public:
 
     /** @brief Getter for the count operator */
     tag_type count_matrix_tag(size_t type) const {
-        //std::set<int> nModalsUnique(nModalsVec.begin(), nModalsVec.end());
+        std::set<int> nModalsUnique(nModalsVec.begin(), nModalsVec.end());
         if(nModalsUnique.size() == 0) return ident[0];
         else{
             std::set<int>::iterator it = nModalsUnique.find(nModalsVec[type]);
@@ -304,38 +320,44 @@ public:
 private:
 
     template<class IntegralContainer>
-    void convertLineToOperators(const IntegralContainer& ham_term, positions_type& pos, operators_type& ops, bool& isCoupled) //adapt ops pushed back
+    void convertLineToOperators(const IntegralContainer& ham_term, positions_type& pos, operators_type& ops, bool last, bool first, std::ofstream& file) //adapt ops pushed back
     {
         assert (ham_term.size() % 2 == 0);
         int jCont = 0;
         ops.reserve(ham_term.size());
         pos.reserve(ham_term.size());
-        isCoupled = false;
         std::cout << "entered convertLineToOperators" << std::endl;
-        //std::set<int> nModalsUnique(nModalsVec.begin(), nModalsVec.end());
+        std::set<int> nModalsUnique(nModalsVec.begin(), nModalsVec.end());
         if (nModalsUnique.size() == 1){ //if all modes have the same size physical basis
             do {
                 std::cout << "entered do statement in convertLineToOperators (if)" << std::endl;
                 // Retrieves matrix element
                 auto mode = ham_term[2*jCont]-1; //mode number
-                auto modal = ham_term[2*jCont+1]-1; //modal number 
+                auto modal = ham_term[2*jCont+1]; //modal number
+                file << (mode+1) << "-" << (modal) << "    ";
+                if(last){
+                    std::cout << "last operators : " << mode << modal << std::endl;
+                }
+                if(first){
+                    std::cout << "first operators : " << mode << " " << modal << std::endl;
+                }
                 assert(mode < lattice_size);
                 pos.push_back(mode);
-                if (jCont % 2 == 0)
+                if (jCont % 2 == 0){
+                    std::cout << "pushed back create operator of modal " << modal << std::endl;
                     ops.push_back(create[modal]);
-                else
-                    ops.push_back(destroy[modal]); 
+                }
+                else{
+                    ops.push_back(destroy[modal]);
+                    std::cout << "pushed back destroy operator of modal " << modal << std::endl;
+                }
                 jCont += 1;
-                std::cout << "jCont is:" << jCont << std::endl;
             }
             while (2*jCont < ham_term.size() && ham_term[2*jCont] != -1);
         }
         else{ //if physical bases have different sizes
             do {
                 std::cout << "entered do statement in convertLineToOperators (else)" << std::endl;
-                for(i = 0; i < nMaxUnique.size(); i++){
-                    std::cout << i << "th element of nMaxUnique is : " << nMaxUnique[i] << std::endl;
-                }
                 auto mode = ham_term[2*jCont]-1; //mode number
                 auto modal = ham_term[2*jCont+1]-1; //modal number
                 assert(mode < lattice_size);
@@ -384,7 +406,6 @@ private:
     /**variable containing the total number of operator pairs needed per mode*/
     int numOperators;
     /**set containing the unique dimensions of the required oeprators*/
-    std::set<int> nModalsUnique;
 };
 
 #endif // DMRG_VIBRATIONAL
