@@ -90,6 +90,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_LiH_DMRG_SSvsTS, S, symmetries, LiHFixture
     }
 }
 
+#ifdef DMRG_VIBRATIONAL
 #ifdef HAVE_TrivialGroup
 
 /**
@@ -229,4 +230,5 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_SRCAS_FAD_1ModeHamiltonian_ExcitedState
     boost::filesystem::remove_all("ES.checkpoint.h5");
 }
 
+#endif
 #endif

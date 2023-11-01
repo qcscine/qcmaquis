@@ -146,11 +146,11 @@ public:
             vec_jnk_next[0] = i_body+1;
             int flag = 0;
             for (int idx = 0; idx < hamiltonianTerms.first.size(); idx++){ //loop over all rows of the integral file
-                if(i_body == n_particles_-1 && abs(hamiltonianTerms.first[idx][2]) > n_vib_states_-n_connectingmodes) break; // NG: DANGEROUS! Better check if connecting
+                if(i_body == n_particles_-1 && abs(hamiltonianTerms.first[idx][2]) > n_vib_states_-n_connectingmodes) break;
                 // Prepares the vectors to be employed when building the Hamiltonian
                 std::vector<tag_type> operators;
                 std::vector<pos_t> positions;
-                int ele_state = hamiltonianTerms.first[idx][0]; //store wheter the parameters read in correspond to an excited or ground electronic state
+                int ele_state = hamiltonianTerms.first[idx][0]; //store whether the parameters read in correspond to an excited or ground electronic state
                 int connecting = hamiltonianTerms.first[idx][1]; //stores information wether the vibrational mode is monomer-internal or connecting two monomers
                 int mode = abs(hamiltonianTerms.first[idx][2])-1;
                 if (mode > check_maxVibMode) check_maxVibMode = mode; 

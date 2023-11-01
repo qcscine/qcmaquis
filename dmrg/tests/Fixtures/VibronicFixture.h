@@ -141,7 +141,6 @@ struct VibronicFixture
         parametersExcitonicExtendedAggregate.set("integral_file", "integral_file_ExcitonicExtended");
         parametersExcitonicExtendedAggregate.set("hamiltonian_units", "Hartree");
         //
-        parametersSimpleCoherent.set("nsweeps", 10);
         parametersSimpleCoherent.set("max_bond_dimension", 50);
         parametersSimpleCoherent.set("integral_file", "integral_file_simpleCoherent");
         parametersSimpleCoherent.set("L", 4);
@@ -156,13 +155,6 @@ struct VibronicFixture
         parametersSimpleCoherent.set("vibronic_num_molecules", 2);
         parametersSimpleCoherent.set("vibronic_num_excitons", 1);
         parametersSimpleCoherent.set("vibronic_num_connectingmodes", 0);
-        parametersSimpleCoherent.set("simulation_type", "TD");
-        parametersSimpleCoherent.set("propagator_accuracy", 1.0E-10);
-        parametersSimpleCoherent.set("propagator_maxiter", 10);
-        parametersSimpleCoherent.set("time_step", 10);
-        parametersSimpleCoherent.set("hamiltonian_units", "Hartree");
-        parametersSimpleCoherent.set("time_units", "as");
-        parametersVibronicPyrazineRedDimFull.set("hamiltonian_units", "cm-1");
         //
         integralFileFakeVibronic.open("integral_file_VibronicFile");
         integralFileFakeVibronic << "EL_ST 0 0 " << std::endl;
@@ -348,10 +340,10 @@ struct VibronicFixture
         integralFileTestNmax.close();
         //
         IntegralFileSimpleCoherent.open("integral_file_simpleCoherent");
-        IntegralFileSimpleCoherent << "-1. 0 0 -1 -1" << std::endl;
-        IntegralFileSimpleCoherent << "1. 0 0 1 1" << std::endl;
-        IntegralFileSimpleCoherent << "-1. 1 0 -1 -1" << std::endl;
-        IntegralFileSimpleCoherent << "1. 1 0 1 1" << std::endl;
+        IntegralFileSimpleCoherent << "-1.0 0 0 -1 -1" << std::endl;
+        IntegralFileSimpleCoherent << "1.0 0 0 1 1" << std::endl;
+        IntegralFileSimpleCoherent << "-2.0 1 0 -1 -1" << std::endl;
+        IntegralFileSimpleCoherent << "2.0 1 0 1 1" << std::endl;
         IntegralFileSimpleCoherent.close();
     }
 
