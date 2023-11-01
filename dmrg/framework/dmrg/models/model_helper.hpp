@@ -44,6 +44,9 @@ public:
                                                                value_type& scaling, std::shared_ptr<TagHandler<Matrix, SymmGroup>> tag_handler)
      {
         // Safety check
+        if(positions[0] == 1){
+            std::cout << "checkpoint here" << std::endl;
+        }
         assert(positions.size() == operators.size());
         bool FoundZero = false;
         // Types definition
@@ -113,6 +116,11 @@ public:
             assert( newtag.first < tag_handler->size() );
             assert( std::abs(newtag.second - value_type(1.)) == value_type() );
             ret.push_back(newtag.first);
+            //DEBUG
+            std::cout << "newtag.first " << newtag.first << std::endl;
+            std::cout << "newtag.second " << newtag.second << std::endl;
+            auto checkOperator = tag_handler->get_op(newtag.first);
+            std::cout << "operator is " << checkOperator << std::endl;
         }
         return ret;
     }
@@ -147,17 +155,26 @@ public:
      */
     static void registerNewHermitianConjugate(const tag_type& tag, std::shared_ptr<TagHandler<Matrix, SymmGroup>> tag_handler) 
     {
+        if(true){
+            std::cout <<"checkpoint" << std::endl;
+        }
         auto operatorType = (tag_handler->is_fermionic(tag)) ? tag_detail::fermionic : tag_detail::bosonic;
         auto hermitianOperator = tag_handler->get_op(tag);
+        std::cout << "Printing contents of operator with tag " << tag << std::endl;
+        std::cout << hermitianOperator << std::endl;
         hermitianOperator.adjoint_inplace();
         bool alreadyPresent = tag_handler->hasRegistered(hermitianOperator);
         // If already present, it may be either the same or they are already in the table
         if (alreadyPresent) {
             auto newTag = tag_handler->checked_register(hermitianOperator, operatorType);
             assert(newTag.first == tag || tag_handler->herm_conj(tag) == newTag.first);
+            std::cout << "Printing contents of operator with newTag" << std::endl;
+            std::cout << hermitianOperator << std::endl;
         }
         else {
             auto newTag = tag_handler->register_op(hermitianOperator, operatorType);
+            std::cout << "Printing contents of operator with newTag" << newTag << std::endl;
+            std::cout << hermitianOperator << std::endl;
             tag_handler->hermitian_pair(tag, newTag);
         }
     }

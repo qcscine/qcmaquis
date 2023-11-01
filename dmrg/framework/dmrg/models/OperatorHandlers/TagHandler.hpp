@@ -91,6 +91,7 @@ void TagHandler<Matrix, SymmGroup>::hermitian_pair(typename OPTable<Matrix, Symm
     assert(pair_tag1 != pair_tag2);
 
     if (hermitian[pair_tag1] == pair_tag2 && hermitian[pair_tag2] == pair_tag1) return;
+    std::cout << "checkpoint hermitian_pair" << std::endl;
     assert(hermitian[pair_tag1] == pair_tag1 && hermitian[pair_tag2] == pair_tag2);
     std::swap(hermitian[pair_tag1], hermitian[pair_tag2]);
 }

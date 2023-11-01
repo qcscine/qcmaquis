@@ -55,7 +55,10 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
      *
      * @param mps output MPS
      */
-    void operator()(MPS<Matrix, SymmGroup> & mps) { init_sectors(mps, this->init_bond_dimension, true); }
+    void operator()(MPS<Matrix, SymmGroup> & mps) { init_sectors(mps, this->init_bond_dimension, true); 
+      std::cout << "printing MPS" << std::endl;
+      std::cout << mps << std::endl;
+      }
 
     // Main routine
     void init_sectors(MPS<Matrix, SymmGroup> & mps, size_t Mmax, bool fillrand=true, typename Matrix::value_type val=0)
@@ -70,6 +73,8 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
         mps[i] = MPSTensor<Matrix, SymmGroup>(phys_dims[site_type[i]], allowed[i], allowed[i+1], fillrand, val);
         mps[i].divide_by_scalar(mps[i].scalar_norm());
       }
+      std::cout << "printing MPS" << std::endl;
+      std::cout << mps << std::endl;
     }
 
     // Class members
@@ -162,6 +167,8 @@ class basis_mps_init_generic : public mps_initializer<Matrix, SymmGroup>
       for (int i = 0; i < mps.length(); i++) {
           mps[i].divide_by_scalar(mps[i].scalar_norm());
       }
+      std::cout << "printing MPS" << std::endl;
+      std::cout << mps << std::endl;
     }
 
   private:
@@ -204,6 +211,8 @@ public:
     for (int i = 0; i < mps.length(); i++) {
       mps[i].divide_by_scalar(mps[i].scalar_norm());
     }
+    std::cout << "printing MPS" << std::endl;
+    std::cout << mps << std::endl;
   }
 private:
   // -- ATTRIBUTES --
@@ -248,6 +257,8 @@ public:
     for (int i = 0; i < mps.length(); i++) {
       mps[i].divide_by_scalar(mps[i].scalar_norm());
     }
+    std::cout << "printing MPS" << std::endl;
+    std::cout << mps << std::endl;
   }
 
 private:
@@ -309,8 +320,8 @@ class coherent_mps_init : public mps_initializer<Matrix, SymmGroup>
         coeffs = params_["init_coeffs"].as<std::vector<double> >();
       }
 
-      for (int i = 0; i < list_dets.size(); i++) {
-        std::stringstream ss(list_dets[i]);
+      for (int i = 0; i < list_dets.size(); i++) { //loop through every determinant
+        std::stringstream ss(list_dets[i]); //ss: single determinant
         int ichar;
         std::vector<int> tmp_vec;
         if (params["init_state_type"] == "csf"){
@@ -363,6 +374,8 @@ class coherent_mps_init : public mps_initializer<Matrix, SymmGroup>
       }
       if (mps[mps.length()-1].col_dim()[0].first != right_end)
         throw std::runtime_error("Initial state does not satisfy total quantum numbers.");
+      std::cout << "printing MPS" << std::endl;
+      std::cout << mps << std::endl;
     }
 
   private:
