@@ -215,45 +215,4 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_Coherent_ExitonicExtended, 
 #endif // HAVE_U1
 }
 
-
-#ifdef HAVE_TrivialGroup
-
-BOOST_FIXTURE_TEST_CASE(Test_RegisterOperatorsWithTags_TrivialGroup, VibronicFixture)
-{
-  //create instance of tag_handler
-  //generating 4x4 matrices
-  alps::numeric::matrix<std::complex<double>> identity(4, 4, 0.), identityScaled(4, 4, 0.), notIdentity(4, 4, 0.);
-  double scalingFactor = 2.;
-  TrivialGroup::charge C = TrivialGroup::IdentityCharge;
-  identity(0, 0) = 1.;
-  identityScaled(0, 0) = scalingFactor;
-  for (int n = 1; n < 4; n++){
-    identity(n,n) = 1.;
-    identityScaled(n,n) = scalingFactor;
-    notIdentity(n,n-1) = 1.;
-  }
-  model_impl<alps::numeric::matrix<std::complex<double>>, TrivialGroup>::op_t identity_oploc, identityScaled_oploc, notIdentity_oploc;
-  identity_oploc.insert_block(identity, C, C);
-  identityScaled_oploc.insert_block(identityScaled, C, C);
-  notIdentity_oploc.insert_block(notIdentity, C, C);
-  //pointer to the tag handler
-  std::shared_ptr<TagHandler<alps::numeric::matrix<std::complex<double>>, TrivialGroup>> tag_handler; //from chatGPT
-  tag_handler = std::make_shared<model_impl<alps::numeric::matrix<std::complex<double>>, TrivialGroup>::table_type>(); //from chatGPT
-  auto TagIdentity = tag_handler->register_op(identity_oploc, tag_detail::bosonic);
-  auto TagIdentityScaled = tag_handler->register_op(identityScaled_oploc, tag_detail::bosonic);
-  auto TagNotIdentity = tag_handler->register_op(notIdentity_oploc, tag_detail::bosonic);
-  //checks if alreagy registered
-  bool isIdentityPesent = tag_handler->hasRegistered(identity_oploc);
-  bool isIdentityScaledPesent = tag_handler->hasRegistered(identityScaled_oploc);
-  bool isNotIdentityPesent = tag_handler->hasRegistered(notIdentity_oploc);
-  BOOST_CHECK_EQUAL(isIdentityPesent, true);
-  BOOST_CHECK_EQUAL(isIdentityScaledPesent, true);
-  BOOST_CHECK_EQUAL(isNotIdentityPesent, true);
-  //checks whether tags are differnet
-  BOOST_CHECK_NE(TagIdentity, TagIdentityScaled);
-  BOOST_CHECK_NE(TagIdentity, TagNotIdentity);
-  BOOST_CHECK_NE(TagIdentityScaled, TagNotIdentity);
-}
-
-#endif // HAVE_NONE
-#endif // DMRG_VIBRONIC
+#endif //DMRG_VIBRONIC

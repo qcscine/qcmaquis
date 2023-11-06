@@ -133,6 +133,8 @@ add_executable(test_mpsjoin test_mps_mpo_ops/mpsjoin.cpp)
 target_link_libraries(test_mpsjoin ${DMRG_APP_LIBRARIES})
 add_executable(test_wigner test_wigner.cpp)
 target_link_libraries(test_wigner ${DMRG_APP_LIBRARIES})
+add_executable(test_taghandler_register.cpp)
+target_link_libraries(test_taghandler_register ${DMRG_APP_LIBRARIES})
 
 # -- ALPS-related test --
 add_executable(test_generalized_eigenvalue_problem alps/GeneralizedEigenvalueProblemTest.cpp)
