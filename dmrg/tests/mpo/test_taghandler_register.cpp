@@ -9,22 +9,18 @@
 #include <boost/test/included/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 #include <complex>
+#include <iostream>
+#include <boost/test/included/unit_test.hpp>
 #include "dmrg/models/generate_mpo/1D_mpo_maker.hpp"
 #include "dmrg/mp_tensors/mpo_times_mps.hpp"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/models/model.h"
-#include "dmrg/models/lattice/lattice.h"
 #include "dmrg/sim/matrix_types.h"
 #include "dmrg/models/model.h"
-#include "dmrg/models/lattice/lattice.h"
-#include "dmrg/mp_tensors/mps_initializers_helper.h"
 #include "dmrg/sim/matrix_types.h"
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/models/generate_mpo.hpp"
-
-#include <iostream>
-#include <boost/test/included/unit_test.hpp>
 //
 
 
@@ -36,7 +32,7 @@ TrivialGroup
 , U1
 #endif
 #ifdef HAVE_NU1
-, NU1
+, NU1_template<5>
 #endif
 #ifdef HAVE_TwoU1PG
 , TwoU1PG
@@ -44,19 +40,19 @@ TrivialGroup
 #ifdef HAVE_TwoU1
 , TwoU1
 #endif
-#ifdef HAVE_SU2U1PG
-, SU2U1PG
-#endif
-#ifdef HAVE_SU2U1
-, SU2U1
-#endif
 > symmetries;
 
-#ifdef DMRG_VIBRONIC
-#ifdef DMRG_VIBRATIONAL
+
 BOOST_AUTO_TEST_CASE_TEMPLATE(Test_RegisterOperatorsWithTags, S, symmetries)
 {
-#ifdef HAVE_TrivialGroup
+  //type defs
+  using Matrix = alps::numeric::matrix<std::complex<double>>;
+  using base = model_impl<Matrix, S>;
+  using op_t = typename base::op_t;
+  using table_type = typename base::table_type;
+  using tag_type = typename base::tag_type;
+  using value_type = typename Matrix::value_type;
+  //creating matrices
   alps::numeric::matrix<std::complex<double>> identity(4, 4, 0.), identityScaled(4, 4, 0.), notIdentity(4, 4, 0.);
   double scalingFactor = 2.;
   identity(0, 0) = 1.;
@@ -66,57 +62,61 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Test_RegisterOperatorsWithTags, S, symmetries)
     identityScaled(n,n) = scalingFactor;
     notIdentity(n,n-1) = 1.;
   }
-  //trivial symmetry
-  if(symm_traits::SymmetryNameTrait<S>::symmName() == "none"){
-    model_impl<alps::numeric::matrix<std::complex<double>>, TrivialGroup>::op_t identity_oploc, identityScaled_oploc, notIdentity_oploc;
-    TrivialGroup::charge C = TrivialGroup::IdentityCharge;
+  op_t identity_oploc, identityScaled_oploc, notIdentity_oploc;
+  //conditionals based on charge types
+  //TrivialGroup
+  if(symm_traits::SymmetryNameTrait<S>::symmName() == "none") {
+    typename S::charge C = S::IdentityCharge;
     identity_oploc.insert_block(identity, C, C);
     identityScaled_oploc.insert_block(identityScaled, C, C);
     notIdentity_oploc.insert_block(notIdentity, C, C);
-    //pointer to the tag handler
-    std::shared_ptr<TagHandler<alps::numeric::matrix<std::complex<double>>, TrivialGroup>> tag_handler; 
-    tag_handler = std::make_shared<model_impl<alps::numeric::matrix<std::complex<double>>, TrivialGroup>::table_type>(); 
-  } //restricted vibrational symmetries
+  }
+  //other vibrational symmetries
   if(symm_traits::SymmetryNameTrait<S>::symmName() == "u1" || symm_traits::SymmetryNameTrait<S>::symmName() == "nu1" ){
-    model_impl<alps::numeric::matrix<std::complex<double>>, S>::op_t identity_oploc, identityScaled_oploc, notIdentity_oploc;
-    identity_oploc.insert_block(identity, 1, 1);
-    identityScaled_oploc.insert_block(identityScaled, 1, 1);
-    notIdentity_oploc.insert_block(notIdentity, 1, 0);
-    //pointer to the tag handler
-    std::shared_ptr<TagHandler<alps::numeric::matrix<std::complex<double>>, S>> tag_handler; 
-    tag_handler = std::make_shared<model_impl<alps::numeric::matrix<std::complex<double>>, S>::table_type>(); 
+    typename S::charge C0 = typename S::charge(0);
+    typename S::charge C1 = typename S::charge(1);
+    identity_oploc.insert_block(identity, C1, C1);
+    identityScaled_oploc.insert_block(identityScaled, C1, C1);
+    notIdentity_oploc.insert_block(notIdentity, C1, C0);
   }
-  else{ //electronic symmetries
-    model_impl<alps::numeric::matrix<std::complex<double>>, S>::op_t identity_oploc, identityScaled_oploc, notIdentity_oploc;
-    identity_oploc.insert_block(alps::numeric::matrix<std::complex<double>>(1, 1, 1), 0, 0);
-    identityScaled_oploc.insert_block(alps::numeric::matrix<std::complex<double>>(scalingFactor, scalingFactor, scalingFactor), 0, 0);
-    notIdentity_oploc.insert_block(alps::numeric::matrix<std::complex<double>>(1, 1, 1), 1, 1);
-    //pointer to the tag handler
-    std::shared_ptr<TagHandler<alps::numeric::matrix<std::complex<double>>, S>> tag_handler; 
-    tag_handler = std::make_shared<model_impl<alps::numeric::matrix<std::complex<double>>, S>::table_type>();
+  //electronic symmetries
+  else{
+    typename S::charge C0 = typename S::charge(0);
+    typename S::charge C1 = typename S::charge(1);
+    identity_oploc.insert_block(Matrix(1, 1, 1), C0, C0);
+    identityScaled_oploc.insert_block(Matrix(scalingFactor, scalingFactor, scalingFactor), C0, C0);
+    notIdentity_oploc.insert_block(Matrix(1, 1, 1), C1, C1);
   }
-  //bosonic symmetries
+  //pointer to the tag handler
+  std::shared_ptr<TagHandler<Matrix, S>> tag_handler;
+  tag_handler = std::make_shared<table_type>();
+  //if bosonic
   if(symm_traits::SymmetryNameTrait<S>::symmName() == "none" || symm_traits::SymmetryNameTrait<S>::symmName() == "u1" || symm_traits::SymmetryNameTrait<S>::symmName() == "nu1"){
     auto TagIdentity = tag_handler->register_op(identity_oploc, tag_detail::bosonic);
     auto TagIdentityScaled = tag_handler->register_op(identityScaled_oploc, tag_detail::bosonic);
     auto TagNotIdentity = tag_handler->register_op(notIdentity_oploc, tag_detail::bosonic);
+    //checks whether tags are differnet
+    BOOST_CHECK_NE(TagIdentity, TagIdentityScaled);
+    BOOST_CHECK_NE(TagIdentity, TagNotIdentity);
+    BOOST_CHECK_NE(TagIdentityScaled, TagNotIdentity);
   }
-  //fermionic symmetries
-  if(symm_traits::SymmetryNameTrait<S>::symmName() == "TwoU1PG" || symm_traits::SymmetryNameTrait<S>::symmName() == "TwoU1" || symm_traits::SymmetryNameTrait<S>::symmName() == "SU2U1PG" || symm_traits::SymmetryNameTrait<S>::symmName() == "SU2U1"){
-    auto TagIdentity = tag_handler->register_op(identity_oploc, tag_detail::fermionic);
-    auto TagIdentityScaled = tag_handler->register_op(identityScaled_oploc, tag_detail::fermionic);
-    auto TagNotIdentity = tag_handler->register_op(notIdentity_oploc, tag_detail::fermionic);
+  //if electronic
+  else{
+    auto TagIdentity = tag_handler->register_op(identity_oploc, tag_detail::bosonic);
+    auto TagIdentityScaled = tag_handler->register_op(identityScaled_oploc, tag_detail::bosonic);
+    auto TagNotIdentity = tag_handler->register_op(notIdentity_oploc, tag_detail::bosonic);
+    //checks whether tags are differnet
+    BOOST_CHECK_NE(TagIdentity, TagIdentityScaled);
+    BOOST_CHECK_NE(TagIdentity, TagNotIdentity);
+    BOOST_CHECK_NE(TagIdentityScaled, TagNotIdentity);
   }
-  //checks if alreagy registered
+  //checking register
   bool isIdentityPesent = tag_handler->hasRegistered(identity_oploc);
   bool isIdentityScaledPesent = tag_handler->hasRegistered(identityScaled_oploc);
   bool isNotIdentityPesent = tag_handler->hasRegistered(notIdentity_oploc);
+  //checks whether tags are correctly registered
   BOOST_CHECK_EQUAL(isIdentityPesent, true);
   BOOST_CHECK_EQUAL(isIdentityScaledPesent, true);
   BOOST_CHECK_EQUAL(isNotIdentityPesent, true);
-  //checks whether tags are differnet
-  BOOST_CHECK_NE(TagIdentity, TagIdentityScaled);
-  BOOST_CHECK_NE(TagIdentity, TagNotIdentity);
-  BOOST_CHECK_NE(TagIdentityScaled, TagNotIdentity);
 }
 

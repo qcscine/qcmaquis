@@ -133,8 +133,6 @@ add_executable(test_mpsjoin test_mps_mpo_ops/mpsjoin.cpp)
 target_link_libraries(test_mpsjoin ${DMRG_APP_LIBRARIES})
 add_executable(test_wigner test_wigner.cpp)
 target_link_libraries(test_wigner ${DMRG_APP_LIBRARIES})
-add_executable(test_taghandler_register.cpp)
-target_link_libraries(test_taghandler_register ${DMRG_APP_LIBRARIES})
 
 # -- ALPS-related test --
 add_executable(test_generalized_eigenvalue_problem alps/GeneralizedEigenvalueProblemTest.cpp)
@@ -159,6 +157,8 @@ add_executable(test_linear_system_solver_electronic LinearSystem/LinearSystemSol
 target_link_libraries(test_linear_system_solver_electronic ${DMRG_APP_LIBRARIES})
 add_executable(test_sweep_optimization_traits SweepOptimizationTools/SweepOptimizationTraits.cpp)
 target_link_libraries(test_sweep_optimization_traits ${DMRG_APP_LIBRARIES})
+add_executable(test_taghandler_register mpo/test_taghandler_register.cpp)
+target_link_libraries(test_taghandler_register ${DMRG_APP_LIBRARIES})
 
 if(BUILD_DMRG_EVOLVE)
     add_executable(test_time_evolvers TimeEvolvers/TimeEvolvers.cpp)
