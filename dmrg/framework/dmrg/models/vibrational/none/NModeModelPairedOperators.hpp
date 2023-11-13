@@ -5,8 +5,8 @@
  *            See LICENSE.txt for details.
  */
 
-#ifndef MODELS_VIBRATIONAL_NMODECOMPACT_H
-#define MODELS_VIBRATIONAL_NMODECOMPACT_H
+#ifndef MODELS_VIBRATIONAL_NMODEPAIRED_H
+#define MODELS_VIBRATIONAL_NMODEPAIRED_H
 
 #ifdef DMRG_VIBRATIONAL
 
@@ -32,7 +32,7 @@
  */
 
 template<class Matrix>
-class NModeModelCompact : public model_impl<Matrix, TrivialGroup> {
+class NModeModelPaired : public model_impl<Matrix, TrivialGroup> {
     // Types definition
     using base = model_impl<Matrix, TrivialGroup>;
     using table_type = typename base::table_type;
@@ -54,7 +54,7 @@ public:
     * @param parameters container with the DMRG parameters
     * @param verbose if true, prints information regarding the Hamiltonian terms
     */
-    NModeModelCompact(const Lattice& lattice_, BaseParameters& parameters_, bool verbose)
+    NModeModelPaired(const Lattice& lattice_, BaseParameters& parameters_, bool verbose)
             : lattice(lattice_), parameters(parameters_), tag_handler(new table_type()), phys_indexes(0) //check whether everything needed is here
     {
         // Loads in the relevant parameters
@@ -90,55 +90,47 @@ public:
         // For each mode along with all its associated modals, 
         // we define the identity, the creation, the annihilation, and the count operator.
         // define the number of operators we need
-        std::vector<op_t> ident_op, count_op, destroy_op, create_op;
+        std::vector<op_t> ident_op, count_op, destroy_op, create_op, paired_op;
         //generate matrices
         //if all modes have the same modal basis size
         if(nModalsUnique.size() == 1){
             int overallDimension = nModalsVec[0];
             Matrix mident(overallDimension, overallDimension, 0.), mcount(overallDimension, overallDimension, 0.);
-            std::vector <Matrix> mcreateVec;
-            std::vector <Matrix> mdestroyVec;
+            std::vector <Matrix> mpairedVec;
             mident(0, 0) = 1.;
-            for (int n = 1; n < overallDimension; n++) { 
-                Matrix mcreate(overallDimension, overallDimension, 0.), mdestroy(overallDimension, overallDimension, 0.);
-                mcreate(0, n) = 1; 
-                mdestroy(n, 0) = 1;
-                mcreateVec.push_back(mcreate);
-                mdestroyVec.push_back(mdestroy);
-                mident(n, n) = 1.;
-                mcount(n, n) = value_type(n); //same count operator as in Watson Model
+            for (int n = 0; n < overallDimension; n++) { //change this
+                for (int m = 0; m < overallDimension; m++){
+                    Matrix mpaired(overallDimension, overallDimension, 0.);
+                    mpaired(n,m) = 1;
+                    mpairedVec.push_back(mpaired);
+                    
+                }
+                if(n !=0){
+                    mident(n, n) = 1.;
+                    mcount(n, n) = value_type(n); //same count operator as in Watson Model
+                }
             }
             // Local operators
-            std::vector <op_t> create_op_locVec, destroy_op_locVec;
+            std::vector <op_t> paired_op_locVec;
             op_t ident_op_loc, count_op_loc;
             ident_op_loc.insert_block(mident, C, C);
             count_op_loc.insert_block(mcount, C, C);
-            for (int i = 0; i < mcreateVec.size(); i++){
-                op_t create_op_loc, destroy_op_loc;
-                create_op_loc.insert_block(mcreateVec[i], C, C);
-                destroy_op_loc.insert_block(mdestroyVec[i], C, C);
-                create_op_locVec.push_back(create_op_loc);
-                destroy_op_locVec.push_back(destroy_op_loc);
+            for (int i = 0; i < mpairedVec.size(); i++){
+                op_t paired_op_loc;
+                paired_op_loc.insert_block(mpairedVec[i], C, C);
+                paired_op_locVec.push_back(paired_op_loc);
             }
             // Updates the vectors
             ident_op.push_back(ident_op_loc);
             count_op.push_back(count_op_loc);
-            for (int i = 0; i < create_op_locVec.size(); i++){
-                op_t createToPushBack = create_op_locVec[i];
-                op_t destroyToPushBack = destroy_op_locVec[i];
-                create_op.push_back(createToPushBack);
-                destroy_op.push_back(destroyToPushBack);
+            for (int i = 0; i < paired_op_locVec.size(); i++){
+                op_t pairedToPushBack = paired_op_locVec[i];
+                paired_op.push_back(pairedToPushBack);
             }
             // Creates the final tags and update the table
             ident = modelHelper<Matrix, TrivialGroup>::register_all_types(ident_op, tag_detail::bosonic, tag_handler);
             count = modelHelper<Matrix, TrivialGroup>::register_all_types(count_op, tag_detail::bosonic, tag_handler);
-            create = modelHelper<Matrix, TrivialGroup>::register_all_types(create_op, tag_detail::bosonic, tag_handler);
-            destroy = modelHelper<Matrix, TrivialGroup>::register_all_types(destroy_op, tag_detail::bosonic, tag_handler); 
-            // Registers the hermitian pairs
-            modelHelper<Matrix, TrivialGroup>::registerHermitianConjugates(create, destroy, tag_handler);
-            std::cout << "size of create is : " << create.size() << std::endl;
-            std::cout << "size of destroy is : " << destroy.size() << std::endl;
-            std::cout << "element of create : " << create[-1] << std::endl;
+            paired = modelHelper<Matrix, TrivialGroup>::register_all_types(paired_op, tag_detail::bosonic, tag_handler);
         }
 
 
@@ -146,47 +138,39 @@ public:
             for (const auto& nModals_idx: nModalsUnique) {
                 int overallDimension = nModalsVec[nModals_idx];
                 Matrix mident(overallDimension, overallDimension, 0.), mcount(overallDimension, overallDimension, 0.);
-                std::vector <Matrix> mcreateVec;
-                std::vector <Matrix> mdestroyVec;
+                std::vector <Matrix> mpairedVec;
                 mident(0, 0) = 1.;
                 for (int n = 1; n < overallDimension; n++) {
-                    Matrix mcreate(overallDimension, overallDimension, 0.), mdestroy(overallDimension, overallDimension, 0.);
-                    mcreate(0, n) = 1; 
-                    mdestroy(n, 0) = 1;
-                    mcreateVec.push_back(mcreate);
-                    mdestroyVec.push_back(mdestroy);
+                    for (int m = 1; m < overallDimension; m++){
+                        Matrix mpaired(overallDimension, overallDimension, 0.);
+                        mpaired(n,m) = 1; 
+                        mpairedVec.push_back(mpaired);
+                }
                     mident(n, n) = 1.;
                     mcount(n, n) = value_type(n); //same count operator as in Watson Model
                 }
                 //local operators
-                std::vector <op_t> create_op_locVec, destroy_op_locVec;
+                std::vector <op_t> paired_op_locVec;
                 op_t ident_op_loc, count_op_loc;
                 ident_op_loc.insert_block(mident, C, C);
                 count_op_loc.insert_block(mcount, C, C);
-                for (int i = 0; i < mcreateVec.size(); i++){
-                    op_t create_op_loc, destroy_op_loc;
-                    create_op_loc.insert_block(mcreateVec[i], C, C);
-                    destroy_op_loc.insert_block(mdestroyVec[i], C, C);
-                    create_op_locVec.push_back(create_op_loc);
-                    destroy_op_locVec.push_back(destroy_op_loc);
+                for (int i = 0; i < mpairedVec.size(); i++){
+                    op_t paired_op_loc;
+                    paired_op_loc.insert_block(mpairedVec[i], C, C);
+                    paired_op_locVec.push_back(paired_op_loc);
                 }
                 // Updates the vectors
                 ident_op.push_back(ident_op_loc);
                 count_op.push_back(count_op_loc);
-                for (int i = 0; i < create_op_locVec.size(); i++){
-                    op_t createToPushBack = create_op_locVec[i];
-                    op_t destroyToPushBack = destroy_op_locVec[i];
-                    create_op.push_back(createToPushBack);
-                    destroy_op.push_back(destroyToPushBack);
+                for (int i = 0; i < paired_op_locVec.size(); i++){
+                    op_t pairedToPushBack = paired_op_locVec[i];
+                    paired_op.push_back(pairedToPushBack);
                 }
             }
             // Creates the final tags and update the table
             ident = modelHelper<Matrix, TrivialGroup>::register_all_types(ident_op, tag_detail::bosonic, tag_handler);
             count = modelHelper<Matrix, TrivialGroup>::register_all_types(count_op, tag_detail::bosonic, tag_handler);
-            create = modelHelper<Matrix, TrivialGroup>::register_all_types(create_op, tag_detail::bosonic, tag_handler);
-            destroy = modelHelper<Matrix, TrivialGroup>::register_all_types(destroy_op, tag_detail::bosonic, tag_handler); 
-            // Registers the hermitian pairs
-            modelHelper<Matrix, TrivialGroup>::registerHermitianConjugates(create, destroy, tag_handler);
+            paired = modelHelper<Matrix, TrivialGroup>::register_all_types(paired_op, tag_detail::bosonic, tag_handler);
         }
            
     } //end of constructor
@@ -207,9 +191,17 @@ public:
             positions_type positions;
             operators_type operators;
             convertLineToOperators(HamiltonianTerms.first[iTerm], positions, operators);
-            if (positions.size()/2 <= maxCouplingDegree) { 
+            std::cout << "hello" << std::endl;
+            if (positions.size()/2 <= maxCouplingDegree) {
+                std::cout << "goodbye" << std::endl;
+                std::cout << "positions size " << positions.size() << std::endl;
+                std::cout << "operators size " << operators.size() << std::endl; 
                 auto matrixElement = static_cast<value_type>(HamiltonianTerms.second[iTerm]);
                 modelHelper<Matrix, TrivialGroup>::add_term(positions, operators, matrixElement, tag_handler, this->terms_);
+                std::cout << "called model helper" << std::endl;
+                std::cout << "position " << positions[0] << std::endl;
+                std::cout << "operator " << operators[0] << std::endl;
+                std::cout << "matrixElement " << matrixElement << std::endl;
             }
         }
         std::cout << "Second-Quantization Hamiltonian processed" << std::endl;
@@ -297,38 +289,65 @@ private:
                 // Retrieves matrix element
                 auto mode = ham_term[2*jCont]-1; //mode number
                 auto modal = ham_term[2*jCont+1]; //modal number
+                int modalToCreate;
+                int modalToDestroy;
+                bool pair = false;
+                int basisSize = nModalsVec[0]; //without the vacuum state
                 assert(mode < lattice_size);
-                pos.push_back(mode);
                 if (jCont % 2 == 0){
-                    ops.push_back(create[modal]);
+                    modalToCreate = modal; 
                 }
                 else{
-                    ops.push_back(destroy[modal]);
+                    modalToDestroy = modal;
+                    pair = true;
                 }
+                if(pair){
+                    int index = modalToCreate*(basisSize) + modalToDestroy;
+                    ops.push_back(paired[index]);
+                    pos.push_back(mode);
+                    std::cout << "index" << modalToCreate*(basisSize) + modalToDestroy << std::endl;
+                    std::cout << "operator : " << paired[index] << std::endl;
+                    std::cout << "position in lattice : " << mode << std::endl;
+                } 
+                pair = false;
                 jCont += 1;
             }
             while (2*jCont < ham_term.size() && ham_term[2*jCont] != -1);
         }
-        else{ //if physical bases have different sizes
+        else{ //if physical bases have different sizes //TODO
             do {
                 auto mode = ham_term[2*jCont]-1; //mode number
                 auto modal = ham_term[2*jCont+1]; //modal number
+                int modalToCreate;
+                int modalToDestroy;
+                bool pair = false;
                 assert(mode < lattice_size);
-                pos.push_back(mode);
                 int dimension = nModalsVec[mode];
                 std::set<int>::iterator it = nModalsUnique.find(dimension); //find pointer to desired dimension in the set
                 if(it == nModalsUnique.end()) std::runtime_error("Index of dimension not found in set nModalsUnique");
                 int indexInSet = std::distance(nModalsUnique.begin(), it); // extract index of entry dimension in set
                 // Iterate through the set and sum up elements up to the target index
                 int currentIndex = 0;
-                int sumOfDimensions = 0;
+                int collector = 0;
+                int element;
                 for (auto it = nModalsUnique.begin(); it != nModalsUnique.end() && currentIndex < indexInSet; ++it, ++currentIndex) {
-                    sumOfDimensions += *it;
+                    element = *it;
+                    element *= element;
+                    collector += element;
                 }
                 if (jCont % 2 == 0)
-                    ops.push_back(create[sumOfDimensions+modal]);
-                else
-                    ops.push_back(destroy[sumOfDimensions+modal]); 
+                    modalToCreate = modal;
+                else{
+                    modalToDestroy = modal; 
+                    pair = true;
+                }
+                if(pair){
+                    int index = (collector -1) modalToCreate*(basisSize) + modalToDestroy;
+                    ops.push_back(paired[index]);
+                    pos.push_back(mode);
+
+                }
+                pair = false;
                 jCont += 1;
             }
             while (2*jCont < ham_term.size() && ham_term[2*jCont] != -1);
@@ -351,7 +370,7 @@ private:
     /** Pointer to the tag_handler */
     std::shared_ptr<TagHandler<Matrix, TrivialGroup> >  tag_handler;
     /** Elementary Operators*/
-    operators_type ident, count, create, destroy;
+    operators_type ident, count, create, destroy, paired;
     /**Type asscoiated with the different sites*/
     std::vector<int> siteTypes;
     /**Vector contining the number of modals per mode*/
