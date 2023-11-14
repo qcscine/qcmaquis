@@ -1746,7 +1746,7 @@ struct TranscorrelatedFixture
         parameters2x2_AsymmetricRealSpace_U4_2Alpha1Beta;
     // Molecular parameters
     DmrgParameters parametersH2Conventional_ConventionalFormat, parametersH2Conventional_TranscorrelatedFormat,
-        parametersH2Transcorrelated, parametersBeTranscorrelatedTwoBody, parametersH2TranscorrelatedQuantumFormat;
+        parametersH2Transcorrelated, parametersBeTranscorrelatedTwoBody, parametersH2TranscorrelatedQuantumFormat, parametersHeTranscorrelated;
     // Input streams
     std::ofstream integralFileH2Conventional_ConventionalFormat, integralFileH2Conventional_TranscorrelatedFormat,
         integralFileH2Transcorrelated, integralFileH2TranscorrelatedQuantumFormat, integralFileBeTranscorrelatedTwoBody,

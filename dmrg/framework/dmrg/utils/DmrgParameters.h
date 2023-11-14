@@ -126,6 +126,9 @@ private:
         add_option("transcorrelated_nsweeps_TI", "Number of preliminary TI-DMRG sweeps for a tcDMRG calculation", value(5));
         add_option("transcorrelated_nsweeps_TC", "Number of iTD-DMRG sweeps for a tcDMRG calculation", value(20));
         add_option("transcorrelated_integral_file", "Name of the file storing the transcorrelated integrals");
+        add_option("transcorrelated_3body_normal_ordered", "Use normal-ordered version of the threebody operator", value("no"));
+        add_option("normal_ordered_integral_file", "Integral file given is normal ordered.", value("no"));
+        add_option("normal_ordered_hole_states", "Hole states of the normal ordering, if integral file given in normal ordering");
 
         // Choice for the format of the Hamiltonian
         add_option("quantum_computing_format", "If yes, assumes that the Hamiltonian is in the quantum computing format", value("no"));

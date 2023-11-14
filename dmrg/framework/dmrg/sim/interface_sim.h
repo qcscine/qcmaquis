@@ -630,9 +630,7 @@ private:
   /**  @brief Checks energy convergence of the sweep-based optimization */
   bool checkEnergyConvergence(double convergenceThreshold) {
     bool converged = false;
-    auto emin = *std::min_element(energies_.begin(), energies_.end()-1);
-    auto eminNew = *std::min_element(energies_.begin(), energies_.end());
-    auto eDiff = std::abs(emin - eminNew);
+    auto eDiff = std::abs(*(energies_.end()-1) - *(energies_.end()-2));
     if (eDiff < convergenceThreshold)
       converged = true;
     return converged;

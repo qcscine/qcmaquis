@@ -35,6 +35,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/tokenizer.hpp>
 #include <regex>
+#include <unordered_set>
 
 #include "dmrg/models/model.h"
 #include "dmrg/models/measurements.h"
@@ -64,7 +65,6 @@ class qc_model : public model_impl<Matrix, SymmGroup>
     using measurements_type = typename base::measurements_type;
     using pos_t = typename Lattice::pos_t;
     using value_type = typename Matrix::value_type;
-    using one_matrix = typename alps::numeric::associated_one_matrix<Matrix>::type;
     using MapOfOperatorsType = std::unordered_map< std::vector< std::pair< int, unsigned int> >, value_type,
                                                    boost::hash< std::vector< std::pair< int, unsigned int> > > >;
 public:
@@ -1077,6 +1077,9 @@ private:
 
         return ret;
     }
+
+    void create_terms_not_normal_ordered();
+    void create_terms_normal_ordered();
 };
 
 
