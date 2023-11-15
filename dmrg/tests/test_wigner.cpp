@@ -8,6 +8,8 @@
 #define BOOST_TEST_MAIN
 
 // Unit test for integral map
+#include <array>
+#include <utility>
 #include <boost/test/included/unit_test.hpp>
 #include "utils/fpcomparison.h"
 #include "dmrg/block_matrix/symmetry/gsl_coupling.h"
