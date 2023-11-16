@@ -184,24 +184,15 @@ public:
         std::cout << "Parsing integral file" << std::endl;
         auto HamiltonianTerms = Vibrational::detail::NModeIntegralParser<double>(parameters, lattice);
         int hamiltonianSize = HamiltonianTerms.first.size();
-        std::cout << "size of vector Hamiltonian_term : " << hamiltonianSize << std::endl;
         std::cout << "Processing Second-Quantization Hamiltonian" << std::endl;
         std::set<int> nModalsUnique(nModalsVec.begin(), nModalsVec.end());
         for (int iTerm = 0; iTerm < hamiltonianSize; iTerm++) {
             positions_type positions;
             operators_type operators;
             convertLineToOperators(HamiltonianTerms.first[iTerm], positions, operators);
-            std::cout << "hello" << std::endl;
             if (positions.size()/2 <= maxCouplingDegree) {
-                std::cout << "goodbye" << std::endl;
-                std::cout << "positions size " << positions.size() << std::endl;
-                std::cout << "operators size " << operators.size() << std::endl; 
                 auto matrixElement = static_cast<value_type>(HamiltonianTerms.second[iTerm]);
                 modelHelper<Matrix, TrivialGroup>::add_term(positions, operators, matrixElement, tag_handler, this->terms_);
-                std::cout << "called model helper" << std::endl;
-                std::cout << "position " << positions[0] << std::endl;
-                std::cout << "operator " << operators[0] << std::endl;
-                std::cout << "matrixElement " << matrixElement << std::endl;
             }
         }
         std::cout << "Second-Quantization Hamiltonian processed" << std::endl;
@@ -268,10 +259,41 @@ public:
       throw std::runtime_error("update() not yet implemented or this model.");
     }
 
-    measurements_type measurements() const override {//TODO
+    // Possible measuraments associated to the model
+    measurements_type measurements() const
+    {
+        // Types definition
+        using op_vec = std::vector<op_t>;
+        using bond_element = std::vector<std::pair<op_vec, bool> >;
+        // Variable declaration
         measurements_type meas;
+        // Ground state population
+        if (this->parameters.is_set("MEASURE[Population]")) {
+            for (std::size_t idx = 0; idx < numModes; idx++) {
+                std::string name = "PopulationState"+std::to_string(idx);
+                // Generates vectors for the position operators
+                std::vector<pos_t> pos_internal(0);
+                std::vector<std::vector<pos_t> > pos_local(0);
+                pos_internal.push_back(idx);
+                pos_local.push_back(pos_internal);
+                // Generates vector for the fillings and identity operators
+                op_vec identities_local, fillings_local;
+                for (std::size_t idx1 = 0; idx1 < lattice_size; idx1++) { //this may need to change
+                    identities_local.push_back(this->identity_matrix(idx1));
+                    fillings_local.push_back(this->filling_matrix(idx1));
+                }
+                // Bonds element (the actual operator involved in the measurement)
+                bond_element ops;
+                op_vec local_op_vec;
+                local_op_vec.push_back(tag_handler->get_op(count));
+                ops.push_back(std::make_pair(local_op_vec, false));
+                meas.push_back(new measurements::local_at<Matrix, U1>(name, lattice, pos_local, identities_local,
+                                                                      fillings_local, ops));
+            }
+        }
         return meas;
     }
+
 
 
 private:
@@ -305,9 +327,6 @@ private:
                     int index = modalToCreate*(basisSize) + modalToDestroy;
                     ops.push_back(paired[index]);
                     pos.push_back(mode);
-                    std::cout << "index" << modalToCreate*(basisSize) + modalToDestroy << std::endl;
-                    std::cout << "operator : " << paired[index] << std::endl;
-                    std::cout << "position in lattice : " << mode << std::endl;
                 } 
                 pair = false;
                 jCont += 1;
@@ -320,6 +339,7 @@ private:
                 auto modal = ham_term[2*jCont+1]; //modal number
                 int modalToCreate;
                 int modalToDestroy;
+                int basisSize = nModalsVec[mode];
                 bool pair = false;
                 assert(mode < lattice_size);
                 int dimension = nModalsVec[mode];
@@ -342,10 +362,9 @@ private:
                     pair = true;
                 }
                 if(pair){
-                    int index = (collector -1) modalToCreate*(basisSize) + modalToDestroy;
+                    int index = (collector -1) + modalToCreate*(basisSize) + modalToDestroy;
                     ops.push_back(paired[index]);
                     pos.push_back(mode);
-
                 }
                 pair = false;
                 jCont += 1;

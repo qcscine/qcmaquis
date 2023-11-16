@@ -136,9 +136,6 @@ public:
             destroy = modelHelper<Matrix, TrivialGroup>::register_all_types(destroy_op, tag_detail::bosonic, tag_handler); 
             // Registers the hermitian pairs
             modelHelper<Matrix, TrivialGroup>::registerHermitianConjugates(create, destroy, tag_handler);
-            std::cout << "size of create is : " << create.size() << std::endl;
-            std::cout << "size of destroy is : " << destroy.size() << std::endl;
-            std::cout << "element of create : " << create[-1] << std::endl;
         }
 
 
@@ -200,7 +197,6 @@ public:
         std::cout << "Parsing integral file" << std::endl;
         auto HamiltonianTerms = Vibrational::detail::NModeIntegralParser<double>(parameters, lattice);
         int hamiltonianSize = HamiltonianTerms.first.size();
-        std::cout << "size of vector Hamiltonian_term : " << hamiltonianSize << std::endl;
         std::cout << "Processing Second-Quantization Hamiltonian" << std::endl;
         std::set<int> nModalsUnique(nModalsVec.begin(), nModalsVec.end());
         for (int iTerm = 0; iTerm < hamiltonianSize; iTerm++) {
