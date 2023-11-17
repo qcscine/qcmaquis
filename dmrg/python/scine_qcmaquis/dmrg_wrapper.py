@@ -51,7 +51,7 @@ class DmrgWrapper:
         self._measure_flag = False
         if "transcorrelated_hamiltonian" in parameters.get_parameters_dict():
             self._run_option = RunOptions.EVOLVE
-            self._dmrg = DmrgComplex(parameters.get_parameters())
+            self._dmrg = DmrgReal(parameters.get_parameters())
         elif "feast_num_states" in parameters.get_parameters_dict():
             self._run_option = RunOptions.FEAST
             self._feast_states = parameters.get_parameters_dict()["feast_num_states"]

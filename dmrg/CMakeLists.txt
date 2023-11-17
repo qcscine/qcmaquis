@@ -458,7 +458,8 @@ if(PYTHON_BINDINGS)
     import_pybind11()
     pybind11_add_module(_dmrg ${CMAKE_CURRENT_SOURCE_DIR}/python/QcmaquisPython.cpp)
     target_link_libraries(_dmrg PUBLIC maquis_dmrg)
-    set_target_properties(_dmrg PROPERTIES LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/python_module)
+    set_target_properties(_dmrg PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/python_module)
+    # set_target_properties(_dmrg PROPERTIES LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/python_module)
 
     # copy files
     file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/python/scine_qcmaquis DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/python_module)

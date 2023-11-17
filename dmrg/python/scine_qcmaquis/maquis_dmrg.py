@@ -245,6 +245,10 @@ class MaquisDmrg:
                 # self._parameters.set("orbital_order", orbital_order)
 
             # self._parameters.set("orbital_order", "1,2")
+            # integrals will overide integral file
+            if "integral_file" in self._parameters._parameter_dict:
+                self._parameters.erase("integrals", verbose=True)
+
             self._dmrg.set_parameters(self._parameters)
             if "integral_file" not in self._parameters._parameter_dict:
                 self._dmrg.set_integrals(self._integral_map)
