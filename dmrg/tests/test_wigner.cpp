@@ -29,6 +29,10 @@
 
 #define BOOST_TEST_MAIN
 
+#include <vector>
+#include <utility>
+#include <array>
+
 // Unit test for integral map
 #include <boost/test/included/unit_test.hpp>
 #include "utils/fpcomparison.h"
