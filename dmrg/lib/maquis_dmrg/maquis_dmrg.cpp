@@ -30,8 +30,8 @@ namespace maquis
         };
     };
 
-    template <typename ScalarType>
-    struct DMRGInterface<ScalarType>::Impl
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    struct DMRGInterface<ScalarType, HamiltonianType>::Impl
     {
         typedef typename simulation_traits<ScalarType>::shared_ptr sim_ptr;
         sim_ptr sim;
@@ -40,12 +40,12 @@ namespace maquis
         ~Impl() = default;
     };
 
-    template <typename ScalarType>
-    DMRGInterface<ScalarType>::DMRGInterface(DmrgParameters & parms_)
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    DMRGInterface<ScalarType, HamiltonianType>::DMRGInterface(DmrgParameters & parms_)
         : parms(parms_), impl_(new Impl(::dmrg::symmetry_factory<simulation_traits<ScalarType> >(parms_, parms_))) {};
 
-    template <typename ScalarType>
-    void DMRGInterface<ScalarType>::optimize()
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    void DMRGInterface<ScalarType, HamiltonianType>::optimize()
     {
         try {
             impl_->sim->run("optimize");
@@ -57,8 +57,8 @@ namespace maquis
         }
     }
 
-    template <typename ScalarType>
-    void DMRGInterface<ScalarType>::evolve()
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    void DMRGInterface<ScalarType, HamiltonianType>::evolve()
     {
         try {
             impl_->sim->run("evolve");
@@ -70,8 +70,8 @@ namespace maquis
         }
     }
 
-    template <typename ScalarType>
-    void DMRGInterface<ScalarType>::run_measure()
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    void DMRGInterface<ScalarType, HamiltonianType>::run_measure()
     {
         try
         {
@@ -85,8 +85,8 @@ namespace maquis
         }
     }
 
-    template <typename ScalarType>
-    void DMRGInterface<ScalarType>::runInversePowerIteration() {
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    void DMRGInterface<ScalarType, HamiltonianType>::runInversePowerIteration() {
         try {
             impl_->sim->run("ipi");
         }
@@ -97,8 +97,9 @@ namespace maquis
         }
     }
 
-    template <typename ScalarType>
-    void DMRGInterface<ScalarType>::runFEAST() {
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    void DMRGInterface<ScalarType, HamiltonianType>::runFEAST()
+    {
         try {
             impl_->sim->run("feast");
         }
@@ -110,8 +111,8 @@ namespace maquis
         }
     }
 
-    template <typename ScalarType>
-    void DMRGInterface<ScalarType>::runTranscorrelated()
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    void DMRGInterface<ScalarType, HamiltonianType>::runTranscorrelated()
     {
         try {
             impl_->sim->run("transcorrelated");
@@ -123,56 +124,63 @@ namespace maquis
         }
     }
 
-    template <typename ScalarType>
-    ScalarType DMRGInterface<ScalarType>::energy()
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    ScalarType DMRGInterface<ScalarType, HamiltonianType>::energy()
     {
         return impl_->sim->get_energy();
     }
 
-    template <typename ScalarType>
-    ScalarType DMRGInterface<ScalarType>::energyFEAST(int iState)
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    ScalarType DMRGInterface<ScalarType, HamiltonianType>::energyFEAST(int iState)
     {
         return impl_->sim->getFEASTEnergy(iState);
     }
 
-    template <typename ScalarType>
-    ScalarType DMRGInterface<ScalarType>::getCICoefficient(std::string determinantString)
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    ScalarType DMRGInterface<ScalarType, HamiltonianType>::getCICoefficient(std::string determinantString)
     {
         return impl_->sim->getCICoefficient(determinantString);
     }
 
-    template <typename ScalarType>
-    results_collector& DMRGInterface<ScalarType>::get_iteration_results()
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    results_collector& DMRGInterface<ScalarType, HamiltonianType>::get_iteration_results()
     {
         return impl_->sim->get_iteration_results();
     }
 
-    template <typename ScalarType>
-    int DMRGInterface<ScalarType>::get_last_sweep()
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    int DMRGInterface<ScalarType, HamiltonianType>::get_last_sweep()
     {
         return impl_->sim->get_last_sweep();
     }
 
-    template <typename ScalarType>
-    void DMRGInterface<ScalarType>::measure()
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    void DMRGInterface<ScalarType, HamiltonianType>::measure()
     {
         measurements_ = impl_->sim->measure_out();
     }
 
-    template <typename ScalarType>
-    void DMRGInterface<ScalarType>::update_integrals(const integral_map<ScalarType> & integrals)
+  // #ifdef TRANSCORR_INTEGRALSC
+    template <class V, Hamiltonian HamiltonianType>
+    void DMRGInterface<V, HamiltonianType>::update_tc_integrals(const tc_integral_map & integrals) {
+      impl_->sim->update_tc_integrals(integrals);
+    }
+  // #endif
+
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    void DMRGInterface<ScalarType, HamiltonianType>::update_integrals(const integral_map<ScalarType> & integrals)
     {
         impl_->sim->update_integrals(integrals);
     }
 
-    template <typename ScalarType>
-    void DMRGInterface<ScalarType>::update_integrals(std::string fileName)
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    void DMRGInterface<ScalarType, HamiltonianType>::update_integrals(std::string fileName)
     {
         impl_->sim->update_integrals(fileName);
     }
 
-    template <typename ScalarType>
-    const typename DMRGInterface<ScalarType>::results_map_type& DMRGInterface<ScalarType>::measurements()
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    const typename DMRGInterface<ScalarType, HamiltonianType>::results_map_type& DMRGInterface<ScalarType, HamiltonianType>::measurements()
     {
         if (measurements_.empty())
             measure();
@@ -181,48 +189,48 @@ namespace maquis
         return measurements_;
     };
 
-    template <typename ScalarType>
-    const typename DMRGInterface<ScalarType>::meas_with_results_type& DMRGInterface<ScalarType>::mutinf()
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    const typename DMRGInterface<ScalarType, HamiltonianType>::meas_with_results_type& DMRGInterface<ScalarType, HamiltonianType>::mutinf()
     {
         return measurements().at("mutinf");
     }
 
     // TODO: This does not work for 2U1/2U1PG symmetry because "oneptdm" measurement is not recognised by the model!
     // Fix the model to recognise it!
-    template <typename ScalarType>
-    const typename DMRGInterface<ScalarType>::meas_with_results_type& DMRGInterface<ScalarType>::onerdm()
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    const typename DMRGInterface<ScalarType, HamiltonianType>::meas_with_results_type& DMRGInterface<ScalarType, HamiltonianType>::onerdm()
     {
         return measurements().at("oneptdm");
     }
 
-    template <typename ScalarType>
-    const typename DMRGInterface<ScalarType>::meas_with_results_type& DMRGInterface<ScalarType>::onespdm()
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    const typename DMRGInterface<ScalarType, HamiltonianType>::meas_with_results_type& DMRGInterface<ScalarType, HamiltonianType>::onespdm()
     {
         return measurements().at("oneptspdm");
     }
 
-    template <typename ScalarType>
-    const typename DMRGInterface<ScalarType>::meas_with_results_type& DMRGInterface<ScalarType>::twordm()
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    const typename DMRGInterface<ScalarType, HamiltonianType>::meas_with_results_type& DMRGInterface<ScalarType, HamiltonianType>::twordm()
     {
         return measurements().at("twoptdm");
     }
 
-    template <typename ScalarType>
-    const typename DMRGInterface<ScalarType>::meas_with_results_type& DMRGInterface<ScalarType>::threerdm()
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    const typename DMRGInterface<ScalarType, HamiltonianType>::meas_with_results_type& DMRGInterface<ScalarType, HamiltonianType>::threerdm()
     {
         parms.set("MEASURE[3rdm]", 1); // required for 3-RDM measurement
         return measurements().at("threeptdm");
     }
 
-    template <typename ScalarType>
-    const typename DMRGInterface<ScalarType>::meas_with_results_type& DMRGInterface<ScalarType>::fourrdm()
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    const typename DMRGInterface<ScalarType, HamiltonianType>::meas_with_results_type& DMRGInterface<ScalarType, HamiltonianType>::fourrdm()
     {
         parms.set("MEASURE[4rdm]", 1); // required for 4-RDM measurement
         return measurements().at("fourptdm");
     }
 
-    template <typename ScalarType>
-    const typename DMRGInterface<ScalarType>::meas_with_results_type& DMRGInterface<ScalarType>::getMeasurement(std::string measName)
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    const typename DMRGInterface<ScalarType, HamiltonianType>::meas_with_results_type& DMRGInterface<ScalarType, HamiltonianType>::getMeasurement(std::string measName)
     {
         if (measurements().find(measName) == measurements().end())
             throw std::runtime_error("Measurement not available!");
@@ -237,14 +245,14 @@ namespace maquis
         parms.erase_measurements(); \
         parms << meas_parms
 
-    template <typename ScalarType>
-    void DMRGInterface<ScalarType>::measure_and_save_3rdm()
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    void DMRGInterface<ScalarType, HamiltonianType>::measure_and_save_3rdm()
     {
         measure_and_save_rdm(3);
     }
 
-    template <typename ScalarType>
-    void DMRGInterface<ScalarType>::measure_and_save_4rdm()
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    void DMRGInterface<ScalarType, HamiltonianType>::measure_and_save_4rdm()
     {
         // Clear all unnecessary measurements before running 4-RDM measurement
         // FIXME: clearing parms here has NO EFFECT on the measurements! This has to be changed in another way!
@@ -255,8 +263,8 @@ namespace maquis
 
     #undef measure_and_save_rdm
 
-    template <typename ScalarType>
-    void DMRGInterface<ScalarType>::measure_and_save_trans3rdm(const std::string & bra_name)
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    void DMRGInterface<ScalarType, HamiltonianType>::measure_and_save_trans3rdm(const std::string & bra_name)
     {
         BaseParameters meas_parms = parms.measurements();
         parms.erase_measurements();
@@ -266,17 +274,17 @@ namespace maquis
         parms << meas_parms;
     }
 
-    template <typename ScalarType>
-    DMRGInterface<ScalarType>::~DMRGInterface() = default;
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    DMRGInterface<ScalarType, HamiltonianType>::~DMRGInterface() = default;
 
-    template <typename ScalarType>
-    ScalarType DMRGInterface<ScalarType>::overlap(const std::string& aux_mps_name)
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    ScalarType DMRGInterface<ScalarType, HamiltonianType>::overlap(const std::string& aux_mps_name)
     {
         return impl_->sim->get_overlap(aux_mps_name);
     }
 
-    template <typename ScalarType>
-    void DMRGInterface<ScalarType>::dump_parameters(const std::string & file)
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    void DMRGInterface<ScalarType, HamiltonianType>::dump_parameters(const std::string & file)
     {
         std::ofstream fs(file);
         fs << parms;
@@ -285,4 +293,10 @@ namespace maquis
     // Explicit template instantiation
     template class DMRGInterface<double>;
     template class DMRGInterface<std::complex<double> >;
+    // Check if these should be there
+    template class DMRGInterface<double, Hamiltonian::PreBO>;
+    template class DMRGInterface<double, Hamiltonian::VibrationalNMode>;
+    template class DMRGInterface<double, Hamiltonian::VibrationalCanonical>;
+    template class DMRGInterface<double, Hamiltonian::Vibronic>;
+    template class DMRGInterface<double, Hamiltonian::Excitonic>;
 }

@@ -464,6 +464,15 @@ public:
   /** @brief Updates the integral and regenerates the data that depends on it */
   void update_integrals(const chem::integral_map<typename Matrix::value_type> & integrals)
   {
+
+        // integrals are set later anyways
+        // deleting old ones should be okay
+        if (parms.is_set("integral_file")) {
+          parms.erase("integral_file");
+        }
+        if(parms.is_set("integrals")){
+          parms.erase("integrals");
+        }
       // if (parms.is_set("integral_file") || parms.is_set("integrals"))
       //     throw std::runtime_error("updating integrals in the interface not supported yet in the FCIDUMP format");
       parms.set("integrals_binary", chem::serialize(integrals));
@@ -476,7 +485,77 @@ public:
       all_measurements = model.measurements();
       all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
   }
+    /**
+     * @brief Update integrals with new integral map.
+     *
+     * @Note This function erases existing entries of
+     * 'integral_file' and 'integrals' from parameters
+     * and sets 'integrals_binary' as source of integrals.
+     *
+     * @param integrals Integral map providing new integrals.
+     **/
+    void update_tc_integrals(const chem::TranscorrMap<typename Matrix::value_type>& integrals)
+    {
 
+        // integrals are set later anyways
+        // deleting old ones should be okay
+        if (parms.is_set("integral_file")) {
+          parms.erase("integral_file");
+        }
+        if(parms.is_set("integrals")){
+          parms.erase("integrals");
+        }
+        // if (parms.is_set("integral_file") || parms.is_set("integrals"))
+        //     throw std::runtime_error("updating integrals in the interface not supported yet in the FCIDUMP format");
+        parms.set("integrals_binary", chem::serialize(integrals));
+
+        //std::cout << " parms are set (and ints are updated) -> " << std::endl;
+        //std::cout << parms << std::endl;
+
+        // construct new model and mpo with new integrals
+        // hope this doesn't give any memory leaks
+        model = Model<Matrix, SymmGroup>(lat, parms);
+        mpo = make_mpo(lat, model);
+
+        // check if MPS is still OK
+        maquis::checks::right_end_check(mps, model.total_quantum_numbers(parms));
+
+        all_measurements = model.measurements();
+        all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
+    }
+
+    results_collector& get_iteration_results()
+    {
+        // If iteration_results is empty, we didn't perform the sweep yet, but possibly loaded the MPS from a checkpoint
+        // so we need to load also iteration results
+        if (iteration_results_.empty())
+        {
+            // If we are not loading from a checkpoint, last_sweep is set to -1
+            // so we need to return an empty iteration_results vector
+            if (get_last_sweep() < 0)
+                return iteration_results_;
+
+            // otherwise, we are restarting but there's something wrong with the checkpoint
+            if (!rfile().empty())
+            {
+                try // Load the iteration results from the last sweep
+                {
+                    storage::archive ar(rfile(), "r");
+                    ar[results_archive_path(last_sweep_) + "/results"] >> iteration_results_;
+                }
+                catch (std::exception& e)
+                {
+                    maquis::cerr << e.what() << std::endl;
+                    throw std::runtime_error("Error reading iteration results from checkpoint.");
+                }
+            }
+            else
+                throw std::runtime_error("No result file specified for restart -- cannot read iteration results!");
+
+        }
+
+        return iteration_results_;
+    }
   /** @brief Updates the integrals from a new file */
   void update_integrals(std::string fileName)
   {
@@ -489,32 +568,6 @@ public:
     all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
   }
 
-  results_collector& get_iteration_results()
-  {
-    // If iteration_results is empty, we didn't perform the sweep yet, but possibly loaded the MPS from a checkpoint
-    // so we need to load also iteration results
-    if (iteration_results_.empty())
-    {
-      // If we are not loading from a checkpoint, last_sweep is set to -1
-      // so we need to return an empty iteration_results vector
-      if (get_last_sweep() < 0)
-        return iteration_results_;
-      // otherwise, we are restarting but there's something wrong with the checkpoint
-      if (!rfile().empty()) {
-        try { // Load the iteration results from the last sweep
-          storage::archive ar(rfile(), "r");
-          ar[results_archive_path(last_sweep_) + "/results"] >> iteration_results_;
-        }
-        catch (std::exception& e) {
-          maquis::cerr << e.what() << std::endl;
-          throw std::runtime_error("Error reading iteration results from checkpoint.");
-        }
-      }
-      else
-          throw std::runtime_error("No result file specified for restart -- cannot read iteration results!");
-    }
-    return iteration_results_;
-  }
 
   /** @brief Get the overlap of the MPS with another MPS, which is loaded from a chkp file */
   virtual typename Matrix::value_type get_overlap(const std::string & aux_filename)

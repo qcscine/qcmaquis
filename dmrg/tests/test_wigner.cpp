@@ -7,6 +7,10 @@
 
 #define BOOST_TEST_MAIN
 
+#include <vector>
+#include <utility>
+#include <array>
+
 // Unit test for integral map
 #include <array>
 #include <utility>

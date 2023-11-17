@@ -15,6 +15,7 @@
 #include <boost/tuple/tuple.hpp>
 #include "dmrg/evolve/TimeEvolutionSweep.h"
 #include <boost/tuple/tuple.hpp> // Needed for std::tie
+#include <chrono>
 
 /**
  * @brief Class implementing the two-site time-evolution algorithm with a sweep-based Trotter decomposition.

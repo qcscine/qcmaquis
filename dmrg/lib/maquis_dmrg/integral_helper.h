@@ -27,7 +27,10 @@
 #ifndef INTEGRAL_HELPER_H
 #define INTEGRAL_HELPER_H
 
+#include "boost/functional/hash/hash_fwd.hpp"
+#include <array>
 #include <complex>
+#include <vector>
 
 namespace chem {
 
@@ -54,12 +57,12 @@ public:
 };
 
 
-/** 
+/**
  * @brief Constexpr function returning the index of the Hamiltonian map
- * 
+ *
  * This function is required because different models identify a
  * Hamiltonian term with different formats.
- * 
+ *
  * - for the electronic Hamiltonian, each term is identified by 4 indices,
  *   because we have a two-body potential, and one index is sufficient
  *   to identify each SQ operator.
@@ -90,9 +93,11 @@ constexpr int getIndexDim(const Hamiltonian& type, const HamiltonianTransformati
         case Hamiltonian::RelativisticElectronic:
             indexDim = 4;
             break;
+#ifdef ORDER_NONE
         case Hamiltonian::VibrationalCanonical:
-            indexDim = ORDER_NONE; // This value is defined in the top level CMakeLists.txt and can be set as a compile flag           
+            indexDim = ORDER_NONE; // This value is defined in the top level CMakeLists.txt and can be set as a compile flag
             break;
+#endif
         // Note that we support so-far only up to 3-body terms
         case Hamiltonian::VibrationalNMode:
             indexDim = 12;

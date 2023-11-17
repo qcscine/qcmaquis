@@ -5,6 +5,7 @@
  *            See LICENSE.txt for details.
  */
 
+#include "dmrg/models/MolecularHamiltonians/transform_symmetry.hpp"
 #ifdef USE_AMBIENT
 #include <mpi.h>
 #endif
@@ -21,7 +22,6 @@ using std::endl;
 
 #include "dmrg/sim/matrix_types.h"
 #include "dmrg/models/model.h"
-#include "dmrg/models/MolecularHamiltonian/transform_symmetry.hpp"
 
 #if defined(USE_SU2U1)
 typedef SU2U1 grp;
@@ -79,7 +79,7 @@ int main(int argc, char ** argv)
 
         for (int Sz = -TwoS; Sz <= TwoS; Sz += 2)
         {
-    	    // skip loop to next iteration until we hit the target Sz value 
+    	    // skip loop to next iteration until we hit the target Sz value
 	        if((argc == 3) && (Sz != target_sz))
 	            continue;
 
@@ -91,7 +91,7 @@ int main(int argc, char ** argv)
 
             // the output MPS
             MPS<matrix, mapgrp> mps_out = transform_mps<matrix, grp>()(mps, Nup, Ndown);
-            
+
             std::string mps_out_file = mps_in_file;
             std::size_t pos = mps_out_file.find(".h5");
             if (pos != mps_out_file.size())
@@ -114,7 +114,7 @@ int main(int argc, char ** argv)
         }
 
         myfile.close();
-        
+
     } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;
         return 1;
