@@ -212,6 +212,31 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_Coherent_ExitonicExtended, 
   auto energyCoherent = expval(mpsCoherent, mpo)/norm(mpsCoherent);
   //
   BOOST_CHECK_CLOSE(energyOne+energyTwo, 2*energyCoherent, 1.0E-10);
+  //
+  auto latticeC = Lattice(parametersSimpleCoherentConnecting);
+  int latticeSizeC = latticeC.size();
+  auto eeModelConnecting = Model<matrix, Symmetry>(latticeC, parametersSimpleCoherentConnecting); //excitonicextended (EE) model
+  auto mpoC = make_mpo(latticeC, eeModelConnecting);
+  // Construction of the first state (excitation on monomer two)
+  parametersSimpleCoherentConnecting.set("init_type", "basis_state_generic");
+  parametersSimpleCoherentConnecting.set("init_basis_state", "0,0,0,1,0,0,0,0");
+  auto mpsStateOneC = MPS<matrix, Symmetry>(latticeSizeC, *(eeModelConnecting.initializer(latticeC, parametersSimpleCoherentConnecting)));
+  // Construction of the second state (excitation on monomer three)
+  parametersSimpleCoherentConnecting.set("init_type", "basis_state_generic");
+  parametersSimpleCoherentConnecting.set("init_basis_state", "0,0,0,0,0,0,1,0");
+  auto mpsStateTwoC = MPS<matrix, Symmetry>(latticeSizeC, *(eeModelConnecting.initializer(latticeC, parametersSimpleCoherentConnecting)));
+  // Construction of the coherent superposition
+  parametersSimpleCoherentConnecting.set("init_type", "coherent");
+  parametersSimpleCoherentConnecting.set("init_coeffs", "0.5,0.5");
+  parametersSimpleCoherentConnecting.set("init_bond_dimension", 5);
+  parametersSimpleCoherentConnecting.set("init_basis_state", "0,0,0,1,0,0,0,0|0,0,0,0,0,0,1,0");
+  auto mpsCoherentC = MPS<matrix, Symmetry>(latticeSizeC, *(eeModelConnecting.initializer(latticeC, parametersSimpleCoherentConnecting)));
+  // The energy is taken from the integral provides as input in the fixture class.
+  auto energyOneC = expval(mpsStateOneC, mpoC)/norm(mpsStateOneC);
+  auto energyTwoC = expval(mpsStateTwoC, mpoC)/norm(mpsStateTwoC);
+  auto energyCoherentC = expval(mpsCoherentC, mpoC)/norm(mpsCoherentC);
+  //
+  BOOST_CHECK_CLOSE(energyOneC+energyTwoC, 2*energyCoherentC, 1.0E-10);
 #endif // HAVE_U1
 }
 

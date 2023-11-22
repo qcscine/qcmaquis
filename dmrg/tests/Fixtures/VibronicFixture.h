@@ -141,20 +141,43 @@ struct VibronicFixture
         parametersExcitonicExtendedAggregate.set("integral_file", "integral_file_ExcitonicExtended");
         parametersExcitonicExtendedAggregate.set("hamiltonian_units", "Hartree");
         //
-        parametersSimpleCoherent.set("max_bond_dimension", 50);
+        parametersSimpleCoherent.set("nsweeps", 1);
+        parametersSimpleCoherent.set("max_bond_dimension", 20);
+        parametersSimpleCoherent.set("model_library", "coded");
+        parametersSimpleCoherent.set("lattice_library", "coded");
+        parametersSimpleCoherent.set("optimization", "singlesite");
         parametersSimpleCoherent.set("integral_file", "integral_file_simpleCoherent");
-        parametersSimpleCoherent.set("L", 4);
         parametersSimpleCoherent.set("Nmax", 6);
         parametersSimpleCoherent.set("symmetry", "u1");
         parametersSimpleCoherent.set("LATTICE", "vibronic lattice");
-        parametersSimpleCoherent.set("MODEL", "excitonicextended");
-        parametersSimpleCoherent.set("vibronic_J_coupling", -0.0461);
+        parametersSimpleCoherent.set("MODEL", "excitonicextended");        
+        parametersSimpleCoherent.set("vibronic_j_coupling", 0.);
         parametersSimpleCoherent.set("vibronic_sorting", "intertwined");
-        parametersSimpleCoherent.set("vibronic_num_elestates", 1);        
+        parametersSimpleCoherent.set("vibronic_num_elestates", 1);
         parametersSimpleCoherent.set("vibronic_num_vibmodes", 1);
         parametersSimpleCoherent.set("vibronic_num_molecules", 2);
         parametersSimpleCoherent.set("vibronic_num_excitons", 1);
         parametersSimpleCoherent.set("vibronic_num_connectingmodes", 0);
+        parametersSimpleCoherent.set("L", 4);
+        //
+        parametersSimpleCoherentConnecting.set("nsweeps", 1);
+        parametersSimpleCoherentConnecting.set("max_bond_dimension", 20);
+        parametersSimpleCoherentConnecting.set("model_library", "coded");
+        parametersSimpleCoherentConnecting.set("lattice_library", "coded");
+        parametersSimpleCoherentConnecting.set("optimization", "singlesite");
+        parametersSimpleCoherentConnecting.set("integral_file", "integral_file_simpleCoherentConnecting");
+        parametersSimpleCoherentConnecting.set("Nmax", 6);
+        parametersSimpleCoherentConnecting.set("symmetry", "u1");
+        parametersSimpleCoherentConnecting.set("LATTICE", "vibronic lattice");
+        parametersSimpleCoherentConnecting.set("MODEL", "excitonicextended");        
+        parametersSimpleCoherentConnecting.set("vibronic_j_coupling", 0.);
+        parametersSimpleCoherentConnecting.set("vibronic_sorting", "intertwined");
+        parametersSimpleCoherentConnecting.set("vibronic_num_elestates", 1);
+        parametersSimpleCoherentConnecting.set("vibronic_num_vibmodes", 2);
+        parametersSimpleCoherentConnecting.set("vibronic_num_molecules", 3);
+        parametersSimpleCoherentConnecting.set("vibronic_num_excitons", 1);
+        parametersSimpleCoherentConnecting.set("vibronic_num_connectingmodes", 1);
+        parametersSimpleCoherentConnecting.set("L", 8);
         //
         integralFileFakeVibronic.open("integral_file_VibronicFile");
         integralFileFakeVibronic << "EL_ST 0 0 " << std::endl;
@@ -340,11 +363,22 @@ struct VibronicFixture
         integralFileTestNmax.close();
         //
         IntegralFileSimpleCoherent.open("integral_file_simpleCoherent");
-        IntegralFileSimpleCoherent << "-1.0 0 0 -1 -1" << std::endl;
-        IntegralFileSimpleCoherent << "1.0 0 0 1 1" << std::endl;
-        IntegralFileSimpleCoherent << "-2.0 1 0 -1 -1" << std::endl;
-        IntegralFileSimpleCoherent << "2.0 1 0 1 1" << std::endl;
+        IntegralFileSimpleCoherent << "-1. 0 0 -1 -1" << std::endl;
+        IntegralFileSimpleCoherent << "-1. 1 0 -1 -1" << std::endl;
+        IntegralFileSimpleCoherent << "1. 0 0 1 1" << std::endl;
+        IntegralFileSimpleCoherent << "2. 1 0 1 1" << std::endl;
         IntegralFileSimpleCoherent.close();
+        //
+        IntegralFileSimpleCoherentConnecting.open("integral_file_simpleCoherentConnecting");
+        IntegralFileSimpleCoherentConnecting << "-1. 0 0 -1 -1" << std::endl;
+        IntegralFileSimpleCoherentConnecting << "-1. 1 0 -1 -1" << std::endl;
+        IntegralFileSimpleCoherentConnecting << "1. 0 0 1 1" << std::endl;
+        IntegralFileSimpleCoherentConnecting << "2. 1 0 1 1" << std::endl;
+        IntegralFileSimpleCoherentConnecting << "-1. 0 1 -2 -2" << std::endl;
+        IntegralFileSimpleCoherentConnecting << "-1. 1 1 -2 -2" << std::endl;
+        IntegralFileSimpleCoherentConnecting << "1. 0 1 2 2" << std::endl;
+        IntegralFileSimpleCoherentConnecting << "3. 1 1 2 2" << std::endl;
+        IntegralFileSimpleCoherentConnecting.close();
     }
 
     /** @brief Class destructor */
@@ -359,9 +393,9 @@ struct VibronicFixture
     // Class members
     DmrgParameters parametersVibronic, parametersFakeVibronic, parametersExcitonicAggregate,
         parametersExcitonicAggregateTwoSites, parametersVibronicPyrazineRedDim, parametersVibronicPyrazineRedDimFull, parametersVibronicThiopheneDimer,
-        parametersExcitonicExtendedAggregate, parametersTestNmax, parametersSimpleCoherent;
+        parametersExcitonicExtendedAggregate, parametersTestNmax, parametersSimpleCoherent, parametersSimpleCoherentConnecting;
     std::ofstream integralFileFakeVibronic, integralFileExcitonic, integralFileExcitonicHarmonic,
-        integralFilePyrazineRedDim, integralFilePyrazineRedDimFull, integralFileThiopheneDimer, integralFileExcitonicExtended, integralFileTestNmax, IntegralFileSimpleCoherent;
+        integralFilePyrazineRedDim, integralFilePyrazineRedDimFull, integralFileThiopheneDimer, integralFileExcitonicExtended, integralFileTestNmax, IntegralFileSimpleCoherent, IntegralFileSimpleCoherentConnecting;
 };
 
 #endif

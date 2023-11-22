@@ -60,6 +60,8 @@ if(BUILD_VIBRATIONAL)
     target_link_libraries(test_mpo_times_mps_vibrational ${DMRG_APP_LIBRARIES})
     add_executable(test_mps_overlap_vibrational test_mps_mpo_ops/test_mps_overlap_vibrational.cpp)
     target_link_libraries(test_mps_overlap_vibrational ${DMRG_APP_LIBRARIES})
+    add_executable(test_vibrational_nmodemodels vibrational/NmodeModel.cpp)
+    target_link_libraries(test_vibrational_nmodemodels ${DMRG_APP_LIBRARIES})
     # Sweep optimization tools
     add_executable(test_boundary_propagator_vibrational SweepOptimizationTools/BoundaryPropagatorVibrational.cpp)
     target_link_libraries(test_boundary_propagator_vibrational ${DMRG_APP_LIBRARIES})

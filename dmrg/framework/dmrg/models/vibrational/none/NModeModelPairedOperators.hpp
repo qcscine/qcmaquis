@@ -45,6 +45,7 @@ class NModeModelPaired : public model_impl<Matrix, TrivialGroup> {
     using measurements_type = typename base::measurements_type;
     using pos_t = typename Lattice::pos_t;
     using positions_type = typename std::vector<pos_t>;
+    using PositionType = typename Lattice::pos_t;
     using value_type = typename Matrix::value_type;
 public:
 
@@ -259,40 +260,6 @@ public:
       throw std::runtime_error("update() not yet implemented or this model.");
     }
 
-    // Possible measuraments associated to the model
-    measurements_type measurements() const
-    {
-        // Types definition
-        using op_vec = std::vector<op_t>;
-        using bond_element = std::vector<std::pair<op_vec, bool> >;
-        // Variable declaration
-        measurements_type meas;
-        // Ground state population
-        if (this->parameters.is_set("MEASURE[Population]")) {
-            for (std::size_t idx = 0; idx < numModes; idx++) {
-                std::string name = "PopulationState"+std::to_string(idx);
-                // Generates vectors for the position operators
-                std::vector<pos_t> pos_internal(0);
-                std::vector<std::vector<pos_t> > pos_local(0);
-                pos_internal.push_back(idx);
-                pos_local.push_back(pos_internal);
-                // Generates vector for the fillings and identity operators
-                op_vec identities_local, fillings_local;
-                for (std::size_t idx1 = 0; idx1 < lattice_size; idx1++) { //this may need to change
-                    identities_local.push_back(this->identity_matrix(idx1));
-                    fillings_local.push_back(this->filling_matrix(idx1));
-                }
-                // Bonds element (the actual operator involved in the measurement)
-                bond_element ops;
-                op_vec local_op_vec;
-                local_op_vec.push_back(tag_handler->get_op(count));
-                ops.push_back(std::make_pair(local_op_vec, false));
-                meas.push_back(new measurements::local_at<Matrix, U1>(name, lattice, pos_local, identities_local,
-                                                                      fillings_local, ops));
-            }
-        }
-        return meas;
-    }
 
 
 
@@ -374,6 +341,38 @@ private:
     }
 
 
+
+    measurements_type measurements() const override {
+        typedef std::vector<op_t> op_vec;
+        typedef std::vector<std::pair<op_vec, bool> > bond_element;
+        measurements_type meas;
+        if (parameters.is_set("MEASURE[ModeExcitationDegree]")) {
+        for (int iSite = 0; iSite < lattice_size; iSite++) {
+            std::string name = "ExcitationMode"+std::to_string(iSite);
+            std::cout << "measuring iSite " << iSite << std::endl;
+            // Generates vectors for the position operators
+            std::vector<PositionType> pos_internal(0);
+            std::vector<std::vector<PositionType> > pos_local(0);
+            pos_internal.push_back(iSite);
+            pos_local.push_back(pos_internal);
+            // Generates vector for the fillings and identity operators
+            op_vec identities_local, fillings_local;
+            for (int iType = 0; iType < lattice.getMaxType(); iType++) {
+            identities_local.push_back(this->identity_matrix(iType));
+            fillings_local.push_back(this->filling_matrix(iType));
+            }
+            // Bonds element (the actual operator involved in the measurement)
+            bond_element ops;
+            op_vec local_op_vec;
+            for (int iType = 0; iType < lattice.getMaxType(); iType++)
+                local_op_vec.push_back(tag_handler->get_op(count[0]));
+            ops.push_back(std::make_pair(local_op_vec, false));
+            meas.push_back(new measurements::local_at<Matrix, TrivialGroup>(name, lattice, pos_local, identities_local,
+                                                                            fillings_local, ops));
+        }
+        }
+        return meas;
+    }
 
 
 
