@@ -7,6 +7,10 @@
 
 #define BOOST_TEST_MAIN
 
+#include <array>
+#include <utility>
+#include <vector>
+
 // Unit test for integral map
 #include <boost/test/included/unit_test.hpp>
 #include "utils/fpcomparison.h"
