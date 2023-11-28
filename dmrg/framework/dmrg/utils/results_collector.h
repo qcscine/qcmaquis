@@ -8,6 +8,7 @@
 #ifndef UTILS_RESULTS_COLLECTOR_H
 #define UTILS_RESULTS_COLLECTOR_H
 
+#include <map>
 #include <boost/any.hpp>
 #include <vector>
 #include <memory>
