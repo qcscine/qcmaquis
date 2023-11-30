@@ -4,25 +4,24 @@
  *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
  *            See LICENSE.txt for details.
  */
+
+
 #define BOOST_TEST_MAIN
  //check includes first
 #include <boost/test/included/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 #include <complex>
 #include <iostream>
-#include <boost/test/included/unit_test.hpp>
-#include "dmrg/models/generate_mpo/1D_mpo_maker.hpp"
-#include "dmrg/mp_tensors/mpo_times_mps.hpp"
-#include "dmrg/mp_tensors/mps.h"
+//#include "dmrg/models/generate_mpo/1D_mpo_maker.hpp"
+//#include "dmrg/mp_tensors/mpo_times_mps.hpp"
+//#include "dmrg/mp_tensors/mps.h"
 #include "dmrg/models/model.h"
-#include "dmrg/sim/matrix_types.h"
-#include "dmrg/models/model.h"
-#include "dmrg/sim/matrix_types.h"
-#include "dmrg/mp_tensors/mpo.h"
-#include "dmrg/mp_tensors/mps.h"
-#include "dmrg/models/generate_mpo.hpp"
+//#include "dmrg/sim/matrix_types.h"
+//#include "dmrg/sim/matrix_types.h"
+//#include "dmrg/mp_tensors/mpo.h"
+//#include "dmrg/mp_tensors/mps.h"
+//#include "dmrg/models/generate_mpo.hpp"
 //
-
 
 typedef boost::mpl::list<
 #ifdef HAVE_TrivialGroup
