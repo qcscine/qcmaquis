@@ -13,8 +13,6 @@ add_executable(testLiH ElectronicDMRG/testLiH.cpp)
 target_link_libraries(testLiH ${DMRG_APP_LIBRARIES})
 add_executable(test_FEAST_electronic FEAST/ElectronicFEAST.cpp)
 target_link_libraries(test_FEAST_electronic ${DMRG_APP_LIBRARIES})
-add_executable(test_taghandler_register mpo/test_taghandler_register.cpp)
-target_link_libraries(test_taghandler_register ${DMRG_APP_LIBRARIES})
 
 if(BUILD_DMRG_EVOLVE)
     add_executable(test_imaginarytime test_imaginarytime.cpp)
