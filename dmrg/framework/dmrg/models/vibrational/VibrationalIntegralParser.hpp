@@ -155,7 +155,7 @@ NModeIntegralParser(BaseParameters & parms, Lattice const & lat)
 template<class T>
 inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical, chem::HamiltonianTransformation::Conventional)>, T > >
     WatsonIntegralParser(BaseParameters& parms, const Lattice& lat, WatsonCoordinateType coordinateType,
-                         int maxCoupling, int maxManyBodyCoupling, int maxInputManyBodyCoupling)
+                         int maxCoupling, int maxManyBodyCoupling, int maxInputCouplingOrder)
 {
     // Types definition
     using pos_t = Lattice::pos_t;
@@ -193,21 +193,22 @@ inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltoni
         // == Main loop ==
         while (it != raw.end()) {
             // Computes the coupling degree of the Hamiltonian term
-            auto modeSet = std::set<int>(it+1, it+maxInputManyBodyCoupling);
+            auto modeSet = std::set<int>(it+1, it+maxInputCouplingOrder);
             modeSet.erase(0);
             // Screen integrals
             if ((std::abs(*it) > parms["integral_cutoff"]) && (modeSet.size() <= maxManyBodyCoupling)) {
                 InputType coefficient = *it++;
                 KeyType tmp;
                 for (int idx = 0; idx < maxCoupling; idx++)
-                    tmp[idx] = (idx < maxInputManyBodyCoupling) ? *(it+idx) : 0;
-                for (int idx = 0; idx < maxInputManyBodyCoupling; idx++)
+                    tmp[idx] = (idx < maxInputCouplingOrder) ? *(it+idx) : 0;
+                for (int idx = 0; idx < maxInputCouplingOrder; idx++)
                     if (tmp[idx] > 0)
                         tmp[idx] = inv_order[tmp[idx]-1]+1;
                     else if (tmp[idx] < 0)
                         tmp[idx] = -inv_order[-tmp[idx]-1]-1;
                 ret.push_back(std::make_pair(tmp, static_cast<T>(coefficient)));
                 // Internal coordinates
+                // NINA potentially remove this part!
                 if (coordinateType == WatsonCoordinateType::InternalNormalModes) {
                     auto numberOfMomenta = std::count_if(tmp.begin(), tmp.end(), [](int input) { return input < 0; });
                     if (numberOfMomenta == 2) {
@@ -226,7 +227,7 @@ inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltoni
             else {
                 ++it;
             }
-            it += maxInputManyBodyCoupling;
+            it += maxInputCouplingOrder;
         }
     }
     else if (parms.is_set("integrals_binary")) {

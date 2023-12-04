@@ -48,8 +48,6 @@ struct EthyleneNModeFixture
         parametersEthyleneNMode.set("nmode_num_modes", 12);
         parametersEthyleneNMode.set("nmode_num_basis", "3,3,3,3,3,3,3,3,3,3,3,3");
         parametersEthyleneNMode.set("MODEL", "nmode");
-        parametersEthyleneNMode.set("k1", 0);
-        parametersEthyleneNMode.set("a", 0);
         parametersEthyleneNMode.set("integral_file", "integral_file_Ethylene_nMode");
         // == INPUT FILE CREATIONS ==
         integralFileEthyleneNMode.open("integral_file_Ethylene_nMode");
