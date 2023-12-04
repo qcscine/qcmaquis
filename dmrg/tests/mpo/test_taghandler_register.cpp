@@ -33,12 +33,6 @@ TrivialGroup
 #ifdef HAVE_NU1
 , NU1_template<5>
 #endif
-#ifdef HAVE_TwoU1PG
-, TwoU1PG
-#endif
-#ifdef HAVE_TwoU1
-, TwoU1
-#endif
 > symmetries;
 
 
@@ -78,37 +72,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Test_RegisterOperatorsWithTags, S, symmetries)
     identityScaled_oploc.insert_block(identityScaled, C1, C1);
     notIdentity_oploc.insert_block(notIdentity, C1, C0);
   }
-  //electronic symmetries
-  else{
-    typename S::charge C0 = typename S::charge(0);
-    typename S::charge C1 = typename S::charge(1);
-    identity_oploc.insert_block(Matrix(1, 1, 1), C0, C0);
-    identityScaled_oploc.insert_block(Matrix(scalingFactor, scalingFactor, scalingFactor), C0, C0);
-    notIdentity_oploc.insert_block(Matrix(1, 1, 1), C1, C1);
-  }
   //pointer to the tag handler
   std::shared_ptr<TagHandler<Matrix, S>> tag_handler;
   tag_handler = std::make_shared<table_type>();
   //if bosonic
-  if(symm_traits::SymmetryNameTrait<S>::symmName() == "none" || symm_traits::SymmetryNameTrait<S>::symmName() == "u1" || symm_traits::SymmetryNameTrait<S>::symmName() == "nu1"){
-    auto TagIdentity = tag_handler->register_op(identity_oploc, tag_detail::bosonic);
-    auto TagIdentityScaled = tag_handler->register_op(identityScaled_oploc, tag_detail::bosonic);
-    auto TagNotIdentity = tag_handler->register_op(notIdentity_oploc, tag_detail::bosonic);
-    //checks whether tags are differnet
-    BOOST_CHECK_NE(TagIdentity, TagIdentityScaled);
-    BOOST_CHECK_NE(TagIdentity, TagNotIdentity);
-    BOOST_CHECK_NE(TagIdentityScaled, TagNotIdentity);
-  }
-  //if electronic
-  else{
-    auto TagIdentity = tag_handler->register_op(identity_oploc, tag_detail::bosonic);
-    auto TagIdentityScaled = tag_handler->register_op(identityScaled_oploc, tag_detail::bosonic);
-    auto TagNotIdentity = tag_handler->register_op(notIdentity_oploc, tag_detail::bosonic);
-    //checks whether tags are differnet
-    BOOST_CHECK_NE(TagIdentity, TagIdentityScaled);
-    BOOST_CHECK_NE(TagIdentity, TagNotIdentity);
-    BOOST_CHECK_NE(TagIdentityScaled, TagNotIdentity);
-  }
+  auto TagIdentity = tag_handler->register_op(identity_oploc, tag_detail::bosonic);
+  auto TagIdentityScaled = tag_handler->register_op(identityScaled_oploc, tag_detail::bosonic);
+  auto TagNotIdentity = tag_handler->register_op(notIdentity_oploc, tag_detail::bosonic);
+  //checks whether tags are differnet
+  BOOST_CHECK_NE(TagIdentity, TagIdentityScaled);
+  BOOST_CHECK_NE(TagIdentity, TagNotIdentity);
+  BOOST_CHECK_NE(TagIdentityScaled, TagNotIdentity);
   //checking register
   bool isIdentityPesent = tag_handler->hasRegistered(identity_oploc);
   bool isIdentityScaledPesent = tag_handler->hasRegistered(identityScaled_oploc);
@@ -118,4 +92,3 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Test_RegisterOperatorsWithTags, S, symmetries)
   BOOST_CHECK_EQUAL(isIdentityScaledPesent, true);
   BOOST_CHECK_EQUAL(isNotIdentityPesent, true);
 }
-

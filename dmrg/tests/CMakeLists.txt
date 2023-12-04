@@ -88,6 +88,8 @@ if(BUILD_VIBRATIONAL)
     target_link_libraries(test_Ethylene_nMode ${DMRG_APP_LIBRARIES})
     add_executable(test_linear_system_solver_vibrational LinearSystem/LinearSystemSolverVibrational.cpp)
     target_link_libraries(test_linear_system_solver_vibrational ${DMRG_APP_LIBRARIES})
+    add_executable(test_taghandler_register mpo/test_taghandler_register.cpp)
+    target_link_libraries(test_taghandler_register ${DMRG_APP_LIBRARIES})
 endif(BUILD_VIBRATIONAL)
 
 # == VIBRONIC TESTS ==
@@ -113,8 +115,6 @@ endif(BUILD_VIBRONIC)
 if((BUILD_VIBRATIONAL) OR (BUILD_VIBRONIC))
     add_executable(test_mps_initializers_vibrational mps_initializers/test_mps_initializers_vibrational.cpp)
     target_link_libraries(test_mps_initializers_vibrational ${DMRG_APP_LIBRARIES})
-    add_executable(test_taghandler_register mpo/test_taghandler_register.cpp)
-    target_link_libraries(test_taghandler_register ${DMRG_APP_LIBRARIES})
 endif((BUILD_VIBRATIONAL) OR (BUILD_VIBRONIC))
 
 add_executable(test_integral_map test_integral_map.cpp)
