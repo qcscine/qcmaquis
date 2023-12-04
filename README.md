@@ -90,3 +90,4 @@ QCMaquis builds upon the ALPS MPS project. The ALPS MPS codes implement the DMRG
 - M. Dolfi, B. Bauer, S. Keller, A. Kosenkov, T. Ewart, A. Kantian, T. Giamarchi, M. Troyer, "Matrix product state applications for the ALPS project" ,Comp. Phys. Commun., 2014, 12, 3430. [DOI](https://doi.org/10.1016/j.cpc.2014.08.019)
 
 The current QCMaquis release ships with a modified ALPS library based on ALPS 2.3.0 to reduce compile and runtime dependencies. For more information, please read the README.txt in the `dmrg/alps` subdirectory. The ALPS library is subject to the ALPS Library license, which is found in `dmrg/alps/LICENSE.txt`.
+
