@@ -6,6 +6,8 @@
  */
 
 #include "dmrg/models/factories/factory.h"
+#include "dmrg/models/vibrational/u1/VibronicModel.hpp"
+#include "dmrg/models/vibrational/u1/ExcitonicModel.hpp"
 
 #ifdef DMRG_VIBRONIC
 #include "dmrg/models/vibrational/u1/VibronicModel.hpp"
@@ -39,4 +41,3 @@ struct coded_model_factory<Matrix, U1> {
             return impl_ptr();
         }
     }
-};

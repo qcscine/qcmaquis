@@ -17,8 +17,7 @@
 #include <string>
 #include <sstream>
 
-namespace generate_mpo
-{
+namespace generate_mpo {
 	template<class Matrix, class SymmGroup>
 	struct OperatorTagTerm
 	{

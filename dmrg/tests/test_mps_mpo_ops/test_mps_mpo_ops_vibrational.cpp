@@ -13,6 +13,7 @@
 #include "dmrg/models/model.h"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mps_rotate.h"
+#include "Fixtures/NModeFixture.h"
 #include "Fixtures/WatsonFixture.h"
 #include "dmrg/sim/matrix_types.h"
 
@@ -70,5 +71,22 @@ BOOST_FIXTURE_TEST_CASE(Test_ExpVal_H2CO_BraKetHermitian, WatsonFixture)
 }
 
 #endif // HAVE_TrivialGroup
+
+BOOST_FIXTURE_TEST_CASE(Test_ExpVal_NU1_SameBraKet, NModeFixture)
+{
+#ifdef HAVE_NU1
+    parametersFADTwoBody.set("init_type", "default");
+    auto lattice = Lattice(parametersFADTwoBody);
+    auto nModeModel = Model<matrix, NU1_template<2>>(lattice, parametersFADTwoBody);
+    auto nModeMPO = make_mpo(lattice, nModeModel);
+    auto mps = MPS<matrix, NU1_template<2>>(lattice.size(), *(nModeModel.initializer(lattice, parametersFADTwoBody)));
+    auto energyBeforeNormalization = expval(mps, nModeMPO)/norm(mps);
+    // Now normalizes the MPS
+    auto mpsNorm = std::sqrt(norm(mps));
+    mps[0] /= mpsNorm;
+    auto energyAfterNormalization = expval(mps, nModeMPO);
+    BOOST_CHECK_CLOSE(energyBeforeNormalization, energyAfterNormalization, 1e-7);
+#endif // HAVE_NU1
+}
 
 #endif // DMRG_VIBRATIONAL

@@ -55,5 +55,4 @@ Index<typename grouped_symmetry<SymmGroup>::type> group(Index<SymmGroup> const &
     return ret;
 }
 
-
 #endif

@@ -77,4 +77,3 @@ BOOST_AUTO_TEST_CASE( PreBO_SymbolicJW_FermionicTwoBodyExcitationSemidiagonal )
     BOOST_CHECK(checkFilling);
     bool checkPos = jwSingleExcitationFermion.getSymOpStr()[1].getSite() == 0;
     BOOST_CHECK(checkPos);
-}

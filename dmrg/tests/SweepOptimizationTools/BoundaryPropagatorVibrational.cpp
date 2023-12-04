@@ -19,6 +19,7 @@
 #include "dmrg/sim/matrix_types.h"
 #include "dmrg/SweepBasedAlgorithms/BoundaryPropagator.h"
 #include "Fixtures/WatsonFixture.h"
+#include "Fixtures/NModeFixture.h"
 
 #ifdef DMRG_VIBRATIONAL
 
@@ -47,4 +48,29 @@ BOOST_FIXTURE_TEST_CASE(Test_BoundaryPropagator_Vibrational_Watson, WatsonFixtur
 #endif // HAVE_TrivialGroup
 }
 
-#endif // DMRG_VIBRATIONAL
+#ifdef HAVE_NU1
+
+BOOST_FIXTURE_TEST_CASE(Test_BoundaryPropagator_Vibrational_NU1, NModeFixture)
+{
+  using NU1SymmGroup = NU1_template<2>;
+  using BoundaryPropagatorType = BoundaryPropagator<matrix, NU1SymmGroup, storage::disk>;
+  using SiteProblemType = SiteProblem<matrix, NU1SymmGroup>;
+  parametersFADTwoBody.set("init_type", "const");
+  auto nModeLattice = Lattice(parametersFADTwoBody);
+  auto nModeModel = Model<matrix, NU1SymmGroup>(nModeLattice, parametersFADTwoBody);
+  auto nModeMPO = make_mpo(nModeLattice, nModeModel);
+  auto mpsDefault = MPS<matrix, NU1SymmGroup>(nModeLattice.size(), *(nModeModel.initializer(nModeLattice, parametersFADTwoBody)));
+  mpsDefault.normalize_right();
+  mpsDefault.canonize(5);
+  auto boundaryPropagator = BoundaryPropagatorType(mpsDefault, nModeMPO, 5);
+  mpsDefault.canonize(7);
+  boundaryPropagator.updateLeftBoundary(6);
+  boundaryPropagator.updateLeftBoundary(7);
+  auto siteProblem = SiteProblemType(boundaryPropagator.getLeftBoundary(7), boundaryPropagator.getRightBoundary(8), nModeMPO[7]);
+  auto energyFromSP = siteProblem.get_energy(mpsDefault[7]);
+  auto energyFromExpval = expval(mpsDefault, nModeMPO);
+  BOOST_CHECK_CLOSE(energyFromSP, energyFromExpval, 1e-7);
+}
+
+#endif // HAVE_NU1
+

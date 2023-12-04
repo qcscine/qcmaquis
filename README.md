@@ -46,8 +46,9 @@ where `<CMAKE_COMPILE_OPTIONS>` can be (optionally) one of the following:
 - `LAPACK_64_BIT`: Enable if you use a linear algebra library configured with 64-bit integers (ILP64).
 - `BLAS_LAPACK_SELECTOR`: Set the vendor of the linear algebra library: `openblas`,`mkl_sequential`, `mkl_parallel`, `veclib` for Accelerate on Mac OS X, `auto` for autodetection and `manual` for setting the linking directories manually are supported. Default is autodetection, which usually does a good job.
 - `BUILD_PREBO`: Build the pre-BO related model. It is mandatory to activate the `NU1` symmetry.
-- `BUILD_VIBRATIONAL`: Build the vibrational DMRG module. It is mandatory to activate the symmetry `NONE` for canonical quantization.
+- `BUILD_VIBRATIONAL`: Build the vibrational DMRG module. It is mandatory to activate either the `NONE` (for canonical quantization) or the `NU1` (for n-mode second quantization) symmetry.
 - `BUILD_VIBRONIC`: Buld the vibronic and excitonic DMRG modules. It is mandatory to activate the `U1` symmetry.
+- `DMRG_NUMSYMM`: Number of U1 symmetries for NU1 calculations. All numbers from 1 to 6 are compiled by default as they are needed for the test suite. For higher numbers, that specific NUMSYMM is also compiled when set by the user.
 - `DMRG_ORDERNONE` Maximum order of integral terms for NONE symmetry for vibrational calculations. Integral files need to have #DMRG_ORDERNONE mode indices. Default is 6. If this flag is set to another number, certain tests will fail by construction.
 - `BUILD_*`: Build (legacy) utility binaries to perform various operations with matrix product state (MPS) checkpoint files.
 

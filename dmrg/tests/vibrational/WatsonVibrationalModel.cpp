@@ -35,7 +35,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_PhysDim_Ethylene, WatsonFixture)
 /** Checks consistency for the physical dimensions for the ethylene Watson Hamiltonian with NMax vector initialization */
 BOOST_FIXTURE_TEST_CASE(Test_Model_PhysDim_Ethylene_NMaxVec, WatsonFixture)
 {
-    parametersEthyleneWatsonHarmonic.set("Nmax", "8");
+    parametersEthyleneWatsonHarmonic.set("Nmax", "8,8,8,8,8,8,8,8,8,8,8,8");
     auto lattice = Lattice(parametersEthyleneWatsonHarmonic);
     auto nModeModel = WatsonHamiltonian<matrix>(lattice, parametersEthyleneWatsonHarmonic, false);
     int siteType = 5;

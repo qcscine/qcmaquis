@@ -83,17 +83,17 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_Ethylene_Sextic_SingleSite, Watso
     parametersEthyleneWatson.set("alpha_final", 0.);
     parametersEthyleneWatson.set("Nmax", 7);
     parametersEthyleneWatson.set("truncation_initial", 1.0E-10);
-    parametersEthyleneWatson.set("truncation_final", 1.0E-8);
+    parametersEthyleneWatson.set("truncation_main", 1.0E-8);
     // Creates the interface
     InterfaceType interface(parametersEthyleneWatson);
     interface.optimize();
     BOOST_CHECK_CLOSE(interface.energy(), 11011.61, 1.0E-2);
     // Now check consistency when using the Nmax vector initialization
-    // parametersEthyleneWatson.set("Nmax", "7,7,7,7,7,7,7,7,7,7,7,7");
-    // // Creates the interface
-    // InterfaceType interfaceMod(parametersEthyleneWatson);
-    // interfaceMod.optimize();
-    // BOOST_CHECK_CLOSE(interfaceMod.energy(), interface.energy(), 1.0E-5);
+    parametersEthyleneWatson.set("Nmax", "7,7,7,7,7,7,7,7,7,7,7,7");
+    // Creates the interface
+    InterfaceType interfaceMod(parametersEthyleneWatson);
+    interfaceMod.optimize();
+    BOOST_CHECK_CLOSE(interfaceMod.energy(), interface.energy(), 1.0E-5);
 }
 
 /**
@@ -115,7 +115,7 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_Ethylene_Sextic_TwoSite, WatsonFi
     parametersEthyleneWatson.set("ngrowsweeps", 2);
     parametersEthyleneWatson.set("nmainsweeps", 2);
     parametersEthyleneWatson.set("truncation_initial", 1.0E-16);
-    parametersEthyleneWatson.set("truncation_final", 1.0E-10);
+    parametersEthyleneWatson.set("truncation_main", 1.0E-10);
     // Creates the interface
     InterfaceType interface(parametersEthyleneWatson);
     interface.optimize();

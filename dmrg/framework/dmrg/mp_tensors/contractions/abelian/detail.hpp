@@ -131,6 +131,7 @@ DualIndex<SymmGroup> T_basis_left(Boundary<OtherMatrix, SymmGroup> const & bound
     }
 }
 
+
 /**
  * @brief Right counterpart of [T_basis_left]
  * @param boundary Input (right) boundary

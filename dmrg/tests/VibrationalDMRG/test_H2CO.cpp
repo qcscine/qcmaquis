@@ -30,8 +30,7 @@ BOOST_FIXTURE_TEST_CASE(Test_DMRG_H2CO, WatsonFixture)
   parametersH2COWatsonNoCoriolis.set("nmainsweeps", 2);
   parametersH2COWatsonNoCoriolis.set("max_bond_dimension", 50);
   parametersH2COWatsonNoCoriolis.set("MODEL", "watson");
-  // parametersH2COWatsonNoCoriolis.set("Nmax", "3,2,3,2,2,4");
-  parametersH2COWatsonNoCoriolis.set("Nmax", "3");
+  parametersH2COWatsonNoCoriolis.set("Nmax", "3,2,3,2,2,4");
   InterfaceType interface(parametersH2COWatsonNoCoriolis);
   interface.optimize();
   parametersH2COWatsonNoCoriolis.set("Nmax", 2);

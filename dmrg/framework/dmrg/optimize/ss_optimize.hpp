@@ -73,19 +73,7 @@ public:
 
             maquis::cout << "Sweep " << sweep << ", optimizing site " << site << std::endl;
 
-//            mps[site].make_left_paired();
-
-            // MD: some changes needed to re-enable it.
-//            if (parms.["beta_mode"]) {
-//                if (sweep == 0 && lr == 1) {
-//                    mpo = zero_after(mpo_orig, 0);
-//                    if (site == 0)
-//                        this->init_left_right(mpo, 0);
-//                } else if (sweep == 0 && lr == -1 && site == L-1) {
-//                    mpo = mpo_orig;
-//                    //this->init_left_right(mpo, site);
-//                }
-//            }
+            //mps[site].make_left_paired();
 
             Storage::fetch(left_[site]);
             Storage::fetch(right_[site+1]);

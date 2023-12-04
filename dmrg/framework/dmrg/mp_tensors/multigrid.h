@@ -530,9 +530,9 @@ struct multigrid {
         
         double cutoff;
         if (sweep >= parms["ngrowsweeps"])
-            cutoff = parms["truncation_final"];
+            cutoff = parms["truncation_main"];
         else
-            cutoff = log_interpolate(parms["truncation_initial"], parms["truncation_final"], parms["ngrowsweeps"], sweep);
+            cutoff = log_interpolate(parms["truncation_initial"], parms["truncation_main"], parms["ngrowsweeps"], sweep);
         
         std::size_t Mmax;
         if (parms.is_set("sweep_bond_dimensions")) {

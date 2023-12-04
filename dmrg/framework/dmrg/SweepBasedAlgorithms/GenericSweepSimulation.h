@@ -22,7 +22,6 @@
 #include "SweepMPSUpdater.h"
 #include "SweepOptimizationTypeTrait.h"
 
-
 /**
  * @brief Class representing a generic sweep-based simulation.
  *
@@ -259,9 +258,9 @@ protected:
 
   /** @brief Method to get the truncation threshold for a given sweep */
   double get_cutoff(int sweep) const {
-    return (sweep >= parms_.template get<int>("ngrowsweeps")) ? parms_.template get<double>("truncation_final")
+    return (sweep >= parms_.template get<int>("ngrowsweeps")) ? parms_.template get<double>("truncation_main")
         : log_interpolate(parms_.template get<double>("truncation_initial"),
-                          parms_.template get<double>("truncation_final"),
+                          parms_.template get<double>("truncation_main"),
                           parms_.template get<int>("ngrowsweeps"), sweep);
   }
 
@@ -370,8 +369,10 @@ protected:
   }
 
   /** @brief Checks whether the current microiteration is associated with a terminal site */
-  inline bool isTerminal() const { return indexOfMicroIteration_ == 0 ||
-                                          SweepTraitClass::changeDirectionNextMicroiteration(L_, indexOfMicroIteration_); }
+  inline bool isTerminal() const {
+    return indexOfMicroIteration_ == 0 || SweepTraitClass::changeDirectionNextMicroiteration(L_, indexOfMicroIteration_)
+                                          && SweepTraitClass::getSweepDirection(L_, indexOfMicroIteration_) == SweepDirectionType::Forward;
+  }
 
 protected:
   MPSType& mps_;

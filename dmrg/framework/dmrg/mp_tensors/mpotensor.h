@@ -14,6 +14,9 @@
 #include <boost/numeric/ublas/matrix_sparse.hpp>
 #include <boost/numeric/ublas/matrix_proxy.hpp>
 
+#include "dmrg/block_matrix/block_matrix.h"
+#include "dmrg/block_matrix/indexing.h"
+#include "utils/function_objects.h"
 #include "dmrg/models/OperatorHandlers/OpTable.h"
 #include "dmrg/mp_tensors/mpotensor_detail.h"
 

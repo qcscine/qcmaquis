@@ -48,7 +48,7 @@ extern "C"
             std::string sweep_bond_dim;
             for (int i = 0; i < nsweepm; i++)
                 sweep_bond_dim += std::to_string(sweep_m[i]) + ((i < nsweepm - 1) ? "," : "") ;
-            parms.set("sweep_bond_dimension", sweep_bond_dim);
+            parms.set("sweep_bond_dimensions", sweep_bond_dim);
         }
 
         pname = project_name;

@@ -103,6 +103,9 @@ public:
     return std::make_tuple(en, finalError, currentSolution_);
   };
 
+  /** @brief Default class destructor */
+  ~LinSolver() = default;
+
 protected:
 
   /**

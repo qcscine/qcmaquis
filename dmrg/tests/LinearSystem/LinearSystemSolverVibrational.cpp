@@ -47,7 +47,7 @@ BOOST_FIXTURE_TEST_CASE(Test_LinearSolver_Trivial, WatsonFixture) {
   using OrthoContainer = std::vector< BlockMatrix >;
   using SiteProblem = SiteProblem<matrix, TrivialGroup>;
   using LinSolver = LinSolver<matrix, TrivialGroup>;
-  parametersEthyleneWatsonHarmonic.set("Nmax", "4");
+  parametersEthyleneWatsonHarmonic.set("Nmax", "1,2,3,4,5,6,7,8,9,10,11,12");
   // Prepares the lattice, the model, and the corresponding MPO
   auto vibrationalLattice = Lattice(parametersEthyleneWatsonHarmonic);
   auto model = Model<matrix, TrivialGroup>(vibrationalLattice, parametersEthyleneWatsonHarmonic);
@@ -158,4 +158,3 @@ BOOST_FIXTURE_TEST_CASE(Test_LinearSolver_Trivial_Complex, WatsonFixture) {
   BOOST_CHECK_CLOSE(std::abs(lhsTerm), std::abs(rhsTerm), 1.0E-10);
 }
 
-#endif // HAVE_TrivialGroup

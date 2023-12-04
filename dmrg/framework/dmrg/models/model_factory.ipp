@@ -41,5 +41,5 @@ model_factory(Lattice const& lattice, BaseParameters & parms)
     } else {
         throw std::runtime_error("Don't know this model_library!");
     }
-
 }
+

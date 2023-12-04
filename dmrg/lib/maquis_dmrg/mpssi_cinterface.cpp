@@ -135,5 +135,5 @@ extern "C"
         std::vector<V> t_vec(t, t + t_size);
         mpssi_interface_ptr->rotate(pname_, state, t_vec, scale_inactive, Ms);
     }
-
 }
+

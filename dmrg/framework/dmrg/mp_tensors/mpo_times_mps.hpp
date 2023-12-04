@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -18,7 +18,7 @@
 #include "dmrg/mp_tensors/mps_sectors.h"
 
 struct MPOTimesMPSException : public std::exception {
-    const char* what() const noexcept override {
+    const char* what() const throw() {
         return "MPS times MPO not implemented for this symmetry group"; 
     }
 };
@@ -163,7 +163,7 @@ public:
     {
         // Aliases for derived types
         using MPOTensor_detail::term_descriptor;
-        using std::get;
+        using boost::tuples::get;
         using charge = typename SymmGroup::charge;
         using value_type = typename Matrix::value_type;
         using row_proxy = typename MPOTensor<Matrix, SymmGroup>::row_proxy;
@@ -173,7 +173,8 @@ public:
         block_matrix<Matrix, SymmGroup> const & data = mps[site].data();
         Index<SymmGroup> const & right_i = mps[site].col_dim();
         ProductBasis<SymmGroup> right_pb(mps[site].site_dim(), mps[site].col_dim(),
-            [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); });
+                                         boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
+                                        -boost::lambda::_1, boost::lambda::_2));
         assert(in_delta.size() == mpo[site].row_dim());
         std::vector<charge> out_delta(mpo[site].col_dim());
         std::map<int, Index<SymmGroup> > new_right_i_map;
@@ -288,7 +289,8 @@ public:
 
         // Load the data inside the finalMPS MPSTensor
         ProductBasis<SymmGroup> out_right_pb(finalPhys, finalRight,
-            [&](const charge&a, const charge& b){ return SymmGroup::fuse(-a, b); });
+                                             boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
+                                            -boost::lambda::_1, boost::lambda::_2));
         // Loop over the columns of the MPO
         for (int iCol = 0; iCol < mpo[site].col_dim(); iCol++)
         {
@@ -391,7 +393,7 @@ public:
                                                                   typename SymmGroup::charge & in_delta)
     {
         using MPOTensor_detail::term_descriptor;
-        using std::get;
+        using boost::tuples::get;
         using charge = typename SymmGroup::charge;
         using value_type = typename Matrix::value_type;
     
@@ -402,7 +404,8 @@ public:
         //maquis::cout << "      mps.site_dim: " << mps.site_dim() << std::endl;
         //maquis::cout << "      mps.col_dim : " << mps.col_dim() << std::endl;
         ProductBasis<SymmGroup> right_pb(mps.site_dim(), mps.col_dim(),
-            [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); });
+                                         boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
+                                            -boost::lambda::_1, boost::lambda::_2));
     
         term_descriptor<Matrix, SymmGroup, true> access = mpo.at(0,0);
         typename operator_selector<Matrix, SymmGroup>::type const & W = access.op();
@@ -448,7 +451,8 @@ public:
         //maquis::cout << "      new_phys_i: " << new_phys_i << std::endl;
     
         ProductBasis<SymmGroup> out_right_pb(new_phys_i, new_right_i,
-            [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); });
+                                             boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
+                                                                                     -boost::lambda::_1, boost::lambda::_2));
         block_matrix<Matrix, SymmGroup> prod;
     
         for (size_t b = 0; b < data.n_blocks(); ++b)

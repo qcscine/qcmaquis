@@ -20,21 +20,6 @@ T tri_min(T a, T b, T c)
                     std::min(a, c));
 }
 
-template<class SymmGroup>
-void printAllowed(const std::vector<Index<SymmGroup>> allowed){
-  std::cout << " === Printing Allowed Sectors ===\n";
-  int i = 0;
-  for (const auto& index : allowed) {
-    std::cout << "Site " << i << ":   ";
-    for (const auto& e : index) {
-      std::cout << "(" << e.first << ": ";
-      std::cout << e.second << ") ";
-    }
-    std::cout << '\n';
-    ++i;
-  }
-}
-
 template <class SymmGroup>
 inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& site_type,
                                                       std::vector<Index<SymmGroup> > const& phys_dims,

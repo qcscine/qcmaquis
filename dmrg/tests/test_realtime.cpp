@@ -12,52 +12,100 @@
 #include "utils/io.hpp"
 #include <iostream>
 #include "maquis_dmrg.h"
+#include "Fixtures/H2Fixture.h"
 #include "Fixtures/BenzeneFixture.h"
 #include "Fixtures/TimeEvolversFixture.h"
 #include "Fixtures/PreBOTimeEvolversFixture.h"
 #include "Fixtures/VibronicFixture.h"
 
+#include "dmrg/models/model.h"
+#include "dmrg/models/generate_mpo.hpp"
+#include "dmrg/models/lattice/lattice.h"
+#include "dmrg/mp_tensors/mps.h"
+#include "dmrg/mp_tensors/mps_mpo_ops.h"
+#include "dmrg/mp_tensors/mpo.h"
+#include "dmrg/sim/matrix_types.h"
+
 /**
  * @brief Tests that the energy is conserved along a TD-DMRG propagation.
- * 
+ *
  * The data are obtained for CAS(6, 6) and based on the cc-pVDZ basis set.
  * The data are stored in the BenzeneFixture class.
  */
-BOOST_FIXTURE_TEST_CASE( TestRealTime, BenzeneFixture )
+BOOST_FIXTURE_TEST_CASE(TestRealTime, BenzeneFixture)
 {
-    std::vector<std::string> symmetries;
-    #ifdef HAVE_SU2U1PG
-    symmetries.push_back("su2u1pg");
-    #endif
-    #ifdef HAVE_SU2U1
-    symmetries.push_back("su2u1");
-    #endif
-    #ifdef HAVE_TwoU1PG
-    symmetries.push_back("2u1pg");
-    #endif
-    #ifdef HAVE_TwoU1
-    symmetries.push_back("2u1");
-    #endif
-    for (auto&& s: symmetries) {
-        parametersBenzeneRealTime.set("symmetry", s);
-        // Single-site evolution
-        maquis::cout << "Running SS real-time evolution test for symmetry " << s << std::endl;
-        parametersBenzeneRealTime.set("optimization", "singlesite");
-        maquis::DMRGInterface<std::complex<double>> interfaceSS(parametersBenzeneRealTime);
-        auto initialEnergy = std::real(interfaceSS.energy());
-        interfaceSS.evolve();
-        auto finalEnergy = std::real(interfaceSS.energy());
-        BOOST_CHECK_CLOSE(initialEnergy, finalEnergy, 1.0E-8);
-        // Two-site evolution
-        maquis::cout << "Running TS real-time evolution test for symmetry " << s << std::endl;
-        parametersBenzeneRealTime.set("optimization", "twosite");
-        maquis::DMRGInterface<std::complex<double>> interfaceTS(parametersBenzeneRealTime);
-        initialEnergy = std::real(interfaceTS.energy());
-        interfaceTS.evolve();
-        finalEnergy = std::real(interfaceTS.energy());
-        BOOST_CHECK_CLOSE(initialEnergy, finalEnergy, 1.0E-10);
-    }
+  std::vector<std::string> symmetries;
+  #ifdef HAVE_SU2U1PG
+  symmetries.push_back("su2u1pg");
+  #endif
+  #ifdef HAVE_SU2U1
+  symmetries.push_back("su2u1");
+  #endif
+  #ifdef HAVE_TwoU1PG
+  symmetries.push_back("2u1pg");
+  #endif
+  #ifdef HAVE_TwoU1
+  symmetries.push_back("2u1");
+  #endif
+  for (auto&& s: symmetries) {
+    parametersBenzeneRealTime.set("symmetry", s);
+    // Single-site evolution
+    maquis::cout << "Running SS real-time evolution test for symmetry " << s << std::endl;
+    parametersBenzeneRealTime.set("optimization", "singlesite");
+    maquis::DMRGInterface<std::complex<double>> interfaceSS(parametersBenzeneRealTime);
+    auto initialEnergy = std::real(interfaceSS.energy());
+    interfaceSS.evolve();
+    auto finalEnergy = std::real(interfaceSS.energy());
+    BOOST_CHECK_CLOSE(initialEnergy, finalEnergy, 1.0E-8);
+    // Two-site evolution
+    maquis::cout << "Running TS real-time evolution test for symmetry " << s << std::endl;
+    parametersBenzeneRealTime.set("optimization", "twosite");
+    maquis::DMRGInterface<std::complex<double>> interfaceTS(parametersBenzeneRealTime);
+    initialEnergy = std::real(interfaceTS.energy());
+    interfaceTS.evolve();
+    finalEnergy = std::real(interfaceTS.energy());
+    BOOST_CHECK_CLOSE(initialEnergy, finalEnergy, 1.0E-10);
+  }
 }
+
+
+/**
+ * @brief Tests non-trivial dynamics in H2.
+ *
+ * Here, we test that, if one takes the Hamiltonian of H2 in a minimal basis
+ * and prepares the initial state to be the HF state, then the dynamics "populates"
+ * the doubly-excited state, and the dynamics follows a Rabi oscillation pattern.
+ */
+/*
+#ifdef HAVE_TwoU1PG
+BOOST_FIXTURE_TEST_CASE(TestRabiOscillation, H2Fixture)
+{
+  // General initialization
+  auto latticeH2 = Lattice(parametersH2);
+  auto modelHF = Model<matrix, TwoU1PG>(latticeH2, parametersH2);
+  auto mpo = make_mpo(latticeH2, modelHF);
+  // Check first that the HF state and the doubly excited state of H2 do not interact
+  // with the single excitation (for the HF determinant, they should because of the Brillouin
+  // theorem. For the doubly-excited state, they should because of symmetry).
+  parametersH2.set("init_state", "hf");
+  parametersH2.set("hf_occ", "4,1");
+  auto mpsHF = MPS<matrix, TwoU1PG>(latticeH2.size(), *(modelHF.initializer(latticeH2, parametersH2)));
+  // Single excitations
+  parametersH2.set("hf_occ", "2,3");
+  auto mpsSingle1 = MPS<matrix, TwoU1PG>(latticeH2.size(), *(modelHF.initializer(latticeH2, parametersH2)));
+  parametersH2.set("hf_occ", "3,2");
+  auto mpsSingle2 = MPS<matrix, TwoU1PG>(latticeH2.size(), *(modelHF.initializer(latticeH2, parametersH2)));
+  // Double excitation
+  parametersH2.set("hf_occ", "1,4");
+  auto mpsDouble = MPS<matrix, TwoU1PG>(latticeH2.size(), *(modelHF.initializer(latticeH2, parametersH2)));
+  // Does the actual checks
+  BOOST_CHECK_SMALL(expval(mpsHF, mpsSingle1, mpo), 1.0E-15);
+  BOOST_CHECK_SMALL(expval(mpsHF, mpsSingle2, mpo), 1.0E-15);
+  BOOST_CHECK_SMALL(expval(mpsDouble, mpsSingle1, mpo), 1.0E-15);
+  BOOST_CHECK_SMALL(expval(mpsDouble, mpsSingle2, mpo), 1.0E-15);
+}
+#endif // HAVE_TwoU1PG
+*/
 
 #ifdef HAVE_U1DG
 

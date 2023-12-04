@@ -149,7 +149,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_LiH_TwoGuesses, LiHFixture)
   parametersLiH.set("nmainsweeps", 2);
   parametersLiH.set("ngrowsweeps", 2);
   parametersLiH.set("truncation_initial", 1.0E-30);
-  parametersLiH.set("truncation_final", 1.0E-30);
+  parametersLiH.set("truncation_main", 1.0E-30);
   parametersLiH.set("linsystem_exact_error", "yes");
   // Linear system parameters (note that the same set of parameters is used also for DMRG[FEAST])
   // parametersLiH.set("linsystem_precond", "yes");
@@ -196,7 +196,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_TwoGuesses, BenzeneFixture
   parametersBenzene.set("seed", 42);
   parametersBenzene.set("nsweeps", 2);
   parametersBenzene.set("truncation_initial", 1.0E-30);
-  parametersBenzene.set("truncation_final", 1.0E-30);
+  parametersBenzene.set("truncation_main", 1.0E-30);
   // parametersBenzene.set("linsystem_exact_error", "yes");
   // Linear system parameters (note that the same set of parameters is used also for DMRG[FEAST])
   parametersBenzene.set("linsystem_init", "last");
@@ -254,7 +254,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_ThreeGuesses, BenzeneFixtu
   parametersBenzene.set("seed", 42);
   parametersBenzene.set("nsweeps", 5);
   parametersBenzene.set("truncation_initial", 1.0E-30);
-  parametersBenzene.set("truncation_final", 1.0E-30);
+  parametersBenzene.set("truncation_main", 1.0E-30);
   parametersBenzene.set("linsystem_exact_error", "no");
   // Linear system parameters (note that the same set of parameters is used also for DMRG[FEAST])
   parametersBenzene.set("linsystem_init", "last");

@@ -318,4 +318,3 @@ private:
 
 #endif // DMRG_PREBO
 
-#endif // MAQUIS_DMRG_NU1_SYMBOLICJORDANWIGNER_HPP

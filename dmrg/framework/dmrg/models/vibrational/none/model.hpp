@@ -80,15 +80,14 @@ public:
         int numModes =  parameters_["L"];
         physIndices_.resize(numModes);
         // Analyzes consistency of nMax parameter
-        // nMaxVec = parameters_["Nmax"].as<std::vector<int>>();
-        auto nMax = parameters_["Nmax"].as<int>();
-        // if (nMaxVec.size() == 1) {
-            // auto nMax = nMaxVec[0];
-        nMaxVec = std::vector<int>(numModes, nMax);
-        // }
-        // else {
-        //     throw std::runtime_error("Nmax needs to be a single integer");
-        // }
+        nMaxVec = parameters_["Nmax"].as<std::vector<int> >();
+        if (nMaxVec.size() == 1) {
+            auto nMax = nMaxVec[0];
+            nMaxVec = std::vector<int>(numModes, nMax);
+        }
+        else if (nMaxVec.size() != numModes) {
+            throw std::runtime_error("Nmax needs to be either a single integer or a list with lenght L");
+        }
         // Loads the physical indices
         TrivialGroup::charge C = TrivialGroup::IdentityCharge;
         for (int iMode = 0; iMode < numModes; iMode++)
@@ -144,7 +143,7 @@ public:
      */
     void create_terms() override {
         auto hamiltonianTerms = Vibrational::detail::WatsonIntegralParser<value_type>(parameters_, lattice_, coordinateType_, maxCoupling_,
-                                                                                      maxManyBodyCoupling_, maxInputManyBodyCoupling_);
+                                                                                      maxManyBodyCoupling_, maxInputCouplingOrder_);
         for (const auto& iTerms: hamiltonianTerms) {
             positions_type positions;
             operators_type operators;

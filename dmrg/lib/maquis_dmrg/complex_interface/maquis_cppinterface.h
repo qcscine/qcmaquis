@@ -30,7 +30,7 @@
                                     const std::string& init_type, const std::string& optimization,
                                     int ietl_jcd_maxiter,
                                     double ietl_jcd_tol, double truncation_initial,
-                                    double truncation_final, double integral_cutoff,
+                                    double truncation_main, double integral_cutoff,
                                     const std::string& twosite_truncation, const std::string& orb_order);
 
 

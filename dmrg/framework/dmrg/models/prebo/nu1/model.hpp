@@ -25,8 +25,6 @@
 #include <sstream>
 #include <unordered_map>
 #include <chrono>
-
-
 /**
  * @brief Pre-Born Oppenheimer model class
  * @class preBO models_nu1.hpp

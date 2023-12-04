@@ -120,6 +120,4 @@ private:
     impl_ptr impl_;
 };
 
-
-
 #endif

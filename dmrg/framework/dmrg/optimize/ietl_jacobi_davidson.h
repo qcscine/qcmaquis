@@ -82,9 +82,9 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
     }
     auto stop = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration_milisec = stop - start;
-    // maquis::cout << " Jacobi-Davidson diagonalization converged after "
-    //   << iter.iterations() << " iterations."
-    //   << " [" << duration_milisec.count() << " ms]\n";
+    maquis::cout << " Jacobi-Davidson diagonalization converged after "
+      << iter.iterations() << " iterations."
+      << " [" << duration_milisec.count() << " ms]\n";
     return r0;
 }
 

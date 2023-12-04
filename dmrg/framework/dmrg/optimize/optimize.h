@@ -173,9 +173,9 @@ protected:
     {
         double cutoff;
         if (sweep >= parms.template get<int>("ngrowsweeps")) {
-            cutoff = parms.template get<double>("truncation_final");
+            cutoff = parms.template get<double>("truncation_main");
         } else {
-            cutoff = log_interpolate(parms.template get<double>("truncation_initial"), parms.template get<double>("truncation_final"), parms.template get<int>("ngrowsweeps"), sweep);
+            cutoff = log_interpolate(parms.template get<double>("truncation_initial"), parms.template get<double>("truncation_main"), parms.template get<int>("ngrowsweeps"), sweep);
         }
         return cutoff;
     }

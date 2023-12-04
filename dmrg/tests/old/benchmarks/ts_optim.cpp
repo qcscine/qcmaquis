@@ -218,7 +218,7 @@ int main(int argc, char ** argv)
         maquis::cout << "Optim. JCD done!\n";
         
         double alpha = parms["alpha_main"];
-        double cutoff = parms["truncation_final"];
+        double cutoff = parms["truncation_main"];
         std::size_t Mmax = parms["max_bond_dimension"];
         
         /// Truncation of MPS

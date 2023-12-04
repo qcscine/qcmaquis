@@ -80,4 +80,4 @@ public:
   }
 };
 
-#endif
+#endif // LINSYSTEM_TRAIT_CLASS_H

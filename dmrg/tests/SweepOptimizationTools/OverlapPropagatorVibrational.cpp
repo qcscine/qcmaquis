@@ -19,6 +19,7 @@
 #include "dmrg/optimize/ietl_lanczos_solver.h"
 #include "dmrg/SweepBasedAlgorithms/OverlapPropagator.h"
 #include "Fixtures/WatsonFixture.h"
+#include "Fixtures/NModeFixture.h"
 
 #ifdef DMRG_VIBRATIONAL
 
@@ -56,5 +57,28 @@ BOOST_FIXTURE_TEST_CASE(Test_OverlapPropagator_Vibrational_Watson, WatsonFixture
   }
 #endif // HAVE_TrivialGroup
 }
+
+#ifdef HAVE_NU1
+ 
+BOOST_FIXTURE_TEST_CASE(Test_OverlapPropagator_Vibrational_NU1, NModeFixture)
+{
+  using NU1SymmGroup = NU1_template<2>;
+  using MPSType = MPS<matrix, NU1SymmGroup>;
+  using OverlapPropagatorType = OverlapPropagator<matrix, NU1SymmGroup, storage::disk>;
+  parametersFADTwoBody.set("init_type", "const");
+  auto nModeLattice = Lattice(parametersFADTwoBody);
+  auto nModeModel = Model<matrix, NU1SymmGroup>(nModeLattice, parametersFADTwoBody);
+  auto nModeMPO = make_mpo(nModeLattice, nModeModel);
+  auto mpsDefault = MPS<matrix, NU1SymmGroup>(nModeLattice.size(), *(nModeModel.initializer(nModeLattice, parametersFADTwoBody)));
+  auto mpsVector = std::vector<MPSType>({mpsDefault});
+  auto overlapPropagator = OverlapPropagatorType(mpsDefault, mpsVector, 0);
+  for (int iSite = 1; iSite <= 7; iSite++)
+    overlapPropagator.updateLeftOverlapBoundaries(iSite);
+  auto mpsOrtho = overlapPropagator.template getOrthogonalVector<SweepOptimizationType::SingleSite>(0, 7, 8);
+  auto overlap = ietl::dot(mpsOrtho, mpsDefault[7]);
+  BOOST_CHECK_CLOSE(overlap, 1., 1.0E-7);
+}
+
+#endif // HAVE_NU1
 
 #endif // DMRG_VIBRATIONAL

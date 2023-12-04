@@ -144,4 +144,3 @@ namespace measurements {
 
 #endif // DMRG_PREBO
 
-#endif // MAQUIS_DMRG_PREBO_PARTICLE_RDM_H

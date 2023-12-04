@@ -179,7 +179,7 @@ protected:
    *
    * This method retrieves, for a given sweep, the value of the threshold to be used in the truncation of the MPS.
    * Note that, for the first ngrowsweeps, the threshold is calculated according to a logarithmic decay between
-   * the parameters truncation_initial and truncation_final. After that, the threshold is set to truncation_final
+   * the parameters truncation_initial and truncation_main. After that, the threshold is set to truncation_main
    * and kept constant.
    *
    * @param sweep: index of the sweep.
@@ -189,10 +189,10 @@ protected:
   {
     double cutoff;
     if (sweep >= parms_.template get<int>("ngrowsweeps"))
-      cutoff = parms_.template get<double>("truncation_final");
+      cutoff = parms_.template get<double>("truncation_main");
     else
       cutoff = this->log_interpolate(parms_.template get<double>("truncation_initial"),
-                                     parms_.template get<double>("truncation_final"),
+                                     parms_.template get<double>("truncation_main"),
                                      parms_.template get<int>("ngrowsweeps"), sweep);
     std::cout << "Cutoff - " << cutoff << std::endl ;
     return cutoff;

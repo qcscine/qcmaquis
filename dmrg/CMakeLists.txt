@@ -65,6 +65,8 @@ set(BUILD_SYMMETRIES "TwoU1PG;SU2U1PG" CACHE STRING "List of symmetry to include
 U1, TwoU1, TwoU1PG, NU1, Z2, SU2U1, SU2U1PG, U1DG and NONE are currently available. \
 TwoU1PG and SU2U1PG are built in any case.")
 set(DMRG_NUMSYMM 6 CACHE STRING "Number of U1 symmetries for NU1 calculations.")
+set(DMRG_ORDERNONE 6 CACHE STRING "Maximum order of integral terms for NONE symmetry.")
+add_definitions(-DORDER_NONE=${DMRG_ORDERNONE})
 add_definitions(-DDMRG_NUMSYMM=${DMRG_NUMSYMM})
 option(ENABLE_OMP "Enable OpenMP" ON)
 # option(ENABLE_ALPS_MODELS "Enable binding with ALPS lattices and models" OFF)
@@ -101,12 +103,6 @@ if(BUILD_DMRG_FEAST)
   list(APPEND DMRG_DEFINITIONS -DDMRG_FEAST)
   set(DMRG_FEAST TRUE)
 endif(BUILD_DMRG_FEAST)
-
-# Time-evolution TD-DMRG
-if(BUILD_DMRG_EVOLVE)
-  list(APPEND DMRG_DEFINITIONS -DDMRG_TD)
-  set(DMRG_TD TRUE)
-endif(BUILD_DMRG_EVOLVE)
 
 option (ENABLE_COLLECTOR "Enable profiling through DataCollector object" OFF)
 mark_as_advanced(ENABLE_COLLECTOR)
@@ -254,32 +250,38 @@ endmacro(configure_symm_file)
 
 # Adding symmetries definitions, TwoU1PG and SU2U1PG are needed in any case for smooth compilation/testing
 list(APPEND BUILD_SYMMETRIES "TwoU1PG" "SU2U1PG")
-
-# Set DMRG_HAS_* flag such that missing symmetries can be added later
-list(REMOVE_DUPLICATES BUILD_SYMMETRIES)
 foreach(SYMM ${BUILD_SYMMETRIES})
   get_symm_group_name(SYMM_NAME ${SYMM})
+  list(APPEND DMRG_DEFINITIONS -DHAVE_${SYMM_NAME})
   set(DMRG_HAS_${SYMM_NAME} TRUE)
 endforeach(SYMM)
+list(REMOVE_DUPLICATES BUILD_SYMMETRIES)
+message(STATUS "Enabled symmetries: ${BUILD_SYMMETRIES}")
 
 # PreBO-specific flags
 if((BUILD_PREBO))
   if((NOT DMRG_HAS_NU1))
-    message(STATUS "Pre-BO module requires NU1 symmetry; adding it.")
-    list(APPEND BUILD_SYMMETRIES "NU1")
+    message(FATAL_ERROR "For pre-BO module, activate NU1 symmetry!")
+  else()
+    list(APPEND DMRG_DEFINITIONS -DDMRG_PREBO)
+    set(DMRG_PREBO TRUE)
   endif()
-  list(APPEND DMRG_DEFINITIONS -DDMRG_PREBO)
-  set(DMRG_PREBO TRUE)
 endif()
 
 # Vibrational-specific flag
 if((BUILD_VIBRATIONAL))
-  if((NOT DMRG_HAS_TrivialGroup))
-    message(STATUS "Vibrational module requires NONE symmetry; adding it.")
-    list(APPEND BUILD_SYMMETRIES "NONE")
-  endif()
+  if((NOT DMRG_HAS_NU1) AND (NOT DMRG_HAS_TrivialGroup))
+    message(FATAL_ERROR "At least one between the NONE and NU1 symmetries should be activated for vibrational calculations")
+  else()
     list(APPEND DMRG_DEFINITIONS -DDMRG_VIBRATIONAL)
     set(DMRG_VIBRATIONAL TRUE)
+  endif()
+  if (DMRG_VIBRATIONAL AND DMRG_HAS_TrivialGroup)
+    message(STATUS "vDMRG ORDERNONE is: ${DMRG_ORDERNONE}")
+  endif()
+  if(DMRG_VIBRATIONAL AND DMRG_HAS_NU1)
+    message(STATUS "vDMRG NUMSYMM is: ${DMRG_NUMSYMM}")
+  endif()
 endif()
 
 # SRCAS-specific flag
@@ -290,20 +292,13 @@ endif()
 # Vibronic-specific flag
 if(BUILD_VIBRONIC)
   if (NOT DMRG_HAS_U1)
-    message(STATUS "Vibronic module requires U1 symmetry; adding it.")
-    list(APPEND BUILD_SYMMETRIES "U1")
-  endif()
+    message(FATAL_ERROR "U1 symmetry should be activated for vibronic calculations")
+  else()
     list(APPEND DMRG_DEFINITIONS -DDMRG_VIBRONIC)
     set(DMRG_VIBRONIC TRUE)
+  endif()
 endif(BUILD_VIBRONIC)
 
-list(REMOVE_DUPLICATES BUILD_SYMMETRIES)
-foreach(SYMM ${BUILD_SYMMETRIES})
-  get_symm_group_name(SYMM_NAME ${SYMM})
-  list(APPEND DMRG_DEFINITIONS -DHAVE_${SYMM_NAME})
-  set(DMRG_HAS_${SYMM_NAME} TRUE)
-endforeach(SYMM)
-message(STATUS "Enabled symmetries: ${BUILD_SYMMETRIES}")
 ##### Dependencies #####
 # GSL
 # find GNU Scientific Library if using SU2 Groups
@@ -541,10 +536,13 @@ if(QCMAQUIS_TESTS)
   # Vibrational tests
   if(BUILD_VIBRATIONAL)
     # Unit tests
+    add_test(NAME Vibrational_MPS COMMAND test_mps_vibrational)
     add_test(NAME Vibrational_Lattice COMMAND test_vibrational_lattice)
+    add_test(NAME Vibrational_Model_NU1 COMMAND test_vibrational_nu1_model)
     add_test(NAME Vibrational_Model_Watson COMMAND test_vibrational_watson_model)
     add_test(NAME Test_MPS_MPO_Ops_Vibrational COMMAND test_mps_mpo_ops_vibrational)
     add_test(NAME Test_MPO_Times_MPS_Vibrational COMMAND test_mpo_times_mps_vibrational)
+    add_test(NAME Test_MPS_Initializers_Vibrational COMMAND test_mps_initializers_vibrational)
     add_test(NAME Test_MPS_Overlap_Vibrational COMMAND test_mps_overlap_vibrational)
     add_test(NAME Test_OverlapPropagator_Vibrational COMMAND test_overlap_propagator_vibrational)
     add_test(NAME Test_BoundaryPropagator_Vibrational COMMAND test_boundary_propagator_vibrational)
@@ -555,8 +553,11 @@ if(QCMAQUIS_TESTS)
       add_test(NAME Test_FEAST_vibrational COMMAND test_FEAST_vibrational)
     endif(BUILD_DMRG_FEAST)
     # Application tests
+    add_test(NAME Test_FAD_2Mode COMMAND test_FAD_2Mode)
     add_test(NAME Test_Ethylene_Sextic COMMAND test_Ethylene_Sextic)
     add_test(NAME Test_H2CO COMMAND test_H2CO)
+    add_test(NAME Test_Maleimide COMMAND test_Maleimide)
+    add_test(NAME Test_Ethylene_nMode COMMAND test_Ethylene_nMode)
     add_test(NAME Test_BilinearlyCoupled COMMAND test_BilinearlyCoupled)
   endif(BUILD_VIBRATIONAL)
   # Vibronic tests
@@ -569,6 +570,9 @@ if(QCMAQUIS_TESTS)
     add_test(NAME Excitonic_Optimization COMMAND test_Excitonic)
     add_test(NAME Vibronic_Optimization COMMAND test_Vibronic)
   endif(BUILD_VIBRONIC)
+  if (BUILD_SRCAS)
+    add_test(NAME Test_SRCAS COMMAND test_srcas)
+  endif(BUILD_SRCAS)
 endif(QCMAQUIS_TESTS)
 
 ######################################################################

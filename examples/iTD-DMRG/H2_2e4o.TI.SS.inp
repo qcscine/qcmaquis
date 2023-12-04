@@ -24,7 +24,7 @@ conv_thresh              = 0.100000E-40
 
 // -- SVD truncation --
 truncation_initial       = 1e-50
-truncation_final         = 1e-50
+truncation_main         = 1e-50
 
 // -- Mixing parameter --
 alpha_initial            = 1e-10
