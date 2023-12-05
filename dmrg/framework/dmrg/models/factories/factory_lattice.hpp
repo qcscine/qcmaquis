@@ -61,7 +61,7 @@ inline std::shared_ptr<lattice_impl> coded_lattice_factory(BaseParameters & parm
         return impl_ptr(new VibronicLattice(parms));
 #endif
     } else {
-        throw std::runtime_error("Don't know this lattice: " + parms["LATTICE"]);
+        throw std::runtime_error("Don't know this lattice: ");
     }
 }
 
