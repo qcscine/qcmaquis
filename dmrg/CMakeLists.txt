@@ -135,8 +135,7 @@ endif()
 
 include(BlasLapack)
 
-set(MAQUISLapack_LIBRARIES "${MAQUISLapack_LIBRARIES} ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES}")
-message(STATUS "Lapack libraries: ${MAQUISLapack_LIBRARIES}")
+set(MAQUISLapack_LIBRARIES "${LAPACK_LIBRARIES} ${BLAS_LIBRARIES}")
 
 # QCMaquis manual
 if (BUILD_MANUAL)
