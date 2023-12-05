@@ -35,3 +35,4 @@ BOOST_AUTO_TEST_CASE( PreBO_SymbolicOperator_CheckModifiedCopyConstructor )
     auto copiedOp = SymbolicOperator(createOp, OpType::Ident);
     bool valid = copiedOp.getSpin() == Spin::None;
     BOOST_CHECK(valid);
+}

@@ -41,3 +41,4 @@ struct coded_model_factory<Matrix, U1> {
             return impl_ptr();
         }
     }
+};

@@ -317,4 +317,5 @@ private:
 };
 
 #endif // DMRG_PREBO
+#endif
 

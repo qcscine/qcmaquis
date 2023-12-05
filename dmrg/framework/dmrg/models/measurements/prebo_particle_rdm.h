@@ -143,4 +143,5 @@ namespace measurements {
 }
 
 #endif // DMRG_PREBO
+#endif
 

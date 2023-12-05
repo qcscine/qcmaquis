@@ -12,9 +12,9 @@ stages:
   - testFinal
 
 # For now, set the necessary paths to utilize Eigen 3.4.0 for each stage
-# before_script:
-#   - export CMAKE_PREFIX_PATH="/reiher_data/soft/centos7/libraries/Eigen/3.4.0/share/eigen3/cmake:$CMAKE_PREFIX_PATH"
-#   - export CPLUS_INCLUDE_PATH="/reiher_data/soft/centos7/libraries/Eigen/3.4.0/include/eigen3:$CPLUS_INCLUDE_PATH"
+before_script:
+  - export CMAKE_PREFIX_PATH="/reiher_data/soft/centos7/libraries/Eigen/3.4.0/share/eigen3/cmake:$CMAKE_PREFIX_PATH"
+  - export CPLUS_INCLUDE_PATH="/reiher_data/soft/centos7/libraries/Eigen/3.4.0/include/eigen3:$CPLUS_INCLUDE_PATH"
 
 # Conventional electronic-structure tests
 

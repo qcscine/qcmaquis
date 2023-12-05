@@ -143,7 +143,7 @@ public:
      */
     void create_terms() override {
         auto hamiltonianTerms = Vibrational::detail::WatsonIntegralParser<value_type>(parameters_, lattice_, coordinateType_, maxCoupling_,
-                                                                                      maxManyBodyCoupling_, maxInputCouplingOrder_);
+                                                                                      maxManyBodyCoupling_, maxInputManyBodyCoupling_);
         for (const auto& iTerms: hamiltonianTerms) {
             positions_type positions;
             operators_type operators;
