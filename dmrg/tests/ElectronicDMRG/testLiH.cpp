@@ -83,18 +83,17 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_LiH_IPI_BoundaryStorage, S, symmetries, Li
 {
   // Generic parameters
   parametersLiH.set("max_bond_dimension", 50);
-  parametersLiH.set("init_type", "hf");
-  parametersLiH.set("hf_occ", "4,1,1,1");
+  parametersLiH.set("init_type", "basis_state_generic");
+  parametersLiH.set("init_basis_state", "4,1,1,1");
   parametersLiH.set("orbital_order", "4,1,2,3");
   parametersLiH.set("symmetry", symm_traits::SymmetryNameTrait<S>::symmName());
-  parametersLiH.set("nsweeps", 20);
+  parametersLiH.set("nsweeps", 5);
   parametersLiH.set("ngrowsweeps", 2);
   parametersLiH.set("nmainsweeps", 5);
   parametersLiH.set("optimization", "twosite");
   // IPI-specific parametrs
   parametersLiH.set("ipi_sweep_energy_threshold", 1.0E-10);
   parametersLiH.set("ipi_sweep_overlap_threshold", 1.0E-10);
-  parametersLiH.set("ipi_sweeps_per_system", 5);
   parametersLiH.set("ipi_iterations", 5);
   parametersLiH.set("ipi_shift", -7.905);
   // DMRG-IPI calculation via interface without storing

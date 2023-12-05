@@ -589,4 +589,4 @@ private:
     std::vector<int> order, reverseOrder;
 };
 
-#endif // MOMENTUMSPACE_FERMIHUBBARD_MODEL
+#endif

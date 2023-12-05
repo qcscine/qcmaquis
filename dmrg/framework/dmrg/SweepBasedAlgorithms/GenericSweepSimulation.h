@@ -53,14 +53,17 @@ public:
     nSweeps_ = parms_["nsweeps"];
     boundaryPropagator_ = std::make_shared<BoundaryPropagatorType>(mps_, mpoContainer_.getMPO());
     mpsUpdater_ = std::make_unique<SweepMPSUpdaterType>(mpoContainer_.getMPO(), mps_, boundaryPropagator_, parms_, verbose_);
-  };
+  }
+
+  /** @brief Virtual destructor */
+  virtual ~GenericSweepSimulation() = default; 
 
   /**
    * @brief Execution of a generic sweep-based optimization algorithm.
    *
    * Note that we delegate every action to the derived class, with the exception of the
-   * memory management, which is done here to ensure that
-   *
+   * memory management, which is done here to ensure that the implementation is consistent
+   * for all methods.
    */
   void runSweepSimulation() {
     // == LOOP OVER THE SWEEPS ==
@@ -78,7 +81,7 @@ public:
     this->prepareSweep();
     indexOfMicroIteration_ = 0;
     this->printSweepSpecificInfo(iSweep);
-    this->updateSites();
+    this->updateSites(); // Needed for initialization
     // Prefetches the boundaries that will be needed for the first sweep
     Storage::prefetch(boundaryPropagator_->getLeftBoundary(siteLeft_));
     Storage::prefetch(boundaryPropagator_->getRightBoundary(siteRight_));
@@ -127,7 +130,12 @@ public:
                                                                   this->get_cutoff(iSweep), this->get_Mmax(iSweep), this->normalizeAtEnd(),
                                                                   this->activatePerturbation());
       // == BOUNDARY PROPAGATION ==
-      // First, drops the memory of the right boundary (in the case of a l2r sweep).
+      // Updates the boundary
+      this->propagateBoundaries();
+      this->propagateOtherTensors();
+      this->performBackPropagation(boundaryGrowthModality);
+      mpsUpdater_->mergeUnitaryFactor(boundaryGrowthModality, siteLeft_, siteRight_, this->normalizeAtEnd());
+      // Now, can drop the memory of the right boundary (in the case of a l2r sweep).
       // The memory will anyways be overwritten by the r2l sweep that will follow.
       // Note also that, if we are at a point at which we reverse the direction of the boundary
       // propagation, we don't drop the right boundary because the next step will be a r2l sweep
@@ -136,11 +144,6 @@ public:
         Storage::drop(boundaryPropagator_->getRightBoundary(siteRight_));
       else // if (sweepType == SweepDirectionType::Backward)
         Storage::drop(boundaryPropagator_->getLeftBoundary(siteLeft_));
-      // Updates the boundary
-      this->propagateBoundaries();
-      this->propagateOtherTensors();
-      this->performBackPropagation(boundaryGrowthModality);
-      mpsUpdater_->mergeUnitaryFactor(boundaryGrowthModality, siteLeft_, siteRight_, this->normalizeAtEnd());
       this->finalizeMicroIteration(truncationResults);
       indexOfMicroIteration_ += 1;
       if (verbose_)
@@ -222,11 +225,15 @@ protected:
   /** @brief Simple utility function for a logarithmic interpolation */
   static double log_interpolate(double y0, double y1, int N, int i)
   {
-    if (N < 2)
-      return y1;
-    if (y0 == 0)
+    if (y0 <= 0) // Safeguard if for example -1 is entered
       return 0;
-    double x = log(y1/y0)/(N-1);
+    if (i == 0)
+      return y0;
+    if (i >= N)
+      return y1;
+    if (y1 <= 0) // Safeguard if for example -1 is entered
+      y1 = 1e-16;
+    double x = log(y1/y0)/N;
     return y0*exp(x*i);
   }
 
@@ -282,10 +289,10 @@ protected:
       maquis::cout << "+----------------------------------+" << std::endl;
       maquis::cout << std::endl;
       maquis::cout << " Simulation settings:" << std::endl;
-      maquis::cout << " - Simulation type: " << simulationName_ << std::endl;
-      maquis::cout << " - Sweep-based modality: " << SweepTraitClass::getSimulationTypeName() << std::endl;
+      maquis::cout << " - Simulation type:            " << simulationName_ << std::endl;
+      maquis::cout << " - Sweep-based modality:       " << SweepTraitClass::getSimulationTypeName() << std::endl;
       if (nSweeps_ != 0)
-        maquis::cout << " - Maximum number of sweeps: " << nSweeps_ << std::endl;
+        maquis::cout << " - Maximum number of sweeps:   " << nSweeps_ << std::endl;
     }
   }
 
@@ -293,12 +300,12 @@ protected:
   void printSweepSpecificInfo(int iSweep) const {
     if (verbose_) {
       maquis::cout << std::endl;
-      maquis::cout << " -------------------" << std::endl;
-      maquis::cout << "   SWEEP NUMBER " << iSweep << std::endl;
-      maquis::cout << " -------------------" << std::endl;
-      maquis::cout << " - Noise parameter: " << this->getAlpha(iSweep) << std::endl;
+      maquis::cout << " --------------------------" << std::endl;
+      maquis::cout << "   SWEEP NUMBER            " << iSweep << std::endl;
+      maquis::cout << " --------------------------" << std::endl;
+      maquis::cout << " - Noise parameter:        " << this->getAlpha(iSweep) << std::endl;
       maquis::cout << " - Maximum bond dimension: " << this->get_Mmax(iSweep) << std::endl;
-      maquis::cout << " - Truncation parameter: " << this->get_cutoff(iSweep) << std::endl;
+      maquis::cout << " - Truncation parameter:   " << this->get_cutoff(iSweep) << std::endl;
       maquis::cout << std::endl;
     }
   }
@@ -306,11 +313,11 @@ protected:
   /** @brief Prints information regarding the current microiteration */
   void printMicroiterInfo(SweepDirectionType sweepType) const {
     if (verbose_) {
-      maquis::cout << " MICROITERATION NUMBER = " << indexOfMicroIteration_ << " ";
+      maquis::cout << " MICROITERATION NUMBER = " << indexOfMicroIteration_;
       if (sweepType == SweepDirectionType::Forward)
-        maquis::cout << " , forward sweep" << std::endl;
+        maquis::cout << ", forward sweep" << std::endl;
       else
-        maquis::cout << " , backward sweep" << std::endl;
+        maquis::cout << ", backward sweep" << std::endl;
       maquis::cout << " - Left boundaries taken from index: " << siteLeft_ << std::endl;
       maquis::cout << " - Right boundaries taken from index: " << siteRight_ << std::endl;
       maquis::cout << std::endl;

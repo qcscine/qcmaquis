@@ -60,6 +60,7 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusConventional, TranscorrelatedFi
   parametersH2Conventional_TranscorrelatedFormat.set("time_step", 10.);
   parametersH2Conventional_TranscorrelatedFormat.set("propagator_maxiter", 10);
   parametersH2Conventional_TranscorrelatedFormat.set("TD_backpropagation", "no");
+  parametersH2Conventional_TranscorrelatedFormat.set("time_units", "fs");
   maquis::DMRGInterface<double> interfaceTranscorrelated(parametersH2Conventional_TranscorrelatedFormat);
   interfaceTranscorrelated.runTranscorrelated();
   auto energy2 = interfaceConventional.energy();
@@ -87,6 +88,7 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusFullCI, TranscorrelatedFixture)
   parametersH2Conventional_TranscorrelatedFormat.set("time_step", 10.);
   parametersH2Conventional_TranscorrelatedFormat.set("propagator_maxiter", 10);
   parametersH2Conventional_TranscorrelatedFormat.set("TD_backpropagation", "no");
+  parametersH2Conventional_TranscorrelatedFormat.set("time_units", "fs");
   // Does conventional TI and transcorrelated.
   for (auto& iParameter: std::vector<DmrgParameters>{parametersH2Conventional_ConventionalFormat, parametersH2Conventional_TranscorrelatedFormat}) {
     iParameter.set("nsweeps", 10);

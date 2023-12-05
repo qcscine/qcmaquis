@@ -31,6 +31,7 @@ int main(int argc, char ** argv)
               << std::endl;
 
     DmrgOptions opt(argc, argv);
+
     if (opt.valid) {
         maquis::cout.precision(10);
         DCOLLECTOR_SET_SIZE(gemm_collector, opt.parms["max_bond_dimension"]+1)

@@ -337,33 +337,32 @@ public:
     }
     
     /** @brief Updates the parameters underlying the model */
-    void update(BaseParameters const& p)
+    void update(BaseParameters const& p) override
     {
         throw std::runtime_error("update() not yet implemented for this model.");
         return;
     }
     
     /** @brief Getter for the physical dimensions */
-    Index<TwoU1> const & phys_dim(size_t type) const { return phys; }
+    Index<TwoU1> const & phys_dim(size_t type) const override { return phys; }
     
     /**
      * @brief Getter for the measurements 
      * Note that, so far, no measurements are implemented.
      */
-    measurements_type measurements() const
-    {
+    measurements_type measurements() const override {
         measurements_type meas;
         return meas;
     }
 
     /** @brief Getter for the identity operator */
-    tag_type identity_matrix_tag(size_t type) const { return ident; }
+    tag_type identity_matrix_tag(size_t type) const override { return ident; }
 
     /** @brief Getter for the filling operator */
-    tag_type filling_matrix_tag(size_t type) const { return fill; }
+    tag_type filling_matrix_tag(size_t type) const override { return fill; }
 
     /** @brief Getter for the total quantum number */
-    typename TwoU1::charge total_quantum_numbers(BaseParameters & parms) const
+    typename TwoU1::charge total_quantum_numbers(BaseParameters & parms) const override
     {
         typename TwoU1::charge ret(0);
         ret[0] = static_cast<int>(parms["u1_total_charge1"]);
@@ -372,7 +371,7 @@ public:
     }
 
     /** @brief Getter of operators from a string */
-    tag_type get_operator_tag(const std::string& name, std::size_t type) const
+    tag_type get_operator_tag(const std::string& name, std::size_t type) const override
     {
         if (name == "create_up")
             return create_up;
@@ -388,7 +387,7 @@ public:
     }
 
     /** @brief Returns the tag handler */
-    table_ptr operators_table() const { return tag_handler; }
+    table_ptr operators_table() const override { return tag_handler; }
     
 private:
     // Class members

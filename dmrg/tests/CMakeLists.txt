@@ -2,7 +2,7 @@ add_definitions(-DHAVE_ALPS_HDF5 -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING -DALP
 
 include_directories(. ${CMAKE_CURRENT_BINARY_DIR})
 
-set(DMRG_APP_LIBRARIES maquis_dmrg dmrg_models dmrg_utils ${DMRG_LIBRARIES} srcas_utils)
+set(DMRG_APP_LIBRARIES maquis_dmrg dmrg_models dmrg_utils ${DMRG_LIBRARIES})
 
 # *** Targets
 add_executable(test1 test1.cpp)
@@ -78,8 +78,6 @@ if(BUILD_VIBRATIONAL)
     target_link_libraries(test_mps_mpo_ops_vibrational ${DMRG_APP_LIBRARIES})
     add_executable(test_mpo_times_mps_vibrational test_mps_mpo_ops/test_mpo_times_mps_vibrational.cpp)
     target_link_libraries(test_mpo_times_mps_vibrational ${DMRG_APP_LIBRARIES})
-    add_executable(test_mps_initializers_vibrational mps_initializers/test_mps_initializers_vibrational.cpp)
-    target_link_libraries(test_mps_initializers_vibrational ${DMRG_APP_LIBRARIES})
     add_executable(test_mps_overlap_vibrational test_mps_mpo_ops/test_mps_overlap_vibrational.cpp)
     target_link_libraries(test_mps_overlap_vibrational ${DMRG_APP_LIBRARIES})
     # Sweep optimization tools
@@ -136,8 +134,12 @@ if(BUILD_VIBRONIC)
     target_link_libraries(test_Vibronic ${DMRG_APP_LIBRARIES})
 endif(BUILD_VIBRONIC)
 
-# -- Tests related to the integrals management --
+if((BUILD_VIBRATIONAL) OR (BUILD_VIBRONIC))
+    add_executable(test_mps_initializers_vibrational mps_initializers/test_mps_initializers_vibrational.cpp)
+    target_link_libraries(test_mps_initializers_vibrational ${DMRG_APP_LIBRARIES})
+endif((BUILD_VIBRATIONAL) OR (BUILD_VIBRONIC))
 
+# -- Tests related to the integrals management --
 add_executable(test_integral_map IntegralParser/test_integral_map.cpp)
 target_link_libraries(test_integral_map ${DMRG_APP_LIBRARIES})
 add_executable(test_IndexTuple IntegralParser/test_IndexTuple.cpp)
@@ -170,6 +172,10 @@ target_link_libraries(test_generalized_eigenvalue_problem ${DMRG_APP_LIBRARIES})
 # -- Unit tests --
 add_executable(test_block_matrix block_matrix/block_matrix.cpp)
 target_link_libraries(test_block_matrix ${DMRG_APP_LIBRARIES})
+add_executable(test_mps_tensor mpstensor/mpstensor.cpp)
+target_link_libraries(test_mps_tensor ${DMRG_APP_LIBRARIES})
+add_executable(test_mps_initializers_electronic mps_initializers/test_mps_initializers_electronic.cpp)
+target_link_libraries(test_mps_initializers_electronic ${DMRG_APP_LIBRARIES})
 add_executable(test_1D_mpo_electronic mpo/test_1D_mpo_electronic.cpp)
 target_link_libraries(test_1D_mpo_electronic ${DMRG_APP_LIBRARIES})
 add_executable(test_overlap_propagator_electronic SweepOptimizationTools/OverlapPropagatorElectronic.cpp)

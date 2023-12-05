@@ -114,7 +114,7 @@ public:
   } // Constructor
 
   /** @brief Converts the relative position of a given particle type into its absolute position on the lattice */
-  pos_t get_abs_position(part_type const & pt, pos_t const & rel_pos) const {
+  pos_t get_abs_position(part_type const & pt, pos_t const & rel_pos) const override {
     //throw std::runtime_error("get_abs_position must be debugged first.");
     //unsigned int abs_pos=0;
     //for (unsigned int i=0; i<pt; i++) {
@@ -129,7 +129,7 @@ public:
   }
 
   /** @brief Gets the next site in the lattice */
-  std::vector<pos_t> forward(pos_t i) const {
+  std::vector<pos_t> forward(pos_t i) const override {
     std::vector<pos_t> ret;
     if (i < L-1)
       ret.push_back(i+1);
@@ -137,7 +137,7 @@ public:
   }
 
   /** @brief Gets the neighbours of a given site */
-  std::vector<pos_t> all(pos_t i) const {
+  std::vector<pos_t> all(pos_t i) const override {
     std::vector<pos_t> ret;
     if (i < L-1)
       ret.push_back(i+1);
@@ -153,8 +153,7 @@ public:
    * @param pos
    * @return boost::any
    */
-  boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const
-  {
+  boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const override {
     if (property == "type" && pos.size() == 1)
       return boost::any(vec_lattice_type[pos[0]]);
     else if (property == "Mmax" && pos.size() == 1)
@@ -189,7 +188,7 @@ public:
   }
 
   /** @brief Getter for the lattice size */
-  pos_t size() const { return L; }
+  pos_t size() const override { return L; }
   
   /** @brief Getter for the number of types of sites */
   int getMaxType() const override { return numTypes; }

@@ -20,7 +20,7 @@
 namespace FeastHelper {
 
 /** @brief Enum class representing whether a root is accepted or not */
-enum class EigenvalueSelection {Accepted, NotInInterval, HighVariance };
+enum class EigenvalueSelection {Accepted, NotInInterval, HighVariance, TruncatedEnergyLower};
 
 /** @brief Class devoted to the post-processing of the FEAST data */
 template <class SymmGroup>
@@ -44,9 +44,9 @@ public:
   using MatrixOfMPSs = std::map<std::pair<int, int>, MPSType >;
 
   FEASTPostProcessor(int numberOfStates, int numberOfQuadrature, const std::vector<ComplexNumber>& w, const ModelType& inputModel,
-                     const LatticeType& inputLattice, BaseParameters& parms_, double eMin_, double eMax_)
+                     const LatticeType& inputLattice, BaseParameters& parms_, double eMin_, double eMax_, bool verbose = false)
     : nStates(numberOfStates), nQuad(numberOfQuadrature), weights(w), model(inputModel), lattice(inputLattice), calculateStandardDeviation(false),
-      eMin(eMin_), eMax(eMax_), parms(parms_), screenedEnergies()
+      eMin(eMin_), eMax(eMax_), verbose_(verbose), parms(parms_), screenedEnergies()
   {
     energies = std::vector<double>(nStates, 0);
     energiesPrev = std::vector<double>(nStates, 0);
@@ -57,10 +57,10 @@ public:
     calculateStandardDeviation = (parms["feast_calculate_standard_deviation"] == "yes");
     screenStandardDeviation = parms.is_set("feast_standard_deviation_threshold");
     if (screenStandardDeviation)
-      standardDeviationScreening = parms["feast_standard_deviation_threshold"].as<double>();
+      standardDeviationScreening = parms["feast_standard_deviation_threshold"].template as<double>();
   }
 
-  /** @brief Updates teh mps container */
+  /** @brief Updates the mps container */
   void updateContainer(std::shared_ptr<ResultContainerType> container) {
     mpsContainer = container;
   }
@@ -71,8 +71,6 @@ public:
    */
   void solveEigenvalueProblem(const MPOType& mpo) {
     // -- Hamiltonian matrix construction --
-    // auto Hvec = std::vector<cmat_type>(omp_get_max_threads(), cmat_type::Zero(n_states, n_states));
-    // auto Bvec = std::vector<cmat_type>(omp_get_max_threads(), cmat_type::Zero(n_states, n_states));
     ComplexMatrixType H = ComplexMatrixType(nStates, nStates, 0.);
     ComplexMatrixType B = ComplexMatrixType(nStates, nStates, 0.);
     maquis::cout << std::endl;
@@ -95,10 +93,12 @@ public:
         }
       }
     }
-    // maquis::cout << " Hamiltonian matrix in the FEAST subspace" << std::endl;
-    // maquis::cout << H << std::endl;
-    // maquis::cout << " Overlap matrix of the FEAST subspace" << std::endl;
-    // maquis::cout << B << std::endl;
+    // if (verbose_) {
+    //   maquis::cout << " Hamiltonian matrix in the FEAST subspace" << std::endl;
+    //   maquis::cout << H << std::endl;
+    //   maquis::cout << " Overlap matrix of the FEAST subspace" << std::endl;
+    //   maquis::cout << B << std::endl;
+    // }
     // for (int i = 0; i < nStates; i++)
     //   normVector[i] = std::sqrt(std::real(B(i, i)));
     // for (int i = 0; i < nStates; i++) {
@@ -149,8 +149,6 @@ public:
    */
   auto performBackTransformation(const MPOType& mpo, int mMax, bool truncEach) {
     // Generates the MPS files for the new FEAST iteration
-    // using MatrixOfMPSs = Eigen::Matrix< MPS<cMatrix, SymmGroup>, -1, -1>;
-    // MatrixOfMPSs mps_transf(n_states, n_states);
     MatrixOfMPSs mpsTransformed;
     // Variable definition
     auto refNorm = ietl::two_norm(mpsContainer->begin()->second[0]);
@@ -238,9 +236,14 @@ public:
     }
     // Finalizes
     screenedEnergies.clear();
-    for (int iState = 0; iState < energies.size(); iState++)
-      if (accepted[iState] == EigenvalueSelection::Accepted)
+    for (int iState = 0; iState < energies.size(); iState++) {
+      if (accepted[iState] == EigenvalueSelection::Accepted) {
         screenedEnergies.push_back(energies[iState]);
+        // Check whether the truncated energy is actually higher than the full FEAST one
+        if (truncatedEnergy[iState] < energies[iState])
+          accepted[iState] = EigenvalueSelection::TruncatedEnergyLower;
+      }
+    }
     return currentFEASTMPSs;
   }
 
@@ -257,6 +260,13 @@ public:
                        << std::setw(23) << std::right << std::fixed << std::setprecision(8) << energies[iState]
                        << std::setw(23) << std::right << std::fixed << std::setprecision(8) << truncatedEnergy[iState]
                        << "  --> ROOT ACCEPTED";
+          break;
+        case EigenvalueSelection::TruncatedEnergyLower:
+          maquis::cout << std::setw(13) << std::internal << iState
+                       << std::setw(23) << std::right << std::fixed << std::setprecision(8) << energiesPrev[iState]
+                       << std::setw(23) << std::right << std::fixed << std::setprecision(8) << energies[iState]
+                       << std::setw(23) << std::right << std::fixed << std::setprecision(8) << truncatedEnergy[iState]
+                       << "  --> ROOT ACCEPTED, BUT BE AWARE: truncated energy is lower than the full FEAST MPS energy!";
           break;
         case EigenvalueSelection::NotInInterval:
           maquis::cout << std::setw(13) << std::internal << iState
@@ -281,7 +291,7 @@ public:
       maquis::cout << " |   State    |    Energy standard deviation   |" << std::endl;
       maquis::cout << " +---------------------------------------------+" << std::endl;
       for (int iState = 0; iState < energies.size(); iState++) {
-        if (accepted[iState] == EigenvalueSelection::Accepted) {
+        if (accepted[iState] == EigenvalueSelection::Accepted || accepted[iState] == EigenvalueSelection::TruncatedEnergyLower) {
           maquis::cout << std::setw(13) << std::internal << iState
                        << std::setw(23) << std::right << std::fixed << std::setprecision(8) << standardDeviations[iState]
                        << std::endl;
@@ -309,7 +319,7 @@ public:
   auto getScreenedMPSs() const {
     auto screenedMPS = std::make_shared<VectorOfMPSs>();
     for (int iState = 0; iState < currentFEASTMPSs->size(); iState++)
-      if (accepted[iState] == EigenvalueSelection::Accepted)
+      if (accepted[iState] == EigenvalueSelection::Accepted || accepted[iState] == EigenvalueSelection::TruncatedEnergyLower)
         screenedMPS->push_back(currentFEASTMPSs->operator[](iState));
     return screenedMPS;
   }
@@ -365,7 +375,7 @@ private:
   std::vector<EigenvalueSelection> accepted;                     // Eigenpairs that are accepted.
   std::vector<double> truncatedEnergy, standardDeviations;       // FEAST-specific double parameters for checks.
   ComplexMatrixType feastEigenVectors;                           // FEAST --> eigenvalues transformation matrix.
-  static constexpr int thresholdForRank_ = 1.0E-10;              // Threshold for rank.
+  static constexpr double thresholdForRank_ = 1.0E-10;           // Threshold for rank.
   RealVectorType eigenValues;                                    // FEAST Eigenvalues
   std::vector<ComplexNumber> weights;                            // Quadrature weights.
   const ModelType& model;                                        // DMRG model.
@@ -375,6 +385,7 @@ private:
   double eMin, eMax;                                             // FEAST integration boundaries.
   double standardDeviationScreening;                             // Screening parameter for the standard deviation
   std::shared_ptr<VectorOfMPSs> currentFEASTMPSs;                // Current approximation to the FEAST eigenvalues;
+  bool verbose_;                                                 // Verbosity flag for printings
 };
 
 } // namespace FeastHelper

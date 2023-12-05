@@ -35,6 +35,8 @@
 #include <boost/mpl/int.hpp>
 #include <boost/filesystem/path.hpp>
 
+using namespace boost::placeholders;
+
 #include <string>
 #include <complex>
 #include <typeinfo>
@@ -90,24 +92,24 @@ namespace alps {
     };
 
     #define ALPS_NGS_CAST_STRING(T, p, c)                                            \
-        template<> struct cast_hook<std::string, T > {                                \
+        template<> struct cast_hook<std::string, T > {                               \
             static inline std::string apply( T arg) {                                \
                 char buffer[255];                                                    \
-                if (sprintf(buffer, "%" p "" c, arg) < 0)                            \
+                if (snprintf(buffer, sizeof(buffer), "%" p "" c, arg) < 0)           \
                     throw std::runtime_error(                                        \
-                        "error casting from " #T " to string" + ALPS_STACKTRACE        \
-                    );                                                                \
-                return buffer;                                                        \
+                        "error casting from " #T " to string" + ALPS_STACKTRACE      \
+                    );                                                               \
+                return buffer;                                                       \
             }                                                                        \
-        };                                                                            \
-        template<> struct cast_hook< T, std::string> {                                \
-            static inline T apply(std::string arg) {                                \
-                T value = 0;                                                        \
+        };                                                                           \
+        template<> struct cast_hook< T, std::string> {                               \
+            static inline T apply(std::string arg) {                                 \
+                T value = 0;                                                         \
                 if (arg.size() && sscanf(arg.c_str(), "%" c, &value) < 0)            \
                     throw std::runtime_error(                                        \
                           "error casting from string to " #T ": "                    \
-                        + arg + ALPS_STACKTRACE                                        \
-                    );                                                                \
+                        + arg + ALPS_STACKTRACE                                      \
+                    );                                                               \
                 return value;                                                        \
             }                                                                        \
         };

@@ -14,7 +14,6 @@
 #include <sys/stat.h>
 
 #include "dmrg/sim/sim.h"
-// #include "dmrg/optimize/optimize.h"
 #include "dmrg/evolve/TimeEvolutionSweep.h"
 #include "dmrg/mp_tensors/mpo_times_mps.hpp"
 #include "dmrg/models/MolecularHamiltonians/measure_transform.hpp"
@@ -61,7 +60,7 @@ public:
   explicit interface_sim(DmrgParameters& parms_) : base(parms_), last_sweep_(init_sweep-1) { }
 
   /** @brief Runs a DMRG-based optimization */
-  void run(const std::string& simulationType) {
+  void run(const std::string& simulationType) override {
     if (simulationType == "optimize")
       this->runAlternatingLeastSquares("optimize", parms["nsweeps"].template as<int>(), parms["conv_thresh"].template as<double>(), model, parms);
     else if (simulationType == "evolve")
@@ -78,7 +77,6 @@ public:
   }
 
   /** @brief Runs a FEAST simulation */
-  // TODO: fix the MPS that is actually extracted -- it should be not necessarily th 0-th one.
   void runFEASTSimulation() {
 #ifdef DMRG_FEAST
     try {
@@ -104,17 +102,19 @@ public:
     // Exctracts all relevant parameters
     double energyConvergenceThreshold = parms["ipi_sweep_energy_threshold"];
     double overlapConvergenceThreshold = parms["ipi_sweep_overlap_threshold"];
-    int numberOfSweepPerSystem = parms["ipi_sweeps_per_system"];
+    int numberOfSweepsPerSystem = parms["nsweeps"];
     int numberOfOuterIterations = parms["ipi_iterations"];
     typename Matrix::value_type shift = parms["ipi_shift"];
+    double convThreshOfLinSystem = parms["conv_thresh"];
     maquis::cout << " ===================================================== " << std::endl;
-    maquis::cout << "   STARTING DMRG[INVERSE POWER ITERATION] SIMULATION = " << std::endl;
+    maquis::cout << "   STARTING DMRG[INVERSE POWER ITERATION] SIMULATION   " << std::endl;
     maquis::cout << " ===================================================== " << std::endl;
     maquis::cout << std::endl;
     maquis::cout << " IPI energy convergence threshold:   " << energyConvergenceThreshold << std::endl;
     maquis::cout << " IPI overlap convergence threshold:  " << overlapConvergenceThreshold << std::endl;
-    maquis::cout << " Number of sweeps per linear system: " << numberOfSweepPerSystem << std::endl;
-    maquis::cout << " Shift parameter: " << shift << std::endl;
+    maquis::cout << " Maximum number of IPI iterations:   " << numberOfOuterIterations << std::endl;   
+    maquis::cout << " Number of sweeps per linear system: " << numberOfSweepsPerSystem << std::endl;
+    maquis::cout << " Shift parameter:                    " << shift << std::endl;
     maquis::cout << std::endl;
     // Prepares data structure where to store results
     std::vector<RealType> energiesForIPIIteration;
@@ -126,24 +126,25 @@ public:
     // IPI macroiteration
     while (!convergedOuter) {
       double nextEnergy, energyDifference;
-      this->runAlternatingLeastSquares("linear_system", numberOfSweepPerSystem, 0., model, parms);
+      this->runAlternatingLeastSquares("linear_system", numberOfSweepsPerSystem, convThreshOfLinSystem, model, parms);
       nIpiIterations += 1;
       nextEnergy = this->get_energy();
       energiesForIPIIteration.push_back(nextEnergy);
-      energyDifference = std::fabs(nextEnergy - previousEnergy);
+      energyDifference = std::abs(nextEnergy - previousEnergy);
       auto mpsOverlap = overlap(mpsBackup, this->mps)/std::sqrt(norm(mpsBackup)*norm(this->mps));
       auto precision = std::cout.precision();
-      maquis::cout << " == RESULTS FOR THE " << nIpiIterations << "-th iteration ==" << std::endl;
+      maquis::cout << " === RESULTS FOR THE " << nIpiIterations << "-th iteration ===" << std::endl;
       std::cout.precision(10);
-      maquis::cout << " - Energy difference for iteration = " << nIpiIterations << " = " << energyDifference << std::endl;
-      maquis::cout << " - MPS overlap with solution at previous iteration = " << std::fabs(mpsOverlap) << std::endl;
+      maquis::cout << " - Energy difference to previous iteration =         " << energyDifference << std::endl;
+      maquis::cout << " - MPS overlap with solution at previous iteration = " << std::abs(mpsOverlap) << std::endl;
       maquis::cout << std::endl;
       std::cout.precision(precision);
       // Checks convergence and, if not reached, starts a new IPI iteration
       if (nIpiIterations == numberOfOuterIterations || energyDifference < energyConvergenceThreshold ||
-          std::fabs(1.-std::fabs(mpsOverlap)) < overlapConvergenceThreshold)
+          std::abs(1.-std::abs(mpsOverlap)) < overlapConvergenceThreshold)
       {
-        maquis::cout << " --> CONVERGENCE REACHED" << std::endl;
+        std::string message = (nIpiIterations == numberOfOuterIterations) ? " --> MAXIMUM NUMBER OF IPI ITERATIONS REACHED" : " --> CONVERGENCE REACHED";
+        maquis::cout << message << std::endl;
         convergedOuter = true;
       }
       else {
@@ -167,7 +168,6 @@ public:
     int meas_each = parms["measure_each"];
     int chkp_each = parms["chkp_each"];
     // -- Optimizer initialization --
-    //std::shared_ptr<opt_base_t> optimizer;
     if (parms["optimization"] == "singlesite")
       // optimizer.reset( new ss_optimize<Matrix, SymmGroup, storage::disk>
       //                 (mps, mpo, parms, stop_callback, lat, init_site) );
@@ -182,10 +182,10 @@ public:
     auto always_measurements = this->iteration_measurements(init_sweep);
     auto firstEnergy = this->get_energy();
     energies_.push_back(firstEnergy);
+    maquis::cout << "Initial energy is: " << std::setprecision(15) << firstEnergy << std::endl;
     // Run the sweep-based simulation.
     try {
       for (int sweep=init_sweep; sweep < nSweeps; ++sweep) {
-        // optimizer->sweep(sweep, Both);
         factory_->runSingleSweep(sweep);
         storage::disk::sync();
         bool converged = false;
@@ -194,11 +194,14 @@ public:
           dumpEnergy(sweep);
           if (!rfile().empty() && always_measurements.size() > 0)
             this->measure(this->results_archive_path(sweep) + "/results/", always_measurements);
-          // stop simulation if an energy threshold has been specified
           int prev_sweep = sweep - meas_each;
-          if (prev_sweep >= 0)
+          // stop simulation if an energy threshold has been specified
+          // Do not check convergence for propagation, since energy should be conserved by definition
+          if (prev_sweep >= 0 && !(simulationType=="evolve" && parms["imaginary_time"] == "no"))
             converged = checkEnergyConvergence(energyThreshold);
         }
+        if (converged)
+          maquis::cout << "ALS CONVERGED -- SWEEPING PROCEDURE TERMINATED" << std::endl;
         last_sweep_ = sweep;
         /// write checkpoint
         bool stopped = stop_callback() || converged;
@@ -337,8 +340,7 @@ public:
   */
 
   /** @brief Runs a measurement calculation */
-  void run_measure()
-  {
+  void run_measure() override {
     //if (this->get_last_sweep() < 0)
     //    throw std::runtime_error("Tried to measure before a sweep");
     this->measure("/spectrum/results/", all_measurements);
@@ -359,7 +361,7 @@ public:
         }
     }
     // Measures the energy variance
-    if (parms["MEASURE[EnergyVariance]"] > 0)
+    if (parms["MEASURE[EnergyVariance]"])
     {
         if (!parms["MEASURE[Energy]"])
             energy = maquis::real(expval(mps, mpoc));
@@ -388,7 +390,7 @@ public:
     #endif
   }
 
-  results_map_type measure_out() {
+  results_map_type measure_out() override {
     results_map_type ret;
     // Do not measure before a sweep
     if (this->get_last_sweep() < 0)
@@ -410,9 +412,11 @@ public:
     return ret;
   }
 
-  /** @brief Gets the energy for the mps that is stored in the sim object */
-  /** if it is a feastMPS, return the feast energy of the zeroth feast state*/
-  RealType get_energy() {
+  /** 
+   * @brief Gets the energy for the mps that is stored in the sim object
+   * Note that, if it is a feastMPS, return the feast energy of the zeroth feast state
+   */
+  RealType get_energy() override {
     if (!feastMPSs_)
       return maquis::real(expval(mps, mpo)/overlap(mps, mps));
     else
@@ -428,7 +432,7 @@ public:
   }
 
   /** @brief Gets the FEAST energies -- throws an exception if FEAST is not run */
-  RealType getFEASTEnergy(int iState) const {
+  RealType getFEASTEnergy(int iState) const override {
     if (!feastMPSs_)
       throw std::runtime_error("FEAST energy requested before running a FEAST simulation");
     else if (iState >= feastMPSs_->size()) {
@@ -462,7 +466,7 @@ public:
   }
 
   /** @brief Updates the integral and regenerates the data that depends on it */
-  void update_integrals(const chem::integral_map<typename Matrix::value_type> & integrals)
+  void update_integrals(const chem::integral_map<typename Matrix::value_type> & integrals) override
   {
 
         // integrals are set later anyways
@@ -524,7 +528,7 @@ public:
         all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
     }
 
-    results_collector& get_iteration_results()
+    results_collector& get_iteration_results() override
     {
         // If iteration_results is empty, we didn't perform the sweep yet, but possibly loaded the MPS from a checkpoint
         // so we need to load also iteration results
@@ -568,9 +572,8 @@ public:
     all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
   }
 
-
   /** @brief Get the overlap of the MPS with another MPS, which is loaded from a chkp file */
-  virtual typename Matrix::value_type get_overlap(const std::string & aux_filename)
+  virtual typename Matrix::value_type get_overlap(const std::string & aux_filename) override
   {
       maquis::checks::symmetry_check(parms, aux_filename);
       MPS<Matrix, SymmGroup> aux_mps;
@@ -579,7 +582,7 @@ public:
   }
 
   /** @brief Getter for the number of sweeps that have been run */
-  int get_last_sweep() { return last_sweep_; };
+  int get_last_sweep() override { return last_sweep_; }
 
   /** @brief Class destructor */
   ~interface_sim() { storage::disk::sync(); }
@@ -610,13 +613,10 @@ private:
 
   /**  @brief Checks energy convergence of the sweep-based optimization */
   bool checkEnergyConvergence(double convergenceThreshold) {
-    bool converged = false;
-    auto emin = *std::min_element(energies_.begin(), energies_.end()-1);
-    auto eminNew = *std::min_element(energies_.begin(), energies_.end());
-    auto eDiff = std::abs(emin - eminNew);
-    if (eDiff < convergenceThreshold)
-      converged = true;
-    return converged;
+    if (energies_.size() < 2) // Not yet sufficient number of iterations
+      return false;
+    auto eDiff = std::abs(*(energies_.end()-2) - *(energies_.end()-1));
+    return (eDiff < convergenceThreshold);
   }
 
   /** @brief Returns the path where the result of a given sweep are stored */

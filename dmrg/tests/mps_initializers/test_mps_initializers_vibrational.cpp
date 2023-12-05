@@ -1,36 +1,20 @@
-/*****************************************************************************
-*
-* ALPS MPS DMRG Project
-*
-* Copyright (C) 2021 Institute for Theoretical Physics, ETH Zurich
-*               2021 Alberto Baiardi <abaiardi@ethz.ch>
-*
-* This software is part of the ALPS Applications, published under the ALPS
-* Application License; you can use, redistribute it and/or modify it under
-* the terms of the license, either version 1 or (at your option) any later
-* version.
-*
-* You should have received a copy of the ALPS Application License along with
-* the ALPS Applications; see the file LICENSE.txt. If not, the license is also
-* available from http://alps.comp-phys.org/.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
-* SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
-* FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
-* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-* DEALINGS IN THE SOFTWARE.
-*
-*****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #define BOOST_TEST_MODULE MPS_INITIALIZER_VIBRATIONAL
 
 #ifdef DMRG_VIBRATIONAL
-
-#include <iostream>
-#include <boost/test/included/unit_test.hpp>
 #include "Fixtures/NModeFixture.h"
+#include "Fixtures/WatsonFixture.h"
+#endif
+#ifdef DMRG_VIBRONIC
+#include "Fixtures/VibronicFixture.h"
+#endif
+
 #include "dmrg/models/model.h"
 #include "dmrg/models/lattice/lattice.h"
 #include "dmrg/mp_tensors/mps_initializers_helper.h"
@@ -38,6 +22,11 @@
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/models/generate_mpo.hpp"
+
+#include <iostream>
+#include <boost/test/included/unit_test.hpp>
+
+#ifdef DMRG_VIBRATIONAL
 
 BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_Helper_NU1, NModeFixture)
 {
@@ -60,18 +49,18 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_Helper_NU1, NModeFixture)
                                                                                          siteTypes, latticeSize);
   for (int iSite = 0; iSite < outputVector.size(); iSite++) {
     if (iSite == 1) {
-      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite])[0], 1);
-      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite])[1], 0);
+      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite][0])[0], 1);
+      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite][0])[1], 0);
     }
     else if (iSite == 13) {
-      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite])[0], 0);
-      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite])[1], 1);
+      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite][0])[0], 0);
+      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite][0])[1], 1);
     }
     else {
-      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite])[0], 0);
-      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite])[1], 0);
+      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite][0])[0], 0);
+      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite][0])[1], 0);
     }
-    BOOST_CHECK_EQUAL(boost::get<1>(outputVector[iSite]), 0);
+    BOOST_CHECK_EQUAL(boost::get<1>(outputVector[iSite][0]), 0);
   }
 #endif
 }
@@ -155,4 +144,75 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_TwoMode_NU1_ArbitrarySortin
 
 #endif // HAVE_NU1
 
+#ifdef HAVE_TrivialGroup
+
+/** @brief Tests the coherent initialization of an MPS */
+BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_Coherent, WatsonFixture)
+{
+  using Symmetry = TrivialGroup;
+  auto lattice = Lattice(parametersEthyleneWatson);
+  int latticeSize = lattice.size();
+  auto watsonModel = Model<matrix, Symmetry>(lattice, parametersEthyleneWatson);
+  auto mpo = make_mpo(lattice, watsonModel);
+  // Construction of the ground state
+  parametersEthyleneWatson.set("init_type", "basis_state_generic");
+  parametersEthyleneWatson.set("init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0");
+  auto mpsGS = MPS<matrix, Symmetry>(latticeSize, *(watsonModel.initializer(lattice, parametersEthyleneWatson)));
+  // Construction of the excited state
+  parametersEthyleneWatson.set("init_type", "basis_state_generic");
+  parametersEthyleneWatson.set("init_basis_state", "1,0,0,0,0,0,0,0,0,0,0,0");
+  auto mpsES = MPS<matrix, Symmetry>(latticeSize, *(watsonModel.initializer(lattice, parametersEthyleneWatson)));
+  // Construction of the coherent superposition
+  parametersEthyleneWatson.set("init_type", "coherent");
+  parametersEthyleneWatson.set("init_coeffs", "0.5,0.5");
+  parametersEthyleneWatson.set("init_bond_dimension", 6);
+  parametersEthyleneWatson.set("init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0|1,0,0,0,0,0,0,0,0,0,0,0");
+  auto mpsCoherent = MPS<matrix, Symmetry>(latticeSize, *(watsonModel.initializer(lattice, parametersEthyleneWatson)));
+  // The energy is taken from the integral provides as input in the fixture class.
+  auto energyGS = expval(mpsGS, mpo)/norm(mpsGS);
+  auto energyES = expval(mpsES, mpo)/norm(mpsES);
+  auto energyCoherent = expval(mpsCoherent, mpo)/norm(mpsCoherent);
+  //
+  BOOST_CHECK_CLOSE(energyGS+energyES, 2*energyCoherent, 1.0E-10);
+}
+
+
+#endif // HAVE_NONE
 #endif // DMRG_VIBRATIONAL
+
+
+#ifdef DMRG_VIBRONIC
+
+/** @brief Tests the coherent initialization of an MPS in the excitonicextended model */
+BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_Coherent_ExitonicExtended, VibronicFixture)
+{
+#ifdef HAVE_U1
+  using Symmetry = U1;
+  auto lattice = Lattice(parametersSimpleCoherent);
+  int latticeSize = lattice.size();
+  auto eeModel = Model<matrix, Symmetry>(lattice, parametersSimpleCoherent); //excitonicextended (EE) model
+  auto mpo = make_mpo(lattice, eeModel);
+  // Construction of the first state (excitation on monomer one)
+  parametersSimpleCoherent.set("init_type", "basis_state_generic");
+  parametersSimpleCoherent.set("init_basis_state", "1,0,0,0");
+  auto mpsStateOne = MPS<matrix, Symmetry>(latticeSize, *(eeModel.initializer(lattice, parametersSimpleCoherent)));
+  // Construction of the second state (excitation on monomer two)
+  parametersSimpleCoherent.set("init_type", "basis_state_generic");
+  parametersSimpleCoherent.set("init_basis_state", "0,0,1,0");
+  auto mpsStateTwo = MPS<matrix, Symmetry>(latticeSize, *(eeModel.initializer(lattice, parametersSimpleCoherent)));
+  // Construction of the coherent superposition
+  parametersSimpleCoherent.set("init_type", "coherent");
+  parametersSimpleCoherent.set("init_coeffs", "0.5,0.5");
+  parametersSimpleCoherent.set("init_bond_dimension", 5);
+  parametersSimpleCoherent.set("init_basis_state", "1,0,0,0|0,0,1,0");
+  auto mpsCoherent = MPS<matrix, Symmetry>(latticeSize, *(eeModel.initializer(lattice, parametersSimpleCoherent)));
+  // The energy is taken from the integral provides as input in the fixture class.
+  auto energyOne = expval(mpsStateOne, mpo)/norm(mpsStateOne);
+  auto energyTwo = expval(mpsStateTwo, mpo)/norm(mpsStateTwo);
+  auto energyCoherent = expval(mpsCoherent, mpo)/norm(mpsCoherent);
+  //
+  BOOST_CHECK_CLOSE(energyOne+energyTwo, 2*energyCoherent, 1.0E-10);
+#endif // HAVE_U1
+}
+
+#endif // DMRG_VIBRONIC

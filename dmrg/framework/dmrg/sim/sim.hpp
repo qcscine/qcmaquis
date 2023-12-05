@@ -61,17 +61,16 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
     bool hasSU2 = symm_traits::HasSU2<SymmGroup>::value;
 
     dmrg_random::engine.seed(parms["seed"]);
-    // check possible orbital order in existing MPS before(!) model initialization
-    if (!chkpfile.empty())
-    {
-        boost::filesystem::path p(chkpfile);
-        if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "props.h5"))
-            maquis::checks::orbital_order_check(parms, chkpfile);
+
+    // Figures out the file where to look into
+    if (parms.is_set("init_ckpt")) {
+      chkpfile = parms["init_ckpt"].as<std::string>();
     }
 
     // Load MPS from checkpoint
     if (!chkpfile.empty())
     {
+        // Checks if the reference checkpoint actually exists
         boost::filesystem::path p(chkpfile);
         if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5"))
         {
@@ -153,6 +152,7 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
         mps = MPS<Matrix, SymmGroup>(lat.size(), *(model.initializer(lat, parms)));
     }
 
+    all_measurements << autocorrelation_measurements<Matrix, SymmGroup>(parms, mps);
     assert(mps.length() == lat.size());
 
     /// Update parameters - after checks have passed
@@ -231,8 +231,21 @@ std::string sim<Matrix, SymmGroup>::results_archive_path(status_type const& stat
 template <class Matrix, class SymmGroup>
 void sim<Matrix, SymmGroup>::measure(std::string archive_path, measurements_type & meas)
 {
+    #ifdef MAQUIS_OPENMP
+    if(parms["parallelize_measurements"]){
+        #pragma omp parallel for schedule(dynamic)
+        for (typename measurements_type::iterator it = meas.begin(); it < meas.end(); it++) {
+        MPS<Matrix, SymmGroup> mpsCopy = mps; // this is required as the measurements might change the pairing of the mps
+        // note that omp firstprivate cannot be used since the mps does apparently not fulfill the necessary requirements
+        measure_and_save<Matrix, SymmGroup> ms(rfile(), archive_path, mpsCopy);
+        ms(*it);
+        }
+    }
+    else std::for_each(meas.begin(), meas.end(), measure_and_save<Matrix, SymmGroup>(rfile(), archive_path, mps)); 
+    #else
     std::for_each(meas.begin(), meas.end(), measure_and_save<Matrix, SymmGroup>(rfile(), archive_path, mps));
-
+    #endif
+    
     // TODO: move into special measurement
     std::vector<int> * measure_es_where = NULL;
     entanglement_spectrum_type * spectra = NULL;

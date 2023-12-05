@@ -49,6 +49,13 @@ MPS<Matrix, SymmGroup>::MPS(size_t L, mps_initializer<Matrix, SymmGroup> & init)
     //     adhoc states will be broken (e.g. identity MPS)
     // for (int i = 0; i < L; ++i)
     //     (*this)[i].normalize_left(DefaultSolver());
+    #ifndef NDEBUG
+    maquis::cout << "MPS is now initialized but not yet left_normalized ...\n";
+    for (int p = 0; p < this->length(); ++p) {
+        maquis::cout << "MPS at site " << p << ":" << std::endl;
+        maquis::cout << (*this)[p];
+    }
+    #endif
     this->normalize_left();
 }
 
@@ -64,6 +71,16 @@ typename MPS<Matrix, SymmGroup>::value_type& MPS<Matrix, SymmGroup>::operator[](
     if (i != canonized_i)
         canonized_i=std::numeric_limits<size_t>::max();
     return data_[i];
+}
+
+template<class Matrix, class SymmGroup>
+std::ostream& operator<<(std::ostream& os, MPS<Matrix, SymmGroup> const & mps)
+{
+    for (int i=0; i<mps.length(); i++) {
+      os << "Site: " << i << std::endl;
+      os << mps[i] << std::endl;
+    }
+    return os;
 }
 
 template<class Matrix, class SymmGroup>
@@ -379,11 +396,10 @@ void check_equal_mps (MPS<Matrix, SymmGroup> const & mps1, MPS<Matrix, SymmGroup
         }
 }
 
+/** @brief Function to ensure consistent indices across bonds by removing blocks without connection across bonds */
 template <class Matrix, class SymmGroup>
 void clean_mps(MPS<Matrix, SymmGroup> & mps)
 {
-    // ensure consistent indices across bonds by removing blocks without connection across bonds
-
     bool again;
     do {
         again = false;

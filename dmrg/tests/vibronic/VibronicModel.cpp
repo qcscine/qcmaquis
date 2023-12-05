@@ -47,8 +47,8 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_PhysDim_FakeVibronic, VibronicFixture)
 {
     auto lattice = Lattice(parametersFakeVibronic);
     auto fakeVibronicModel = VibronicModel<tmatrix<double>>(lattice, parametersFakeVibronic);
-    BOOST_CHECK_EQUAL(fakeVibronicModel.phys_dim(0).sum_of_sizes(), 6);
-    BOOST_CHECK_EQUAL(fakeVibronicModel.phys_dim(1).sum_of_sizes(), 2);
+    BOOST_CHECK_EQUAL(fakeVibronicModel.phys_dim(1).sum_of_sizes(), 6);
+    BOOST_CHECK_EQUAL(fakeVibronicModel.phys_dim(0).sum_of_sizes(), 2);
 }
 
 /** Checks consistency for the overall QN for the fake vibronic model */

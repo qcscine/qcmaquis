@@ -1,5 +1,9 @@
 # Changelog
 
+## Release 3.X.X
+
+- Removed keyword "ipi_sweeps_per_system", instead the standard keyword "nsweeps" is used. 
+
 ## Release 3.1.2
 
 - Added support for vibrational Hamiltonians, both within the canonical quantization and within the n-mode frameworks.

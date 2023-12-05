@@ -117,19 +117,6 @@ namespace boost {
                 return seed;
             }
     };
-
-    // Leon: Commented out as it breaks on later Boost versions!
-    // Anyway to whoever did that: overloading functions in standard namespaces is bad practice!
-    /*
-    template <>
-    class hash<std::pair<int, int>  >{
-        public :
-            size_t operator()(std::pair<int, int> const &Pair_of_charge ) const {
-                return boost::hash_value(Pair_of_charge);
-            }
-    };
-    */
-
 };
 
 template<int N, class S>

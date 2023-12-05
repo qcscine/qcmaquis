@@ -40,17 +40,29 @@ public:
 
     void operator()(measurement<Matrix, SymmGroup> & meas) const
     {
-        maquis::cout << "Measuring " << meas.name() << std::endl;
+        #ifdef MAQUIS_OPENMP
+        #pragma omp critical
+        #endif
+        {
+            maquis::cout << "Measuring " << meas.name() << std::endl;
+        }
+
         meas.eigenstate_index() = eigenstate;
         meas.evaluate(mps, rmps);
-        if (!rfile.empty() && !archive_path.empty())
+        
+        #ifdef MAQUIS_OPENMP
+        #pragma omp critical
+        #endif
         {
-            storage::archive ar(rfile, "w");
-            ar[archive_path] << meas;
-        }
-        else
-        {
-            throw std::runtime_error("Result filename or archive path not specified. Cannot save to file.");
+            if (!rfile.empty() && !archive_path.empty())
+            {
+                storage::archive ar(rfile, "w");
+                ar[archive_path] << meas;
+            }
+            else
+            {
+                throw std::runtime_error("Result filename or archive path not specified. Cannot save to file.");
+            }
         }
     }
 
@@ -158,6 +170,18 @@ overlap_measurements(BaseParameters const & parms, boost::optional<size_t> sweep
             std::string name = what.str(1), bra_chkp = it.second;
             meas.push_back( new measurements::overlap<Matrix, SymmGroup>(name, bra_chkp) );
         }
+    }
+    return meas;
+}
+
+template <class Matrix, class SymmGroup>
+boost::ptr_vector<measurement<Matrix, SymmGroup> >
+autocorrelation_measurements(BaseParameters& parms, const MPS< Matrix, SymmGroup>& mpsReference)
+{
+    boost::ptr_vector<measurement<Matrix, SymmGroup> > meas;
+    if (parms.is_set("MEASURE[Autocorrelation]")) {
+        if (parms["MEASURE[Autocorrelation]"] == 1)
+            meas.push_back(new measurements::overlap<Matrix, SymmGroup>("Autocorrelation", mpsReference));
     }
     return meas;
 }

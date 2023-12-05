@@ -61,7 +61,7 @@ public:
   using term_descriptor = ::term_descriptor<value_type>;
   using tag_type = typename TagHandler<Matrix, SymmGroup>::tag_type;
   using pos_t = Lattice::pos_t;
-  using OperatorAndPosition = typename OperatorAndPosition<pos_t, tag_type>::OperatorAndPosition;
+  using OperatorAndPosition = OperatorAndPosition<pos_t, tag_type>;
   using sc_t = typename SymmGroup::subcharge;
   using PairType = std::pair<pos_t, OperatorType>;
 
