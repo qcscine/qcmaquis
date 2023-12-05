@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.16)
 
 ######################################################################
 # Machine Config
@@ -34,26 +34,26 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 # @kszenes use cache and mold linker (if available) for faster compilation
-find_program(CCACHE_PROGRAM ccache)
-if(CCACHE_PROGRAM)
-  message(STATUS "Found ccache in ${CCACHE_PROGRAM}")
-  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
-endif()
-
-find_program(MOLD_PROGRAM mold)
-if(MOLD_PROGRAM)
-  if ((CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-       OR (CMAKE_CXX_COMPILER_ID MATCHES "GNU"
-           AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 12))
-  message(STATUS "Found mold linker in ${MOLD_PROGRAM}")
-  add_link_options(-fuse-ld=mold)
-  endif()
-endif()
+# find_program(CCACHE_PROGRAM ccache)
+# if(CCACHE_PROGRAM)
+#   message(STATUS "Found ccache in ${CCACHE_PROGRAM}")
+#   set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
+# endif()
+#
+# find_program(MOLD_PROGRAM mold)
+# if(MOLD_PROGRAM)
+#   if ((CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+#        OR (CMAKE_CXX_COMPILER_ID MATCHES "GNU"
+#            AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 12))
+#   message(STATUS "Found mold linker in ${MOLD_PROGRAM}")
+#   add_link_options(-fuse-ld=mold)
+#   endif()
+# endif()
 
 # enable colored output for Ninja
-if (CMAKE_GENERATOR MATCHES "Ninja")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fdiagnostics-color=always")
-endif()
+# if (CMAKE_GENERATOR MATCHES "Ninja")
+#   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fdiagnostics-color=always")
+# endif()
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(CMAKE_INSTALL_PREFIX "/opt/maquis" CACHE PATH "MAQUIS install prefix" FORCE)
