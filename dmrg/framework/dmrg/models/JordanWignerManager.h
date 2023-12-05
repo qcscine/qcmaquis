@@ -61,7 +61,6 @@ public:
   using term_descriptor = ::term_descriptor<value_type>;
   using tag_type = typename TagHandler<Matrix, SymmGroup>::tag_type;
   using pos_t = Lattice::pos_t;
-  using OperatorAndPosition = OperatorAndPosition<pos_t, tag_type>;
   using sc_t = typename SymmGroup::subcharge;
   using PairType = std::pair<pos_t, OperatorType>;
 
@@ -94,7 +93,7 @@ public:
     // Variables declaration
     assert(positions.size() == tags.size());
     int size = positions.size();
-    std::vector<OperatorAndPosition > localOperatorBuffer;
+    std::vector<OperatorAndPosition<pos_t, tag_type> > localOperatorBuffer;
     // Sorts and calculate the sign
     std::vector< PairType > tmpVector;
     tmpVector.reserve(size);
