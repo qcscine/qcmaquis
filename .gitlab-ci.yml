@@ -1,4 +1,4 @@
-image: gitlab.chab.ethz.ch:4567/reiher/docker/qcmaquis-gcc:latest
+image: gitlab.chab.ethz.ch:4567/reiher/docker/scine-gcc:latest
 
 # Pipeline that compiles the code with increasingly complex models
  
