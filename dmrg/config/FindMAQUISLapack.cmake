@@ -146,23 +146,19 @@ elseif(${BLAS_LAPACK_SELECTOR} MATCHES "openblas")
 
 elseif(${BLAS_LAPACK_SELECTOR} MATCHES "manual")
   # variables set manually
+
 else() # auto mode
-  message ("No linear algebra library provided, trying to guess... Make sure you compile with the correct integer interface!")
-  find_package(BLAS REQUIRED)
-  find_package(LAPACK REQUIRED)
-  message(STATUS "BLAS library: ${BLAS_LIBRARIES}")
-  message(STATUS "LAPACK library: ${LAPACK_LIBRARIES}")
+  message ("No linear algebra library provided, trying to guess... Make sure you compile with the correct integer interface.")
+  find_package(LAPACK)
   if(LAPACK_FOUND)
     set(MAQUISLapack_LIBRARIES ${LAPACK_LIBRARIES})
-
   endif(LAPACK_FOUND)
 
 endif()
 
 
-# include(FindPackageHandleStandardArgs)
-# find_package_handle_standard_args(MAQUISLapack REQUIRED_VARS MAQUISLapack_LIBRARIES)
-
 # include this to handle the QUIETLY and REQUIRED arguments
+include(FindPackageHandleStandardArgs)
 # find_package_handle_standard_args(MAQUISLapack FOUND_VAR MAQUISLapack_FOUND
 #                                                REQUIRED_VARS MAQUISLapack_LIBRARIES)
+find_package_handle_standard_args(MAQUISLapack REQUIRED_VARS MAQUISLapack_LIBRARIES)

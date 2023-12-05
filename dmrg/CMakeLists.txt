@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10.2)
+cmake_minimum_required(VERSION 3.16.2)
 
 ######################################################################
 # Machine Config
@@ -134,17 +134,6 @@ endif()
 # set_property(CACHE BLAS_LAPACK_SELECTOR PROPERTY STRINGS auto manual mkl_sequential mkl_parallel veclib openblas)
 
 include(BlasLapack)
-
-# BLAS/LAPACK selector
-find_package(MAQUISLapack REQUIRED)
-message(STATUS "Lapack include:  ${MAQUISLapack_INCLUDE_DIRS}")
-message(STATUS "Lapack lib dirs: ${MAQUISLapack_LIB_DIRS}")
-message(STATUS "Lapack libs:     ${MAQUISLapack_LIBRARIES}")
-list(APPEND DMRG_LIBRARIES ${MAQUISLapack_LIBRARIES})
-# ILP64 definition
-if(LAPACK_64_BIT)
-  add_definitions(-DBIND_FORTRAN_INTEGER_8)
-endif()
 
 # QCMaquis manual
 if (BUILD_MANUAL)
@@ -318,6 +307,16 @@ if((DMRG_HAS_SU2U1) OR (DMRG_HAS_SU2U1PG))
   list(APPEND DMRG_LIBRARIES ${GSL_LIBRARIES})
 endif()
 
+# BLAS/LAPACK selector
+find_package(MAQUISLapack REQUIRED)
+message(STATUS "Lapack include:  ${MAQUISLapack_INCLUDE_DIRS}")
+message(STATUS "Lapack lib dirs: ${MAQUISLapack_LIB_DIRS}")
+message(STATUS "Lapack libs:     ${MAQUISLapack_LIBRARIES}")
+list(APPEND DMRG_LIBRARIES ${MAQUISLapack_LIBRARIES})
+# ILP64 definition
+if(LAPACK_64_BIT)
+  add_definitions(-DBIND_FORTRAN_INTEGER_8)
+endif()
 
 # HDF5
 find_package(HDF5 REQUIRED)
