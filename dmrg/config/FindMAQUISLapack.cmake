@@ -161,8 +161,9 @@ else() # auto mode
 endif()
 
 
+# include(FindPackageHandleStandardArgs)
+# find_package_handle_standard_args(MAQUISLapack REQUIRED_VARS MAQUISLapack_LIBRARIES)
+
 # include this to handle the QUIETLY and REQUIRED arguments
-include(FindPackageHandleStandardArgs)
 # find_package_handle_standard_args(MAQUISLapack FOUND_VAR MAQUISLapack_FOUND
 #                                                REQUIRED_VARS MAQUISLapack_LIBRARIES)
-find_package_handle_standard_args(MAQUISLapack REQUIRED_VARS MAQUISLapack_LIBRARIES)
