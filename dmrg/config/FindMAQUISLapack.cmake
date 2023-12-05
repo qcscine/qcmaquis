@@ -150,9 +150,12 @@ elseif(${BLAS_LAPACK_SELECTOR} MATCHES "manual")
 else() # auto mode
   message ("No linear algebra library provided, trying to guess... Make sure you compile with the correct integer interface.")
   find_package(BLAS REQUIRED)
-  find_package(LAPACK)
+  find_package(LAPACK REQUIRED)
+  message(STATUS "BLAS library: ${BLAS_LIBRARIES}")
+  message(STATUS "LAPACK library: ${LAPACK_LIBRARIES}")
   if(LAPACK_FOUND)
     set(MAQUISLapack_LIBRARIES ${LAPACK_LIBRARIES})
+
   endif(LAPACK_FOUND)
 
 endif()
