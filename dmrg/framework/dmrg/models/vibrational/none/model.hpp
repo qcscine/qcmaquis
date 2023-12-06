@@ -73,8 +73,9 @@ public:
         // Determines also the maximum many-body coupling degree. Per default read in all integrals that are given
         maxCoupling_ = chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical, chem::HamiltonianTransformation::Conventional);
         maxManyBodyCoupling_ = (parameters.is_set("watson_max_coupling")) ? parameters["watson_max_coupling"] : maxCoupling_;
-        maxInputCouplingOrder_ = (parameters.is_set("watson_max_coupling_input")) ? parameters["watson_max_coupling_input"] : maxCoupling_;
-        maquis::cout << " - Maximum many-body coupling order supported: " << maxCoupling_ << std::endl; maquis::cout << " - Maximum coupling order expected as input: " << maxInputCouplingOrder_ << std::endl;
+        maxInputManyBodyCoupling_ = (parameters.is_set("watson_max_coupling_input")) ? parameters["watson_max_coupling_input"] : maxCoupling_;
+        maquis::cout << " - Maximum many-body coupling order supported: " << maxCoupling_ << std::endl;
+        maquis::cout << " - Many-body coupling order expected as input: " << maxInputManyBodyCoupling_ << std::endl;
         maquis::cout << " - Maximum many-body coupling order included in the Hamiltonian " << maxManyBodyCoupling_ << std::endl;
         maquis::cout << std::endl;
         int numModes =  parameters_["L"];
@@ -115,16 +116,16 @@ public:
             momentum_op.insert_block(mmom, C,C);
             ident_op.insert_block(mident, C,C);
             // -- Creates the powers of the position/momentum operator --
-            powersOfPositions_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfPositionOperator(maxInputCouplingOrder_, nMax, ident_op, position_op);
-            powersOfMomentum_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfMomentumOperator(maxInputCouplingOrder_, nMax, ident_op, momentum_op);
+            powersOfPositions_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfPositionOperator(maxInputManyBodyCoupling_, nMax, ident_op, position_op);
+            powersOfMomentum_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfMomentumOperator(maxInputManyBodyCoupling_, nMax, ident_op, momentum_op);
             // -- Create operator tag table --
             ident_op.resize_block(0, nMax, nMax);
             ident_[nMax] = tag_handler_->register_op(ident_op, tag_detail::bosonic);
-            positionPowers_[nMax].resize(maxInputCouplingOrder_+1);
-            momentumPowers_[nMax].resize(maxInputCouplingOrder_+1);
+            positionPowers_[nMax].resize(maxInputManyBodyCoupling_+1);
+            momentumPowers_[nMax].resize(maxInputManyBodyCoupling_+1);
             positionPowers_[nMax][0] = ident_[nMax];
             momentumPowers_[nMax][0] = ident_[nMax];
-            for (int iOrder = 1; iOrder <= maxInputCouplingOrder_; iOrder++) {
+            for (int iOrder = 1; iOrder <= maxInputManyBodyCoupling_; iOrder++) {
                 positionPowers_[nMax][iOrder] = tag_handler_->register_op(powersOfPositions_op[iOrder], tag_detail::bosonic);
                 momentumPowers_[nMax][iOrder] = tag_handler_->register_op(powersOfMomentum_op[iOrder], tag_detail::bosonic);
             }

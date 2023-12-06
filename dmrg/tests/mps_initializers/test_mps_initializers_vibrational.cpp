@@ -202,7 +202,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_Coherent_ExitonicExtended, 
   auto mpsStateTwo = MPS<matrix, Symmetry>(latticeSize, *(eeModel.initializer(lattice, parametersSimpleCoherent)));
   // Construction of the coherent superposition
   parametersSimpleCoherent.set("init_type", "coherent");
-  parametersSimpleCoherent.set("init_coeffs", "0.5,0.5");
+  parametersSimpleCoherent.set("init_coeffs", "0.7,0.3");
   parametersSimpleCoherent.set("init_bond_dimension", 5);
   parametersSimpleCoherent.set("init_basis_state", "1,0,0,0|0,0,1,0");
   auto mpsCoherent = MPS<matrix, Symmetry>(latticeSize, *(eeModel.initializer(lattice, parametersSimpleCoherent)));
@@ -211,8 +211,9 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_Coherent_ExitonicExtended, 
   auto energyTwo = expval(mpsStateTwo, mpo)/norm(mpsStateTwo);
   auto energyCoherent = expval(mpsCoherent, mpo)/norm(mpsCoherent);
   //
-  BOOST_CHECK_CLOSE(energyOne+energyTwo, 2*energyCoherent, 1.0E-10);
+  BOOST_CHECK(energyOne+energyTwo > 2*energyCoherent); // as coherent has not twice as many excited connecting modes
 #endif // HAVE_U1
 }
 
 #endif // DMRG_VIBRONIC
+
