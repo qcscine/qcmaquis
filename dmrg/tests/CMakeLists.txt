@@ -91,12 +91,6 @@ if(BUILD_VIBRATIONAL)
     target_link_libraries(test_sweep_based_linear_system_vibrational ${DMRG_APP_LIBRARIES})
     add_executable(test_FEAST_vibrational FEAST/VibrationalFEAST.cpp)
     target_link_libraries(test_FEAST_vibrational ${DMRG_APP_LIBRARIES})
-    # MPSCI
-    if (BUILD_MPS2CI)
-        add_executable(test_vibrational_srcas vibrational/test_srcas_vibrational.cpp)
-        target_link_libraries(test_vibrational_srcas ${DMRG_APP_LIBRARIES})
-        target_include_directories(test_vibrational_srcas PRIVATE ../applications/tools)
-    endif(BUILD_MPS2CI)
     # Executable tests
     add_executable(test_FAD_2Mode VibrationalDMRG/test_FAD_2Mode.cpp)
     target_link_libraries(test_FAD_2Mode ${DMRG_APP_LIBRARIES})
