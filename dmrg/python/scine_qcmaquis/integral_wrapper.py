@@ -1,17 +1,11 @@
-"""Blub blub BLUB."""
-
 import re
-# from copy import deepcopy
 from dataclasses import dataclass
 from enum import Enum
 from io import TextIOWrapper
 from typing import Dict, List, Tuple, Union
 
 import numpy as np
-# pylint: disable=import-error
 from _dmrg import ComplexTCIntegralMap, IntegralMap, TCIntegralMap
-
-# pylint: enable=import-error
 
 
 class IntegralType(Enum):
@@ -64,10 +58,12 @@ class IntegralMapWrapper:
             if integral_type == IntegralType.CONVENTIONAL:
                 self._integral_map = IntegralMap()
             elif integral_type == IntegralType.TRANSCORRLEATED:
+                # TODO: Check if this has to be complex
                 self._integral_map = ComplexTCIntegralMap()
             else:
-                raise NotImplementedError
+                raise NotImplementedError(f"IntegralType: <{integral_type}> is unavailable atm.")
 
+    # TODO
     def fill_from_fcidump(self, fcidump: str):
         """Fill IntegralMap from an FCIDUMP."""
         raise NotImplementedError("integrals from fcidump are not yet supported")
@@ -143,7 +139,7 @@ class IntegralsParser:
     corresponding to the integral.
     """
 
-    @dataclass
+    # @dataclass
     class FcidumpValues:
         """Store data values from FCIDUMP header.
 
@@ -165,9 +161,12 @@ class IntegralsParser:
             integrals are in spin orbitals
         """
 
+        __slots__ = ("norb", "nelec", "ms2", "orbsym", "isym", "transcorrelated", "unrestricted")
+
         # TODO: use regex for fcidump parsing
+
         def __init__(self):
-            self.norb: int
+            self.norb: int = 0
             """Number of orbitals."""
             self.nelec: int
             """Number of electrons."""
@@ -209,7 +208,7 @@ class IntegralsParser:
 
     def _parse_fcidump_header(self, file: TextIOWrapper):
         parse_header = False
-        line = file.readline()
+        line = file.readline().lower()
         while line:
             if "&fci" in line:
                 parse_header = True
@@ -221,37 +220,26 @@ class IntegralsParser:
                 parse_header = False
                 break
 
-            line = file.readline()
+            line = file.readline().lower()
 
     def _find_keywords(self, line: str):
-        entries = line.strip().split("=")
-
-        for index, entry in enumerate(entries):
-            if "norb" in entry:
-                self.fcidump_values.norb = int(re.search(r"\d+", entries[index + 1])[0])
-
-            if "nelec" in entry:
-                self.fcidump_values.nelec = int(re.search(r"\d+", entries[index + 1])[0])
-
-            if "ms2" in entry:
-                self.fcidump_values.ms2 = int(re.search(r"\d+", entries[index + 1])[0])
-
-            if "orbsym" in entry:
-                self.fcidump_values.orbsym = []
-                entry = entries[index + 1].split(",")
-                for sym in entry:
-                    val = int(re.search(r"\d+", sym)[0])
-                    if val:
-                        self.fcidump_values.orbsym.append(val)
-
-            if "isym" in entry:
-                self.fcidump_values.isym = int(re.search(r"\d+", entries[index + 1])[0])
-
-            if "transcorrelated" in entry:
-                self.fcidump_values.transcorrelated = True
-
-            if "unrestricted" in entry:
-                self.fcidump_values.unrestricted = True
+        if "norb" in line:
+            self.fcidump_values.norb = int(re.search(r"norb\s*=\s*(\d+)", line).group(1))
+        if "nelec" in line:
+            self.fcidump_values.nelec = int(re.search(r"nelec\s*=\s*(\d+)", line).group(1))
+        if "ms2" in line:
+            self.fcidump_values.ms2 = int(re.search(r"ms2\s*=\s*(\d+)", line).group(1))
+        if "isym" in line:
+            self.fcidump_values.isym = int(re.search(r"isym\s*=\s*(\d+)", line).group(1))
+        if "transcorrelated" in line:
+            self.fcidump_values.transcorrelated = True
+        if "unrestricted" in line:
+            self.fcidump_values.unrestricted = True
+        if "orbsym" in line:
+            self.fcidump_values.orbsym = [
+                int(x) for x in re.search(r"orbsym\s*=\s*([\d+,]+)\s*,", line)
+                .group(1).split(",") if x.strip().isdigit()
+            ]
 
     def _parse_fcidump_body(self, file: TextIOWrapper):
         line = file.readline()
@@ -279,14 +267,10 @@ class IntegralsParser:
             self._unique_term[term] = value
 
     def _is_unique(self, indices: List[int]) -> bool:
-
-        haha = indices
-        tmp = self._integral_utils.get_symmetric_indices(haha, "eight")
+        tmp = self._integral_utils.get_symmetric_indices(indices, "eight")
         for term in tmp:
             if tuple(term) in self._unique_term:
                 return False
-        # if any(tuple(term) in self._unique_term for term in tmp):
-        #     return False
         return True
 
     def _is_unique_one_body(self, indices: Tuple[int, int, int, int]) -> bool:
@@ -337,7 +321,6 @@ class IntegralUtils:
         """Set notation."""
         self._notation = notation
 
-    # Copied from full cc
     def _permute_particle_block(
         self,
         result_list: List[List[int]],
@@ -411,7 +394,6 @@ class IntegralUtils:
                 result_list.append(new_index_list)
         return result_list
 
-    # Copied from full cc
     def get_symmetric_indices(
         self,
         index_list: List[int],
