@@ -24,7 +24,7 @@
 //
 
 typedef boost::mpl::list<
-#ifdef HAVE_TrivialGroup
+#ifdef HAVE_TrivialGroup 
 TrivialGroup
 #endif
 #ifdef HAVE_U1
@@ -92,3 +92,4 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Test_RegisterOperatorsWithTags, S, symmetries)
   BOOST_CHECK_EQUAL(isIdentityScaledPesent, true);
   BOOST_CHECK_EQUAL(isNotIdentityPesent, true);
 }
+

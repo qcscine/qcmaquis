@@ -120,7 +120,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Integral_Parser_ExtendedExcitonic, VibronicFixture)
 BOOST_FIXTURE_TEST_CASE(Test_Vibronic_Initializer_Coherent_EE, VibronicFixture)
 {
 #ifdef HAVE_U1
-  using Symmetry = TrivialGroup; //correct?
+  using Symmetry = U1;
   auto lattice = Lattice(parametersSimpleCoherent);
   int latticeSize = lattice.size();
   auto eeModel = Model<matrix, Symmetry>(lattice, parametersSimpleCoherent); //excitonicextended (EE) model
