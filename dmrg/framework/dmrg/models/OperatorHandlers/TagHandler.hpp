@@ -1,12 +1,22 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
 #ifndef TAG_HANDLER_HPP
 #define TAG_HANDLER_HPP
+
+#include <cassert>
+#include <memory>
+#include <set>
+#include <vector>
+#include <utility>
+#include <stdexcept>
+#include "dmrg/models/OperatorHandlers/OpTable.h"
+#include "dmrg/models/OperatorHandlers/TagHandler.h"
+#include "dmrg/models/tag_detail.h"
 
 template <class Matrix, class SymmGroup>
 TagHandler<Matrix, SymmGroup>::TagHandler(TagHandler const & rhs)
@@ -90,7 +100,7 @@ void TagHandler<Matrix, SymmGroup>::hermitian_pair(typename OPTable<Matrix, Symm
     assert(std::max(pair_tag1, pair_tag2) < hermitian.size());
     assert(pair_tag1 != pair_tag2);
 
-    if (hermitian[pair_tag1] == pair_tag2 && hermitian[pair_tag2] == pair_tag1) return;
+    if (hermitian[pair_tag1] == pair_tag2 && hermitian[pair_tag2] == pair_tag1){ return; }
     assert(hermitian[pair_tag1] == pair_tag1 && hermitian[pair_tag2] == pair_tag2);
     std::swap(hermitian[pair_tag1], hermitian[pair_tag2]);
 }
@@ -106,8 +116,9 @@ template <class Matrix, class SymmGroup>
 std::vector<typename OPTable<Matrix, SymmGroup>::value_type> TagHandler<Matrix, SymmGroup>::get_ops(std::vector<tag_type> const & tags) const
 {
     std::vector<typename OPTable<Matrix, SymmGroup>::value_type> ret(tags.size());
-    for (int k = 0; k < tags.size(); ++k)
+    for (int k = 0; k < tags.size(); ++k) {
         ret[k] = (*operator_table)[tags[k]];
+    }
 
     return ret;
 }
@@ -121,8 +132,9 @@ bool TagHandler<Matrix, SymmGroup>::product_is_null(const typename OPTable<Matri
     op_t& op2 = (*operator_table)[t2];
     gemm(op1, op2, product);
     bool ret = false;
-    if (product.n_blocks() == 0)
+    if (product.n_blocks() == 0) {
         ret = true;
+    }
     return ret;
 };
 
@@ -157,8 +169,9 @@ get_product_tag(const typename OPTable<Matrix, SymmGroup>::tag_type t1,
 
         gemm(op1, op2, product);
         tag_detail::operator_kind prod_kind = tag_detail::bosonic;
-        if (sign_table[t1] != sign_table[t2])
+        if (sign_table[t1] != sign_table[t2]) {
             prod_kind = tag_detail::fermionic;
+        }
 
         // set the product spin descriptor
         product.spin() = couple(get_op(t2).spin(), get_op(t1).spin());
@@ -178,7 +191,7 @@ get_product_tags(std::vector<typename OPTable<Matrix, SymmGroup>::tag_type> cons
                  std::vector<typename OPTable<Matrix, SymmGroup>::tag_type> const & ops2)
 {
     assert(ops1.size() == ops2.size());
-    std::pair<std::vector<tag_type>, std::vector<value_type> >ret;
+    std::pair<std::vector<tag_type>, std::vector<value_type>> ret;
     for (typename SymmGroup::subcharge sc=0; sc < ops1.size(); ++sc) {
         std::pair<tag_type, value_type> ptag = this->get_product_tag(ops1[sc], ops2[sc]);
         ret.first.push_back(ptag.first);
@@ -194,21 +207,21 @@ template <class Map>
 typename OPTable<Matrix, SymmGroup>::tag_type TagHandler<Matrix, SymmGroup>::
 duplicates_(Map const & sample)
 {
-    typedef typename Map::const_iterator it_t;
+    using it_t = typename Map::const_iterator;
 
     std::vector<tag_type> unique_ops;
-    for (it_t it_s = sample.begin(); it_s != sample.end(); ++it_s)
-    {
+    for (const auto& it_s : sample) {
         bool unique = true;
-        for (typename std::vector<tag_type>::iterator it_unique = unique_ops.begin(); it_unique != unique_ops.end(); ++it_unique)
-            if (equal((*operator_table)[(*it_s).second.first], (*operator_table)[*it_unique]).first)
+        for (const auto& it_unique : unique_ops) {
+            if (equal((*operator_table)[it_s.second.first], (*operator_table)[it_unique]).first)
             {
                 unique = false;
                 break;
             }
-
-        if (unique)
-            unique_ops.push_back((*it_s).second.first);
+        }
+        if (unique) {
+            unique_ops.push_back(it_s.second.first);
+        }
     }
 
     return sample.size() - unique_ops.size();
@@ -217,8 +230,9 @@ duplicates_(Map const & sample)
 template <class Matrix, class SymmGroup>
 typename OPTable<Matrix, SymmGroup>::tag_type TagHandler<Matrix, SymmGroup>::get_num_products() const {
     std::set<tag_type> utags;
-    for (pair_map_it_t it = product_tags.begin(); it != product_tags.end(); ++it)
-        utags.insert(it->second.first);
+    for (const auto& it : product_tags) {
+        utags.insert(it.second.first);
+    }
 
     return utags.size();
 }

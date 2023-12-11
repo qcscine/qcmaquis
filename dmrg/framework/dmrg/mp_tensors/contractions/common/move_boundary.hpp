@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -13,6 +13,7 @@
 #include "dmrg/mp_tensors/reshapes.h"
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/mp_tensors/contractions/detail/memsave.hpp"
+#include "dmrg/mp_tensors/contractions/common/boundary_times_mps.hpp"
 
 namespace contraction {
 namespace common {
@@ -25,8 +26,7 @@ overlap_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                   block_matrix<OtherMatrix, SymmGroup> const & left,
                   block_matrix<OtherMatrix, SymmGroup> * localop = NULL)
 {
-    if (localop != NULL)
-        throw std::runtime_error("Not implemented!");
+    if (localop != NULL) { throw std::runtime_error("Not implemented!"); }
     assert(ket_tensor.phys_i == bra_tensor.phys_i);
     block_matrix<OtherMatrix, SymmGroup> t1;
     block_matrix<Matrix, SymmGroup> t3;
@@ -50,8 +50,7 @@ overlap_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                    block_matrix<OtherMatrix, SymmGroup> const & right,
                    block_matrix<OtherMatrix, SymmGroup> * localop = NULL)
 {
-    if (localop != NULL)
-        throw std::runtime_error("Not implemented!");
+    if (localop != NULL) { throw std::runtime_error("Not implemented!"); }
     assert(ket_tensor.phys_i == bra_tensor.phys_i);
     ket_tensor.make_left_paired();
     block_matrix<OtherMatrix, SymmGroup> t1;
@@ -72,18 +71,18 @@ left_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
                          MPOTensor<Matrix, SymmGroup> const & mpo,
                          Index<SymmGroup> const * in_low = NULL)
 {
-    typedef typename SymmGroup::charge charge;
-    typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
-    if (in_low == NULL)
-        in_low = &mps.row_dim();
+    using charge = typename SymmGroup::charge;
+    using index_type = typename MPOTensor<Matrix, SymmGroup>::index_type;
+    if (in_low == NULL) { in_low = &mps.row_dim(); }
     //std::vector<block_matrix<Matrix, SymmGroup> > t
-    Index<SymmGroup> physical_i = mps.site_dim(), left_i = *in_low, right_i = mps.col_dim(),
-                                  out_left_i = physical_i * left_i;
+    Index<SymmGroup> physical_i = mps.site_dim();
+    Index<SymmGroup> left_i = *in_low;
+    Index<SymmGroup> right_i = mps.col_dim();
+    Index<SymmGroup> out_left_i = physical_i * left_i;
     BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemm> t(mps, left, mpo, left_i);
     ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
     ProductBasis<SymmGroup> in_right_pb(physical_i, right_i,
-                            boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                    -boost::lambda::_1, boost::lambda::_2));
+        [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); });
     index_type loop_max = mpo.col_dim();
     Boundary<Matrix, SymmGroup> ret;
     ret.resize(mpo.col_dim());
@@ -103,17 +102,17 @@ right_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
                           MPOTensor<Matrix, SymmGroup> const & mpo,
                           Index<SymmGroup> const * in_low = NULL)
 {
-    typedef typename SymmGroup::charge charge;
-    typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
-    if (in_low == NULL)
-        in_low = &mps.col_dim();
+    using charge = typename SymmGroup::charge;
+    using index_type = typename MPOTensor<Matrix, SymmGroup>::index_type;
+    if (in_low == __null) { in_low = &mps.col_dim(); }
     contraction::common::MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemm> t(mps, right, mpo);
-    Index<SymmGroup> physical_i = mps.site_dim(), left_i = mps.row_dim(), right_i = *in_low,
-                     out_right_i = adjoin(physical_i) * right_i;
+    Index<SymmGroup> physical_i = mps.site_dim();
+    Index<SymmGroup> left_i = mps.row_dim();
+    Index<SymmGroup> right_i = *in_low;
+    Index<SymmGroup> out_right_i = adjoin(physical_i) * right_i;
     ProductBasis<SymmGroup> in_left_pb(physical_i, left_i);
     ProductBasis<SymmGroup> out_right_pb(physical_i, right_i,
-                                         boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                             -boost::lambda::_1, boost::lambda::_2));
+        [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); });
     Boundary<Matrix, SymmGroup> ret;
     ret.resize(mpo.row_dim());
     index_type loop_max = mpo.row_dim();
@@ -131,8 +130,8 @@ overlap_mpo_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor, MPSTensor
                       Boundary<OtherMatrix, SymmGroup> const & left, MPOTensor<Matrix, SymmGroup> const & mpo,
                       bool isHermitian=true)
 {
-    typedef typename SymmGroup::charge charge;
-    typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
+    using charge = typename SymmGroup::charge;
+    using index_type = typename MPOTensor<Matrix, SymmGroup>::index_type;
     bra_tensor.make_right_paired();
     Index<SymmGroup> braBasis = bra_tensor.data().left_basis();
     MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
@@ -144,8 +143,7 @@ overlap_mpo_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor, MPSTensor
     common_subset(out_left_i, bra_right_i);
     ProductBasis<SymmGroup> out_left_pb(bra_tensor.site_dim(), left_i);
     ProductBasis<SymmGroup> in_right_pb(ket_tensor.site_dim(), right_i,
-                            boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                    -boost::lambda::_1, boost::lambda::_2));
+        [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); });
     index_type loop_max = mpo.col_dim();
     DualIndex<SymmGroup> bra_basis = bra_tensor.data().basis();
     bra_tensor.make_left_paired();
@@ -192,22 +190,21 @@ overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor, MPSTenso
                        Boundary<OtherMatrix, SymmGroup> const & right, MPOTensor<Matrix, SymmGroup> const & mpo,
                        bool isHermitian=true)
 {
-    typedef typename SymmGroup::charge charge;
-    typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
-    Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
-                             right_i = bra_tensor.col_dim();
+    using charge = typename SymmGroup::charge;
+    using index_type = typename MPOTensor<Matrix, SymmGroup>::index_type;
+    Index<SymmGroup> const & physical_i = ket_tensor.site_dim();
+    Index<SymmGroup> const right_i = bra_tensor.col_dim();
     MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
-    Index<SymmGroup> left_i = ket_tensor.row_dim(),
-                     out_right_i = adjoin(physical_i) * right_i,
-                     bra_left_i = bra_tensor.row_dim();
+    Index<SymmGroup> left_i = ket_tensor.row_dim();
+    Index<SymmGroup> out_right_i = adjoin(physical_i) * right_i;
+    Index<SymmGroup> bra_left_i = bra_tensor.row_dim();
     bra_tensor.make_left_paired();
     Index<SymmGroup> indexForTrim = bra_tensor.data().right_basis();
     contraction::common::MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemm> t(ket_cpy, right, mpo, indexForTrim, isHermitian);
     common_subset(out_right_i, bra_left_i);
     ProductBasis<SymmGroup> in_left_pb(physical_i, left_i);
     ProductBasis<SymmGroup> out_right_pb(physical_i, right_i,
-                                         boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                             -boost::lambda::_1, boost::lambda::_2));
+        [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); });
     Boundary<Matrix, SymmGroup> ret;
     ret.resize(mpo.row_dim());
     //ket_tensor.make_right_paired();
@@ -217,8 +214,7 @@ overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor, MPSTenso
     bra_tensor.make_right_paired();
     block_matrix<Matrix, SymmGroup> bra_conj = conjugate(bra_tensor.data());
     omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
-        if (mpo.herm_info.left_skip(b1) && isHermitian)
-            continue;
+        if (mpo.herm_info.left_skip(b1) && isHermitian) { continue; }
         Kernel()(b1, ret[b1], right, t, mpo, ket_cpy.data().basis(), bra_basis, left_i, out_right_i, in_left_pb, out_right_pb, isHermitian);
         block_matrix<Matrix, SymmGroup> tmp;
         typename Gemm::gemm()(ret[b1], transpose(bra_conj), tmp, MPOTensor_detail::get_spin(mpo, b1, true));
@@ -239,8 +235,8 @@ generate_left_mpo_basis(MPSTensor<Matrix, SymmGroup> const & bra_tensor,   // Br
                         MPOTensor<Matrix, SymmGroup> const & mpo)          // MPOTensor object)
 {
     // Types definition
-    typedef typename SymmGroup::charge charge;
-    typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
+    using charge = typename SymmGroup::charge;
+    using index_type = typename MPOTensor<Matrix, SymmGroup>::index_type;
     MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
     // Contracts the boundary with the MPS. Returns a vector of block_matrix objects.
     contraction::common::BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemm> t(ket_cpy, left, mpo);
@@ -257,8 +253,7 @@ generate_left_mpo_basis(MPSTensor<Matrix, SymmGroup> const & bra_tensor,   // Br
     // (and the fusion has to be done with the minus sign).
     ProductBasis<SymmGroup> out_left_pb(ket_tensor.site_dim(), left_i);
     ProductBasis<SymmGroup> in_right_pb(ket_tensor.site_dim(), right_i,
-                                        boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                            -boost::lambda::_1, boost::lambda::_2));
+        [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); });
     index_type loop_max = mpo.col_dim();
     DualIndex<SymmGroup> ket_basis_transpose = ket_cpy.data().basis();
     for (std::size_t i = 0; i < ket_basis_transpose.size(); ++i) {
@@ -292,8 +287,8 @@ generate_right_mpo_basis(MPSTensor<Matrix, SymmGroup> const & bra_tensor, MPSTen
                          Boundary<OtherMatrix, SymmGroup> const & right, MPOTensor<Matrix, SymmGroup> const & mpo)
 {
     // Types definition
-    typedef typename SymmGroup::charge charge;
-    typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
+    using charge = typename SymmGroup::charge;
+    using index_type = typename MPOTensor<Matrix, SymmGroup>::index_type;
     // Contracts with the right boundary
     MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
     contraction::common::MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemm> t(ket_cpy, right, mpo);
@@ -304,14 +299,13 @@ generate_right_mpo_basis(MPSTensor<Matrix, SymmGroup> const & bra_tensor, MPSTen
     Index<SymmGroup> out_right_i = adjoin(physical_i) * right_i;
     common_subset(out_right_i, left_i);
     ProductBasis<SymmGroup> in_left_pb(physical_i, left_i);
-    ProductBasis<SymmGroup> out_right_pb(physical_i, right_i, boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                             -boost::lambda::_1, boost::lambda::_2));
+    ProductBasis<SymmGroup> out_right_pb(physical_i, right_i,
+        [&](const charge a, const charge b) { return SymmGroup::fuse(-a, b); });
     // Prepares output
     Boundary<Matrix, SymmGroup> ret;
     ret.resize(mpo.row_dim());
     index_type loop_max = mpo.row_dim();
     // Main loop
-    auto now = std::chrono::high_resolution_clock::now();
     omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
         if (mpo.herm_info.left_skip(b1))
             continue;

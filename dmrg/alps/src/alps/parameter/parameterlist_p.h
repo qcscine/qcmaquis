@@ -55,7 +55,7 @@ struct ALPS_DECL ParameterListParser : public bs::grammar<ParameterListParser> {
               )[bs::push_back_a(self.plist, self.local)]
             | ( bs::str_p("#clear") >> !bs::ch_p(";") >> *bs::eol_p )[bs::clear_a(self.global)]
          )
-        >> !( bs::str_p("#stop") >> !bs::ch_p(";") >> *bs::eol_p )[bs::increment_a(self.stop)];
+        >> !( bs::str_p("#stop") >> !bs::ch_p(";") >> *bs::eol_p )[( [&](auto const&, auto const&){ self.stop = true; } )];
     }
 
     bs::rule<ScannerT> const& start() const {

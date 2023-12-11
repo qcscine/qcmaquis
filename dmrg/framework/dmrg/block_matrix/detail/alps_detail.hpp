@@ -1,12 +1,14 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
-#ifndef MAQUIS_BLOCK_MATRIX_DEATAIL_ALPS_MATRIX_DETAIL_HPP
-#define MAQUIS_BLOCK_MATRIX_DEATAIL_ALPS_MATRIX_DETAIL_HPP
+#ifndef ALPS_DETAIL_H
+#define ALPS_DETAIL_H
+
+#include "dmrg/block_matrix/detail/alps.hpp"
 
 template<class T, class SymmGroup>
 class block_matrix;
@@ -22,7 +24,8 @@ namespace maquis { namespace dmrg { namespace detail {
     void iterator_axpy(InputIterator in1, InputIterator in2,
                        OutputIterator out1, T val)
     {
-        std::transform(in1, in2, out1, out1, boost::lambda::_1*val+boost::lambda::_2);
+        std::transform(in1, in2, out1, out1,
+            [val](const auto& x, const auto& y){ return val * x + y; });
     }
     
     inline void iterator_axpy(double const * in1, double const * in2,
@@ -46,7 +49,7 @@ namespace maquis { namespace dmrg { namespace detail {
     std::size_t zeroout(alps::numeric::matrix<T,A>& m, T const& tol)
     {
         std::size_t nzeros = 0;
-        typedef typename alps::numeric::matrix<T,A>::size_type size_type;
+        using size_type = typename alps::numeric::matrix<T, A>::size_type;
         for (size_type j=0; j<num_cols(m); ++j) {
             for (size_type i=0; i<num_rows(m); ++i) {
                 if (std::abs(m(i,j)) < tol) {
@@ -189,18 +192,37 @@ namespace maquis { namespace dmrg { namespace detail {
     template <typename T1, class A1,
               typename T2, class A2,
               typename T3, class A3>
-    void lb_tensor_mpo(alps::numeric::matrix<T1,A1>& out, const alps::numeric::matrix<T2,A2>& in, const alps::numeric::matrix<T3,A3>& alfa,
-                       size_t out_offset, size_t in_offset, 
-                       size_t sdim1, size_t sdim2, size_t ldim, size_t rdim, T2 alfa_scale)
+    void lb_tensor_mpo(
+        alps::numeric::matrix<T1,A1>& out,
+        const alps::numeric::matrix<T2,A2>& in,
+        const alps::numeric::matrix<T3,A3>& alfa,
+        size_t out_offset,
+        size_t in_offset, 
+        size_t sdim1,
+        size_t sdim2,
+        size_t ldim,
+        size_t rdim,
+        T2 alfa_scale)
     {
+        /* for(size_t rr = 0; rr < rdim; ++rr) { */
+        /*     for(size_t ss1 = 0; ss1 < sdim1; ++ss1) { */
+        /*         for(size_t ss2 = 0; ss2 < sdim2; ++ss2) { */
+        /*             T3 alfa_t = alfa(ss1, ss2) * alfa_scale; */
+        /*             iterator_axpy(&in(0, in_offset + ss1*rdim + rr), */
+        /*                           &in(0, in_offset + ss1*rdim + rr) + ldim, */
+        /*                           &out(out_offset + ss2*ldim, rr), */
+        /*                           alfa_t); */
+        /*         } */
+        /*     } */
+        /* } */
+
         for(size_t rr = 0; rr < rdim; ++rr) {
             for(size_t ss1 = 0; ss1 < sdim1; ++ss1) {
                 for(size_t ss2 = 0; ss2 < sdim2; ++ss2) {
-                    T3 alfa_t = alfa(ss1, ss2) * alfa_scale;
-                    iterator_axpy(&in(0, in_offset + ss1*rdim + rr),
-                                  &in(0, in_offset + ss1*rdim + rr) + ldim,
-                                  &out(out_offset + ss2*ldim, rr),
-                                  alfa_t);
+                    for(size_t ll = 0; ll < ldim; ++ll) {
+                      out(out_offset + ss2*ldim + ll, rr)
+                        += in(ll, in_offset + ss1*rdim + rr) * alfa_scale * alfa(ss1, ss2);
+                    }
                 }
             }
         }
@@ -213,14 +235,16 @@ namespace maquis { namespace dmrg { namespace detail {
                        size_t out_offset, size_t in_offset, 
                        size_t sdim1, size_t sdim2, size_t ldim, size_t rdim, T2 alfa_scale)
     {
-        for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
+        for(size_t ss1 = 0; ss1 < sdim1; ++ss1) {
             for(size_t ss2 = 0; ss2 < sdim2; ++ss2) {
                 T3 alfa_t = alfa(ss1, ss2) * alfa_scale;
-                for(size_t rr = 0; rr < rdim; ++rr)
+                for(size_t rr = 0; rr < rdim; ++rr) {
                     for(size_t ll = 0; ll < ldim; ++ll) {
                         out(ll, out_offset + ss2*rdim+rr) += in(ll + in_offset + ss1*ldim, rr) * alfa_t;
                     }
+                }
             }
+        }
     }
     
     template <typename T1, class A1,
@@ -263,9 +287,9 @@ namespace maquis { namespace dmrg { namespace detail {
     template <typename T, class A>
     void left_right_boundary_init(alps::numeric::matrix<T,A> & M){
         //            memset((void*)&M(0,0),1,num_rows(M)*num_cols(M)*sizeof(T));
-        for_each(elements(M).first,elements(M).second, boost::lambda::_1 = 1); // boost::lambda ^^' because iterable matrix concept 
+        std::fill(elements(M).first, elements(M).second, 1);
     }
     
 } } } // namespace maquis::dmrg::detail
 
-#endif // MAQUIS_BLOCK_MATRIX_DEATAIL_ALPS_MATRIX_DETAIL_HPP
+#endif /* ALPS_DETAIL_H */

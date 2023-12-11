@@ -105,7 +105,7 @@ int main(int argc, char ** argv)
         time_model.end();
         maquis::cout << "Parsing model done!\n";
 
-        boost::filesystem::path chkpfile(parms["chkpfile"].str());
+        ::dfilesystem::path chkpfile(parms["chkpfile"].str());
         
         /// Initialize & load MPS
         time_load.begin();
@@ -227,9 +227,9 @@ int main(int argc, char ** argv)
         if (lr == +1)
         {
             if(parms["twosite_truncation"] == "svd")
-                boost::tie(mps[site], mps[site+1], trunc) = tst.split_mps_l2r(Mmax, cutoff);
+                std::tie(mps[site], mps[site+1], trunc) = tst.split_mps_l2r(Mmax, cutoff);
             else
-                boost::tie(mps[site], mps[site+1], trunc) = tst.predict_split_l2r(Mmax, cutoff, alpha, left, mpo[site]);
+                std::tie(mps[site], mps[site+1], trunc) = tst.predict_split_l2r(Mmax, cutoff, alpha, left, mpo[site]);
             tst.clear();
             
             block_matrix<matrix, grp> t;
@@ -238,9 +238,9 @@ int main(int argc, char ** argv)
         }
         if (lr == -1){
             if(parms["twosite_truncation"] == "svd")
-                boost::tie(mps[site], mps[site+1], trunc) = tst.split_mps_r2l(Mmax, cutoff);
+                std::tie(mps[site], mps[site+1], trunc) = tst.split_mps_r2l(Mmax, cutoff);
             else
-                boost::tie(mps[site], mps[site+1], trunc) = tst.predict_split_r2l(Mmax, cutoff, alpha, right, mpo[site+1]);
+                std::tie(mps[site], mps[site+1], trunc) = tst.predict_split_r2l(Mmax, cutoff, alpha, right, mpo[site+1]);
             tst.clear();
             
             block_matrix<matrix, grp> t;

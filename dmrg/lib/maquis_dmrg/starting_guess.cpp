@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 #include "starting_guess.h"
@@ -28,7 +28,7 @@ namespace maquis
 #endif
             Impl(const DmrgParameters& parms, const std::string& pname, int nstates, bool do_fiedler, bool do_cideas,
                  const std::vector<std::vector<int> > & hf_occupations)
-                : parms_(parms), nstates_(nstates), pname_(pname), pname_guess_(pname + "_guess"), do_fiedler_(do_fiedler), do_cideas_(do_cideas)
+                : parms_(parms), pname_(pname), pname_guess_(pname + "_guess"), nstates_(nstates), do_fiedler_(do_fiedler), do_cideas_(do_cideas)
             {
 
                 parms_.erase_measurements();
@@ -144,8 +144,8 @@ namespace maquis
                 for (int i = 0; i < nstates_; i++)
                 {
                     std::string chkpfile = checkpoint_name(pname_guess_, i);
-                    if (boost::filesystem::exists(chkpfile))
-                        boost::filesystem::remove_all(chkpfile);
+                    if (std::filesystem::exists(chkpfile))
+                        std::filesystem::remove_all(chkpfile);
                 }
             }
 

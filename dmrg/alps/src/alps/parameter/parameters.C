@@ -201,12 +201,13 @@ std::ostream& operator<<(std::ostream& os, const alps::Parameters& p)
     if (it->value().valid()) {
       std::string s = it->value().c_str();
       os << it->key() << " = ";
-      if ((s.find(' ') != std::string::npos) || (s.find(',') != std::string::npos))
+      if ((s.find(' ') != std::string::npos) || (s.find(',') != std::string::npos)) {
         os << '"' << s << '"';
-      else
+      } else {
         os << s;
+      }
       // os << ";\n"; // do not print a semicolon at the end of the line
-        os << std::endl;
+      os << std::endl;
     }
   }
   return os;

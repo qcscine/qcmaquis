@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -9,7 +9,6 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
-#include <boost/shared_ptr.hpp>
 #include <alps/hdf5.hpp>
 
 #include "dmrg/block_matrix/detail/alps.hpp"
@@ -97,7 +96,7 @@ void split_ts(TwoSiteTensor<Matrix, SymmGroup> const& tst,
     inv = s;
     typename dmt::diagonal_iterator it, end;
     for (size_t k=0; k<inv.n_blocks(); ++k)
-        for (boost::tie(it, end) = inv[k].diagonal(); it != end; ++it)
+        for (std::tie(it, end) = inv[k].diagonal(); it != end; ++it)
             *it = 1. / *it;
 }
 
@@ -177,7 +176,7 @@ void dmrg_optim(unsigned site, unsigned local_site, int lr, int L,
     /// Truncation of MPS
     truncation_results trunc;
     if (lr == +1){
-        boost::tie(mps[site], mps[site+1], trunc) = tst.split_mps_l2r(Mmax, cutoff);
+        std::tie(mps[site], mps[site+1], trunc) = tst.split_mps_l2r(Mmax, cutoff);
         
         if (normalize == with_normalization) { // site != L/2-1
             block_matrix<Matrix, SymmGroup> t;
@@ -186,7 +185,7 @@ void dmrg_optim(unsigned site, unsigned local_site, int lr, int L,
         }
     }
     if (lr == -1){
-        boost::tie(mps[site], mps[site+1], trunc) = tst.split_mps_r2l(Mmax, cutoff);
+        std::tie(mps[site], mps[site+1], trunc) = tst.split_mps_r2l(Mmax, cutoff);
 
         if (normalize == with_normalization) { //site != L/2+1
             block_matrix<Matrix, SymmGroup> t;
@@ -424,8 +423,8 @@ int main(int argc, char ** argv)
             
             std::string chkpfile = parms["chkpfile"];
             /// save state to chkp dir
-            if (!boost::filesystem::exists(chkpfile))
-                boost::filesystem::create_directory(chkpfile);
+            if (!std::filesystem::exists(chkpfile))
+                std::filesystem::create_directory(chkpfile);
             save(chkpfile, full_mps);
             
             /// save status

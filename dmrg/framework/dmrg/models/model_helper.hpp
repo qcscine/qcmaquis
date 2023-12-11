@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -47,7 +47,7 @@ public:
         assert(positions.size() == operators.size());
         bool FoundZero = false;
         // Types definition
-        typedef std::pair<pos_t, tag_type> pos_op_t;
+        using pos_op_t = std::pair<pos_t, tag_type>;
         // Variables definition
         term_descriptor term;
         std::vector<pos_op_t> pos_ops;

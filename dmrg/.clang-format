@@ -1,0 +1,13 @@
+---
+# We'll use defaults from the LLVM style, but with 4 columns indentation.
+BasedOnStyle: Google
+IndentWidth: 2
+ColumnLimit: 80
+PointerAlignment: Left
+
+QualifierAlignment: Custom
+QualifierOrder: ['inline', 'static', 'const', 'type']
+AlignAfterOpenBracket: BlockIndent
+---
+
+

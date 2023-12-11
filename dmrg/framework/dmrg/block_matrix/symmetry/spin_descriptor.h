@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -14,7 +14,7 @@ template <class SymmType>
 class SpinDescriptor
 {
 public:
-    typedef int spin_t;
+    using spin_t = int;
 
     void clear() { }
     int get() const { return 0; }
@@ -44,7 +44,7 @@ template <>
 class SpinDescriptor<symm_traits::SU2Tag>
 {
 public:
-    typedef int spin_t;
+    using spin_t = int;
 
     SpinDescriptor() : twoS(0), diff_(0) {}
     SpinDescriptor(spin_t twoS_, spin_t in, spin_t out) : twoS(twoS_), diff_(out-in) {}
@@ -110,10 +110,11 @@ typename SymmGroup::subcharge productSpin(typename SymmGroup::charge a, typename
     typename SymmGroup::subcharge spin_a = SymmGroup::spin(a);
     typename SymmGroup::subcharge spin_b = SymmGroup::spin(b);
 
-    if (spin_a == -1 && spin_b == 1)
+    if (spin_a == -1 && spin_b == 1) {
         return 2;
-    else
+    } else {
         return std::abs(spin_a + spin_b);
+    }
 }
 
 #endif

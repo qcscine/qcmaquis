@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -11,7 +11,6 @@
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
 #include "dmrg/mp_tensors/boundary.h"
-#include "dmrg/block_matrix/indexing.h"
 #include "dmrg/block_matrix/multi_index.h"
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
@@ -25,9 +24,9 @@ template<class Matrix, class SymmGroup>
 class TwoSiteTensor
 {
 public:
-    typedef std::size_t size_type;
-    typedef typename MultiIndex<SymmGroup>::index_id index_id;
-    typedef typename MultiIndex<SymmGroup>::set_id set_id;
+    using size_type = std::size_t;
+    using index_id = typename MultiIndex<SymmGroup>::index_id;
+    using set_id = typename MultiIndex<SymmGroup>::set_id;
     
     TwoSiteTensor(MPSTensor<Matrix, SymmGroup> const & mps1,
                   MPSTensor<Matrix, SymmGroup> const & mps2);
@@ -53,16 +52,16 @@ public:
     
     MPSTensor<Matrix, SymmGroup> make_mps() const;
     
-    boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
-    split_mps_l2r(std::size_t Mmax, double cutoff) const;
+    std::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
+    split_mps_l2r(std::size_t Mmax, double cutoff, bool verbose=false) const;
     
-    boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
-    split_mps_r2l(std::size_t Mmax, double cutoff) const;
+    std::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
+    split_mps_r2l(std::size_t Mmax, double cutoff, bool verbose=false) const;
     
-    boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
+    std::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
     predict_split_l2r(std::size_t Mmax, double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& left,
                       MPOTensor<Matrix, SymmGroup> const& mpo, bool activatePerturbation);
-    boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
+    std::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
     predict_split_r2l(std::size_t Mmax, double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& right,
                       MPOTensor<Matrix, SymmGroup> const& mpo, bool activatePerturbation);
     

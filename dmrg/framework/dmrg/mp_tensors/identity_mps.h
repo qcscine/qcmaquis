@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -9,6 +9,8 @@
 #define MAQUIS_DMRG_IDENTITY_MPS_H
 
 #include "dmrg/block_matrix/grouped_symmetry.h"
+#include "dmrg/mp_tensors/mps.h"
+#include "dmrg/mp_tensors/mpo.h"
 
 template <class Matrix, class InSymm>
 MPS<Matrix, typename grouped_symmetry<InSymm>::type> identity_dm_mps(std::size_t L, Index<InSymm> const& phys_psi,

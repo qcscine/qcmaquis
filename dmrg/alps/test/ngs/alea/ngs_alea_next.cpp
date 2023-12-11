@@ -28,7 +28,7 @@
 #define BOOST_TEST_MODULE alps::ngs::accumulator
 
 #define ALPS_ACCUMULATOR_VALUE_TYPES double, int \
- 	, boost::array<double, 3>, std::vector<double>, std::vector<int> \
+ 	, std::array<double, 3>, std::vector<double>, std::vector<int> \
  	, alps::multi_array<double, 2>, alps::multi_array<double, 3>
 
 #include <alps/hdf5/array.hpp>
@@ -170,13 +170,13 @@ BOOST_AUTO_TEST_CASE(ngs_alea_next) {
 	BOOST_REQUIRE(std::equal(vecint_mean.begin(), vecint_mean.end(), mean(accumulators["vecint"].get<std::vector<int> >()).begin()));
 
 	accumulators.insert("array", boost::shared_ptr<accumulator_wrapper>(
-		new accumulator_wrapper(impl::Accumulator<boost::array<double, 3>, mean_tag, impl::Accumulator<boost::array<double, 3>, count_tag, impl::AccumulatorBase<boost::array<double, 3> > > >())
+		new accumulator_wrapper(impl::Accumulator<std::array<double, 3>, mean_tag, impl::Accumulator<std::array<double, 3>, count_tag, impl::AccumulatorBase<std::array<double, 3> > > >())
 	));
-	boost::array<double, 3> array_val = { {1., 2., 3.} };
+	std::array<double, 3> array_val = { {1., 2., 3.} };
 	accumulators["array"](array_val);
 
 	BOOST_REQUIRE(count(accumulators["array"]) == 1);
-	BOOST_REQUIRE(std::equal(array_val.begin(), array_val.end(), mean(accumulators["array"].get<boost::array<double, 3> >()).begin()));
+	BOOST_REQUIRE(std::equal(array_val.begin(), array_val.end(), mean(accumulators["array"].get<std::array<double, 3> >()).begin()));
 
 	accumulators.insert("multi_array", boost::shared_ptr<accumulator_wrapper>(
 		new accumulator_wrapper(impl::Accumulator<alps::multi_array<double, 3>, mean_tag, impl::Accumulator<alps::multi_array<double, 3>, count_tag, impl::AccumulatorBase<alps::multi_array<double, 3> > > >())

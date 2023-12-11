@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -60,8 +60,9 @@ public:
      */
     explicit integral_map(const map_t & map, value_type cutoff=0.0) : cutoff_(cutoff)
     {
-        for (auto&& it: map)
+        for (auto&& it: map) {
             (*this)[it->first] = it->second;
+        }
     }
 
     /** @brief Move constructor */

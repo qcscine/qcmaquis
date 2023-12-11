@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -50,6 +50,8 @@ class interface_sim : public sim<Matrix, SymmGroup>, public abstract_interface_s
   using base::chkpfolder;
   using base::lat;
   using base::model;
+  using base::results_archive_path;
+  using base::checkpoint_simulation;
 
 public:
   /**
@@ -61,19 +63,20 @@ public:
 
   /** @brief Runs a DMRG-based optimization */
   void run(const std::string& simulationType) override {
-    if (simulationType == "optimize")
+    if (simulationType == "optimize") {
       this->runAlternatingLeastSquares("optimize", parms["nsweeps"].template as<int>(), parms["conv_thresh"].template as<double>(), model, parms);
-    else if (simulationType == "evolve")
+    } else if (simulationType == "evolve") {
       this->runAlternatingLeastSquares("evolve", parms["nsweeps"].template as<int>(), parms["conv_thresh"].template as<double>(), model, parms);
       //this->evolve();
-    else if (simulationType == "solve_linear_system")
+    } else if (simulationType == "solve_linear_system") {
       this->runAlternatingLeastSquares("linear_system", parms["nsweeps"].template as<int>(), parms["conv_thresh"].template as<double>(), model, parms);
-    else if (simulationType == "ipi")
+    } else if (simulationType == "ipi") {
       this->runInversePowerIteration();
-    else if (simulationType == "feast")
+    } else if (simulationType == "feast") {
       this->runFEASTSimulation();
-    else if (simulationType == "transcorrelated")
+    } else if (simulationType == "transcorrelated") {
       this->runTranscorrelated();
+    }
   }
 
   /** @brief Runs a FEAST simulation */
@@ -135,7 +138,7 @@ public:
       auto precision = std::cout.precision();
       maquis::cout << " === RESULTS FOR THE " << nIpiIterations << "-th iteration ===" << std::endl;
       std::cout.precision(10);
-      maquis::cout << " - Energy difference to previous iteration =         " << energyDifference << std::endl;
+      maquis::cout << " - Energy difference for iteration = " << nIpiIterations << " = " << energyDifference << std::endl;
       maquis::cout << " - MPS overlap with solution at previous iteration = " << std::abs(mpsOverlap) << std::endl;
       maquis::cout << std::endl;
       std::cout.precision(precision);
@@ -178,6 +181,7 @@ public:
       factory_ = std::make_unique<FactoryType>(simulationType, SweepOptimizationType::TwoSite, mps, mpo, inputParameters, inputModel, base::lat);
     else
         throw std::runtime_error("Don't know this optimizer");
+    }
     // Retrieve the measurements that should be always done.
     auto always_measurements = this->iteration_measurements(init_sweep);
     auto firstEnergy = this->get_energy();
@@ -192,23 +196,27 @@ public:
         if ((sweep+1) % meas_each == 0 || (sweep+1) == nSweeps) {
           dumpParametersAndIterResults(sweep);
           dumpEnergy(sweep);
-          if (!rfile().empty() && always_measurements.size() > 0)
+          if (!rfile().empty() && always_measurements.size() > 0) {
             this->measure(this->results_archive_path(sweep) + "/results/", always_measurements);
           int prev_sweep = sweep - meas_each;
           // stop simulation if an energy threshold has been specified
           // Do not check convergence for propagation, since energy should be conserved by definition
-          if (prev_sweep >= 0 && !(simulationType=="evolve" && parms["imaginary_time"] == "no"))
+          if (prev_sweep >= 0 && !(simulationType=="evolve" && parms["imaginary_time"] == "no")) {
             converged = checkEnergyConvergence(energyThreshold);
+          }
         }
-        if (converged)
+        if (converged) {
           maquis::cout << "ALS CONVERGED -- SWEEPING PROCEDURE TERMINATED" << std::endl;
+        }
         last_sweep_ = sweep;
         /// write checkpoint
         bool stopped = stop_callback() || converged;
-        if (stopped || (sweep+1) % chkp_each == 0 || (sweep+1) == nSweeps)
+        if (stopped || (sweep+1) % chkp_each == 0 || (sweep+1) == nSweeps) {
           checkpoint_simulation(mps, sweep, -1);
-        if (stopped)
+        }
+        if (stopped) {
           break;
+        }
       }
     }
     catch (dmrg::time_limit const& e) {
@@ -346,8 +354,9 @@ public:
     this->measure("/spectrum/results/", all_measurements);
     // MPO creation
     MPO<Matrix, SymmGroup> mpoc = mpo;
-    if (parms["use_compressed"])
+    if (parms["use_compressed"]) {
         mpoc.compress(1e-12);
+    }
     double energy;
     // Measures the energy
     if (parms["MEASURE[Energy]"])
@@ -363,8 +372,9 @@ public:
     // Measures the energy variance
     if (parms["MEASURE[EnergyVariance]"])
     {
-        if (!parms["MEASURE[Energy]"])
+        if (!parms["MEASURE[Energy]"]) {
             energy = maquis::real(expval(mps, mpoc));
+        }
         auto traitClass = MPOTimesMPSTraitClass<Matrix, SymmGroup>(mps, model, base::lat, model.total_quantum_numbers(parms),
                                                                    parms["max_bond_dimension"]);
         auto outputMPS = traitClass.applyMPO(mpoc);
@@ -382,22 +392,26 @@ public:
     if (!rfile().empty()) {
         BaseParameters parms_meas;
         parms_meas = parms.twou1_measurements();
-        if (!parms_meas.empty())
+        if (!parms_meas.empty()) {
             measure_transform<Matrix, SymmGroup>()(rfile(), "/spectrum/results", base::lat, mps, parms_meas);
+        }
     }
-    else
+    else {
         throw std::runtime_error("Transformed measurements not implemented yet without checkpoints");
+    }
     #endif
   }
 
   results_map_type measure_out() override {
     results_map_type ret;
     // Do not measure before a sweep
-    if (this->get_last_sweep() < 0)
+    if (this->get_last_sweep() < 0) {
       throw std::runtime_error("Tried to measure before a sweep");
+    }
     // Run all measurements and fill the result map
-    for (auto&& meas: all_measurements)
+    for (auto&& meas: all_measurements) {
       ret[meas.name()] = measure_and_save<Matrix,SymmGroup>(rfile(), "/spectrum/results", mps).meas_out(meas);
+    }
     // Measurements that require SU2U1->2U1 transformation
 #if defined(HAVE_TwoU1) || defined(HAVE_TwoU1PG)
     BaseParameters parms_meas;
@@ -412,35 +426,36 @@ public:
     return ret;
   }
 
-  /** 
-   * @brief Gets the energy for the mps that is stored in the sim object
-   * Note that, if it is a feastMPS, return the feast energy of the zeroth feast state
-   */
+  /** @brief Gets the energy for the mps that is stored in the sim object */
+  /** if it is a feastMPS, return the feast energy of the zeroth feast state*/
   RealType get_energy() override {
-    if (!feastMPSs_)
+    if (!feastMPSs_) {
       return maquis::real(expval(mps, mpo)/overlap(mps, mps));
-    else
+    } else {
       return getFEASTEnergy(0);
+    }
   }
 
   /** @brief Gets the FEAST eigenstates - throws an exception if FEAST is not run */
   auto getFEASTEigenstates() {
-    if (!feastMPSs_)
+    if (!feastMPSs_) {
       throw std::runtime_error("FEAST eigenstate requested before running a FEAST simulation");
-    else
+    } else {
       return feastMPSs_;
+    }
   }
 
   /** @brief Gets the FEAST energies -- throws an exception if FEAST is not run */
   RealType getFEASTEnergy(int iState) const override {
-    if (!feastMPSs_)
+    if (!feastMPSs_) {
       throw std::runtime_error("FEAST energy requested before running a FEAST simulation");
-    else if (iState >= feastMPSs_->size()) {
+    } else if (iState >= feastMPSs_->size()) {
       std::string errorMessage = "FEAST energy requested for the"+std::to_string(iState)+"-th state, but only "+std::to_string(feastMPSs_->size())+" states are available";
       throw std::runtime_error(errorMessage);
     }
-    else
+    else {
       return maquis::real(expval(feastMPSs_->operator[](iState), mpo)/norm(feastMPSs_->operator[](iState)));
+    }
   }
 
   /**
@@ -457,10 +472,11 @@ public:
       auto modifiedParameters = parms;
       std::string initState = (parms["MODEL"] == "quantum_chemistry") ? "hf" : "basis_state_generic";
       modifiedParameters.set("init_type", initState);
-      if (parms["MODEL"] == "quantum_chemistry")
+      if (parms["MODEL"] == "quantum_chemistry") {
           modifiedParameters.set("hf_occ", determinantString);
-      else
+      } else {
           modifiedParameters.set("init_basis_state", determinantString);
+      }
       auto mpsOverlap = MPSType(lat.size(), *(model.initializer(lat, modifiedParameters)));
       return overlap(mpsOverlap, mps)/std::sqrt(norm(mpsOverlap)*norm(mps));
   }
@@ -503,9 +519,6 @@ public:
 
         // integrals are set later anyways
         // deleting old ones should be okay
-        if (parms.is_set("integral_file")) {
-          parms.erase("integral_file");
-        }
         if(parms.is_set("integrals")){
           parms.erase("integrals");
         }
@@ -613,8 +626,9 @@ private:
 
   /**  @brief Checks energy convergence of the sweep-based optimization */
   bool checkEnergyConvergence(double convergenceThreshold) {
-    if (energies_.size() < 2) // Not yet sufficient number of iterations
+    if (energies_.size() < 2) { // Not yet sufficient number of iterations
       return false;
+    }
     auto eDiff = std::abs(*(energies_.end()-2) - *(energies_.end()-1));
     return (eDiff < convergenceThreshold);
   }
@@ -637,10 +651,11 @@ private:
   void dumpParameters(std::string filename = "") {
     if (!chkpfolder().empty()) {
       std::string chkpfilename;
-      if (filename.empty())
+      if (filename.empty()) {
         chkpfilename = chkpfolder();
-      else
+      } else {
         chkpfilename = chkpfolder() + "_" + filename;
+      }
       storage::archive ar(chkpfilename+"/props.h5", "w");
       ar["/parameters"] << parms;
     }

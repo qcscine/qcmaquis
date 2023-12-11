@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -11,11 +11,12 @@
 #include <vector>
 #include <algorithm>
 #include <utility>
+#include <numeric>
 
 #include <boost/unordered_map.hpp>
 #include <boost/container/flat_set.hpp>
 #include <boost/container/flat_map.hpp>
-#include <boost/array.hpp>
+#include <array>
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/bind.hpp>
 
@@ -80,20 +81,20 @@ class basis_iterator_;
 template<class SymmGroup> class Index
 : protected std::vector<std::pair<typename SymmGroup::charge, std::size_t> >
 {
-    typedef std::vector<std::pair<typename SymmGroup::charge, std::size_t> > base_t;
-    typedef boost::container::flat_map<typename SymmGroup::charge, std::size_t> pos_t;
+    using base_t = std::vector<std::pair<typename SymmGroup::charge, std::size_t>>;
+    using pos_t = boost::container::flat_map<typename SymmGroup::charge, std::size_t>;
 
 public:
-    typedef typename SymmGroup::charge charge;
-    typedef typename base_t::value_type value_type;
+    using charge = typename SymmGroup::charge;
+    using value_type = typename base_t::value_type;
 
-    typedef typename base_t::iterator iterator;
-    typedef typename base_t::const_iterator const_iterator;
+    using iterator = typename base_t::iterator;
+    using const_iterator = typename base_t::const_iterator;
 
-    typedef typename base_t::reverse_iterator reverse_iterator;
-    typedef typename base_t::const_reverse_iterator const_reverse_iterator;
+    using reverse_iterator = typename base_t::reverse_iterator;
+    using const_reverse_iterator = typename base_t::const_reverse_iterator;
 
-    typedef basis_iterator_<SymmGroup> basis_iterator;
+    using basis_iterator = basis_iterator_<SymmGroup>;
 
     static const bool sorted = true;
 
@@ -221,14 +222,14 @@ public:
     value_type & operator[](std::size_t p) { return static_cast<base_t&>(*this)[p]; }
     value_type const & operator[](std::size_t p) const { return static_cast<base_t const&>(*this)[p]; }
 
-    boost::tuple<charge, std::size_t> element(std::size_t p) const
+    std::tuple<charge, std::size_t> element(std::size_t p) const
     {
         std::size_t i=0;
         while (p >= (*this)[i].second) {
             p -= (*this)[i].second;
             ++i;
         }
-        return boost::make_tuple( (*this)[i].first, p );
+        return std::make_tuple( (*this)[i].first, p );
     }
 
     std::size_t size() const { return base_t::size(); }
@@ -268,7 +269,7 @@ public:
     template<class Archive>
     void load(Archive & ar)
     {
-        typedef std::vector<std::pair<typename SymmGroup::charge, std::size_t> > my_type;
+        using my_type = std::vector<std::pair<typename SymmGroup::charge, std::size_t>>;
         ar["Index"] >> static_cast<my_type&>(*this);
         calc_positions();
     }
@@ -276,7 +277,7 @@ public:
     template<class Archive>
     void save(Archive & ar) const
     {
-        typedef std::vector<std::pair<typename SymmGroup::charge, std::size_t> > my_type;
+        using my_type = std::vector<std::pair<typename SymmGroup::charge, std::size_t>>;
         ar["Index"] << static_cast<my_type const &>(*this);
     }
 
@@ -301,8 +302,8 @@ template<class SymmGroup>
 class ProductBasis
 {
 public:
-    typedef typename SymmGroup::charge charge;
-    typedef std::size_t size_t;
+    using charge = typename SymmGroup::charge;
+    using size_t = std::size_t;
 
     ProductBasis(Index<SymmGroup> const & a,
                  Index<SymmGroup> const & b)
@@ -338,7 +339,7 @@ private:
 public:
     size_t operator()(charge a, charge b) const
     {
-        typedef typename boost::unordered_map<std::pair<charge, charge>, size_t>::const_iterator match_type;
+        using match_type = typename boost::unordered_map<std::pair<charge, charge>, size_t>::const_iterator;
         match_type match = keys_vals_.find(std::make_pair(a,b));
         assert( match != keys_vals_.end() );
         return match->second;
@@ -372,7 +373,7 @@ template<class SymmGroup>
 class basis_iterator_
 {
 public:
-    typedef typename SymmGroup::charge charge;
+    using charge = typename SymmGroup::charge;
 
     basis_iterator_(Index<SymmGroup> const & idx, bool at_end = false)
     : idx_(idx)
@@ -452,7 +453,7 @@ bool weak_equal(Index<SymmGroup> const & a, Index<SymmGroup> const & b)
 template<class SymmGroup>
 Index<SymmGroup> adjoin(Index<SymmGroup> const & inp)
 {
-    typedef typename SymmGroup::charge charge;
+    using charge = typename SymmGroup::charge;
 
     std::vector<charge> oc = inp.charges(), nc = inp.charges();
     std::transform(nc.begin(), nc.end(), nc.begin(), std::negate<charge>());
@@ -492,7 +493,7 @@ template<class SymmGroup>
 Index<SymmGroup> operator*(Index<SymmGroup> const & i1,
                            Index<SymmGroup> const & i2)
 {
-    typedef typename SymmGroup::charge charge;
+    using charge = typename SymmGroup::charge;
 
     Index<SymmGroup> ret;
     for (typename Index<SymmGroup>::const_iterator it1 = i1.begin(); it1 != i1.end(); ++it1)
@@ -532,31 +533,31 @@ std::pair<charge, std::size_t> operator-(std::pair<charge, std::size_t> const & 
     return std::make_pair(-p.first, p.second);
 }
 
-template<class T> boost::array<T, 1> _(T const & a)
+template<class T> std::array<T, 1> _(T const & a)
 {
-    boost::array<T, 1> r;
+    std::array<T, 1> r;
     r[0] = a;
     return r;
 }
 
-template<class T> boost::array<T, 2> _(T const & a, T const & b)
+template<class T> std::array<T, 2> _(T const & a, T const & b)
 {
-    boost::array<T, 2> r;
+    std::array<T, 2> r;
     r[0] = a;
     r[1] = b;
     return r;
 }
 
 #define IMPL_COMMA(tpl, type) \
-tpl boost::array<type, 2> operator^(type const & a, type const & b) { \
-    boost::array<type, 2> ret; \
+tpl std::array<type, 2> operator^(type const & a, type const & b) { \
+    std::array<type, 2> ret; \
     ret[0] = a; \
     ret[1] = b; \
     return ret; \
 }
 #define IMPL_COMMA_2(tpl, type) \
-tpl boost::array<type, L+1> operator^(boost::array<type, L> const & a, type const & b) { \
-    boost::array<type, L+1> ret; \
+tpl std::array<type, L+1> operator^(std::array<type, L> const & a, type const & b) { \
+    std::array<type, L+1> ret; \
     std::copy(a.begin(), a.end(), ret.begin()); \
     ret[L] = b; \
     return ret; \
@@ -572,18 +573,18 @@ IMPL_COMMA(template<class charge>, std::pair<charge CO std::size_t>)
 #undef IMPL_COMMA_2
 
 template<class T, unsigned long L>
-boost::array<T, L+1> operator^(boost::array<T, L> const & a, T const & b)
+std::array<T, L+1> operator^(std::array<T, L> const & a, T const & b)
 {
-	boost::array<T, L+1> ret;
+	std::array<T, L+1> ret;
     std::copy(a.begin(), a.end(), ret.begin());
 	ret[L] = b;
 	return ret;
 }
 
 template<class T, unsigned long L>
-boost::array<T, L+1> operator^(T const & a, boost::array<T, L> const & b)
+std::array<T, L+1> operator^(T const & a, std::array<T, L> const & b)
 {
-	boost::array<T, L+1> ret;
+	std::array<T, L+1> ret;
 	ret[0] = a;
 	for (int i = 0; i < L; i++)
 		ret[i+1] = b[i];

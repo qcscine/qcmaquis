@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -182,12 +182,12 @@ std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> multi_overlap(MPS<Matr
 }
 
 //typedef std::vector< std::vector< std::pair<std::string, double> > > entanglement_spectrum_type;
-typedef std::vector< std::pair<std::vector<std::string>, std::vector<double> > > entanglement_spectrum_type;
+using entanglement_spectrum_type = std::vector<std::pair<std::vector<std::string>, std::vector<double>>>;
 template<class Matrix, class SymmGroup>
 std::vector<double>
 calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> mps, double n,
-                               std::vector<int> * measure_es_where = NULL,
-                               entanglement_spectrum_type * spectra = NULL) // to be optimized later
+                               std::vector<int> * measure_es_where = nullptr,
+                               entanglement_spectrum_type * spectra = nullptr) // to be optimized later
 {
     std::size_t L = mps.length();
     std::vector<double> ret;
@@ -196,7 +196,7 @@ calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> mps, double n,
 
     block_matrix<Matrix, SymmGroup> lb;
 
-    if (spectra != NULL)
+    if (spectra != nullptr)
         spectra->clear();
 
     mps.canonize(0);
@@ -214,7 +214,7 @@ calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> mps, double n,
 
         std::vector<double> sv = maquis::dmrg::detail::bond_renyi_entropies(s);
 
-        if (spectra != NULL && measure_es_where != NULL
+        if (spectra != nullptr && measure_es_where != nullptr
             && std::find(measure_es_where->begin(), measure_es_where->end(), p) != measure_es_where->end()) {
             std::vector< std::string > labels;
             std::vector< double > values;
@@ -232,14 +232,14 @@ calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> mps, double n,
 
         double S = 0;
         if (n == 1) {
-            for (std::vector<double>::const_iterator it = sv.begin();
-                 it != sv.end(); ++it)
-                S += *it * log(*it);
+            for (double e : sv) {
+                S += e * log(e);
+            }
             ret.push_back(-S);
         } else {
-            for (std::vector<double>::const_iterator it = sv.begin();
-                 it != sv.end(); ++it)
-                S += pow(*it, n);
+            for (double e : sv) {
+                S += pow(e, n);
+            }
             ret.push_back(1/(1-n)*log(S));
         }
 
@@ -259,13 +259,13 @@ calculate_bond_entropies(MPS<Matrix, SymmGroup> & mps)
 template<class Matrix, class SymmGroup>
 typename MPS<Matrix, SymmGroup>::scalar_type dm_trace(MPS<Matrix, SymmGroup> const& mps, Index<SymmGroup> const& phys_psi)
 {
-    typedef typename SymmGroup::charge charge;
+    using charge = typename SymmGroup::charge;
     charge I = SymmGroup::IdentityCharge;
     size_t L = mps.length();
 
     Index<SymmGroup> phys_rho = phys_psi * adjoin(phys_psi);
-    ProductBasis<SymmGroup> pb(phys_psi, phys_psi, boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                                       boost::lambda::_1, -boost::lambda::_2));
+    ProductBasis<SymmGroup> pb(phys_psi, phys_psi,
+        [&](const charge& a, const charge& b){ return SymmGroup::fuse(a, -b); });
 
     Matrix identblock(phys_rho.size_of_block(I), 1, 0.);
     for (int s=0; s<phys_psi.size(); ++s)
@@ -293,7 +293,7 @@ template<class Matrix, class SymmGroup>
 void fix_density(MPS<Matrix, SymmGroup> & mps, std::vector<typename operator_selector<Matrix, SymmGroup>::type> const & dens_ops,
                  std::vector<std::vector<double> > const & dens)
 {
-    typedef typename operator_selector<Matrix, SymmGroup>::type op_t;
+    using op_t = typename operator_selector<Matrix, SymmGroup>::type;
 
     assert( mps.size() == dens[0].size() );
     assert( dens_ops.size() == dens.size() );

@@ -16,20 +16,20 @@ namespace maquis {
 template <typename T, unsigned int Size>
 class static_allocator {
   public:
-    typedef T*              pointer;
-    typedef T const*        const_pointer;
-    typedef T&              reference;
-    typedef T const&        const_reference;
-    typedef T               value_type;
-    typedef std::size_t     size_type;
-    typedef std::ptrdiff_t  difference_type;
+    using pointer = T *;
+    using const_pointer = const T *;
+    using reference = T &;
+    using const_reference = const T &;
+    using value_type = T;
+    using size_type = std::size_t;
+    using difference_type = std::ptrdiff_t;
 
     template <typename U>
     struct rebind {
-        typedef static_allocator<U,Size> other;
+        using other = static_allocator<U, Size>;
     };
 
-    static_allocator() NOEXCEPT_SPEC { }
+    static_allocator() NOEXCEPT_SPEC = default;
 
     static_allocator(static_allocator const& a) NOEXCEPT_SPEC { }
 
@@ -91,24 +91,22 @@ class static_allocator {
 template <typename T, unsigned int Alignment>
 class aligned_allocator {
   public:
-    typedef T*              pointer;
-    typedef T const*        const_pointer;
-    typedef T&              reference;
-    typedef T const&        const_reference;
-    typedef T               value_type;
-    typedef std::size_t     size_type;
-    typedef std::ptrdiff_t  difference_type;
+    using pointer = T *;
+    using const_pointer = const T *;
+    using reference = T &;
+    using const_reference = const T &;
+    using value_type = T;
+    using size_type = std::size_t;
+    using difference_type = std::ptrdiff_t;
 
     template <typename U>
     struct rebind {
-        typedef aligned_allocator<U,Alignment> other;
+        using other = aligned_allocator<U, Alignment>;
     };
 
-    aligned_allocator() NOEXCEPT_SPEC {
-    }
+    aligned_allocator() NOEXCEPT_SPEC = default;
 
-    aligned_allocator(aligned_allocator const& a) NOEXCEPT_SPEC {
-    }
+    aligned_allocator(aligned_allocator const& a) NOEXCEPT_SPEC = default;
 
     template <typename U>
     aligned_allocator(aligned_allocator<U,Alignment> const& b) NOEXCEPT_SPEC {

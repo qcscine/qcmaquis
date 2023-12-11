@@ -45,92 +45,97 @@ class WatsonHamiltonian : public model_impl<Matrix, TrivialGroup> {
   using value_type = typename Matrix::value_type;
 public:
 
-    /**
-     * @brief Class constructor
-     * @param lattice object representing the DMRG lattice
-     * @param parameters container with the DMRG parameters
-     * @param verbose if true, prints information regarding the Hamiltonian terms
-     */
-    WatsonHamiltonian(const Lattice& lattice, BaseParameters& parameters, bool verbose)
-        : lattice_(lattice), parameters_(parameters), tag_handler_(new table_type()), physIndices_(0)
-    {
-        // Model parameters
-        maquis::cout << std::endl;
-        maquis::cout << " == CONSTRUCTING WATSON HAMILTONIAN == " << std::endl;
-        maquis::cout << std::endl;
-        if (parameters_["watson_coordinate_type"] == "cartesian") {
-            coordinateType_ = WatsonCoordinateType::CartesianNormalModes;
-            maquis::cout << " Coordinate type: Cartesian Normal Modes" << std::endl;
-        }
-        else if (parameters_["watson_coordinate_type"] == "internal") {
-            coordinateType_ = WatsonCoordinateType::InternalNormalModes;
-            maquis::cout << " Coordinate type: Internal coordinates-based Normal Modes" << std::endl;
-        }
-        else {
-            throw std::runtime_error("Coordinate type not recognized");
-        }
-        // Set the number of indices which are expected in the FCIDUMP
-        // Determines also the maximum many-body coupling degree. Per default read in all integrals that are given
-        maxCoupling_ = chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical, chem::HamiltonianTransformation::Conventional);
-        maxManyBodyCoupling_ = (parameters.is_set("watson_max_coupling")) ? parameters["watson_max_coupling"] : maxCoupling_;
-        maxInputManyBodyCoupling_ = (parameters.is_set("watson_max_coupling_input")) ? parameters["watson_max_coupling_input"] : maxCoupling_;
-        maquis::cout << " - Maximum many-body coupling order supported: " << maxCoupling_ << std::endl;
-        maquis::cout << " - Many-body coupling order expected as input: " << maxInputManyBodyCoupling_ << std::endl;
-        maquis::cout << " - Maximum many-body coupling order included in the Hamiltonian " << maxManyBodyCoupling_ << std::endl;
-        maquis::cout << std::endl;
-        int numModes =  parameters_["L"];
-        physIndices_.resize(numModes);
-        // Analyzes consistency of nMax parameter
-        nMaxVec = parameters_["Nmax"].as<std::vector<int> >();
-        if (nMaxVec.size() == 1) {
-            auto nMax = nMaxVec[0];
-            nMaxVec = std::vector<int>(numModes, nMax);
-        }
-        else if (nMaxVec.size() != numModes) {
-            throw std::runtime_error("Nmax needs to be either a single integer or a list with lenght L");
-        }
-        // Loads the physical indices
-        TrivialGroup::charge C = TrivialGroup::IdentityCharge;
-        for (int iMode = 0; iMode < numModes; iMode++)
-            physIndices_[iMode].insert(std::make_pair(C, nMaxVec[iMode]));
-        // Decides how many different dimensions there are
-        std::set<int> nMaxUnique(nMaxVec.begin(), nMaxVec.end());
-        // Loop over all modes
-        for (const auto& nMax: nMaxUnique) {
-            op_t ident_op, position_op, momentum_op;
-            std::vector<op_t> powersOfPositions_op, powersOfMomentum_op;
-            int overallDimension = nMax + maxCoupling_;
-            // Here it's where the "physical" basis is defined
-            Matrix mpos(overallDimension, overallDimension, 0.), mmom(overallDimension, overallDimension, 0.);
-            Matrix mident(overallDimension, overallDimension, 0.);
-            // Loads the matrices
-            mident(0, 0) = 1.;
-            for (int n = 1; n < overallDimension; n++) {
-                mpos(n-1, n) = std::sqrt(value_type(n));
-                mpos(n, n-1) = std::sqrt(value_type(n));
-                mmom(n-1, n) = std::sqrt(value_type(n));
-                mmom(n, n-1) = -std::sqrt(value_type(n));
-                mident(n, n) = 1.;
-            }
-            position_op.insert_block(mpos, C,C);
-            momentum_op.insert_block(mmom, C,C);
-            ident_op.insert_block(mident, C,C);
-            // -- Creates the powers of the position/momentum operator --
-            powersOfPositions_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfPositionOperator(maxInputManyBodyCoupling_, nMax, ident_op, position_op);
-            powersOfMomentum_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfMomentumOperator(maxInputManyBodyCoupling_, nMax, ident_op, momentum_op);
-            // -- Create operator tag table --
-            ident_op.resize_block(0, nMax, nMax);
-            ident_[nMax] = tag_handler_->register_op(ident_op, tag_detail::bosonic);
-            positionPowers_[nMax].resize(maxInputManyBodyCoupling_+1);
-            momentumPowers_[nMax].resize(maxInputManyBodyCoupling_+1);
-            positionPowers_[nMax][0] = ident_[nMax];
-            momentumPowers_[nMax][0] = ident_[nMax];
-            for (int iOrder = 1; iOrder <= maxInputManyBodyCoupling_; iOrder++) {
-                positionPowers_[nMax][iOrder] = tag_handler_->register_op(powersOfPositions_op[iOrder], tag_detail::bosonic);
-                momentumPowers_[nMax][iOrder] = tag_handler_->register_op(powersOfMomentum_op[iOrder], tag_detail::bosonic);
-            }
-        }
+  /**
+   * @brief Class constructor
+   * @param lattice object representing the DMRG lattice
+   * @param parameters container with the DMRG parameters
+   * @param verbose if true, prints information regarding the Hamiltonian terms
+   */
+  WatsonHamiltonian(const Lattice& lattice, BaseParameters& parameters, bool verbose)
+      : lattice_(lattice), parameters_(parameters), tag_handler_(new table_type()), physIndices_(0)
+  {
+    // Model parameters
+    maquis::cout << std::endl;
+    maquis::cout << " == CONSTRUCTING WATSON HAMILTONIAN == " << std::endl;
+    maquis::cout << std::endl;
+    if (parameters_["watson_coordinate_type"] == "cartesian") {
+      coordinateType_ = WatsonCoordinateType::CartesianNormalModes;
+      maquis::cout << " Coordinate type: Cartesian Normal Modes" << std::endl;
     }
+    else if (parameters_["watson_coordinate_type"] == "internal") {
+      coordinateType_ = WatsonCoordinateType::InternalNormalModes;
+      maquis::cout << " Coordinate type: Internal coordinates-based Normal Modes" << std::endl;
+    }
+    else {
+      throw std::runtime_error("Coordinate type not recognized");
+    }
+    // Set the number of indices which are expected in the FCIDUMP
+    // Determines also the maximum many-body coupling degree. Per default read in all integrals that are given
+    maxCoupling_ = chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical);
+    maxManyBodyCoupling_ = (parameters.is_set("watson_max_coupling")) ? parameters["watson_max_coupling"] : maxCoupling_;
+    maxInputManyBodyCoupling_ = (parameters.is_set("watson_max_coupling_input")) ? parameters["watson_max_coupling_input"] : maxCoupling_;
+    maquis::cout << " - Maximum many-body coupling order supported: " << maxCoupling_ << std::endl;
+    maquis::cout << " - Many-body coupling order expected as input: " << maxInputManyBodyCoupling_ << std::endl;
+    maquis::cout << " - Maximum many-body coupling order included in the Hamiltonian " << maxManyBodyCoupling_ << std::endl;
+    maquis::cout << std::endl;
+    int numModes =  parameters_["L"];
+    physIndices_.resize(numModes);
+    // Analyzes consistency of nMax parameter
+    nMaxVec = parameters_["Nmax"].template as<std::vector<int> >();
+    if (nMaxVec.size() == 1) {
+      auto nMax = nMaxVec[0];
+      nMaxVec = std::vector<int>(numModes, nMax);
+    }
+    else if (nMaxVec.size() != numModes) {
+      throw std::runtime_error("Nmax needs to be either a single integer or a list with lenght L");
+    }
+    // Loads the physical indices
+    TrivialGroup::charge C = TrivialGroup::IdentityCharge;
+    for (int iMode = 0; iMode < numModes; iMode++)
+      physIndices_[iMode].insert(std::make_pair(C, nMaxVec[iMode]));
+    // Decides how many different dimensions there are
+    std::set<int> nMaxUnique(nMaxVec.begin(), nMaxVec.end());
+    // Loop over all modes
+    for (const auto& nMax: nMaxUnique) {
+      op_t ident_op, position_op, momentum_op, count_op;
+      std::vector<op_t> powersOfPositions_op, powersOfMomentum_op;
+      int overallDimension = nMax + maxCoupling_;
+      // Here it's where the "physical" basis is defined
+      Matrix mpos(overallDimension, overallDimension, 0.), mmom(overallDimension, overallDimension, 0.);
+      Matrix mident(overallDimension, overallDimension, 0.), mcount(overallDimension, overallDimension, 0.);
+      // Loads the matrices
+      mident(0, 0) = 1.;
+      for (int n = 1; n < overallDimension; n++) {
+        mpos(n-1, n) = std::sqrt(value_type(n));
+        mpos(n, n-1) = std::sqrt(value_type(n));
+        mmom(n-1, n) = std::sqrt(value_type(n));
+        mmom(n, n-1) = -std::sqrt(value_type(n));
+        mident(n, n) = 1.;
+        mcount(n, n) = value_type(n);
+      }
+      position_op.insert_block(mpos, C, C);
+      momentum_op.insert_block(mmom, C, C);
+      ident_op.insert_block(mident, C, C);
+      count_op.insert_block(mcount, C, C);
+      // -- Creates the powers of the position/momentum operator --
+      powersOfPositions_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfPositionOperator(maxInputManyBodyCoupling_, nMax, ident_op, position_op);
+      powersOfMomentum_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfMomentumOperator(maxInputManyBodyCoupling_, nMax, ident_op, momentum_op);
+      // -- Create operator tag table --
+      ident_op.resize_block(0, nMax, nMax);
+      count_op.resize_block(0, nMax, nMax);
+      ident_[nMax] = tag_handler_->register_op(ident_op, tag_detail::bosonic);
+      numberOperators_[nMax] = tag_handler_->register_op(count_op, tag_detail::bosonic);
+      positionPowers_[nMax].resize(maxInputManyBodyCoupling_+1);
+      momentumPowers_[nMax].resize(maxInputManyBodyCoupling_+1);
+      positionPowers_[nMax][0] = ident_[nMax];
+      momentumPowers_[nMax][0] = ident_[nMax];
+      for (int iOrder = 1; iOrder <= maxInputManyBodyCoupling_; iOrder++) {
+        positionPowers_[nMax][iOrder] = tag_handler_->register_op(powersOfPositions_op[iOrder], tag_detail::bosonic);
+        momentumPowers_[nMax][iOrder] = tag_handler_->register_op(powersOfMomentum_op[iOrder], tag_detail::bosonic);
+      }
+    }
+  }
+
   /** @brief Update the model with the new parameters */
   void update(BaseParameters const &p) override {
       // TODO: update this->terms_ with the new parameters
@@ -268,3 +273,4 @@ private:
 #endif // DMRG_VIBRATIONAL
 
 #endif
+

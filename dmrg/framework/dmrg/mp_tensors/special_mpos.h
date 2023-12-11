@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -24,7 +24,7 @@ block_matrix<Matrix, SymmGroup> make_mpo_identity_block(Index<SymmGroup> phys_i)
 template<class Matrix, class SymmGroup>
 MPOTensor<Matrix, SymmGroup> identity_mpo(Index<SymmGroup> phys_i)
 {
-    typedef typename Index<SymmGroup>::basis_iterator bit;
+    using bit = typename Index<SymmGroup>::basis_iterator;
     
     MPOTensor<Matrix, SymmGroup> mpo(1, 1);
     mpo(0,0) = make_mpo_identity_block<Matrix>(phys_i);
@@ -38,7 +38,7 @@ MPOTensor<Matrix, SymmGroup> identity_mpo(Index<SymmGroup> phys_i)
 template<class Matrix>
 MPOTensor<Matrix, TrivialGroup> s12_sz_mpo(Index<TrivialGroup> phys_i)
 {
-    typedef Index<TrivialGroup>::basis_iterator bit;
+    using bit = Index<TrivialGroup>::basis_iterator;
     
     MPOTensor<Matrix, TrivialGroup> mpo(1, 1);
     mpo(0,0) = make_mpo_identity_block<Matrix>(phys_i);
@@ -130,15 +130,15 @@ MPO<Matrix, U1> s12_heisenberg(std::size_t L, double Jxy, double Jz)
     
     block_matrix<Matrix, U1> ident, splus, sminus, sz, zero;
     
-    ident.insert_block(boost::tuples::make_tuple(Matrix(1, 1, 1), -1, -1));
-    ident.insert_block(boost::tuples::make_tuple(Matrix(1, 1, 1), 1, 1));
+    ident.insert_block(std::make_tuple(Matrix(1, 1, 1), -1, -1));
+    ident.insert_block(std::make_tuple(Matrix(1, 1, 1), 1, 1));
     
-    splus.insert_block(boost::tuples::make_tuple(Matrix(1, 1, 1), -1, 1));
+    splus.insert_block(std::make_tuple(Matrix(1, 1, 1), -1, 1));
     
-    sminus.insert_block(boost::tuples::make_tuple(Matrix(1, 1, 1), 1, -1));
+    sminus.insert_block(std::make_tuple(Matrix(1, 1, 1), 1, -1));
     
-    sz.insert_block(boost::tuples::make_tuple(Matrix(1, 1, 0.5), 1, 1));
-    sz.insert_block(boost::tuples::make_tuple(Matrix(1, 1, -0.5), -1, -1));
+    sz.insert_block(std::make_tuple(Matrix(1, 1, 0.5), 1, 1));
+    sz.insert_block(std::make_tuple(Matrix(1, 1, -0.5), -1, -1));
     
     MPOTensor<Matrix, U1> bulk(5, 5);
     bulk(0,0) = ident;

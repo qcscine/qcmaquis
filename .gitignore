@@ -4,7 +4,8 @@
 .vscode/
 build*/
 my*
-.vscode
+*.vscode
+*.idea
 **check*
 examples/**/*resfile*
 examples/**/*result*

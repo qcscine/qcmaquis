@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -16,7 +16,7 @@
 class ContChain : public lattice_impl
 {
 public:
-    typedef lattice_impl::pos_t pos_t;
+    using pos_t = lattice_impl::pos_t;
     
     ContChain (BaseParameters & parms, bool pbc_=false)
     : L(parms["L"])
@@ -25,7 +25,7 @@ public:
     , pbc(pbc_)
     {}
     
-    std::vector<pos_t> forward(pos_t i) const
+    std::vector<pos_t> forward(pos_t i) const override
     {
         std::vector<pos_t> ret;
         if (i < L*N-1)
@@ -34,7 +34,7 @@ public:
             ret.push_back(0);
         return ret;
     }
-    std::vector<pos_t> all(pos_t i) const
+    std::vector<pos_t> all(pos_t i) const override
     {
         std::vector<pos_t> ret;
         if (i < L*N-1)
@@ -48,39 +48,39 @@ public:
         return ret;
     }
     
-    boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const
+    std::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const override
     {
         if (property == "label" && pos.size() == 1)
-            return boost::any( site_label(pos[0]) );
+            return std::any( site_label(pos[0]) );
         else if (property == "label" && pos.size() == 2)
-            return boost::any( bond_label(pos[0], pos[1]) );
+            return std::any( bond_label(pos[0], pos[1]) );
         else if (property == "type" && pos.size() == 1)
-            return boost::any( pos[0]%N );
+            return std::any( pos[0]%N );
         else if (property == "type" && pos.size() == 2)
-            return boost::any( 0 );
+            return std::any( 0 );
         else if (property == "x" && pos.size() == 1)
-            return boost::any( a/N/2. + a/N * pos[0] );
+            return std::any( a/N/2. + a/N * pos[0] );
         else if (property == "dx" && pos.size() == 1)
-            return boost::any( a/N );
+            return std::any( a/N );
         else if (property == "dx" && pos.size() == 2)
-            return boost::any( a/N * (pos[1]-pos[0]) );
+            return std::any( a/N * (pos[1]-pos[0]) );
         else if (property == "at_open_boundary" && pos.size() == 1)
-            return boost::any( (!pbc) && (pos[0]==0 || pos[0]==L*N-1) );
+            return std::any( (!pbc) && (pos[0]==0 || pos[0]==L*N-1) );
         else if (property == "at_open_left_boundary" && pos.size() == 1)
-            return boost::any( (!pbc) && pos[0]==0 );
+            return std::any( (!pbc) && pos[0]==0 );
         else if (property == "at_open_right_boundary" && pos.size() == 1)
-            return boost::any( (!pbc) && pos[0]==L*N-1 );
+            return std::any( (!pbc) && pos[0]==L*N-1 );
         else if (property == "wraps_pbc" && pos.size() == 2)
-            return boost::any( (pos[0] < pos[1]) );
+            return std::any( (pos[0] < pos[1]) );
         else {
             std::ostringstream ss;
             ss << "No property '" << property << "' with " << pos.size() << " points implemented."; 
             throw std::runtime_error(ss.str());
-            return boost::any();
+            return std::any();
         }
     }
 
-    pos_t size() const
+    pos_t size() const override
     {
         return L*N;
     }
@@ -114,7 +114,7 @@ private:
 class MixedContChain : public lattice_impl
 {
 public:
-    typedef lattice_impl::pos_t pos_t;
+    using pos_t = lattice_impl::pos_t;
     
     MixedContChain (BaseParameters & parms1, int L1_, BaseParameters & parms2, int L2_, bool pbc_=false)
     : L1(L1_)
@@ -131,7 +131,7 @@ public:
             throw std::runtime_error("Periodic boundary conditions are not implemented for the MixedChain.");
     }
     
-    std::vector<pos_t> forward(pos_t i) const
+    std::vector<pos_t> forward(pos_t i) const override
     {
         std::vector<pos_t> ret;
         if (i < L1+L2-1)
@@ -140,7 +140,7 @@ public:
             ret.push_back(0);
         return ret;
     }
-    std::vector<pos_t> all(pos_t i) const
+    std::vector<pos_t> all(pos_t i) const override
     {
         std::vector<pos_t> ret;
         if (i < L1+L2-1)
@@ -154,39 +154,37 @@ public:
         return ret;
     }
     
-    boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const
+    std::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const override
     {
         if (property == "label" && pos.size() == 1)
-            return boost::any( site_label(pos[0]) );
+            return std::any( site_label(pos[0]) );
         else if (property == "label" && pos.size() == 2)
-            return boost::any( bond_label(pos[0], pos[1]) );
-        else if (property == "type" && pos.size() == 1)
-            return boost::any( 0 );
-        else if (property == "type" && pos.size() == 2)
-            return boost::any( 0 );
+            return std::any( bond_label(pos[0], pos[1]) );
+        else if (property == "type" && (pos.size() == 1 || pos.size() == 2))
+            return std::any( 0 );
         else if (property == "x" && pos.size() == 1)
-            return boost::any( get_x(pos[0]) );
+            return std::any( get_x(pos[0]) );
         else if (property == "dx" && pos.size() == 1)
-            return boost::any( get_dx(pos[0]) );
+            return std::any( get_dx(pos[0]) );
         else if (property == "dx" && pos.size() == 2)
-            return boost::any( get_dx(pos[0], pos[1]) );
+            return std::any( get_dx(pos[0], pos[1]) );
         else if (property == "at_open_boundary" && pos.size() == 1)
-            return boost::any( (!pbc) && (pos[0]==0 || pos[0]==L1+L2-1) );
+            return std::any( (!pbc) && (pos[0]==0 || pos[0]==L1+L2-1) );
         else if (property == "at_open_left_boundary" && pos.size() == 1)
-            return boost::any( (!pbc) && pos[0]==0 );
+            return std::any( (!pbc) && pos[0]==0 );
         else if (property == "at_open_right_boundary" && pos.size() == 1)
-            return boost::any( (!pbc) && pos[0]==L1+L2-1 );
+            return std::any( (!pbc) && pos[0]==L1+L2-1 );
         else if (property == "wraps_pbc" && pos.size() == 2)
-            return boost::any( (pos[0] < pos[1]) );
+            return std::any( (pos[0] < pos[1]) );
         else {
             std::ostringstream ss;
             ss << "No property '" << property << "' with " << pos.size() << " points implemented."; 
             throw std::runtime_error(ss.str());
-            return boost::any();
+            return std::any();
         }
     }
     
-    pos_t size() const
+    pos_t size() const override
     {
         return L1+L2;
     }
@@ -250,7 +248,7 @@ private:
 class MixedContChain_c : public lattice_impl
 {
 public:
-    typedef lattice_impl::pos_t pos_t;
+    using pos_t = lattice_impl::pos_t;
     
     MixedContChain_c (BaseParameters & parms1, int L1_, BaseParameters & parms2, int L2_, bool pbc_=false)
     : L1(L1_)
@@ -267,7 +265,7 @@ public:
             throw std::runtime_error("Periodic boundary conditions are not implemented for the MixedChain.");
     }
     
-    std::vector<pos_t> forward(pos_t i) const
+    std::vector<pos_t> forward(pos_t i) const override
     {
         std::vector<pos_t> ret;
         if (i < L1+L2-1)
@@ -276,7 +274,7 @@ public:
             ret.push_back(0);
         return ret;
     }
-    std::vector<pos_t> all(pos_t i) const
+    std::vector<pos_t> all(pos_t i) const override
     {
         std::vector<pos_t> ret;
         if (i < L1+L2-1)
@@ -290,39 +288,39 @@ public:
         return ret;
     }
     
-    boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const
+    std::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const override
     {
         if (property == "label" && pos.size() == 1)
-            return boost::any( site_label(pos[0]) );
+            return std::any( site_label(pos[0]) );
         else if (property == "label" && pos.size() == 2)
-            return boost::any( bond_label(pos[0], pos[1]) );
+            return std::any( bond_label(pos[0], pos[1]) );
         else if (property == "type" && pos.size() == 1)
-            return boost::any( 0 );
+            return std::any( 0 );
         else if (property == "type" && pos.size() == 2)
-            return boost::any( 0 );
+            return std::any( 0 );
         else if (property == "x" && pos.size() == 1)
-            return boost::any( get_x(pos[0]) );
+            return std::any( get_x(pos[0]) );
         else if (property == "dx" && pos.size() == 1)
-            return boost::any( get_dx(pos[0]) );
+            return std::any( get_dx(pos[0]) );
         else if (property == "dx" && pos.size() == 2)
-            return boost::any( get_dx(pos[0], pos[1]) );
+            return std::any( get_dx(pos[0], pos[1]) );
         else if (property == "at_open_boundary" && pos.size() == 1)
-            return boost::any( (!pbc) && (pos[0]==0 || pos[0]==L1+L2-1) );
+            return std::any( (!pbc) && (pos[0]==0 || pos[0]==L1+L2-1) );
         else if (property == "at_open_left_boundary" && pos.size() == 1)
-            return boost::any( (!pbc) && pos[0]==0 );
+            return std::any( (!pbc) && pos[0]==0 );
         else if (property == "at_open_right_boundary" && pos.size() == 1)
-            return boost::any( (!pbc) && pos[0]==L1+L2-1 );
+            return std::any( (!pbc) && pos[0]==L1+L2-1 );
         else if (property == "wraps_pbc" && pos.size() == 2)
-            return boost::any( (pos[0] < pos[1]) );
+            return std::any( (pos[0] < pos[1]) );
         else {
             std::ostringstream ss;
             ss << "No property '" << property << "' with " << pos.size() << " points implemented."; 
             throw std::runtime_error(ss.str());
-            return boost::any();
+            return std::any();
         }
     }
     
-    pos_t size() const
+    pos_t size() const override
     {
         return L1+L2;
     }

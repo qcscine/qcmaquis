@@ -1,28 +1,33 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
 #ifndef QC_MODEL_HPP
 #define QC_MODEL_HPP
 
+#include "dmrg/models/chem/2u1/model.h"
+
 template <class Matrix, class SymmGroup>
 qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & parms_)
 : lat(lat_)
 , parms(parms_)
-, tag_handler(new table_type())
+, tag_handler(new table_type()), max_irrep(0)
 {
-    typedef typename SymmGroup::subcharge subcharge;
+    using subcharge = typename SymmGroup::subcharge;
     // find the highest irreducible representation number
     // used to generate ops for all irreps 0..max_irrep
-    max_irrep = 0;
-    for (pos_t p=0; p < lat.size(); ++p)
-        max_irrep = (lat.get_prop<typename SymmGroup::subcharge>("type", p) > max_irrep)
-                        ? lat.get_prop<typename SymmGroup::subcharge>("type", p) : max_irrep;
+    
+    for (pos_t p=0; p < lat.size(); ++p) {
+        max_irrep = std::max(lat.get_prop<typename SymmGroup::subcharge>("type", p), max_irrep);
+    }
 
-    typename SymmGroup::charge A(0), B(0), C(0), D(1);
+    typename SymmGroup::charge A(0);
+    typename SymmGroup::charge B(0);
+    typename SymmGroup::charge C(0);
+    typename SymmGroup::charge D(1);
     B[0]=1; C[1]=1;
 
     for (subcharge irr=0; irr <= max_irrep; ++irr)
@@ -36,10 +41,20 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
         phys_indices.push_back(phys);
     }
 
-    op_t create_up_op, create_down_op, destroy_up_op, destroy_down_op,
-         count_up_op, count_down_op, count_up_down_op, docc_op, e2d_op, d2e_op,
-         d2u_op,u2d_op,
-         ident_op, fill_op;
+    op_t create_up_op;
+    op_t create_down_op;
+    op_t destroy_up_op;
+    op_t destroy_down_op;
+    op_t count_up_op;
+    op_t count_down_op;
+    op_t count_up_down_op;
+    op_t docc_op;
+    op_t e2d_op;
+    op_t d2e_op;
+    op_t d2u_op;
+    op_t u2d_op;
+    op_t ident_op;
+    op_t fill_op;
 
     ident_op.insert_block(Matrix(1, 1, 1), A, A);
     ident_op.insert_block(Matrix(1, 1, 1), B, B);
@@ -88,6 +103,7 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
     gemm(destroy_up_op, create_down_op, u2d_op); // S_minus
 
     // only effective if point group symmetry is active, need to adapt operators to different irreps
+    // ## is the string concatenation operator (e.g., ident_op -> ident_ops)
     #define GENERATE_SITE_SPECIFIC(opname) std::vector<op_t> opname ## s = this->generate_site_specific_ops(opname);
 
     GENERATE_SITE_SPECIFIC(ident_op)
@@ -249,7 +265,8 @@ void qc_model<Matrix, SymmGroup>::create_terms()
         // V_ijjj = V_jijj = V_jjij = V_jjji
         else if ( (i==j && j==k && k!=l) || (i!=j && j==k && k==l) ) {
 
-            int same_idx, pos1;
+            int same_idx;
+            int pos1;
 
             if      (i==j) { same_idx = i; pos1 = l; }
             else if (k==l) { same_idx = l; pos1 = i; }
@@ -304,7 +321,8 @@ void qc_model<Matrix, SymmGroup>::create_terms()
             term_assistant.add_term(this->terms_, -matrixElement, i, j, count_up, count_up);
             term_assistant.add_term(this->terms_, -matrixElement, i, j, count_down, count_down);
 
-            std::pair<std::vector<tag_type>, value_type> ptag1, ptag2;
+            std::pair<std::vector<tag_type>, value_type> ptag1;
+            std::pair<std::vector<tag_type>, value_type> ptag2;
 
             // Could insert fill operators without changing the result
             // --> -c_j_up * cdag_j_down * c_i_down * cdag_i_up
@@ -362,7 +380,9 @@ void qc_model<Matrix, SymmGroup>::create_terms()
         // 4-fold degenerate (+spin) V_ijil = V_ijli = V_jiil = V_jili  <--- coded
         //                           V_ilij = V_ilji = V_liij = V_liji
         else if ( ((i==k && j!=l) || j==k || (j==l && i!=k)) && (i!=j && k!=l)) {
-            int same_idx, pos1, pos2;
+            int same_idx;
+            int pos1;
+            int pos2;
             if (i==k) { same_idx = i; pos1 = l; pos2 = j; }
             if (j==k) { same_idx = j; pos1 = l; pos2 = i; }
             if (j==l) { same_idx = j; pos1 = k; pos2 = i; }

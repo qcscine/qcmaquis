@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -37,5 +37,4 @@ BOOST_AUTO_TEST_CASE( Test_Integral_Map )
     // Check if the insertion actually worked
     BOOST_CHECK_CLOSE(std::real(ints_complex[{1,1,1,2}]), 2.0, 1.0e-15);
     BOOST_CHECK_CLOSE(std::imag(ints_complex[{1,1,1,2}]), -1.0, 1.0e-15);
-
 }

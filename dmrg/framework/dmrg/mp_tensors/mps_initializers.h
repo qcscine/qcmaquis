@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -13,6 +13,7 @@
 #include <algorithm>
 
 #include <boost/tokenizer.hpp>
+#include <utility>
 
 #include "dmrg/utils/DmrgParameters.h"
 #include "dmrg/utils/random.hpp"
@@ -216,6 +217,12 @@ private:
   BaseParameters& params;
 };
 
+/**
+ * @brief ONV MPS initializer
+ *
+ * The MPS is initialized from a unique ONV.
+ * The initial MPS has, therefore, m=1
+ */
 template<class Matrix, class SymmGroup>
 class basis_mps_init_generic_default : public mps_initializer<Matrix, SymmGroup>
 {

@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -13,8 +13,8 @@
 template <class Matrix, class SymmGroup>
 MPS<Matrix, SymmGroup> reflect(MPS<Matrix, SymmGroup> const& mps_in)
 {
-    typedef std::size_t size_type;
-    typedef typename SymmGroup::charge charge;
+    using size_type = std::size_t;
+    using charge = typename SymmGroup::charge;
     const size_type L = mps_in.length();
     const charge final_charge = mps_in.col_dim(L-1)[0].first;
     

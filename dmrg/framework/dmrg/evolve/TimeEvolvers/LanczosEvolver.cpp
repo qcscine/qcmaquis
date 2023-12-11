@@ -1,9 +1,11 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
+
+#include "dmrg/evolve/TimeEvolvers/LanczosEvolver.h"
 
 template<class Matrix, class SymmGroup, TimeStepDistributor TimeStepDistributorClass>
 template<class SiteProblem, class MatrixType>

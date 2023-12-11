@@ -1,14 +1,13 @@
 /**
  * @filevibronic_num_ele
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
 #define BOOST_TEST_MAIN
 
 #include <boost/test/included/unit_test.hpp>
-#include <boost/filesystem/operations.hpp>
 #include "dmrg/utils/DmrgParameters.h"
 #include "dmrg/models/lattice/VibronicLattice.hpp"
 #include "Fixtures/VibronicFixture.h"

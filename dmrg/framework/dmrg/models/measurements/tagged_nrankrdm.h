@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -10,8 +10,8 @@
 
 #include <algorithm>
 #include <functional>
+#include <filesystem>
 #include <boost/iterator/counting_iterator.hpp>
-#include <boost/filesystem.hpp>
 #include "dmrg/block_matrix/symmetry/nu1pg.h"
 #include "dmrg/models/measurement.h"
 #include "dmrg/utils/checks.h"

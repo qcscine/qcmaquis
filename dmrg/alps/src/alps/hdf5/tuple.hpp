@@ -48,9 +48,9 @@ namespace alps {
                 > static void apply(
                       A & ar
                     , std::string const & path
-                    , boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> const & value
+                    , std::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> const & value
                 ) {
-                    using boost::get;
+                    using std::get;
                     save(ar, path, get<N>(value));
                     if (has_complex_elements<typename alps::detail::remove_cvr<T>::type>::value)
                         ar.set_complex(path);
@@ -63,7 +63,7 @@ namespace alps {
                 > static void apply(
                       A &
                     , std::string const &
-                    , boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> const &
+                    , std::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> const &
                 ) {}
             };
 
@@ -73,9 +73,9 @@ namespace alps {
                 > static void apply(
                       A & ar
                     , std::string const & path
-                    , boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> & value
+                    , std::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> & value
                 ) {
-                    using boost::get;
+                    using std::get;
                     load(ar, path, get<N>(value));
                 }
             };
@@ -86,7 +86,7 @@ namespace alps {
                 > static void apply(
                       A &
                     , std::string const &
-                    , boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> &
+                    , std::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> &
                 ) {}
             };
         }
@@ -96,7 +96,7 @@ namespace alps {
         > void save(
               archive & ar
             , std::string const & path
-            , boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> const & value
+            , std::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> const & value
             , std::vector<std::size_t> size = std::vector<std::size_t>()
             , std::vector<std::size_t> chunk = std::vector<std::size_t>()
             , std::vector<std::size_t> offset = std::vector<std::size_t>()
@@ -138,7 +138,7 @@ namespace alps {
         > void load(
               archive & ar
             , std::string const & path
-            , boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> & value
+            , std::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> & value
             , std::vector<std::size_t> chunk = std::vector<std::size_t>()
             , std::vector<std::size_t> offset = std::vector<std::size_t>()
         ) {

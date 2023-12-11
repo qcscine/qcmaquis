@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -9,9 +9,7 @@
 #define UTILS_DMRG_OPTIONS_H
 
 #include "dmrg/utils/DmrgParameters.h"
-#include "dmrg/utils/parallel/params.hpp"
 
-#include <boost/filesystem/path.hpp>
 #include <string>
 
 //=======================================================================

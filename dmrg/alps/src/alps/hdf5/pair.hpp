@@ -63,7 +63,7 @@ namespace alps {
             try {
                 load(ar, ar.complete_path(path) + "/0", value.first);
                 load(ar, ar.complete_path(path) + "/1", value.second);
-            } catch (path_not_found exc) {
+            } catch (const path_not_found& exc) {
                 load(ar, ar.complete_path(path) + "/first", value.first);
                 load(ar, ar.complete_path(path) + "/second", value.second);
             }

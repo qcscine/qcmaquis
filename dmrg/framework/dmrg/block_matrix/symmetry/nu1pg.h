@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -29,13 +29,8 @@ class NU1ChargePG
 public:
     NU1ChargePG(S init = 0)
     {
-        for (S i = 0; i < N; ++i) (*this)[i] = init;
+        for (S i = 0; i < N; ++i) { (*this)[i] = init; }
         (*this)[N] = 0;
-    }
-
-    NU1ChargePG(boost::array<S, N> const & rhs) : NU1ChargePG()
-    {
-        std::copy(rhs.begin(), rhs.end(), this->begin());
     }
 
     NU1ChargePG(std::array<S, N> const & rhs) : NU1ChargePG()
@@ -47,7 +42,7 @@ public:
     {
         assert((rhs.size() == N+1)||(rhs.size() == N));
         std::copy(rhs.begin(), rhs.end(), this->begin());
-        if (rhs.size() == N) data_[N] = 0;
+        if (rhs.size() == N) { data_[N] = 0; }
     }
 
     S * begin() { return &data_[0]; }
@@ -62,15 +57,17 @@ public:
     template<class Archive>
     void save(Archive & ar) const
     {
-        for (int i = 0; i < N+1; ++i)
+        for (int i = 0; i < N+1; ++i) {
             ar[boost::lexical_cast<std::string>(i)] << (*this)[i];
+        }
     }
 
     template<class Archive>
     void load(Archive & ar)
     {
-        for (int i = 0; i < N+1; ++i)
+        for (int i = 0; i < N+1; ++i) {
             ar[boost::lexical_cast<std::string>(i)] >> (*this)[i];
+        }
     }
 
     template <class Archive>
@@ -136,32 +133,35 @@ struct tpl_ops_pg_
     template<typename T>
     bool operator_lt(T const * a, T const * b) const
     {
-        if (a[I] < b[I])
+        if (a[I] < b[I]) {
             return true;
-        else if (a[I] > b[I])
+        } else if (a[I] > b[I]) {
             return false;
-        else
+        } else {
             return tpl_ops_pg_<N, I+1>().operator_lt(a, b);
+}
     }
 
     template<typename T>
     bool operator_gt(T const * a, T const * b) const
     {
-        if (a[I] > b[I])
+        if (a[I] > b[I]) {
             return true;
-        else if (a[I] < b[I])
+        } else if (a[I] < b[I]) {
             return false;
-        else
+        } else {
             return tpl_ops_pg_<N, I+1>().operator_gt(a, b);
+        }
     }
 
     template<typename T>
     bool operator_eq(T const * a, T const * b) const
     {
-        if (a[I] != b[I])
+        if (a[I] != b[I]) {
             return false;
-        else
+        } else {
             return tpl_ops_pg_<N, I+1>().operator_eq(a, b);
+        }
     }
 };
 
@@ -275,9 +275,9 @@ template<int N, class S = int>
 class NU1PG
 {
 public:
-    typedef S subcharge;
-    typedef NU1ChargePG<N, S> charge;
-    typedef std::vector<charge> charge_v;
+    using subcharge = S;
+    using charge = NU1ChargePG<N, S>;
+    using charge_v = std::vector<charge>;
 
     static const charge IdentityCharge;
     static const bool finite = false;
@@ -298,11 +298,12 @@ public:
         return I;
     }
 
-    template<int R> static charge fuse(boost::array<charge, R> const & v)
+    template<int R> static charge fuse(std::array<charge, R> const & v)
     {
         charge ret = v[0];
-        for (int i = 1; i < R; ++i)
+        for (int i = 1; i < R; ++i) {
             ret = fuse(ret, v[i]);
+        }
         return ret;
     }
 };
@@ -326,6 +327,6 @@ alps::numeric::matrix<S> generate_mult_table()
 template<int N, class S> const typename NU1PG<N,S>::charge NU1PG<N,S>::IdentityCharge = typename NU1PG<N,S>::charge();
 template<int N, class S> const alps::numeric::matrix<S> NU1PG<N,S>::mult_table = generate_mult_table<S>();
 
-typedef NU1PG<2> TwoU1PG;
+using TwoU1PG = NU1PG<2>;
 
 #endif

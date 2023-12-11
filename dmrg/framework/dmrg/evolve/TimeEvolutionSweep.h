@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -53,7 +53,7 @@ class TimeEvolutionSweep
 public:
   //! Class constructor
   TimeEvolutionSweep(MPS<Matrix, SymmGroup>& mps , MPO<Matrix, SymmGroup> const & mpo,
-                     BaseParameters & parms, boost::function<bool ()> stop_callback_, int site=0)
+                     BaseParameters & parms, std::function<bool ()> stop_callback_, int site=0)
     : mps_(mps), mpo_(mpo), parms_(parms), stop_callback(stop_callback_),
       do_backpropagation_(true), time_step_(parms["time_step"]),
       isHermitian_(true), initial_site(site)
@@ -225,7 +225,7 @@ protected:
   /* Parameter container */
   BaseParameters& parms_;
   magnitude_type energy;
-  boost::function<bool ()> stop_callback;
+  std::function<bool ()> stop_callback;
   boundaries_type left_, right_;
   std::shared_ptr< TimeEvolver< Matrix, SymmGroup, BaseParameters > > time_evolver_;
   std::shared_ptr< SiteShifter< Matrix, SymmGroup, TimeEvolver<Matrix, SymmGroup, BaseParameters>, PerturberType > > site_shifter_;

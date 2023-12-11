@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -74,9 +74,9 @@ struct gemm_trim_right_functor
 
 struct Gemms
 {
-    typedef gemm_functor gemm;
-    typedef gemm_trim_left_functor gemm_trim_left;
-    typedef gemm_trim_right_functor gemm_trim_right;
+    using gemm = gemm_functor;
+    using gemm_trim_left = gemm_trim_left_functor;
+    using gemm_trim_right = gemm_trim_right_functor;
 };
 
 } // namespace abelian

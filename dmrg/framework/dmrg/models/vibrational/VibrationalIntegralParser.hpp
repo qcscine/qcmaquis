@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -156,7 +156,7 @@ NModeIntegralParser(BaseParameters & parms, Lattice const & lat)
 template<class T>
 inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical, chem::HamiltonianTransformation::Conventional)>, T > >
     WatsonIntegralParser(BaseParameters& parms, const Lattice& lat, WatsonCoordinateType coordinateType,
-                         int maxCoupling, int maxManyBodyCoupling, int maxInputCouplingOrder)
+                         int maxCoupling, int maxManyBodyCoupling, int maxInputManyBodyCoupling)
 {
     // Types definition
     using pos_t = Lattice::pos_t;
@@ -175,7 +175,8 @@ inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltoni
         throw std::runtime_error("orbital_order length is not the same as the number of orbitals\n");
     // Removes 1 (to fullfill the C++ convetion) and calculates the inverse map
     // (which is the one that is actually used in )
-    std::transform(order.begin(), order.end(), order.begin(), boost::lambda::_1-1);
+    std::transform(order.begin(), order.end(), order.begin(),
+        [](const int e){ return e - 1; });
     inv_order.resize(order.size());
     for (int p = 0; p < order.size(); ++p)
         inv_order[p] = std::distance(order.begin(), std::find(order.begin(), order.end(), p));
@@ -183,7 +184,7 @@ inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltoni
     RetType ret;
     if (parms.is_set("integral_file")) {
         std::string integral_file = parms["integral_file"];
-        if (!boost::filesystem::exists(integral_file))
+        if (!std::filesystem::exists(integral_file))
             throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
         std::ifstream orb_file;
         orb_file.open(integral_file.c_str());
@@ -194,7 +195,7 @@ inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltoni
         // == Main loop ==
         while (it != raw.end()) {
             // Computes the coupling degree of the Hamiltonian term
-            auto modeSet = std::set<int>(it+1, it+maxInputCouplingOrder);
+            auto modeSet = std::set<int>(it+1, it+maxInputManyBodyCoupling);
             modeSet.erase(0);
             // Screen integrals
             if ((std::abs(*it) > parms["integral_cutoff"]) && (modeSet.size() <= maxManyBodyCoupling)) {

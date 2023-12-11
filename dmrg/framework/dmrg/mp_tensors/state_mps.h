@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -10,10 +10,10 @@
 
 #include "dmrg/mp_tensors/mps.h"
 #include "mps_sectors.h"
-#include <boost/tuple/tuple.hpp>
+#include <tuple>
 
 template <class Matrix, class SymmGroup>
-MPS<Matrix, SymmGroup> state_mps(std::vector<std::vector<boost::tuple<typename SymmGroup::charge, int> > > const & state,
+MPS<Matrix, SymmGroup> state_mps(std::vector<std::vector<std::tuple<typename SymmGroup::charge, int> > > const & state,
                                  std::vector<Index<SymmGroup> > const& phys_dims,
                                  std::vector<int> const& site_type,
                                  typename SymmGroup::charge right_end = SymmGroup::IdentityCharge,
@@ -120,13 +120,13 @@ MPS<Matrix, SymmGroup> state_mps_cd(std::vector<std::vector<boost::tuple<typenam
 
 /** @brief Same as above, but does not populate only the i-th position in the ONV, but all positions up to i */
 template <class Matrix, class SymmGroup>
-MPS<Matrix, SymmGroup> state_mps_const(std::vector< std::vector<boost::tuple<typename SymmGroup::charge, int> > > const & state,
+MPS<Matrix, SymmGroup> state_mps_const(std::vector< std::vector<std::tuple<typename SymmGroup::charge, int> > > const & state,
                                        std::vector<Index<SymmGroup> > const& phys_dims, std::vector<int> const& site_type,
                                        typename SymmGroup::charge right_end = SymmGroup::IdentityCharge, bool fillRand=false,
                                        int mdim=1)
 {
   // Types definition
-  typedef typename SymmGroup::charge charge;
+  using charge = typename SymmGroup::charge;
   MPS<Matrix, SymmGroup> mps(state.size());
   Index<SymmGroup> curr_i;
   std::vector< Index<SymmGroup> > allowed = allowed_sectors(site_type, phys_dims, right_end, mdim);
@@ -134,7 +134,7 @@ MPS<Matrix, SymmGroup> state_mps_const(std::vector< std::vector<boost::tuple<typ
   curr_i.insert(std::make_pair(SymmGroup::IdentityCharge, 1));
   for (int i = 0; i < state.size(); ++i) {
     // Computes the symmetry block of the next dimension and HARDCODED its value to 1
-    charge newc = SymmGroup::fuse(curr_i[0].first, boost::get<0>(state[i][0]));
+    charge newc = SymmGroup::fuse(curr_i[0].first, std::get<0>(state[i][0]));
     assert (allowed[i+1].has(newc));
     Index<SymmGroup> new_i;
     new_i.insert(std::make_pair(newc, allowed[i].size_of_block(newc)));
@@ -143,7 +143,7 @@ MPS<Matrix, SymmGroup> state_mps_const(std::vector< std::vector<boost::tuple<typ
     mps[i] = MPSTensor<Matrix, SymmGroup>(phys_dims[site_type[i]], allowed[i], allowed[i+1], false, 0.);
     mps[i].make_left_paired();
     // Finds out where to put the 1.0 in the MPS.
-    auto refIndex = boost::get<1>(state[i][0]);
+    auto refIndex = std::get<1>(state[i][0]);
     int lowerBound, upperBound;
     if (refIndex < 0) {
       lowerBound = -refIndex;
@@ -154,7 +154,7 @@ MPS<Matrix, SymmGroup> state_mps_const(std::vector< std::vector<boost::tuple<typ
       upperBound = refIndex;
     }
     for (int iBlock = lowerBound; iBlock <= upperBound; iBlock++) {
-      auto b_in = left(boost::get<0>(state[i][0]), curr_i[0].first) + iBlock * curr_i[0].second;
+      auto b_in = left(std::get<0>(state[i][0]), curr_i[0].first) + iBlock * curr_i[0].second;
       mps[i].data()(newc, new_i[0].first)(b_in, 0) = fillRand ? dmrg_random::uniform(0., 1.) : 1.;
     }
     curr_i = new_i;
@@ -165,19 +165,19 @@ MPS<Matrix, SymmGroup> state_mps_const(std::vector< std::vector<boost::tuple<typ
 // Special case NU1
 // @brief Same as above, but does not populate only the i-th position in the ONV, but all positions up to i for each mode
 template <class Matrix, int N>
-MPS<Matrix, NU1_template<N>> state_mps_const(std::vector<std::vector<boost::tuple<typename NU1_template<N>::charge, int> > > const & state,
+MPS<Matrix, NU1_template<N>> state_mps_const(std::vector<std::vector<std::tuple<typename NU1_template<N>::charge, int> > > const & state,
                                              std::vector<Index<NU1_template<N>> > const& phys_dims, std::vector<int> const& site_type,
                                              typename NU1_template<N>::charge right_end = NU1_template<N>::IdentityCharge, bool fillRand=false,
                                              int mMax = 1)
 {
   // Types definition
   using SymmGroup = NU1_template<N>;
-  typedef typename SymmGroup::charge charge;
+  using charge = typename SymmGroup::charge;
   MPS<Matrix, SymmGroup> mps(state.size());
   std::vector< Index<SymmGroup> > allowed = allowed_sectors(site_type, phys_dims, right_end, mMax);
   // loop over all sites
   for (int i = 0; i < state.size(); ++i) {
-    auto populate = boost::get<1>(state[i][0]); // state should be now pair of charge and int as bool (const/rand or zero)
+    auto populate = std::get<1>(state[i][0]); // state should be now pair of charge and int as bool (const/rand or zero)
     if (populate) {
       mps[i] = MPSTensor<Matrix, SymmGroup>(phys_dims[site_type[i]], allowed[i], allowed[i+1], fillRand, 1.0);
     } else {

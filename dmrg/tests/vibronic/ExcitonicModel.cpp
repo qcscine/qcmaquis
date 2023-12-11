@@ -1,11 +1,11 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
-#define BOOST_TEST_MODULE MODEL_EXCITONIC_NU1
+#define BOOST_TEST_MODULE MODEL_EXCITONIC_U1
 
 #include <boost/test/included/unit_test.hpp>
 #include <boost/mpl/assert.hpp>

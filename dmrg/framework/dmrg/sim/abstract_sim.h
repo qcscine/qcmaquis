@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 #ifndef ABSTRACT_SIM_H
@@ -11,10 +11,11 @@
 #include <vector>
 #include "integral_interface.h"
 #include "dmrg/utils/results_collector.h"
+#include "utils/traits.hpp"
 
 class abstract_sim {
 public:
-    virtual ~abstract_sim() {}
+    virtual ~abstract_sim() = default;
     virtual void run(const std::string& runType) = 0;
 };
 
@@ -43,7 +44,7 @@ public:
     using results_map_type = std::map<std::string, meas_with_results_type>;
     using RealType = typename maquis::traits::real_type<Matrix>::type;
 
-    virtual ~abstract_interface_sim() {}
+    virtual ~abstract_interface_sim() = default;
     virtual void run(const std::string& runType) = 0;
     virtual void run_measure() = 0;
     virtual RealType get_energy() = 0;

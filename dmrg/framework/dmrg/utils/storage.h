@@ -1,25 +1,25 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
 #ifndef STORAGE_H
 #define STORAGE_H
 
-#include <boost/shared_ptr.hpp>
-#include <boost/thread.hpp>
 #include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include <iostream>
 #include <fstream>
+#include <utility>
+#include <thread>
 
 #include "utils.hpp"
 #include "utils/timings.h"
 
 #include "dmrg/utils/BaseParameters.h"
-#include "dmrg/utils/parallel/tracking.hpp"
 #include "dmrg/utils/parallel.hpp"
 
 #ifdef HAVE_ALPS_HDF5
@@ -57,12 +57,12 @@ namespace storage {
 
 template<class T>
 struct constrained {
-    typedef T type;
+    using type = T;
 };
 
 template<typename T>
 struct constrained<alps::numeric::matrix<T, std::vector<T> > > {
-    typedef alps::numeric::matrix<T, std::vector<T> > type;
+    using type = alps::numeric::matrix<T, std::vector<T>>;
 };
 
 } // namespace storage
@@ -114,7 +114,7 @@ template<class Matrix, class SymmGroup>
 class StoreToFile_request< Boundary<Matrix, SymmGroup> > {
 public:
   /** @brief Class constructor */
-  StoreToFile_request(std::string fp, Boundary<Matrix, SymmGroup>* ptr) : fp(fp), ptr(ptr) { }
+  StoreToFile_request(std::string fp, Boundary<Matrix, SymmGroup>* ptr) : fp(std::move(fp)), ptr(ptr) { }
 
   /** @brief Round brackets operator */
   void operator()() {
@@ -142,7 +142,7 @@ template<class Matrix, class SymmGroup>
 class fetch_request< Boundary<Matrix, SymmGroup> > {
 public:
   /** @brief Class constructor */
-  fetch_request(std::string fp, Boundary<Matrix, SymmGroup>* ptr) : fp(fp), ptr(ptr) { }
+  fetch_request(std::string fp, Boundary<Matrix, SymmGroup>* ptr) : fp(std::move(fp)), ptr(ptr) { }
 
   /** @brief Round braket operator */
   void operator()() {
@@ -170,7 +170,7 @@ template<class Matrix, class SymmGroup>
 class drop_request< Boundary<Matrix, SymmGroup> > {
 public:
   /** @brief Class constructor */
-  drop_request(std::string fp, Boundary<Matrix, SymmGroup>* ptr) : fp(fp), ptr(ptr) { }
+  drop_request(std::string fp, Boundary<Matrix, SymmGroup>* ptr) : fp(std::move(fp)), ptr(ptr) { }
 
   /** @brief Round braket operator */
   void operator()() {
@@ -190,7 +190,7 @@ private:
  *
  *  - descriptor, which represents an abstract object which is associated to
  *    a given status (describing whether it's currently being fetched, stored etc)
- *    and a given boost::thread that manages it.
+ *    and a given std::thread that manages it.
  *
  */
 class disk : public nop {
@@ -200,12 +200,12 @@ public:
   class descriptor {
   public:
     /** @brief Class constructor */
-    descriptor() : state(core), dumped(false), sid(disk::index()), worker(NULL) {}
+    descriptor() : state(core), dumped(false), sid(disk::index()), worker(nullptr) {}
 
     /**
      * @brief Class destructor.
-     * Note that the descructor calls the join method on the boost::thread -- i.e.,
-     * completes the operation associated with the boost::thread.
+     * Note that the descructor calls the join method on the std::thread -- i.e.,
+     * completes the operation associated with the std::thread.
      */
     ~descriptor() { this->join(); }
 
@@ -214,7 +214,7 @@ public:
      * Note that this method calls the disk::track method, which ensures that the corresponding
      * thread is being "followed" by the memory manager.
      */
-    void thread(boost::thread* t){
+    void thread(std::thread* t){
       this->worker = t;
       disk::track(this);
     }
@@ -228,7 +228,7 @@ public:
       if(this->worker){
         this->worker->join();
         delete this->worker;
-        this->worker = NULL;
+        this->worker = nullptr;
         disk::untrack(this);
       }
     }
@@ -239,7 +239,7 @@ public:
     /** Class members */
     bool dumped;					    // Bool keeping track of whether the object has been written to disk.
     size_t sid;						    // Identifier of the memory
-    boost::thread* worker;	  // Boost thread managing the obect
+    std::thread* worker;	    // Standard thread managing the obect
     size_t record;						// Size associated with the object.
   };
 
@@ -247,7 +247,7 @@ public:
    * @brief Class representing a serializable object.
    *
    * The class is inherited by [descriptor] such that the object is "equipped" with
-   * the boost::thread and with the flags describing its storing status.
+   * the std::thread and with the flags describing its storing status.
    *
    * @tparam T type associated with the serialized object.
    */
@@ -291,16 +291,14 @@ public:
     void prefetch() {
       // If already available on disk, does nothing. Otherwise, if it's being
       // stored, finalized the storing such that afterwards one can call "fetch".
-      if(this->state == core)
-        return;
-      else if(this->state == prefetching)
+      if(this->state == core || this->state == prefetching)
         return;
       else if(this->state == storing)
         this->join();
       state = prefetching;
       // This thread will be joined by [fetch]. Note that here we call the
       // functor class defined above.
-      this->thread(new boost::thread(fetch_request<T>(disk::fp(sid), (T*)this)));
+      this->thread(new std::thread(fetch_request<T>(disk::fp(sid), (T*)this)));
     }
 
     /** @brief Storing to file method */
@@ -309,7 +307,7 @@ public:
         state = storing;
         dumped = true;
         parallel::sync();
-        this->thread(new boost::thread(StoreToFile_request<T>(disk::fp(sid), (T*)this)));
+        this->thread(new std::thread(StoreToFile_request<T>(disk::fp(sid), (T*)this)));
       }
       assert(this->state != prefetching);
     }
@@ -372,14 +370,14 @@ public:
 
   /** @brief Removes a descriptor from the list of objects to be tracked */
   static void untrack(descriptor* d){
-      instance().queue[d->record] = NULL;
+      instance().queue[d->record] = nullptr;
   }
 
   /** @brief Syncs all the processes that are queued */
   static void sync(){
-    for(int i = 0; i < instance().queue.size(); ++i)
-      if(instance().queue[i])
-        instance().queue[i]->join();
+    for(auto & i : instance().queue) {
+      if(i) { i->join(); }
+    }
     instance().queue.clear();
   }
 

@@ -2,6 +2,7 @@
 #define HASH_TUPLE_H
 
 #include <tuple>
+#include <functional>
 
 namespace hash_tuple
 {

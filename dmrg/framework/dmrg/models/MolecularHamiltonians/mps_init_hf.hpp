@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -9,11 +9,13 @@
 #define MPS_INIT_HF_HPP
 
 #include "dmrg/mp_tensors/compression.h"
+#include "dmrg/mp_tensors/mps_initializers.h"
+
 
 template<class Matrix, class SymmGroup, class = void>
 struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
 {
-    hf_mps_init(BaseParameters parms_,
+    hf_mps_init(const BaseParameters& parms_,
                 std::vector<Index<SymmGroup> > const& phys_dims_,
                 typename SymmGroup::charge right_end,
                 std::vector<int> const& site_type)
@@ -24,8 +26,8 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
     , di(parms, phys_dims_, right_end, site_type)
     {}
 
-    typedef Lattice::pos_t pos_t;
-    typedef std::size_t size_t;
+    using pos_t = int;
+    using size_t = std::size_t;
 
     void operator()(MPS<Matrix, SymmGroup> & mps)
     {
@@ -40,7 +42,8 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
         else
             order = parms["orbital_order"].template as<std::vector<pos_t> >();
 
-        std::transform(order.begin(), order.end(), order.begin(), boost::lambda::_1-1);
+        std::transform(order.begin(), order.end(), order.begin(),
+            [](const auto& e){ return e - 1; });
 
         if (hf_init.size() != mps.length())
             throw std::runtime_error("HF occupation vector length != MPS length\n");
@@ -100,12 +103,12 @@ template<class Matrix, class SymmGroup>
 struct hf_mps_init<Matrix, SymmGroup, symm_traits::enable_if_su2_t<SymmGroup> >
         : public mps_initializer<Matrix, SymmGroup>
 {
-    typedef Lattice::pos_t pos_t;
-    typedef std::size_t size_t;
-    typedef typename SymmGroup::charge charge;
-    typedef std::set<charge> container_type;
+    using pos_t = int;
+    using size_t = std::size_t;
+    using charge = typename SymmGroup::charge;
+    using container_type = std::set<charge>;
 
-    hf_mps_init(BaseParameters parms_,
+    hf_mps_init(const BaseParameters& parms_,
                 std::vector<Index<SymmGroup> > const& phys_dims_,
                 charge right_end, std::vector<int> const& site_type)
     : parms(parms_)
@@ -127,7 +130,8 @@ struct hf_mps_init<Matrix, SymmGroup, symm_traits::enable_if_su2_t<SymmGroup> >
         else
             order = parms["orbital_order"].template as<std::vector<pos_t> >();
 
-        std::transform(order.begin(), order.end(), order.begin(), boost::lambda::_1-1);
+        std::transform(order.begin(), order.end(), order.begin(),
+            [](const auto& e){ return e - 1; });
 
         if (hf_init.size() != mps.length())
             throw std::runtime_error("HF occupation vector length != MPS length\n");

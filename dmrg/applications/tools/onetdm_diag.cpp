@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 #ifdef USE_AMBIENT
@@ -177,7 +177,7 @@ int main(int argc, char ** argv)
             for (mpo_map::const_iterator mit = mpos.begin(); mit != mpos.end(); ++mit) {
                  result_type::iterator match = res.find(mit->first);
                  if (match == res.end())
-                     boost::tie(match, boost::tuples::ignore) = res.insert( std::make_pair(mit->first, 0.) );
+                     std::tie(match, std::ignore) = res.insert( std::make_pair(mit->first, 0.) );
 
                      std::vector<MPS<matrix, symm>::scalar_type> dct = multi_expval(mps1, mps2, mit->second);
                      match->second = dct[0];

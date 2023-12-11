@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -10,6 +10,7 @@
 
 #include "dmrg/mp_tensors/mpo_ops.h"
 #include "dmrg/optimize/optimize.h"
+#include "dmrg/models/lattice/lattice.h"
 
 
 template<class Matrix, class SymmGroup, class Storage>
@@ -17,7 +18,7 @@ class ss_optimize : public optimizer_base<Matrix, SymmGroup, Storage>
 {
 public:
 
-    typedef optimizer_base<Matrix, SymmGroup, Storage> base;
+    using base = optimizer_base<Matrix, SymmGroup, Storage>;
     using base::mpo;
     using base::mps;
     using base::left_;
@@ -29,7 +30,7 @@ public:
     ss_optimize(MPS<Matrix, SymmGroup> & mps_,
                 MPO<Matrix, SymmGroup> const & mpo_,
                 BaseParameters & parms_,
-                boost::function<bool ()> stop_callback_,
+                std::function<bool ()> stop_callback_,
                 const Lattice& lat,
                 int initial_site_ = 0)
     : base(mps_, mpo_, parms_, stop_callback_, to_site(mps_.length(), initial_site_)), lat_(lat)
@@ -146,7 +147,7 @@ public:
             if (!parms.is_set("PreBO_MaxBondDimVector"))
                 Mmax = this->get_Mmax(sweep);
             else {
-                Mmax = lat_.template get_prop<size_t>("Mmax", {lat_.template get_prop<int>("type", {site}) });
+                Mmax = lat_.template get_prop<size_t>("Mmax", lat_.template get_prop<int>("type", site) );
                 std::cout << "Mmax is set to " << Mmax << std::endl;
             }
             truncation_results trunc;

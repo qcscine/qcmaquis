@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -12,9 +12,11 @@
 #include <alps/numeric/isinf.hpp>
 #include <alps/numeric/is_nonzero.hpp>
 
+#include "dmrg/utils/storage.h"
+
 namespace tag_detail {
 
-    typedef unsigned tag_type;
+    using tag_type = unsigned int;
 
     enum operator_kind { bosonic, fermionic };
 
@@ -26,62 +28,62 @@ namespace tag_detail {
             storage::migrate(op);
         }
 
-        for (typename BlockMatrix::size_type b=0; b < op.n_blocks(); ++b)
-        {
-            bool only_zero = true;
-            for (int i = 0; i < num_rows(op[b]); i++)
-               for(int j = 0; j < num_cols(op[b]); j++)
-            {
-                if (alps::numeric::is_nonzero(op[b](i,j))) {
-                    only_zero = false;
-                    break;
-                }
+        for (typename BlockMatrix::size_type b=0; b < op.n_blocks(); ++b) {
+          bool only_zero = true;
+          for (int i = 0; i < num_rows(op[b]); i++) {
+            for(int j = 0; j < num_cols(op[b]); j++) {
+              if (alps::numeric::is_nonzero(op[b](i,j))) {
+                only_zero = false;
+                break;
+              }
             }
-            if (only_zero) {
-                op.remove_block(b);
-                --b;
-            }
+          }
+          if (only_zero) {
+            op.remove_block(b);
+            --b;
+          }
         }
     }
 
     template <class T>
     bool num_check(T x) {
-        if (alps::numeric::isnan(x) || alps::numeric::isinf(x))
+        if (alps::numeric::isnan(x) || alps::numeric::isinf(x)) {
             throw std::runtime_error("NaN / INF numeric Error occured while comparing operator scales\n");
+        }
         return true;
     }
 
     inline bool num_check(std::complex<double> x) { return true; }
 
-
-    /** @brief Function that checks whether two block matrices are equal
+    
+    /**
+     * @brief Checks if two BlockMatrices are equal up to a scale factor
      *
-     * Returns true/false and the scale factor between the two matrices (0. if false)
-     * 
+     * @return Returns a pair containing either false and 0.
+     *         or true and the scale factor
      */
     template <class BlockMatrix>
     std::pair<bool, typename BlockMatrix::matrix_type::value_type>
-    equal(BlockMatrix const& reference,
-          BlockMatrix const& sample)
+    is_scaled(BlockMatrix const& reference, BlockMatrix const& sample)
     {
-        typedef typename BlockMatrix::matrix_type Matrix;
-        typedef typename Matrix::value_type value_type;
+        using Matrix = typename BlockMatrix::matrix_type;
+        using value_type = typename Matrix::value_type;
  
         {
             parallel::guard::serial guard;
             storage::migrate(reference);
             storage::migrate(sample);
         }
-
         // if shapes are different, so are the matrices
-        if (!shape_equal(reference, sample))
+        if (!shape_equal(reference, sample)) {
             return std::make_pair(false, 0.);
+        }
 
         // if both have 0 blocks, they are empty and therefore equal
-        if (sample.n_blocks() == 0)
+        if (sample.n_blocks() == 0) {
             return std::make_pair(true, 1.0);
+        }
 
-     
         // determine scale factor of the reference matrix
         const Matrix& m1 = reference[0];
         bool foundNonZero = false;
@@ -103,7 +105,8 @@ namespace tag_detail {
             return std::make_pair(false, 0.);
         }
 
-        value_type invscale1 = value_type(1.), invscale2 = value_type(1.);
+        value_type invscale1 = value_type(1.);
+        value_type invscale2 = value_type(1.);
 
         // If there is a nonzero entry, calculate the inverse scaling factors
         if (foundNonZero) {
@@ -117,13 +120,13 @@ namespace tag_detail {
             const Matrix& mb1 = reference[b];
             const Matrix& mb2 = sample[b];
             for (int i = 0; i < num_rows(mb1); i++) {
-                for(int j = 0; j < num_cols(mb1); j++) {
-                    {
-                        typename Matrix::value_type t1 = mb1(i,j) * invscale1, t2 = mb2(i,j) * invscale2;
-                        if (std::abs(t1 - t2) > 1e-12)
-                            return std::make_pair(false, 0.);
-                    }
+              for(int j = 0; j < num_cols(mb1); j++) {
+                typename Matrix::value_type t1 = mb1(i,j) * invscale1;
+                typename Matrix::value_type t2 = mb2(i,j) * invscale2;
+                if (std::abs(t1 - t2) > 1e-12) { 
+                  return std::make_pair(false, 0.);
                 }
+              }
             }
         }
 
@@ -131,11 +134,11 @@ namespace tag_detail {
 
 #ifndef NDEBUG
         try { num_check(invscale1); }
-        catch (std::exception e) { maquis::cout << "invscale1 numcheck failed\n"; exit(1);}
+        catch (const std::exception& e) { maquis::cout << "invscale1 numcheck failed\n"; exit(1);}
         try { num_check(invscale2); }
-        catch (std::exception e) { maquis::cout << "invscale2 numcheck failed\n"; exit(1);}
+        catch (const std::exception& e) { maquis::cout << "invscale2 numcheck failed\n"; exit(1);}
         try { num_check(scale); }
-        catch (std::exception e) { maquis::cout << "scale numcheck failed\n"; exit(1);}
+        catch (const std::exception& e) { maquis::cout << "scale numcheck failed\n"; exit(1);}
 #endif
 
         return std::make_pair(true, scale);

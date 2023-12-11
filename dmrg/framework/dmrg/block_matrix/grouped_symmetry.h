@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -18,12 +18,12 @@ struct grouped_symmetry;
 
 template <>
 struct grouped_symmetry<TrivialGroup> {
-    typedef TrivialGroup type;
+    using type = TrivialGroup;
 };
 
 template <>
 struct grouped_symmetry<U1> {
-    typedef TwoU1 type;
+    using type = TwoU1;
 };
 
 //// GROUPPING FUNCTIONS
@@ -44,7 +44,7 @@ template<class SymmGroup>
 Index<typename grouped_symmetry<SymmGroup>::type> group(Index<SymmGroup> const & i1,
                                              Index<SymmGroup> const & i2)
 {
-    typedef typename grouped_symmetry<SymmGroup>::type OutSymm;
+    using OutSymm = typename grouped_symmetry<SymmGroup>::type;
     
     Index<OutSymm> ret;
     for (typename Index<SymmGroup>::const_iterator it1 = i1.begin(); it1 != i1.end(); ++it1)
@@ -54,6 +54,5 @@ Index<typename grouped_symmetry<SymmGroup>::type> group(Index<SymmGroup> const &
         }
     return ret;
 }
-
 
 #endif

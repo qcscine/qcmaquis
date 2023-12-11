@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -15,8 +15,8 @@
 template <class Matrix, class SymmGroup>
 class reduced_mps
 {
-    typedef typename SymmGroup::subcharge subcharge;
-    typedef typename operator_selector<Matrix, SymmGroup>::type op_t;
+    using subcharge = typename SymmGroup::subcharge;
+    using op_t = typename operator_selector<Matrix, SymmGroup>::type;
 public:
     reduced_mps(const MPS<Matrix, SymmGroup> & mps_)
     : mps(mps_)

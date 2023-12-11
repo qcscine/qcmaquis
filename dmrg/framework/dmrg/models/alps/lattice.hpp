@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -70,25 +70,25 @@ public:
         return alps::maximum_vertex_type(graph.graph());
     }
     
-    boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const
+    std::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const
     {
         if (property == "label" && pos.size() == 1)
-            return boost::any( alps::site_label(graph.graph(), graph.site(pos[0])) );
+            return std::any( alps::site_label(graph.graph(), graph.site(pos[0])) );
         else if (property == "label" && pos.size() == 2)
-            return boost::any( alps::bond_label(graph.graph(), graph.bond(bond_index_map[pos[0]][pos[1]])) );
+            return std::any( alps::bond_label(graph.graph(), graph.bond(bond_index_map[pos[0]][pos[1]])) );
         else if (property == "type" && pos.size() == 1)
-            return boost::any( static_cast<int>(graph.site_type(graph.site(pos[0]))) );
+            return std::any( static_cast<int>(graph.site_type(graph.site(pos[0]))) );
         else if (property == "type" && pos.size() == 2)
-            return boost::any( static_cast<int>(graph.bond_type(graph.bond(bond_index_map[pos[0]][pos[1]]))) );
+            return std::any( static_cast<int>(graph.bond_type(graph.bond(bond_index_map[pos[0]][pos[1]]))) );
         else if (property == "wraps_pbc" && pos.size() == 2)
-            return boost::any( static_cast<bool>(boost::get(alps::boundary_crossing_t(),
+            return std::any( static_cast<bool>(std::get(alps::boundary_crossing_t(),
                                                             graph.graph(),
                                                             graph.bond(bond_index_map[pos[0]][pos[1]]))) );
         else {
             std::ostringstream ss;
             ss << "No property '" << property << "' with " << pos.size() << " points implemented."; 
             throw std::runtime_error(ss.str());
-            return boost::any();
+            return std::any();
         }
     }
 

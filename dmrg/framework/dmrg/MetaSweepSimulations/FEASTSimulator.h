@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -42,8 +42,9 @@ public:
 
   /** @brief Class constructor */
   FEASTSimulator(BaseParameters& parms, const ModelType& model, const LatticeType& inputLattice, const MPOType& mpo)
-    : currentIter(0), isSingleSite(true), parameters(parms), mpo_(mpo), lattice(inputLattice), calculateExactError(false),
-      model_(model), feastMPSs(), calculateVariance(false)
+    : parameters(parms), currentIter(0), isSingleSite(true),
+      calculateExactError(false), calculateVariance(false),
+      mpo_(mpo), lattice(inputLattice), model_(model) 
   {
     // Retrieve simulation parameters
     verbose_ = (parameters["feast_verbose"] == "yes");

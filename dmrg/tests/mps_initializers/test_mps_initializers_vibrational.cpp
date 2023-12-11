@@ -8,6 +8,10 @@
 #define BOOST_TEST_MODULE MPS_INITIALIZER_VIBRATIONAL
 
 #ifdef DMRG_VIBRATIONAL
+
+#include <iostream>
+#include <tuple>
+#include <boost/test/included/unit_test.hpp>
 #include "Fixtures/NModeFixture.h"
 #include "Fixtures/WatsonFixture.h"
 #endif

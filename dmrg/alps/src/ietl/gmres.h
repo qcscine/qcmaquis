@@ -30,6 +30,7 @@
  
 #include <vector>
 #include <iostream>
+#include <boost/numeric/ublas/matrix.hpp>
  
 // Some parts of this code are based on IML++, http://math.nist.gov/iml++/
 

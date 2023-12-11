@@ -96,7 +96,7 @@ public:
   /// constructor from a string
   lexical_cast_string(const string_type& s = string_type()) : string_type(s) {}
   /// copy-contructor
-  lexical_cast_string(const lexical_cast_string& s) : string_type(s) {}
+  /* lexical_cast_string(const lexical_cast_string& s) : string_type(s) {} */
   /// constructor from a C-style string
   lexical_cast_string(const char* s) : string_type(s) {}
   /// constructor from a character sequence

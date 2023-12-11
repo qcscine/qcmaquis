@@ -1,12 +1,14 @@
-﻿/**
+/**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
 #ifndef MODELS_CODED_NU1_H
 #define MODELS_CODED_NU1_H
+
+#ifdef DMRG_PREBO
 
 #include "dmrg/models/measurements.h"
 #include "dmrg/utils/BaseParameters.h"
@@ -23,9 +25,6 @@
 #include <sstream>
 #include <unordered_map>
 #include <chrono>
-
-#ifdef DMRG_PREBO
-
 /**
  * @brief Pre-Born Oppenheimer model class
  * @class preBO models_nu1.hpp

@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -19,8 +19,8 @@ template <class V>
 #else
 #include "dmrg/block_matrix/detail/alps.hpp"
 #include <complex>
-typedef alps::numeric::matrix<double> matrix;
-typedef alps::numeric::matrix<std::complex<double> > cmatrix;
+using matrix = alps::numeric::matrix<double>;
+using cmatrix = alps::numeric::matrix<std::complex<double>>;
 template <class V>
     using tmatrix = alps::numeric::matrix<V>;
 #endif

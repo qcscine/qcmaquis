@@ -1,13 +1,14 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
 #ifndef TENSOR_INDEXING_H
 #define TENSOR_INDEXING_H
 
+#include <array>
 #include <vector>
 #include <algorithm>
 #include <numeric>
@@ -16,9 +17,6 @@
 #include <boost/unordered_map.hpp>
 #include <boost/container/flat_set.hpp>
 #include <boost/container/flat_map.hpp>
-#include <boost/array.hpp>
-#include <boost/lambda/lambda.hpp>
-#include <boost/lambda/bind.hpp>
 
 #ifdef PYTHON_EXPORTS
 #include <mp_tensors/wrappers.h>
@@ -31,47 +29,16 @@
 
 namespace index_detail
 {
-    template<class SymmGroup>
-    bool lt(std::pair<typename SymmGroup::charge, std::size_t> const & a,
-        std::pair<typename SymmGroup::charge, std::size_t> const & b)
-    {
-        return a.first < b.first;
-    }
-
-    template<class SymmGroup>
-    struct gt{
-        bool operator()(std::pair<typename SymmGroup::charge, std::size_t> const & a,
-                        std::pair<typename SymmGroup::charge, std::size_t> const & b){
-            return a.first > b.first;
-        }
+    const auto gt = [](const auto& left_pair, const auto& right_pair) -> bool {
+        return left_pair.first > right_pair.first;
     };
 
-    template<class SymmGroup>
-    typename SymmGroup::charge get_first(std::pair<typename SymmGroup::charge, std::size_t> const & x)
-    {
-        return x.first;
-    }
+    const auto lt = [](const auto& left_pair, const auto& right_pair) -> bool {
+        return left_pair.first < right_pair.first;
+    };
 
-    template<class SymmGroup>
-    std::size_t get_second(std::pair<typename SymmGroup::charge, std::size_t> const & x)
-    {
-        return x.second;
-    }
-
-    // simpler, and potentially faster since inlining is easier for the compiler
-    template<class SymmGroup>
-    class is_first_equal
-    {
-    public:
-        is_first_equal(typename SymmGroup::charge c) : c_(c) { }
-
-        bool operator()(std::pair<typename SymmGroup::charge, std::size_t> const & x) const
-        {
-            return x.first == c_;
-        }
-
-    private:
-        typename SymmGroup::charge c_;
+    const auto is_charge_equal = [](const auto& pair, const auto& charge) -> bool {
+        return pair.first == charge;
     };
 }
 
@@ -82,8 +49,8 @@ template<class SymmGroup>
 class Index
 {
     // Private types
-    typedef std::pair<typename SymmGroup::charge, std::size_t> data_entry_type;
-    typedef std::vector<data_entry_type> data_type;
+    using data_entry_type = std::pair<typename SymmGroup::charge, std::size_t>;
+    using data_type = std::vector<data_entry_type>;
 public:
     // Public types
     using charge = typename SymmGroup::charge;
@@ -96,9 +63,10 @@ public:
 
     // Class constructors
     Index() : sorted_(true) {}
-    Index(std::size_t s_) : sorted_(true), data_(s_) {}
-    Index(std::initializer_list<data_entry_type> data) : sorted_(true), data_{data} {}
+    Index(std::size_t s_) : data_(s_), sorted_(true)  {}
+    Index(std::initializer_list<data_entry_type> data) : data_{data}, sorted_(true) {}
 
+    /** @brief Returns the size of the block with charge c */
     std::size_t size_of_block(charge c) const
     {
         assert( has(c) );
@@ -109,48 +77,65 @@ public:
     {
         // I have to ignore the position_check argument because I can't dereference the end() iterator anyway
         std::size_t pos = position(c);
-        if (pos == data_.size())
-            return 0;
+        if (pos == data_.size()) { return 0; }
         return (*this)[pos].second;
     }
 
+    /** @brief Returns first index matching input charge   */
     std::size_t position(charge c) const
     {
         const_iterator match;
-        if (sorted_)
-            match = std::lower_bound(data_.begin(), data_.end(), std::make_pair(c,0), index_detail::gt<SymmGroup>());
-        else
-            match = std::find_if(data_.begin(), data_.end(), index_detail::is_first_equal<SymmGroup>(c));
+        if (sorted_) {
+            match = std::lower_bound(
+                data_.begin(), data_.end(),
+                std::make_pair(c,0), index_detail::gt);
+        } else {
+            match = std::find_if(
+                data_.begin(), data_.end(),
+                [&c](const auto& pair){ 
+                  return index_detail::is_charge_equal(pair, c);
+                });
+        }
 
-        if (match != data_.end() && (*match).first != c) match = data_.end();
+        if (match != data_.end() && (*match).first != c) { match = data_.end(); }
         return std::distance(data_.begin(), match);
     }
 
+    /** @brief Returns the size of the blocks up to the given charge */
     std::size_t position(value_type x) const
     {
         assert( has(x.first) );
         assert( x.second < size_of_block(x.first) );
         const_iterator to = data_.begin()+position(x.first);
-        return x.second + std::accumulate(data_.begin(), to, 0,
-                                          boost::lambda::_1 + boost::lambda::bind(index_detail::get_second<SymmGroup>, boost::lambda::_2)
-                                         );
+        return x.second + std::accumulate(
+            data_.begin(), to, 0,
+            [](const auto& acc, const auto& x){ return acc + x.second; });
     }
 
+    /** @brief Checks if the index contains a given charge */
     bool has(charge c) const
     {
-        if (sorted_)
-            return std::binary_search(data_.begin(), data_.end(), std::make_pair(c,0), index_detail::gt<SymmGroup>());
-        else
-            return std::find_if(data_.begin(), data_.end(),
-                                index_detail::is_first_equal<SymmGroup>(c)) != data_.end();
+        if (sorted_) {
+            return std::binary_search(
+                data_.begin(), data_.end(),
+                std::make_pair(c,0), index_detail::gt);
+        }
+        else {
+            auto it = std::find_if(data_.begin(), data_.end(),
+                [&](const auto& e){ return e.first == c; });
+            return it != data_.end();
+
+        }
     }
 
+    /** @brief Sorts the Index in **descending** order. */
     void sort()
     {
-        std::sort(data_.begin(), data_.end(), index_detail::gt<SymmGroup>());
+        std::sort(data_.begin(), data_.end(), index_detail::gt);
         sorted_ = true;
     }
 
+    /** @brief Inserts an element into the correct location in the sorted Index. */
     std::size_t insert(value_type const & x)
     {
         if (sorted_) {
@@ -163,16 +148,19 @@ public:
         }
     }
 
+    /** @brief Inserts an element in a given position in the Index. */
     void insert(std::size_t position, value_type const & x)
     {
         data_.insert(data_.begin() + position, x);
         sorted_ = false;
     }
 
+    /** @brief Shifts all charges in the Index by a given value. */
     void shift(charge diff)
     {
-        for (std::size_t k = 0; k < data_.size(); ++k)
-            (*this)[k].first = SymmGroup::fuse((*this)[k].first, diff);
+      for (auto& element : data_) {
+        element.first = SymmGroup::fuse(element.first, diff);
+      }
     }
 
     bool operator==(Index const & o) const
@@ -191,24 +179,32 @@ public:
         return basis_iterator(*this);
     }
 
+    /** @brief Returns all the charges in the Index. */
     std::vector<charge> charges() const
     {
         std::vector<charge> ret(data_.size());
-        for (std::size_t k = 0; k < data_.size(); ++k) ret[k] = (*this)[k].first;
+        std::transform(data_.begin(), data_.end(), ret.begin(),
+            [](const auto& e){ return e.first; });
         return ret;
     }
 
+    /** @brief Returns all the sizes in the Index */
     std::vector<std::size_t> sizes() const
     {
         std::vector<std::size_t> ret(data_.size());
-        for (std::size_t k = 0; k < data_.size(); ++k) ret[k] = (*this)[k].second;
+        std::transform(data_.begin(), data_.end(), ret.begin(),
+            [](const auto& e){ return e.second; });
         return ret;
     }
 
+    /** @brief Returns the sum of all the sizes in the Index */
     std::size_t sum_of_sizes() const
     {
-		//boost::function<std::size_t (std::size_t,std::size_t)> pred = boost::lambda::_1 + boost::lambda::bind(index_detail::get_second<SymmGroup>, boost::lambda::_2);
-        return std::accumulate(data_.begin(), data_.end(), 0, boost::lambda::ret<std::size_t>(boost::lambda::_1 + boost::lambda::bind(index_detail::get_second<SymmGroup>, boost::lambda::_2)));
+        return std::accumulate(
+            data_.begin(), data_.end(), 0,
+            [&](const auto& acc, const auto& x){
+                return acc + x.second;
+            });
     }
 
     // This is mostly forwarding of the std::vector
@@ -230,14 +226,15 @@ public:
      *          elements associated to each symmetry group, up to the point when the index is smaller than
      *          the number of elements associated with the symmetry group that is currently visited.
      ***/
-    boost::tuple<charge, std::size_t> element(std::size_t p) const 
+    /** @brief Function to return the p-th overall element of a given index */
+    std::tuple<charge, std::size_t> element(std::size_t p) const 
     {
         std::size_t i=0;
         while (p >= (*this)[i].second) {
             p -= (*this)[i].second;
             ++i;
         }
-        return boost::make_tuple( (*this)[i].first, p );
+        return std::make_tuple( (*this)[i].first, p );
     }
 
     std::size_t size() const { return data_.size(); }
@@ -263,10 +260,9 @@ private:
 
     std::size_t destination(charge c) const
     {
-        return std::find_if(data_.begin(), data_.end(),
-                            boost::lambda::bind(index_detail::lt<SymmGroup>,
-                                                boost::lambda::_1,
-                                                std::make_pair(c, 0))) - data_.begin();
+        return std::distance(data_.begin(),
+            std::find_if(data_.begin(), data_.end(),
+              [&](const auto& e){ return e.first < c; }));
     }
 
 public:
@@ -310,8 +306,8 @@ template<class SymmGroup>
 class ProductBasis
 {
 public:
-    typedef typename SymmGroup::charge charge;
-    typedef std::size_t size_t;
+    using charge = typename SymmGroup::charge;
+    using size_t = std::size_t;
 
     ProductBasis(Index<SymmGroup> const & a,
                  Index<SymmGroup> const & b)
@@ -334,22 +330,23 @@ private:
               Fusion f)
     {
         keys_vals_.rehash((keys_vals_.size() + a.size()*b.size()) / keys_vals_.max_load_factor() + 1); // from http://www.boost.org/doc/libs/1_37_0/doc/html/unordered/buckets.html
-        for (typename Index<SymmGroup>::const_iterator it1 = a.begin(); it1 != a.end(); ++it1)
-            for (typename Index<SymmGroup>::const_iterator it2 = b.begin(); it2 != b.end(); ++it2)
-            {
-                charge pc = f(it1->first, it2->first);
-                if (size_.find(pc) == size_.end())
-                    size_[pc] = 0.;
-                keys_vals_[std::make_pair(it1->first, it2->first)] = size_[pc];
+        for (const auto& sym_sector_a : a) {
+            for (const auto& sym_sector_b : b) {
+                charge product_charge = f(sym_sector_a.first, sym_sector_b.first);
+                if (size_.find(product_charge) == size_.end()) {
+                  size_[product_charge] = 0.;
+                }
+                keys_vals_[std::make_pair(sym_sector_a.first, sym_sector_b.first)] = size_[product_charge];
           //    keys_vals_.insert(std::make_pair(std::make_pair(it1->first, it2->first),size_[pc]));
-                size_[pc] += it1->second * it2->second;
+                size_[product_charge] += sym_sector_a.second * sym_sector_b.second;
             }
+        }
     }
 
 public:
     size_t operator()(charge a, charge b) const
     {
-        typedef typename boost::unordered_map<std::pair<charge, charge>, size_t>::const_iterator match_type;
+        using match_type = typename boost::unordered_map<std::pair<charge, charge>, size_t>::const_iterator;
         match_type match = keys_vals_.find(std::make_pair(a,b));
         assert( match != keys_vals_.end() );
         return match->second;
@@ -383,7 +380,7 @@ template<class SymmGroup>
 class basis_iterator_
 {
 public:
-    typedef typename SymmGroup::charge charge;
+    using charge = typename SymmGroup::charge;
 
     basis_iterator_(Index<SymmGroup> const & idx, bool at_end = false)
     : idx_(idx)
@@ -405,9 +402,9 @@ public:
     basis_iterator_ & operator++()
     {
         ++cur_i;
-        if (cur_i != max_i)
+        if (cur_i != max_i) {
             return *this;
-        else {
+        } else {
             ++cur_block;
             if (cur_block != idx_.end()) {
                 cur_i = 0;
@@ -421,8 +418,9 @@ public:
     {
         assert( k >= 0 );
         basis_iterator_ r = *this;
-        for ( ; k > 0; --k)
+        for ( ; k > 0; --k) {
             ++r;
+        }
         return r;
     }
 
@@ -440,8 +438,9 @@ private:
 template<class SymmGroup>
 basis_iterator_<SymmGroup> operator+(basis_iterator_<SymmGroup> it, std::size_t p)
 {
-    for ( ; p > 0; --p)
+    for ( ; p > 0; --p) {
         ++it;
+    }
     return it;
 }
 
@@ -463,24 +462,28 @@ bool weak_equal(Index<SymmGroup> const & a, Index<SymmGroup> const & b)
 template<class SymmGroup>
 Index<SymmGroup> adjoin(Index<SymmGroup> const & inp)
 {
-    typedef typename SymmGroup::charge charge;
+    using charge = typename SymmGroup::charge;
 
-    std::vector<charge> oc = inp.charges(), nc = inp.charges();
+    std::vector<charge> oc = inp.charges();
+    std::vector<charge> nc = inp.charges();
     std::transform(nc.begin(), nc.end(), nc.begin(), std::negate<charge>());
     std::sort(nc.begin(), nc.end());
 
-    std::vector<std::size_t> nd(inp.size()), od = inp.sizes();
-    for (unsigned int i = 0; i < nd.size(); ++i)
-        nd[i] = od[std::find(oc.begin(), oc.end(),
-                             -nc[i])-oc.begin()];
+    std::vector<std::size_t> nd(inp.size());
+    std::vector<std::size_t> od = inp.sizes();
+    // perform same permutation on sizes (nd) as the sorting of the charges (nc)
+    for (unsigned int i = 0; i < nd.size(); ++i) {
+        nd[i] = od[std::distance(oc.begin(), std::find(oc.begin(), oc.end(), -nc[i]))];
+    }
 
     Index<SymmGroup> ret;
-    for (size_t i=0; i<nc.size(); ++i)
+    for (size_t i=0; i<nc.size(); ++i) {
 #if not defined(WIN32) && not defined(WIN64)
         ret.insert(std::make_pair(nc[i], nd[i]));
 #else
         ret.insert(mypair(nc[i], nd[i]));
 #endif
+    }
     return ret;
 }
 
@@ -503,20 +506,22 @@ template<class SymmGroup>
 Index<SymmGroup> operator*(Index<SymmGroup> const & i1,
                            Index<SymmGroup> const & i2)
 {
-    typedef typename SymmGroup::charge charge;
+    using charge = typename SymmGroup::charge;
 
     Index<SymmGroup> ret;
-    for (typename Index<SymmGroup>::const_iterator it1 = i1.begin(); it1 != i1.end(); ++it1)
+    for (typename Index<SymmGroup>::const_iterator it1 = i1.begin(); it1 != i1.end(); ++it1) {
         for (typename Index<SymmGroup>::const_iterator it2 = i2.begin(); it2 != i2.end(); ++it2)
         {
             charge pdc = SymmGroup::fuse(it1->first, it2->first);
             std::size_t ps = it1->second * it2->second;
             std::size_t match = ret.position(pdc);
-            if (match < ret.size())
+            if (match < ret.size()) {
                 ret[match].second += ps;
-            else
+            } else {
                 ret.insert(std::make_pair(pdc, ps));
+            }
         }
+    }
     ret.sort();
     return ret;
 }
@@ -525,14 +530,12 @@ template<class SymmGroup>
 void extract_common_subset(Index<SymmGroup> & a, Index<SymmGroup> & b)
 {
     a.erase(std::remove_if(a.begin(), a.end(),
-                           !boost::lambda::bind(&Index<SymmGroup>::has, b,
-                                                boost::lambda::bind(index_detail::get_first<SymmGroup>, boost::lambda::_1))),
+            [&](const auto& e){ return !b.has(e.first); }),
             a.end());
 
     b.erase(std::remove_if(b.begin(), b.end(),
-                           !boost::lambda::bind(&Index<SymmGroup>::has, a,
-                                                boost::lambda::bind(index_detail::get_first<SymmGroup>, boost::lambda::_1))),
-            b.end());
+          [&](const auto& e){ return !a.has(e.first); }),
+          b.end());
 }
 
 template<class SymmGroup>
@@ -540,14 +543,12 @@ Index<SymmGroup> common_subset(Index<SymmGroup> & a,
                                Index<SymmGroup> & b)
 {
     a.erase(std::remove_if(a.begin(), a.end(),
-                           !boost::lambda::bind(&Index<SymmGroup>::has, b,
-                                                boost::lambda::bind(index_detail::get_first<SymmGroup>, boost::lambda::_1))),
+            [&](const auto& e){ return !b.has(e.first); }),
             a.end());
 
     b.erase(std::remove_if(b.begin(), b.end(),
-                           !boost::lambda::bind(&Index<SymmGroup>::has, a,
-                                                boost::lambda::bind(index_detail::get_first<SymmGroup>, boost::lambda::_1))),
-            b.end());
+          [&](const auto& e){ return !a.has(e.first); }),
+          b.end());
     return a;
 }
 
@@ -557,31 +558,31 @@ std::pair<charge, std::size_t> operator-(std::pair<charge, std::size_t> const & 
     return std::make_pair(-p.first, p.second);
 }
 
-template<class T> boost::array<T, 1> _(T const & a)
+template<class T> std::array<T, 1> _(T const & a)
 {
-    boost::array<T, 1> r;
+    std::array<T, 1> r;
     r[0] = a;
     return r;
 }
 
-template<class T> boost::array<T, 2> _(T const & a, T const & b)
+template<class T> std::array<T, 2> _(T const & a, T const & b)
 {
-    boost::array<T, 2> r;
+    std::array<T, 2> r;
     r[0] = a;
     r[1] = b;
     return r;
 }
 
 #define IMPL_COMMA(tpl, type) \
-tpl boost::array<type, 2> operator^(type const & a, type const & b) { \
-    boost::array<type, 2> ret; \
+tpl std::array<type, 2> operator^(type const & a, type const & b) { \
+    std::array<type, 2> ret; \
     ret[0] = a; \
     ret[1] = b; \
     return ret; \
 }
 #define IMPL_COMMA_2(tpl, type) \
-tpl boost::array<type, L+1> operator^(boost::array<type, L> const & a, type const & b) { \
-    boost::array<type, L+1> ret; \
+tpl std::array<type, L+1> operator^(std::array<type, L> const & a, type const & b) { \
+    std::array<type, L+1> ret; \
     std::copy(a.begin(), a.end(), ret.begin()); \
     ret[L] = b; \
     return ret; \
@@ -597,21 +598,22 @@ IMPL_COMMA(template<class charge>, std::pair<charge CO std::size_t>)
 #undef IMPL_COMMA_2
 
 template<class T, unsigned long L>
-boost::array<T, L+1> operator^(boost::array<T, L> const & a, T const & b)
+std::array<T, L+1> operator^(std::array<T, L> const & a, T const & b)
 {
-	boost::array<T, L+1> ret;
+	std::array<T, L+1> ret;
     std::copy(a.begin(), a.end(), ret.begin());
 	ret[L] = b;
 	return ret;
 }
 
 template<class T, unsigned long L>
-boost::array<T, L+1> operator^(T const & a, boost::array<T, L> const & b)
+std::array<T, L+1> operator^(T const & a, std::array<T, L> const & b)
 {
-	boost::array<T, L+1> ret;
+	std::array<T, L+1> ret;
 	ret[0] = a;
-	for (int i = 0; i < L; i++)
+	for (int i = 0; i < L; i++) {
 		ret[i+1] = b[i];
+  }
 	return ret;
 }
 

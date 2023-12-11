@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -9,14 +9,15 @@
 #define MEASUREMENTS_CUSTOM_H
 
 #include "dmrg/models/measurement.h"
+#include "dmrg/models/generate_mpo.hpp"
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 
 namespace measurements {
     
     template <class Matrix, class SymmGroup>
     class custom : public measurement<Matrix, SymmGroup> {
-        typedef measurement<Matrix, SymmGroup> base;
-        typedef typename base::op_t op_t;
+        using base = measurement<Matrix, SymmGroup>;
+        using op_t = typename base::op_t;
     public:
         custom(std::string const& name_,
                const Lattice & lat,

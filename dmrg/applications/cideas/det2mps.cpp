@@ -28,7 +28,7 @@ typedef U1 grp;
 
 //parse determinants
 template <class SymmGroup>
-std::vector<Determinant<SymmGroup> > dets_from_file(std::string file){
+std::vector<Determinant<SymmGroup> > dets_from_file(const std::string& file){
     std::ifstream config_file;
     config_file.open(file.c_str());
 
@@ -41,8 +41,8 @@ std::vector<Determinant<SymmGroup> > dets_from_file(std::string file){
         std::string det = det_coeff[0];
 
         Determinant<SymmGroup> tmp;
-        for (std::size_t i = 0; i < det.size(); ++i) {
-            int occ = boost::lexical_cast<size_t>(det[i]);
+        for (const char& i : det) {
+            int occ = boost::lexical_cast<int>(i);
             switch(occ) {
                 case 4:
                     tmp.push_back(4); // doubly occ
@@ -58,8 +58,9 @@ std::vector<Determinant<SymmGroup> > dets_from_file(std::string file){
                     break;
             }
         }
-        if(std::find(configs.begin(), configs.end(), tmp) == configs.end())
+        if(std::find(configs.begin(), configs.end(), tmp) == configs.end()) {
             configs.push_back(tmp);
+        }
     }
     return configs;
 }

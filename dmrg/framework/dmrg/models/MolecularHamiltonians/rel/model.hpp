@@ -1,12 +1,14 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
 #ifndef REL_QC_MODEL_HPP
 #define REL_QC_MODEL_HPP
+
+#include "dmrg/models/chem/rel/model.h"
 
 template <class SymmGroup>
 rel_qc_model<SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParameters & parms_)

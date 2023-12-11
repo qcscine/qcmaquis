@@ -21,7 +21,7 @@ endif(NOT DEFAULT_BLAS_LAPACK)
 ######################################################################
 project (MAQUIS_DMRG)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/config)
@@ -32,6 +32,28 @@ set(CMAKE_INSTALL_RPATH "\$ORIGIN/../lib:${CMAKE_INSTALL_PREFIX}/lib")
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+# @kszenes use cache and mold linker (if available) for faster compilation
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+  message(STATUS "Found ccache in ${CCACHE_PROGRAM}")
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
+endif()
+
+find_program(MOLD_PROGRAM mold)
+if(MOLD_PROGRAM)
+  if ((CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+       OR (CMAKE_CXX_COMPILER_ID MATCHES "GNU"
+           AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 12))
+  message(STATUS "Found mold linker in ${MOLD_PROGRAM}")
+  add_link_options(-fuse-ld=mold)
+  endif()
+endif()
+
+# enable colored output for Ninja
+if (CMAKE_GENERATOR MATCHES "Ninja")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fdiagnostics-color=always")
+endif()
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(CMAKE_INSTALL_PREFIX "/opt/maquis" CACHE PATH "MAQUIS install prefix" FORCE)
@@ -146,15 +168,42 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
     set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
             STRING "Choose the type of build." FORCE)
-    # Set the possible values of build type for cmake-gui
-    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
-            "Debug" "Release" "RelWithDebugInfo")
 endif()
-set(CMAKE_CXX_FLAGS_RELEASE "-Wno-unknown-pragmas ${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING "CMAKE_CXX_FLAGS_RELEASE: Flags used by the compiler during release builds" FORCE)
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Wno-unknown-pragmas ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}" CACHE STRING "CMAKE_CXX_FLAGS_RELWITHDEBINFO: Flags used by the compiler during Release with Debug Info builds." FORCE)
-set(CMAKE_C_FLAGS_RELEASE " ${CMAKE_C_FLAGS_RELEASE}" CACHE STRING "CMAKE_C_FLAGS_RELEASE: Flags used by the compiler during release builds" FORCE)
 
+if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
+  # message(STATUS "Debug build: Adding Address Sanitizer")
+  # add_compile_options(-fsanitize=address -g3 -Wall -Wextra)
+  # add_link_options(-fsanitize=address -g3 -Wall -Wextra)
+  if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+    message(STATUS "Adding CLANG warning flags")
+    set(COMPILER_WARNING_FLAGS
+      -Wall -Wextra
+      -Wno-unused-variable
+      -Wno-unused-parameter
+      -Wno-unused-local-typedef
+      -Wno-return-type-c-linkage      # boost ublas bug
+      -Wno-sign-compare               # TODO: These should be fixed
+      )
+  elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+    message(STATUS "Adding GNU warning flags")
+    set(COMPILER_WARNING_FLAGS
+      -Wall -Wextra
+      -Wno-int-in-bool-context        # TODO: This should also be fixed
+      -Wno-unused-variable
+      -Wno-unused-but-set-variable
+      -Wno-unused-parameter
+      -Wno-unused-local-typedefs
+      -Wno-sign-compare               # TODO: These should be fixed
+      -Wno-deprecated-copy            # TODO: Fix this as well
+      )
+  add_compile_options(-fsanitize=address,leak,undefined)
+  add_link_options(-fsanitize=address,leak,undefined)
+  endif()
+  message(STATUS "Debug warnings = ${COMPILER_WARNING_FLAGS}")
+  add_compile_options(${COMPILER_WARNING_FLAGS})
+  add_link_options(${COMPILER_WARNING_FLAGS})
 
+endif()
 ######################################################################
 # Symmetries management
 ######################################################################
@@ -214,13 +263,13 @@ endmacro(configure_symm_file)
 
 # Adding symmetries definitions, TwoU1PG and SU2U1PG are needed in any case for smooth compilation/testing
 list(APPEND BUILD_SYMMETRIES "TwoU1PG" "SU2U1PG")
-list(REMOVE_DUPLICATES BUILD_SYMMETRIES)
-message(STATUS "Enabled symmetries: ${BUILD_SYMMETRIES}")
 foreach(SYMM ${BUILD_SYMMETRIES})
   get_symm_group_name(SYMM_NAME ${SYMM})
   list(APPEND DMRG_DEFINITIONS -DHAVE_${SYMM_NAME})
   set(DMRG_HAS_${SYMM_NAME} TRUE)
 endforeach(SYMM)
+list(REMOVE_DUPLICATES BUILD_SYMMETRIES)
+message(STATUS "Enabled symmetries: ${BUILD_SYMMETRIES}")
 
 # PreBO-specific flags
 if((BUILD_PREBO))
@@ -288,11 +337,20 @@ find_package(HDF5 REQUIRED)
 list(APPEND DMRG_LIBRARIES ${HDF5_LIBRARIES})
 
 # Boost
+
+# Remove annoying cmake configure boost warning
+set(Boost_NO_WARN_NEW_VERSIONS 1)
+# Remove global placeholder warning
+# add_compile_definitions(BOOST_BIND_GLOBAL_PLACEHOLDERS)
+# Remove deprecated warnings when compiling using gcc
+# add_compile_definitions(BOOST_NO_CXX98_FUNCTION_BASE)
+
 set(Boost_requirements program_options filesystem system serialization thread)
-set (Boost_NO_BOOST_CMAKE ON)
+set(Boost_NO_BOOST_CMAKE ON)
 
 find_package(Boost 1.56 COMPONENTS ${Boost_requirements})
 if(Boost_FOUND)
+    include_directories(SYSTEM ${Boost_INCLUDE_DIRS}) # Silence warning coming from boost headers
     list(APPEND DMRG_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
     list(APPEND DMRG_LIBRARY_DIRS ${Boost_LIBRARY_DIRS})
     list(APPEND DMRG_LIBRARIES ${Boost_LIBRARIES})
@@ -332,9 +390,9 @@ endif()
 # Version information
 ######################################################################
 set(DMRG_YEAR 2023)
-set(DMRG_VERSION_MAJOR 2)
-set(DMRG_VERSION_MINOR 2)
-set(DMRG_VERSION_PATCH 0)
+set(DMRG_VERSION_MAJOR 3)
+set(DMRG_VERSION_MINOR 1)
+set(DMRG_VERSION_PATCH 3)
 set(DMRG_VERSION_BUILD "")
 
 if(NOT DMRG_VERSION_BUILD AND EXISTS ${PROJECT_SOURCE_DIR}/.svn)
@@ -524,16 +582,13 @@ if(QCMAQUIS_TESTS)
     add_test(NAME TestTranscorrelatedMolecular COMMAND test_transcorrelated_molecular)
   endif(BUILD_TRANSCORRELATED_DMRG)
   add_test(NAME Test_Relativistic COMMAND test_rel)
-  add_test(NAME Test_DMRG_LiH COMMAND testLiH)
   add_test(NAME Test_Integral_Map COMMAND test_integral_map)
   add_test(NAME Test_IndexTuple COMMAND test_IndexTuple)
   add_test(NAME Test_HiRDM COMMAND test_hirdm)
-  add_test(NAME Test_MPO_times_MPS_TwoU1 COMMAND test_mpo_times_mps_TwoU1)
   add_test(NAME Test_MPS_MPO_Ops_TwoU1 COMMAND test_mps_mpo_ops_TwoU1)
   add_test(NAME Test_MPS_MPO_Ops_Electronic COMMAND test_mps_mpo_ops_electronic)
   add_test(NAME Test_MPS_Overlap_Electronic COMMAND test_mps_overlap_electronic)
   add_test(NAME Test_SiteProblem COMMAND test_siteproblem)
-  add_test(NAME Test_SweepBasedLinearSystem_Electronic COMMAND test_sweep_based_linear_system_electronic)
   add_test(NAME Test_OverlapPropagator_Electronic COMMAND test_overlap_propagator_electronic)
   add_test(NAME Test_BoundaryPropagator_Electronic COMMAND test_boundary_propagator_electronic)
   add_test(NAME Test_MPS_Join COMMAND test_mpsjoin)
@@ -543,9 +598,14 @@ if(QCMAQUIS_TESTS)
   add_test(NAME Test_MPS_Initializers_Electronic COMMAND test_mps_initializers_electronic)
   add_test(NAME Test_1DMPO_Electronic COMMAND test_1D_mpo_electronic)
   # Alps-related tests
+  add_test(NAME Test_GeneralizedEigenvalue COMMAND test_generalized_eigenvalue_problem)
+  add_test(NAME Test_SweepOptimization_Traits COMMAND test_sweep_optimization_traits)
   add_test(NAME Test_Alps_Diagonalization COMMAND test_alps_diagonalization)
   add_test(NAME Test_GeneralizedEigenvalue COMMAND test_generalized_eigenvalue_problem)
   add_test(NAME Test_SweepOptimization_Traits COMMAND test_sweep_optimization_traits)
+  add_test(NAME Test_DMRG_LiH COMMAND testLiH)
+  add_test(NAME Test_MPO_times_MPS_TwoU1 COMMAND test_mpo_times_mps_TwoU1)
+  add_test(NAME Test_SweepBasedLinearSystem_Electronic COMMAND test_sweep_based_linear_system_electronic)
   if(BUILD_DMRG_FEAST)
     add_test(NAME Test_FEAST_Electronic COMMAND test_FEAST_electronic)
   endif(BUILD_DMRG_FEAST)

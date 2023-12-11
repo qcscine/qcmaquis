@@ -87,7 +87,7 @@ namespace alps{
         {
             // TODO: how do we handle that?
             if (std::accumulate(this->shape(), this->shape() + D, size_type(0)) == 0) {
-                boost::array<T, D> extent;
+                std::array<T, D> extent;
                 std::copy(a.shape(), a.shape() + D, extent.begin());
                 this->resize(extent);
             }

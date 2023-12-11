@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -11,18 +11,19 @@
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/block_matrix/symmetry.h"
 
+#include "dmrg/block_matrix/site_operator.h"
+
 namespace sparse_detail {
 
     template <class T, class SymmGroup, typename = void>
     class Entry {
     public:
-        typedef unsigned index_type;
+        using index_type = unsigned int;
 
         Entry();
         Entry(index_type r, index_type c, T coeff)
         : row(r), col(c), coefficient(coeff)
-        {
-        }
+        {}
 
         index_type row, col;
         T coefficient;
@@ -31,14 +32,13 @@ namespace sparse_detail {
     template <class T, class SymmGroup>
     class Entry<T, SymmGroup, symm_traits::enable_if_su2_t<SymmGroup>> {
     public:
-        typedef typename SymmGroup::subcharge subcharge;
-        typedef unsigned index_type;
+        using subcharge = typename SymmGroup::subcharge;
+        using index_type = unsigned int;
 
         Entry();
         Entry(index_type r, index_type c, subcharge rspin, subcharge cspin, T coeff)
         : row(r), col(c), row_spin(rspin), col_spin(cspin), coefficient(coeff)
-        {
-        }
+        {}
 
         index_type row, col;
         subcharge row_spin, col_spin;
@@ -51,15 +51,15 @@ template<class Matrix, class SymmGroup, typename = void>
 class SparseOperator
 {
 private:
-    typedef typename Matrix::value_type float_type;
+    using float_type = typename Matrix::value_type;
 
 public:
-    typedef sparse_detail::Entry<float_type, SymmGroup> value_type;
-    typedef typename std::vector<value_type>::iterator iterator;
-    typedef typename std::vector<value_type>::const_iterator const_iterator;
-    typedef int spin_basis_type;
+    using value_type = sparse_detail::Entry<float_type, SymmGroup>;
+    using iterator = typename std::vector<value_type>::iterator;
+    using const_iterator = typename std::vector<value_type>::const_iterator;
+    using spin_basis_type = int;
 
-    SparseOperator() {}
+    SparseOperator() = default;
 
     SparseOperator(SiteOperator<Matrix, SymmGroup> const & bm)
     {
@@ -81,17 +81,20 @@ public:
         blocks_ = std::vector<int>(bm.n_blocks() + 1);
         data_ = std::vector<value_type>();
 
-        int entry_counter = 0;
-        for(std::size_t b = 0; b < bm.n_blocks(); ++b)
-        {
-            blocks_[b] = entry_counter;
-            for (std::size_t ss1 = 0; ss1 < num_rows(bm[b]); ++ss1)
-            for (std::size_t ss2 = 0; ss2 < num_cols(bm[b]); ++ss2)
-                if (bm[b](ss1,ss2) != float_type()) {
-                    data_.push_back(value_type(ss1, ss2, bm[b](ss1,ss2)));
-                    //data_.push_back(value_type(ss1, ss2, left_spins.at(ss1), right_spins.at(ss2), bm[b](ss1,ss2)));
-                    ++entry_counter;
-                }
+        // entry_counter defines the index of the first entry for each block
+        // similar to doing a prefix sum on the number of non-zero entries over the blocks
+        int entry_counter = 0; 
+        for(std::size_t b = 0; b < bm.n_blocks(); ++b) {
+          blocks_[b] = entry_counter;
+          for (std::size_t ss1 = 0; ss1 < num_rows(bm[b]); ++ss1) {
+            for (std::size_t ss2 = 0; ss2 < num_cols(bm[b]); ++ss2) {
+              if (bm[b](ss1,ss2) != float_type()) { // only add non-zero values
+                data_.push_back(value_type(ss1, ss2, bm[b](ss1,ss2)));
+                //data_.push_back(value_type(ss1, ss2, left_spins.at(ss1), right_spins.at(ss2), bm[b](ss1,ss2)));
+                ++entry_counter;
+              }
+            }
+          }
         }
 
         blocks_[bm.n_blocks()] = data_.size();
@@ -106,19 +109,19 @@ template<class Matrix, class SymmGroup>
 class SparseOperator<Matrix, SymmGroup, symm_traits::enable_if_su2_t<SymmGroup>>
 {
 private:
-    typedef typename Matrix::value_type float_type;
-    typedef typename SymmGroup::charge charge;
-    typedef std::pair<charge, charge> charge_pair;
-    typedef typename SymmGroup::subcharge subcharge;
+    using float_type = typename Matrix::value_type;
+    using charge = typename SymmGroup::charge;
+    using charge_pair = std::pair<charge, charge>;
+    using subcharge = typename SymmGroup::subcharge;
 
 public:
-    typedef sparse_detail::Entry<float_type, SymmGroup> value_type;
-    typedef typename std::vector<value_type>::iterator iterator;
-    typedef typename std::vector<value_type>::const_iterator const_iterator;
-    typedef std::map<charge_pair, std::pair<std::vector<subcharge>, std::vector<subcharge> >, compare_pair<charge_pair> > spin_basis_type;
+    using value_type = sparse_detail::Entry<float_type, SymmGroup>;
+    using iterator = typename std::vector<value_type>::iterator;
+    using const_iterator = typename std::vector<value_type>::const_iterator;
+    using spin_basis_type = std::map<charge_pair, std::pair<std::vector<subcharge>, std::vector<subcharge>>, compare_pair<charge_pair>>;
 
 
-    SparseOperator() {}
+    SparseOperator() = default;
 
     SparseOperator(block_matrix<Matrix, SymmGroup> const & bm, spin_basis_type const & sb)
     {
@@ -141,15 +144,23 @@ public:
         for(std::size_t b = 0; b < bm.n_blocks(); ++b)
         {
             blocks_[b] = entry_counter;
-            std::vector<subcharge> const & left_spins = spin_basis.at(std::make_pair(bm.basis().left_charge(b), bm.basis().right_charge(b))).first;
-            std::vector<subcharge> const & right_spins = spin_basis.at(std::make_pair(bm.basis().left_charge(b), bm.basis().right_charge(b))).second;
-            for (std::size_t ss1 = 0; ss1 < num_rows(bm[b]); ++ss1)
-            for (std::size_t ss2 = 0; ss2 < num_cols(bm[b]); ++ss2)
+            std::vector<subcharge> const & left_spins = spin_basis.at(
+                std::make_pair(bm.basis().left_charge(b),
+                bm.basis().right_charge(b))
+            ).first;
+            std::vector<subcharge> const & right_spins = spin_basis.at(
+                std::make_pair(bm.basis().left_charge(b),
+                  bm.basis().right_charge(b))
+            ).second;
+            for (std::size_t ss1 = 0; ss1 < num_rows(bm[b]); ++ss1) {
+              for (std::size_t ss2 = 0; ss2 < num_cols(bm[b]); ++ss2) {
                 if (bm[b](ss1,ss2) != float_type()) {
-                    data_.push_back(value_type(ss1, ss2, left_spins[ss1], right_spins[ss2], bm[b](ss1,ss2)));
-                    //data_.push_back(value_type(ss1, ss2, left_spins.at(ss1), right_spins.at(ss2), bm[b](ss1,ss2)));
-                    ++entry_counter;
+                  data_.push_back(value_type(ss1, ss2, left_spins[ss1], right_spins[ss2], bm[b](ss1,ss2)));
+                  //data_.push_back(value_type(ss1, ss2, left_spins.at(ss1), right_spins.at(ss2), bm[b](ss1,ss2)));
+                  ++entry_counter;
                 }
+              }
+            }
         }
 
         blocks_[bm.n_blocks()] = data_.size();

@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -12,8 +12,6 @@
 #include <iterator>
 #include <iostream>
 #include <sys/stat.h>
-
-#include <boost/shared_ptr.hpp>
 
 #include "dmrg/sim/sim.h"
 #include "dmrg/models/continuum/factory_lattice.hpp"
@@ -27,8 +25,8 @@ inline BaseParameters compute_initial_parms(BaseParameters parms)
     int initial_graining = 0;
 
     std::string chkpfile = boost::trim_right_copy_if(parms["chkpfile"].str(), boost::is_any_of("/ "));
-    boost::filesystem::path p(chkpfile);
-    if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5")) {
+    std::filesystem::path p(chkpfile);
+    if (std::filesystem::exists(p) && std::filesystem::exists(p / "mps0.h5")) {
             storage::archive ar(chkpfile+"/props.h5");
             if (ar.is_data("/status/graining") && ar.is_scalar("/status/graining"))
                 ar["/status/graining"] >> initial_graining;

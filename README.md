@@ -4,7 +4,9 @@ QCMaquis is an efficient C++11 implementation of the density matrix renormalizat
 ## Current Features:
   - Optimization of spin-adapted SU(2) MPS wave functions with the DMRG algorithm
   - Non-relativistic and scalar-relativistic quantum-chemical Hamiltonians
-  - Calculation of excited states
+  - Pre-Born--Oppenheimer Hamiltonian with multicomponent MPS including one-particle RDM and mutual information
+  - Vibrational calculation based on the Watson Hamiltonian
+  - Calculation of excited states with orthogonally-contrained DMRG, inverse-power iteration DMRG, and DMRG[FEAST]
   - A tool set to analyze the MPS wave function and its quantum entanglement
   - One-, two, three- and four-particle reduced density matrices
   - One-, two- and three-particle reduced transition density matrices
@@ -15,7 +17,6 @@ QCMaquis is an efficient C++11 implementation of the density matrix renormalizat
     - MPS state interaction (MPS-SI) for the calculation of spin-orbit coupling matrix elements, electronic and magnetic properties
     - state-specific and quasi-degenerate (multi-state) DMRG-NEVPT2 calculations
   - The current release version can be used together with SCINE autoCAS
-  - Pre-Born--Oppenheimer Hamiltonian with multicomponent MPS including one-particle RDM and mutual information
 
 ## QCMaquis compilation and installation
 ### Prerequisites:
@@ -78,9 +79,15 @@ For reproducibility reasons, please cite, depending on the actual calculations y
   - L. Freitag, S. Knecht, C. Angeli, M. Reiher, Multireference Perturbation Theory with Cholesky Decomposition for the Density Matrix Renormalization Group", J. Chem. Theory Comput., 2017, 13, 451. [DOI](https://doi.org/10.1021/acs.jctc.6b00778)
 ### MPS-SI:
   - S. Knecht, S. Keller, J. Autschbach, M. Reiher, "A Nonorthogonal State-Interaction Approach for Matrix Product State Wave Functions", J. Chem. Theory Comput., 2016, 12, 5881. [DOI](https://doi.org/10.1021/acs.jctc.6b00889)
+### Vibrational DMRG:
+  - A. Baiardi, C. J. Stein, M. Reiher, V. Barone, "Vibrational Density Matrix Renormalization Group", J. Chem. Theory Comput., 2017, 13, 3764. [DOI](https://doi.org/10.1021/acs.jctc.7b00329)
+  - N. Glaser, A. Baiardi, M. Reiher, "Tensor Network States for Vibrational Spectroscopy", in "Vibrational Dynamics of Molecules", 2022. [DOI](https://doi.org/10.1142/9789811237911_0003)
+### Vibrational excited states with DMRG:
+  - A. Baiardi, A. K. Kelemen, M. Reiher, "Excited-state DMRG made simple with FEAST", J. Chem. Theory Comput., 2022, 18, 415. [DOI](https://doi.org/10.1021/acs.jctc.1c00984) 
 
 ## QCMaquis and [ALPS](https://alps.comp-phys.org)
 QCMaquis builds upon the ALPS MPS project. The ALPS MPS codes implement the DMRG algorithm for variational ground and low-lying excited state search as well as time evolution of arbitrary one- and two-dimensional models in a matrix-product-state representation. They have been developed at ETH Zurich by Michele Dolfi and Bela Bauer in the group of Matthias Troyer with contributions from Sebastian Keller and Alexandr Kosenkov and at the University of Geneva by Timothée Ewart and Adrian Kantian in the group of Thierry Giamarchi. For further information on the ALPS project, please visit https://alps.comp-phys.org and note the original ALPS MPS paper:
 - M. Dolfi, B. Bauer, S. Keller, A. Kosenkov, T. Ewart, A. Kantian, T. Giamarchi, M. Troyer, "Matrix product state applications for the ALPS project" ,Comp. Phys. Commun., 2014, 12, 3430. [DOI](https://doi.org/10.1016/j.cpc.2014.08.019)
 
 The current QCMaquis release ships with a modified ALPS library based on ALPS 2.3.0 to reduce compile and runtime dependencies. For more information, please read the README.txt in the `dmrg/alps` subdirectory. The ALPS library is subject to the ALPS Library license, which is found in `dmrg/alps/LICENSE.txt`.
+

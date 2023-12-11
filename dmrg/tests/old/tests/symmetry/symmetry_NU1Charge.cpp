@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(symmetry_NU1Charge_constructor_test){
   BOOST_CHECK_EQUAL(q2[0],1);
   BOOST_CHECK_EQUAL(q2[1],1);
 
-  boost::array<int, 2> array = { { 1,1 } };
+  std::array<int, 2> array = { { 1,1 } };
   NU1Charge<2> q3(array);
   BOOST_CHECK_EQUAL(q3[0],1);
   BOOST_CHECK_EQUAL(q3[1],1);

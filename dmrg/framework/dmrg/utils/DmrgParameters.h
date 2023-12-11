@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -13,12 +13,17 @@
 class DmrgParameters : public BaseParameters
 {
 public:
-
-    DmrgParameters() : BaseParameters() { init_options(); }
-
-    explicit DmrgParameters(std::ifstream& param_file) : BaseParameters(param_file) { init_options(); }
-
-    explicit DmrgParameters(BaseParameters const& p) : BaseParameters(p) { init_options(); }
+    DmrgParameters() { init_options(); }
+    DmrgParameters(std::ifstream& param_file)
+    : BaseParameters(param_file)
+    {
+        init_options();
+    }
+    DmrgParameters(BaseParameters const& p)
+    : BaseParameters(p)
+    {
+        init_options();
+    }
 
 private:
 
@@ -26,7 +31,7 @@ private:
     {
         using parameters::value;
 
-        // General settings
+                // General settings
         add_option("seed", "Seed for all random number generators, for instance in the random MPS initalization, the SRCAS sampling, etc.", value(42));
         add_option("COMPLEX", "use complex numbers", value(false));
         add_option("MAGNETIC", "external magnetic field applied", value(false));
@@ -321,22 +326,25 @@ private:
 };
 
 
-inline DmrgParameters load_parms_and_model(std::string parms_fname, std::string model_fname="")
+inline DmrgParameters load_parms_and_model(const std::string& parms_fname, std::string model_fname="")
 {
     /// Load parameters
     std::ifstream param_file(parms_fname.c_str());
-    if (!param_file)
+    if (!param_file) {
         throw std::runtime_error("Could not open parameter file " + parms_fname);
+    }
     DmrgParameters parms(param_file);
 
     /// Load model parameters from second input (if needed)
     std::string model_file;
-    if (parms.is_set("model_file") && model_fname.empty())
+    if (parms.is_set("model_file") && model_fname.empty()) {
         model_fname = parms["model_file"].str();
+    }
     if (!model_fname.empty()) {
         std::ifstream model_ifs(model_fname.c_str());
-        if (!model_ifs)
+        if (!model_ifs) {
             throw std::runtime_error("Could not open model_file.");
+        }
         parms << ModelParameters(model_ifs);
     }
 

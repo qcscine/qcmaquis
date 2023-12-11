@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -14,7 +14,7 @@ template<class Matrix, int N>
 struct coded_model_factory<Matrix, NU1_template<N>> {
     static std::shared_ptr<model_impl<Matrix, NU1_template<N>> > parse(Lattice const& lattice, BaseParameters & parms)
     {
-        typedef std::shared_ptr<model_impl<Matrix, NU1_template<N>> > impl_ptr;
+        using impl_ptr = std::shared_ptr<model_impl<Matrix, NU1_template<N>>>;
         if (parms["MODEL"] == std::string("PreBO")) {
 #ifdef DMRG_PREBO
             return impl_ptr( new PreBO<Matrix, N>(lattice, parms) );

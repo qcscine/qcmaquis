@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -28,10 +28,10 @@ template <typename ScalarType, Hamiltonian HamiltonianType = Hamiltonian::Electr
 class DMRGInterface
 {
 public:
-  using meas_with_results_type = maquis::meas_with_results_type<ScalarType>;
-  using results_map_type = maquis::results_map_type<ScalarType>;
-  // using CICoefficientsType = std::pair<std::string, std::string>;
-  // using OutputType = std::unordered_map<CICoefficientsType, V, boost::hash<CICoefficientsType>>;
+    using meas_with_results_type = maquis::meas_with_results_type<ScalarType>;
+    using results_map_type = maquis::results_map_type<ScalarType>;
+    // using CICoefficientsType = std::pair<std::string, std::string>;
+    // using OutputType = std::unordered_map<CICoefficientsType, V, boost::hash<CICoefficientsType>>;
 
     /** @brief Class constructor */
     explicit DMRGInterface(DmrgParameters& parms_);

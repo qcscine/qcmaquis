@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -74,7 +74,7 @@ public:
 
   /** @brief Class constructor from a single MPS */
   OverlapPropagator(const MPSType& refMPS, const MPSType& otherMPS, int initSite=0)
-    : refMPS_(refMPS), L_(refMPS_.length()), nOrthogonalMPSs_(1)
+    : refMPS_(refMPS), nOrthogonalMPSs_(1), L_(refMPS_.length())
   {
     orthoMPS_.push_back(otherMPS);
     initializeData(initSite);
@@ -82,7 +82,8 @@ public:
 
   /** @brief Class constructor from a vector of MPS */
   OverlapPropagator(const MPSType& refMPS, const std::vector<MPSType>& otherMPSs, int initSite=0)
-    : refMPS_(refMPS), L_(refMPS_.length()), nOrthogonalMPSs_(otherMPSs.size()), orthoMPS_(otherMPSs)
+    : refMPS_(refMPS), orthoMPS_(otherMPSs),
+      nOrthogonalMPSs_(otherMPSs.size()), L_(refMPS_.length())
   {
     initializeData(initSite);
   }

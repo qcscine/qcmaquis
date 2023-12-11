@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -21,7 +21,7 @@ public:
    * @param doShift if true, shift by -1 the order (this is needed if the order starts from 0)
    * @return std::vector<std::size_t> Order specificed in the input
    */
-  static auto getOrbitalOrder(BaseParameters& parms, std::string nameOfOrder, bool doShift)
+  static auto getOrbitalOrder(BaseParameters& parms, const std::string& nameOfOrder, bool doShift)
   {
     // Definition of key parameters
     using PositionType = int;
@@ -29,18 +29,22 @@ public:
     std::vector<PositionType> outputOrder(latticeSize, 0);
     // Main code part
     if (!parms.is_set(nameOfOrder)) {
-      for (int p = 0; p < latticeSize; ++p)
+      for (int p = 0; p < latticeSize; ++p) {
         outputOrder[p] = p;
+      }
     }
     else {
       outputOrder = parms[nameOfOrder].as<std::vector<PositionType> >();
-      if (outputOrder.size() != latticeSize)
+      if (outputOrder.size() != latticeSize) {
         throw std::runtime_error("Number of orbitals in the orbital order does not match the total number of orbitals");
+      }
       // Shifts the order by -1 to match the convention that indices start in
       // C++ from *zero*.
-      if (doShift)
-        for (auto&& o: outputOrder)
+      if (doShift) {
+        for (auto&& o: outputOrder) {
           o--;
+        }
+      }
     }
     return outputOrder;
   }

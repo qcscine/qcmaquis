@@ -1,11 +1,13 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
 #include <memory>
+
+#include "dmrg/evolve/TimeEvolvers/timeevolver.h"
 
 // -- Empty constructor --
 /*

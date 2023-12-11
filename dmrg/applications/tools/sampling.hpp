@@ -3,7 +3,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -11,9 +11,9 @@
 #define SAMPLING_HPP
 
 #include <iostream>
-#include <boost/random.hpp>
-#include <math.h>
-#include <string.h>
+#include <random>
+#include <cmath>
+#include <cstring>
 
 #ifdef DEBUG
 #ifdef _OPENMP
@@ -112,19 +112,16 @@ void quicksort(string dets[], double b[], int left, int right) {
 struct Sampling
 {
 
-// Random number generator, work together with boost library
-        Sampling(int id)
-                :distribution(0.,1.),random_number(generator,distribution)
+        Sampling(int id) : dist(0.,1.)
         {
                 unsigned int seed = 123456;
-                generator.seed(seed/(id+1)+time(NULL));
+                gen.seed(seed/(id+1)+time(nullptr));
         }
 
-        Sampling()
-                :distribution(0.,1.),random_number(generator,distribution)
+        Sampling() : dist(0.,1.)
         {
                 unsigned int seed = 123456;
-                generator.seed(seed+time(NULL));
+                gen.seed(seed+time(nullptr));
         }
 
 // template generate_dets 
@@ -148,11 +145,11 @@ struct Sampling
         double ci,ci0,ci_ratio,ci_tmp;
         double sum_ci2=0.0,completeness=0.0;	  
         unsigned det_length = dets[0].size();
-	unsigned number_of_dets;
+        unsigned number_of_dets;
         typename Hash_value::iterator iter;
         typename Hash_index::iterator iter_idx;
 
-        typedef typename SymmGroup::charge charge;
+        using charge = typename SymmGroup::charge;
         charge target = mps[mps.length()-1].col_dim()[0].first;
 
 // This part will be deleted, since the elements in NU1ChargePG could already be used.
@@ -161,26 +158,24 @@ struct Sampling
 
 // This part will be used as the determinants reservoir
         Determinant det;
-        for (std::size_t c = 0; c < dets.size(); ++c)
-           {
+        for (std::size_t c = 0; c < dets.size(); ++c) {
             det=dets[c];
             hash_index[det]=c;
-	   }
+        }
 
 // determinant spawnning -- preparing part
 
         Determinant det_queen,det_bee,det_tmp; // determinant "queen bee tmp"
         int iaccept=0,iaccept_queen=0;
  
-        for (std::size_t c = 0; c < dets_mclr.size(); ++c)
-           {
+        for (std::size_t c = 0; c < dets_mclr.size(); ++c) {
             det=dets_mclr[c];
             ci0=extract_coefficient(mps, det); 	   
             hash[det]=ci0;
 //            maquis::cout << "follow determinant " << c << " with coefficient " << ci0 << std::endl;
 //            for(int p = det_length-1; p >= 0; --p)            
 //                maquis::cout << det[p][0] << det[p][1] << det[p][2] << std::endl;
-	   }
+        }
 
 // Get the number of electrons & holes (alpha, beta, total)
         int nele_alpha=0;
@@ -189,8 +184,7 @@ struct Sampling
         int nhole_beta =0;
         int nele_total=0;
         int igroup_sym=0;  
-        for(int p = det_length-1; p >= 0; --p)
-           {              
+        for(int p = det_length-1; p >= 0; --p) {              
             if(det[p][0]==1)
               nele_alpha++ ;
             else
@@ -216,7 +210,7 @@ struct Sampling
           nMAX++;
           // Get the number of excited electrons        
           int nele_excited;
-          nele_excited=int(floor(nele_total*random_number())+1);
+          nele_excited=int(floor(nele_total*dist(gen))+1);
           maquis::cout << " nele_excited " << nele_excited << " in " << norb << " orbitals" << std::endl;
           for(int isample=0; isample < nsample; isample++ ){
             det_tmp=det_queen;
@@ -236,9 +230,9 @@ struct Sampling
                    }
                iele_excited++;
 
-               if(nhole_alpha !=0 && nele_alpha!=0 && random_number()>0.5){
-                  int fr =int(floor(random_number()*nele_alpha ));   //fr -> from 
-                  int to =int(floor(random_number()*nhole_alpha));    
+               if(nhole_alpha !=0 && nele_alpha!=0 && dist(gen)>0.5){
+                  int fr =int(floor(dist(gen)*nele_alpha ));   //fr -> from 
+                  int to =int(floor(dist(gen)*nhole_alpha));    
                   int ifr=ele_alpha[fr] ;
                   int ito=hole_alpha[to];              
 //                maquis::cout << " alpha - electron from " << ifr << " goto " << ito << std::endl;              
@@ -246,8 +240,8 @@ struct Sampling
                   det_tmp[ito][0]=1;              
                  }
                else if(nhole_beta !=0 && nele_beta!=0){
-                  int fr =int(floor(random_number()*nele_beta ));   //fr -> from 
-                  int to =int(floor(random_number()*nhole_beta));    
+                  int fr =int(floor(dist(gen)*nele_beta ));   //fr -> from 
+                  int to =int(floor(dist(gen)*nhole_beta));    
                   int ifr=ele_beta[fr] ;
                   int ito=hole_beta[to];
 //                maquis::cout << " beta  - electron from " << ifr << " goto " << ito << std::endl;
@@ -288,7 +282,7 @@ struct Sampling
             ci_ratio=pow(ci,2.0)/pow(ci0,2);
            
 // Whether use this bee-det as the new queen-det 
-            if(ci_ratio > random_number()){
+            if(ci_ratio > dist(gen)){
               det_queen=det_bee;
               ci0=ci;
               iaccept_queen++;
@@ -363,10 +357,8 @@ struct Sampling
  
         }    
        
-        boost::mt19937 generator;
-        boost::uniform_real<> distribution;
-        boost::variate_generator<boost::mt19937&, boost::uniform_real<> > random_number;
-
+        std::mt19937 gen;
+        std::uniform_real_distribution<> dist;
 };
 
 

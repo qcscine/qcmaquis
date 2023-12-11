@@ -1,12 +1,15 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
 #ifndef MPS_MPO_DETAIL_H
 #define MPS_MPO_DETAIL_H
+
+#include "dmrg/utils/storage.h"
+#include "dmrg/mp_tensors/mps.h"
 
 namespace mps_mpo_detail {
 
