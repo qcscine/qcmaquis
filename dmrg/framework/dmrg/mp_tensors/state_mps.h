@@ -43,7 +43,7 @@ MPS<Matrix, SymmGroup> state_mps(std::vector<std::vector<std::tuple<typename Sym
     // Populates the MPS
     block_matrix<Matrix, SymmGroup> & block = mps[i].data();
     // Computes the symmetry block of the next dimension
-    charge newc = SymmGroup::fuse(curr_i[0].first, boost::get<0>(state[i][0]));
+    charge newc = SymmGroup::fuse(curr_i[0].first, std::get<0>(state[i][0]));
     if (!allowed[i+1].has(newc))
       throw std::runtime_error("The provided init_state does not result in an allowed symmetry block for site " + std::to_string(i) + ". Abort.");
 
@@ -52,7 +52,7 @@ MPS<Matrix, SymmGroup> state_mps(std::vector<std::vector<std::tuple<typename Sym
     Matrix &m = block(newc, newc);
     // Finds out where to put the 1.0 in the MPS. Retrieve, from the ProductBasis object, how the row index was
     // decomposed in terms of left auxiliary basis and physical basis.
-    size_t b_in = left(boost::get<0>(state[i][0]), curr_i[0].first) + boost::get<1>(state[i][0]) * curr_i[0].second;
+    size_t b_in = left(std::get<0>(state[i][0]), curr_i[0].first) + std::get<1>(state[i][0]) * curr_i[0].second;
     size_t b_out = 0;
     m(b_in, b_out) = 1.;
     curr_i = new_i;
@@ -62,7 +62,7 @@ MPS<Matrix, SymmGroup> state_mps(std::vector<std::vector<std::tuple<typename Sym
 
 /** @brief Same as above, but populates several blocks which are provided in states and allowed, either randomly or const */
 template <class Matrix, class SymmGroup>
-MPS<Matrix, SymmGroup> state_mps_cd(std::vector<std::vector<boost::tuple<typename SymmGroup::charge, int> > > const & state,
+MPS<Matrix, SymmGroup> state_mps_cd(std::vector<std::vector<std::tuple<typename SymmGroup::charge, int> > > const & state,
                                     std::vector<Index<SymmGroup> > const& phys_dims,
                                     std::vector<int> const& site_type,
                                     typename SymmGroup::charge right_end = SymmGroup::IdentityCharge,
@@ -93,12 +93,12 @@ MPS<Matrix, SymmGroup> state_mps_cd(std::vector<std::vector<boost::tuple<typenam
     for (int j = 0; j < state[i].size(); ++j) { // loop over all possibly occupied basis states of that site
       for (int numCurrCharges = 0; numCurrCharges < curr_i.size(); ++numCurrCharges) { // loop over all currently populated charges
         // Computes the symmetry block of the next dimension
-        charge newc = SymmGroup::fuse(curr_i[numCurrCharges].first, boost::get<0>(state[i][j])); // get combined charge
+        charge newc = SymmGroup::fuse(curr_i[numCurrCharges].first, std::get<0>(state[i][j])); // get combined charge
         if (allowed[i+1].has(newc)) { // if this charge is allowed, populate it
           Matrix &m = block(newc, newc);
           // Finds out where to put the entries in the MPS. Retrieve, from the ProductBasis object, how the row index was
           // decomposed in terms of left auxiliary basis and physical basis.
-          auto offset = left(boost::get<0>(state[i][j]), curr_i[numCurrCharges].first);
+          auto offset = left(std::get<0>(state[i][j]), curr_i[numCurrCharges].first);
           for (int rowInBlock = offset; rowInBlock < curr_i[numCurrCharges].second + offset; rowInBlock++){ // Loop over all rows
             for (int columnInBlock = 0; columnInBlock < allowed[i+1].size_of_block(newc); columnInBlock++) { // Loop over all columns
               m(rowInBlock, columnInBlock) = fillRand ? dmrg_random::uniform(0., 1.) : 1.; // populate the MPS either with 1 or randomly

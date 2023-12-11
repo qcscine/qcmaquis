@@ -171,15 +171,15 @@ public:
     int meas_each = parms["measure_each"];
     int chkp_each = parms["chkp_each"];
     // -- Optimizer initialization --
-    if (parms["optimization"] == "singlesite")
+    if (parms["optimization"] == "singlesite") {
       // optimizer.reset( new ss_optimize<Matrix, SymmGroup, storage::disk>
       //                 (mps, mpo, parms, stop_callback, lat, init_site) );
       factory_ = std::make_unique<FactoryType>(simulationType, SweepOptimizationType::SingleSite, mps, mpo, inputParameters, inputModel, base::lat);
-    else if(parms["optimization"] == "twosite")
+    } else if(parms["optimization"] == "twosite") { 
       // optimizer.reset( new ts_optimize<Matrix, SymmGroup, storage::disk>
       //                 (mps, mpo, parms, stop_callback, lat, init_site) );
       factory_ = std::make_unique<FactoryType>(simulationType, SweepOptimizationType::TwoSite, mps, mpo, inputParameters, inputModel, base::lat);
-    else
+    } else {
         throw std::runtime_error("Don't know this optimizer");
     }
     // Retrieve the measurements that should be always done.
@@ -198,6 +198,7 @@ public:
           dumpEnergy(sweep);
           if (!rfile().empty() && always_measurements.size() > 0) {
             this->measure(this->results_archive_path(sweep) + "/results/", always_measurements);
+          }
           int prev_sweep = sweep - meas_each;
           // stop simulation if an energy threshold has been specified
           // Do not check convergence for propagation, since energy should be conserved by definition
@@ -205,7 +206,7 @@ public:
             converged = checkEnergyConvergence(energyThreshold);
           }
         }
-        if (converged) {
+        if (converged) { 
           maquis::cout << "ALS CONVERGED -- SWEEPING PROCEDURE TERMINATED" << std::endl;
         }
         last_sweep_ = sweep;

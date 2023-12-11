@@ -8,7 +8,7 @@
 #ifndef REL_QC_MODEL_HPP
 #define REL_QC_MODEL_HPP
 
-#include "dmrg/models/chem/rel/model.h"
+#include "dmrg/models/MolecularHamiltonians/rel/model.h"
 
 template <class SymmGroup>
 rel_qc_model<SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParameters & parms_)

@@ -71,7 +71,7 @@ public:
     }
     // Set the number of indices which are expected in the FCIDUMP
     // Determines also the maximum many-body coupling degree. Per default read in all integrals that are given
-    maxCoupling_ = chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical);
+    maxCoupling_ = chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical, chem::HamiltonianTransformation::Conventional);
     maxManyBodyCoupling_ = (parameters.is_set("watson_max_coupling")) ? parameters["watson_max_coupling"] : maxCoupling_;
     maxInputManyBodyCoupling_ = (parameters.is_set("watson_max_coupling_input")) ? parameters["watson_max_coupling_input"] : maxCoupling_;
     maquis::cout << " - Maximum many-body coupling order supported: " << maxCoupling_ << std::endl;
@@ -273,4 +273,5 @@ private:
 #endif // DMRG_VIBRATIONAL
 
 #endif
+
 

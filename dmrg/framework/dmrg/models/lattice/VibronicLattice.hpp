@@ -31,8 +31,8 @@ public:
     
   /** @brief Class constructor */
   explicit VibronicLattice(BaseParameters & parameters) 
-      : L(0), nElecStates(parameters["vibronic_nstates"].as<int>()), vector_types(0),
-        nModes(parameters["vibronic_nmodes"].as<int>()), nParticles(0), eleFirst(false)
+      : L(0), nElecStates(parameters["vibronic_num_elestates"].as<int>()), vector_types(0),
+        nModes(parameters["vibronic_num_vibmodes"].as<int>()), nParticles(0), eleFirst(false)
   {
     // Checks consistency
     // Determines the number of particles. Note that here by number of particles

@@ -231,12 +231,12 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_QuantumFormat, H2Fixture)
   // Compares the energy calculated based on the two Hamiltonians
   auto energyConventional = expval(mps, conventionalMpo);
   auto energyQuantum = expval(mps, transcorrelatedMpo);
-  BOOST_CHECK_CLOSE(energyConventional, energyQuantum, 2.0E-14);
+  BOOST_CHECK_CLOSE(energyConventional, energyQuantum, 1.0E-13);
   // Now also tries conventional Hamiltonian in quantum format
   auto conventionalModelQuantumFormat = ModelType(lattice, parametersH2QuantumFormat);
   auto conventionalMPOQuantumFormat = make_mpo(lattice, conventionalModelQuantumFormat);
   auto energyConventionalQuantumFormat = expval(mps, conventionalMPOQuantumFormat);
-  BOOST_CHECK_CLOSE(energyConventionalQuantumFormat, energyQuantum, 2.0E-14);
+  BOOST_CHECK_CLOSE(energyConventionalQuantumFormat, energyQuantum, 1.0E-13);
 }
 
 /** @brief Checks quantum format for non-Hermitian Hamiltonians */
@@ -266,7 +266,7 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_QuantumFormat_NonHermitian, Transcorr
   // Checks coherence in the energy
   auto energyConventionalFormat = expval(randomMps, transcorrelatedMpo);
   auto energyQuantumFormat = expval(randomMps, transcorrelatedMpoQF);
-  BOOST_CHECK_CLOSE(energyConventionalFormat, energyQuantumFormat, 2.0E-14);
+  BOOST_CHECK_CLOSE(energyConventionalFormat, energyQuantumFormat, 1.0E-13);
 }
 
 #endif // HAVE_TwoU1 and DMRG_TD

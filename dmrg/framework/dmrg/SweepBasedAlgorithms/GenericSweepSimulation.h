@@ -61,9 +61,6 @@ public:
 
   /** @brief Virtual destructor */
   virtual ~GenericSweepSimulation() = default; 
-
-  virtual ~GenericSweepSimulation() = default;
-
   /**
    * @brief Execution of a generic sweep-based optimization algorithm.
    *
@@ -161,6 +158,7 @@ public:
         Storage::drop(boundaryPropagator_->getRightBoundary(siteRight_));
       } else { // if (sweepType == SweepDirectionType::Backward)
         Storage::drop(boundaryPropagator_->getLeftBoundary(siteLeft_));
+      }
       this->finalizeMicroIteration(truncationResults);
       indexOfMicroIteration_ += 1;
       if (verbose_) {

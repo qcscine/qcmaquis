@@ -74,7 +74,7 @@ public:
       throw std::runtime_error("[linsystem_solver] parameter not recognized");
     }
 
-    if (parms_["linsystem_init"] == "zero")
+    if (parms_["linsystem_init"] == "zero") {
       currentSolution_ = 0.*initialMPS;
     } else {
       currentSolution_ = initialMPS;

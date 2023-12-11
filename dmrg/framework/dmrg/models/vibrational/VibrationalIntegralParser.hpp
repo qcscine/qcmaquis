@@ -156,7 +156,7 @@ NModeIntegralParser(BaseParameters & parms, Lattice const & lat)
 template<class T>
 inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical, chem::HamiltonianTransformation::Conventional)>, T > >
     WatsonIntegralParser(BaseParameters& parms, const Lattice& lat, WatsonCoordinateType coordinateType,
-                         int maxCoupling, int maxManyBodyCoupling, int maxInputManyBodyCoupling)
+                         int maxCoupling, int maxManyBodyCoupling, int maxInputCouplingOrder)
 {
     // Types definition
     using pos_t = Lattice::pos_t;
@@ -195,7 +195,7 @@ inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltoni
         // == Main loop ==
         while (it != raw.end()) {
             // Computes the coupling degree of the Hamiltonian term
-            auto modeSet = std::set<int>(it+1, it+maxInputManyBodyCoupling);
+            auto modeSet = std::set<int>(it+1, it+maxInputCouplingOrder);
             modeSet.erase(0);
             // Screen integrals
             if ((std::abs(*it) > parms["integral_cutoff"]) && (modeSet.size() <= maxManyBodyCoupling)) {
