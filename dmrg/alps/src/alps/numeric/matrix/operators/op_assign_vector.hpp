@@ -85,7 +85,8 @@ namespace numeric {
     void multiplies_assign_impl(Vector& lhs, T2 lambda, tag::vector tag1, tag::scalar tag2, boost::mpl::false_)
     {
         using detail::multiplies;
-        std::transform(lhs.begin(), lhs.end(), lhs.begin(), std::bind2nd(multiplies<typename Vector::value_type, T2>(), lambda));
+        std::transform(lhs.begin(), lhs.end(), lhs.begin(),
+            [lambda](typename Vector::value_type t){ return t*lambda;});
     }
 #endif // defined(__clang_major__) && __clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ == 0)
 

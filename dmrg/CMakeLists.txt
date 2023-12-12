@@ -183,6 +183,7 @@ if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
       -Wno-unused-local-typedef
       -Wno-return-type-c-linkage      # boost ublas bug
       -Wno-sign-compare               # TODO: These should be fixed
+      -Wno-reorder-ctor               # TODO: This as well
       )
   elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
     message(STATUS "Adding GNU warning flags")

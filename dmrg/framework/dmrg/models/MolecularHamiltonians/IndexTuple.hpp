@@ -92,13 +92,13 @@ public:
   auto begin() { return tmpStorage.begin(); }
 
   /** @brief Const begin pointer */
-  const auto begin() const { return tmpStorage.begin(); }
+  auto begin() const { return tmpStorage.begin(); }
 
   /** @brief Non-const end pointer */
   auto end() { return tmpStorage.end(); }
 
   /** @brief Const end pointer */
-  const auto end() const { return tmpStorage.end(); }
+  auto end() const { return tmpStorage.end(); }
 
   /** @brief Getter for the underlying data */
   auto& data() { return tmpStorage; }

@@ -98,7 +98,8 @@ namespace alps{
 
         array_type& operator+=(const T s)
         {
-            std::transform((*this).data(),(*this).data()+(*this).num_elements(),(*this).data(),std::bind2nd(std::plus<T>(),s));
+            std::transform((*this).data(),(*this).data()+(*this).num_elements(),(*this).data(),
+                [&s](const auto& e){ return e + s; });
             return *this;
         }
 
@@ -111,7 +112,8 @@ namespace alps{
 
         array_type& operator-=(const T s)
         {
-            std::transform((*this).data(),(*this).data()+(*this).num_elements(),(*this).data(),std::bind2nd(std::minus<T>(),s));
+            std::transform((*this).data(),(*this).data()+(*this).num_elements(),(*this).data(),
+                [&s](const auto& e){ return e - s; });
             return *this;
         }
 
@@ -124,7 +126,8 @@ namespace alps{
 
         array_type& operator*=(const T s)
         {
-            std::transform((*this).data(),(*this).data()+(*this).num_elements(),(*this).data(),std::bind2nd(std::multiplies<T>(),s));
+            std::transform((*this).data(),(*this).data()+(*this).num_elements(),(*this).data(),
+                [&s](const auto& e){ return e * s; });
             return *this;
         }
 
@@ -137,7 +140,8 @@ namespace alps{
 
         array_type& operator/=(const T s)
         {
-            std::transform((*this).data(),(*this).data()+(*this).num_elements(),(*this).data(),std::bind2nd(std::divides<T>(),s));
+            std::transform((*this).data(),(*this).data()+(*this).num_elements(),(*this).data(),
+                [&s](const auto& e){ return e / s; });
             return *this;
         }
 

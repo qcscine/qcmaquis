@@ -37,7 +37,7 @@ namespace alps {
 #define ALPS_IMPLEMENT_FUNCTION(FUN)                                                                                            \
     template <class T, std::size_t D, class Allocator> multi_array<T,D,Allocator> FUN (multi_array<T, D, Allocator> arg) {      \
         using std:: FUN;                                                                                                        \
-        std::transform(arg.data(), arg.data() + arg.num_elements(), arg.data(), std::ptr_fun<T, T>(FUN));                       \
+        std::transform(arg.data(), arg.data() + arg.num_elements(), arg.data(), [](const auto& e){ return FUN(e); });                       \
         return arg;                                                                                                             \
     }
 
@@ -61,7 +61,7 @@ ALPS_IMPLEMENT_FUNCTION(fabs)
 #define ALPS_IMPLEMENT_FUNCTION(FUN)                                                                                            \
     template <class T, std::size_t D, class Allocator> multi_array<T, D, Allocator> FUN (multi_array<T, D, Allocator> arg) {    \
         using alps::numeric:: FUN ;                                                                                             \
-        std::transform(arg.data(), arg.data() + arg.num_elements(), arg.data(), std::ptr_fun<T, T>(FUN));                       \
+        std::transform(arg.data(), arg.data() + arg.num_elements(), arg.data(), [](const auto& e){ return FUN(e); });                       \
         return arg;                                                                                                             \
     }
 
