@@ -251,8 +251,7 @@ public:
    * measurements that were requested to be done at each microiteration.
    */
   void runAlternatingLeastSquares(std::string simulationType, int nSweeps, double energyThreshold, const ModelType& inputModel,
-                                  DmrgParameters& inputParameters)
-  {
+                                  DmrgParameters& inputParameters) {
     // Reads in input parameters
     int meas_each = inputParameters["measure_each"];
     int chkp_each = inputParameters["chkp_each"];
@@ -276,10 +275,6 @@ public:
         factory_->runSingleSweep(sweep);
         storage::disk::sync();
         bool converged = false;
-        maquis::cout << "sweep+1:       " << (sweep + 1) << std::endl;
-        maquis::cout << "measeach:      " << meas_each << std::endl;
-        maquis::cout << "result:        " << (sweep + 1)% meas_each << "  == 0" << std::endl;
-
         if ((sweep+1) % meas_each == 0 || (sweep+1) == nSweeps) {
           dumpParametersAndIterResults(sweep);
           dumpEnergy(sweep);
@@ -288,22 +283,19 @@ public:
           }
           // stop simulation if an energy threshold has been specified
           int prev_sweep = sweep - meas_each;
-          maquis::cout << "prev_sweep:    " << prev_sweep << "  >= 0"<< std::endl;
           if (prev_sweep >= 0) {
-            maquis::cout << "energy_thresh: " << energyThreshold << " 1e-6" << std::endl;
             converged = checkEnergyConvergence(energyThreshold);
-            maquis::cout << "converged:     " << converged  << " true " << true << std::endl;
           }
         }
         last_sweep_ = sweep;
         /// write checkpoint
-        maquis::cout << "converged:     " << converged  << " true " << true << std::endl;
         bool stopped = stop_callback() || converged;
-        maquis::cout << "stopped:       " << stopped << " true " << true << std::endl;
-        if (stopped || (sweep+1) % chkp_each == 0 || (sweep+1) == nSweeps)
+        if (stopped || (sweep+1) % chkp_each == 0 || (sweep+1) == nSweeps) {
           checkpoint_simulation(mps, sweep, -1);
-        if (stopped)
+        }
+        if (stopped) {
           break;
+        }
       }
     }
     catch (dmrg::time_limit const& e) {
@@ -683,14 +675,6 @@ public:
       return overlap(aux_mps, this->mps);
   }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////
-  /// Fiedler
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////
-
   /**
    * @brief Generate Fiedler ordering
    *
@@ -698,14 +682,9 @@ public:
    * @param hf_occupations vector of vectors of ints the occupation for each state
    * @return order a string with the orbital order based on fiedler ordering
    */
-  //using ScalarType = typename Matrix::value_type;
-  //template<typename std::enable_if<std::is_same<ScalarType, std::complex<double>>::value, int>::type = 0>
-  //std::string get_fiedler_order(int n_states, const std::vector<std::vector<int>>& hf_occupations, std::string checkpoint_name) {
-  //  throw std::runtime_error("Fiedler ordering only implemented for double not compelex!");
-  //}
 
   // template<typename std::enable_if<std::is_same<ScalarType, double>::value, int>::type = 0>
-  //template<typename = typename std::enable_if <std::is_same<ScalarType, double>::value>::type>
+  // template<typename = typename std::enable_if <std::is_same<ScalarType, double>::value>::type>
   std::string get_fiedler_order(int n_states, const std::vector<std::vector<int>>& hf_occupations, std::string checkpoint_name) {
     maquis::cout << "-----------------------------------------------------------------" << std::endl;
     maquis::cout << "Start Fiedeler Ordering" << std::endl;
