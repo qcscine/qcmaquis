@@ -85,7 +85,7 @@ class IntegralMapWrapper:
         self._parser.set_core(core_value)
         self._parser.parse_one_body(one_body, norb)
         self._parser.parse_two_body(two_body, norb)
-        self.update_from_parsing()
+        self._update_from_parsing()
 
     def get(self) -> IntegralMap:
         """Get IntegralMap Python Interface.
@@ -107,7 +107,7 @@ class IntegralMapWrapper:
         """
         self._integral_map = integral_map
 
-    def update_from_parsing(self, transcorrelated=False):
+    def _update_from_parsing(self, transcorrelated=False):
         """Smth."""
         if transcorrelated is False:
             self._integral_map = IntegralMap()
@@ -139,7 +139,7 @@ class IntegralsParser:
     corresponding to the integral.
     """
 
-    # @dataclass
+    @dataclass
     class FcidumpValues:
         """Store data values from FCIDUMP header.
 
@@ -163,8 +163,6 @@ class IntegralsParser:
 
         __slots__ = ("norb", "nelec", "ms2", "orbsym", "isym", "transcorrelated", "unrestricted")
 
-        # TODO: use regex for fcidump parsing
-
         def __init__(self):
             self.norb: int = 0
             """Number of orbitals."""
@@ -181,8 +179,6 @@ class IntegralsParser:
             self.unrestricted = False
             """Integrals are in spin orbital basis."""
 
-    # TODO add __slots__
-    # TODO interface to Hamiltonian in CC code
     def __init__(self):
         """Constructor."""
         self._unique_term: Dict(Tuple[int, int, int, int], float) = {}
@@ -191,6 +187,7 @@ class IntegralsParser:
         """Handler for symmtries."""
         self.fcidump_values = self.FcidumpValues()
         """Store FCIDUMP header data."""
+        self._integral_thresh = 1e-15
 
     def get_unique_indices(self) -> Tuple[int, int, int, int]:
         """Get unique integrals."""
@@ -259,11 +256,15 @@ class IntegralsParser:
         # chemist -> physics
         #       1  2  1  2
         if p != 0 and q != 0 and r != 0 and s != 0:
-            term = (p, r, q, s)
-            if self._is_unique((p, q, r, s)):
+            term = (p, q, r, s)
+            if self._is_unique([p, q, r, s]):
+                self._unique_term[term] = value
+        elif p != 0 and q != 0 and r == 0 and s == 0:
+            term = (p, q, 0, 0)
+            if self._is_unique_one_body((p, q, r, s)):
                 self._unique_term[term] = value
         else:
-            term = (p, q, 0, 0)
+            term = (0, 0, 0, 0)
             self._unique_term[term] = value
 
     def _is_unique(self, indices: List[int]) -> bool:
@@ -291,8 +292,9 @@ class IntegralsParser:
         """From Pyscf."""
         for i in range(norb):
             for j in range(norb):
-                if self._is_unique_one_body((i + 1, j + 1, 0, 0)):
-                    self._unique_term[(i + 1, j + 1, 0, 0)] = one_body_ints[i, j]
+                if abs(one_body_ints[i, j]) > self._integral_thresh:
+                    if self._is_unique_one_body((i + 1, j + 1, 0, 0)):
+                        self._unique_term[(i + 1, j + 1, 0, 0)] = one_body_ints[i, j]
 
     def parse_two_body(self, two_body_ints, norb):
         """From Pyscf."""
@@ -300,8 +302,9 @@ class IntegralsParser:
             for j in range(1, norb + 1):
                 for k in range(1, norb + 1):
                     for l in range(1, norb + 1):
-                        if self._is_unique([i, j, k, l]):
-                            self._unique_term[(i, j, k, l)] = two_body_ints[i - 1, j - 1, k - 1, l - 1]
+                        if abs(two_body_ints[i - 1, j - 1, k - 1, l - 1]) > self._integral_thresh:
+                            if self._is_unique([i, j, k, l]):
+                                self._unique_term[(i, j, k, l)] = two_body_ints[i - 1, j - 1, k - 1, l - 1]
 
 
 class IntegralNotation(Enum):
@@ -415,7 +418,7 @@ class IntegralUtils:
             a List with Lists of indices
         """
         if self._notation is not IntegralNotation.CHEMISTRY:
-            raise ValueError("Only Chemistry notation supported yet")
+            raise NotImplementedError("Physics notation is not implemented")
 
         result_list = []
         result_list.append(index_list)

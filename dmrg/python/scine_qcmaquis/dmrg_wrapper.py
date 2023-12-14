@@ -41,10 +41,6 @@ class DmrgWrapper:
         self._feast_states = 0
         """Number of feast states."""
 
-    # def _get_dmrg(self):
-    #     """Get dmrg object."""
-    #     return self._dmrg
-
     def set_parameters(self, parameters: ParametersWrapper):
         """Initialize Dmrg object with DmrgParameters."""
         # in case new measurements appear in parameters
@@ -85,23 +81,24 @@ class DmrgWrapper:
         """Set integrals."""
         if self._dmrg is None:
             raise ValueError("Set parameters before running dmrg!")
+
         if type(integral_map.get()) is ComplexTCIntegralMap:
             self._dmrg.update_tc_integrals(integral_map.get())
         else:
-            print("haha")
             self._dmrg.update_integrals(integral_map.get())
 
     def run(self):
         """Run Dmrg Calculation"""
-        print("run")
         if self._dmrg is None:
             raise ValueError("Set parameters before running dmrg!")
+
         if self._run_option == RunOptions.OPTIMIZE:
             self._dmrg.optimize()
         elif self._run_option == RunOptions.EVOLVE:
             self._dmrg.evolve()
         elif self._run_option == RunOptions.FEAST:
             self._dmrg.runFEAST()
+
         self._run_flag = True
 
     def get_energy(self):
