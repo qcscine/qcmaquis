@@ -164,6 +164,9 @@ class MaquisDmrg:
         """
         self._parameters.set_excited_states_feast(window, n_states)
 
+    def set_fcidump(self, fcidump):
+        self._parameters.set_integral_file(fcidump)
+
     def run(self, n_orbitals: int, n_electrons: int, spin: int = 0, n_states: int = None, fiedler: bool = False):
         """Run Dmrg.
 
@@ -189,71 +192,71 @@ class MaquisDmrg:
 
         # excited states
         # TODO: If should not be required here ...
-        if n_states is not None:
-            self._energy = []
-            self._parameters.set_system(n_orbitals, n_electrons, spin)
-            self._parameters.set_excited_states_ortho(0)
+        # if n_states is not None:
+        #     self._energy = []
+        #     self._parameters.set_system(n_orbitals, n_electrons, spin)
+        #     self._parameters.set_excited_states_ortho(0)
+        #
+        #     # fiedler needs to be implemented in the interface
+        #     if fiedler is True:
+        #         raise NotImplementedError
+        #         # fiedler_orderer = DmrgWrapper()
+        #         # self._parameters.set("MEASURE[ChemEntropy]", True)
+        #         # fiedler_orderer.set_parameters(self._parameters)
+        #         # if "integral_file" not in self._parameters._parameter_dict:
+        #         #     fiedler_orderer.set_integrals(self._integral_map)
+        #         # # orbital_order = fiedler_orderer.get_fiedler(n_states=n_states)
+        #         # orbital_order = fiedler_orderer.get_fiedler()
+        #         # self._parameters.erase("MEASURE[ChemEntropy]")
+        #         # self._parameters.set("orbital_order", orbital_order)
+        #
+        #         # orbital_order = self._dmrg.get_fiedler(n_states=n_states)
+        #         # self._parameters.set("orbital_order", orbital_order)
+        #
+        #     self._dmrg.set_parameters(self._parameters)
+        #
+        #     if "integral_file" not in self._parameters._parameter_dict:
+        #         self._dmrg.set_integrals(self._integral_map)
+        #
+        #     self._dmrg.run()
+        #     self._energy.append(self._dmrg.get_energy())
+        #
+        #     for i in range(1, n_states):
+        #         self._parameters.set_system(n_orbitals, n_electrons, spin)
+        #         self._parameters.set_excited_states_ortho(i)
+        #         self._dmrg.set_parameters(self._parameters)
+        #         if "integral_file" not in self._parameters._parameter_dict:
+        #             self._dmrg.set_integrals(self._integral_map)
+        #         self._dmrg.run()
+        #         self._energy.append(self._dmrg.get_energy())
+        #
+        # # ground state only
+        # else:
 
-            # fiedler needs to be implemented in the interface
-            if fiedler is True:
-                raise NotImplementedError
-                # fiedler_orderer = DmrgWrapper()
-                # self._parameters.set("MEASURE[ChemEntropy]", True)
-                # fiedler_orderer.set_parameters(self._parameters)
-                # if "integral_file" not in self._parameters._parameter_dict:
-                #     fiedler_orderer.set_integrals(self._integral_map)
-                # # orbital_order = fiedler_orderer.get_fiedler(n_states=n_states)
-                # orbital_order = fiedler_orderer.get_fiedler()
-                # self._parameters.erase("MEASURE[ChemEntropy]")
-                # self._parameters.set("orbital_order", orbital_order)
+        self._parameters.set_system(n_orbitals, n_electrons, spin)
 
-                # orbital_order = self._dmrg.get_fiedler(n_states=n_states)
-                # self._parameters.set("orbital_order", orbital_order)
+        # fiedler needs to be implemented in the interface
+        if fiedler is True:
+            raise NotImplementedError
+            # fiedler_orderer = DmrgWrapper()
+            # self._parameters.set("MEASURE[ChemEntropy]", True)
+            # fiedler_orderer.set_parameters(self._parameters)
+            # if "integral_file" not in self._parameters._parameter_dict:
+            #     fiedler_orderer.set_integrals(self._integral_map)
+            # orbital_order = fiedler_orderer.get_fiedler()
+            # self._parameters.erase("MEASURE[ChemEntropy]")
+            # self._parameters.set("orbital_order", orbital_order)
 
-            self._dmrg.set_parameters(self._parameters)
+        # self._parameters.set("orbital_order", "1,2")
+        # integrals will overide integral file
+        # if "integral_file" in self._parameters._parameter_dict:
+        #     self._parameters.erase("integrals", verbose=False)
 
-            if "integral_file" not in self._parameters._parameter_dict:
-                self._dmrg.set_integrals(self._integral_map)
-
-            self._dmrg.run()
-            self._energy.append(self._dmrg.get_energy())
-
-            for i in range(1, n_states):
-                self._parameters.set_system(n_orbitals, n_electrons, spin)
-                self._parameters.set_excited_states_ortho(i)
-                self._dmrg.set_parameters(self._parameters)
-                if "integral_file" not in self._parameters._parameter_dict:
-                    self._dmrg.set_integrals(self._integral_map)
-                self._dmrg.run()
-                self._energy.append(self._dmrg.get_energy())
-
-        # ground state only
-        else:
-
-            self._parameters.set_system(n_orbitals, n_electrons, spin)
-
-            # fiedler needs to be implemented in the interface
-            if fiedler is True:
-                raise NotImplementedError
-                # fiedler_orderer = DmrgWrapper()
-                # self._parameters.set("MEASURE[ChemEntropy]", True)
-                # fiedler_orderer.set_parameters(self._parameters)
-                # if "integral_file" not in self._parameters._parameter_dict:
-                #     fiedler_orderer.set_integrals(self._integral_map)
-                # orbital_order = fiedler_orderer.get_fiedler()
-                # self._parameters.erase("MEASURE[ChemEntropy]")
-                # self._parameters.set("orbital_order", orbital_order)
-
-            # self._parameters.set("orbital_order", "1,2")
-            # integrals will overide integral file
-            if "integral_file" in self._parameters._parameter_dict:
-                self._parameters.erase("integrals", verbose=True)
-
-            self._dmrg.set_parameters(self._parameters)
-            if "integral_file" not in self._parameters._parameter_dict:
-                self._dmrg.set_integrals(self._integral_map)
-            self._dmrg.run()
-            self._energy = self._dmrg.get_energy()
+        self._dmrg.set_parameters(self._parameters)
+        if "integral_file" not in self._parameters._parameter_dict:
+            self._dmrg.set_integrals(self._integral_map)
+        self._dmrg.run()
+        self._energy = self._dmrg.get_energy()
 
     def update_integrals(self, integral_map: IntegralMap):
         """Update integrals.
@@ -284,18 +287,17 @@ class MaquisDmrg:
         self._integral_map.fill_from_pyscf(core_value, one_body, two_body, norb)
 
     # unused
-    def dummy_run_excited_states(self, n_excited_states: int):
-        """Dummy function."""
-        energies = []
-        self._parameters.set_system(2, 2, 0)
-        self._dmrg.set_parameters(self._parameters.get())
-        self._dmrg.get_dmrg().update_integrals(self._integral_map.get())
-        for i in range(n_excited_states):
-            self._parameters.set_excited_states_ortho(i)
-            self._dmrg.set_parameters(self._parameters.get())
-            self._dmrg.get_dmrg().optimize()
-            energies.append(self.get_energy())
-        print(energies)
+    # def dummy_run_excited_states(self, n_excited_states: int):
+    #     """Dummy function."""
+    #     energies = []
+    #     self._parameters.set_system(2, 2, 0)
+    #     self._dmrg.set_parameters(self._parameters.get())
+    #     self._dmrg.get_dmrg().update_integrals(self._integral_map.get())
+    #     for i in range(n_excited_states):
+    #         self._parameters.set_excited_states_ortho(i)
+    #         self._dmrg.set_parameters(self._parameters.get())
+    #         self._dmrg.get_dmrg().optimize()
+    #         energies.append(self.get_energy())
 
     def init_dmrg(self, checkpoint: str, norb: int, nelec: int, spin: int):
         self._parameters.set_system(norb, nelec, spin)
