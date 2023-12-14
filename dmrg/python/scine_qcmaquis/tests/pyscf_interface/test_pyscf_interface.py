@@ -19,6 +19,7 @@ def test_dmrgci():
     mc = mcscf.CASCI(m, 4, 4)
     mc.fcisolver = QcMaquis(mol)
     mc.fcisolver.file_path = None
+    mc.fcisolver.verbose = 5
     emc_0 = mc.casci()[0]
 
     mol = gto.Mole()
@@ -66,3 +67,8 @@ def test_dmrgscf():
     # print('Maquis-SCF = %.15g CASSCF = %.15g' % (emc_1, emc_1ref))
     # print('Diff = %.15g' % (emc_1 - emc_1ref))
     assert abs(emc_1ref - emc_1) < 1e-9
+
+
+if __name__ == "__main__":
+    test_dmrgci()
+    test_dmrgscf()
