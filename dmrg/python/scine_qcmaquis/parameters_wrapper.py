@@ -52,6 +52,10 @@ class ParametersWrapper:
         path : str
             the path
         """
+        if not path.endswith(".h5"):
+            raise ValueError("result_path has to point to <.h5> file")
+
+        self._results_path = path
         self.set("resultfile", path)
 
     def set_checkpoint_path(self, path: str):
@@ -90,28 +94,25 @@ class ParametersWrapper:
         self.set("init_type", "default")
         self.set("irrep", 0)
         self.set("nsweeps", 100)
-        # should be okay, due to truncation
-        self.set("max_bond_dimension", 3000)
+        self.set("max_bond_dimension", 250)
         self.set("optimization", "twosite")
-        self.set("truncation_initial", 1e-6)
-        self.set("truncation_final", 1e-10)
+        # self.set("truncation_initial", 1e-6)
+        # self.set("truncation_final", 1e-10)
         self.set("conv_thresh", 1e-6)
         # TODO: this alpha is noise ???
+        # Only active for one site optimization
         self.set("alpha_main", 1e-6)
         self.set("alpha_final", 1e-16)
-        # self.set("symmetry", "2u1pg")
         self.set("symmetry", "su2u1pg")
         self.set("CONSERVED_QUANTUMNUMBERS", "Nup,Ndown")
         self.set("lattice_library", "coded")
         self.set("model_library", "coded")
         self.set("LATTICE", "orbitals")
-        # self.set("COMPLEX", False)
 
         # dummy parameters for qcmaquis
         # dmrg requires integrals, integrals_binary or integrals_file to be set
         # already in constructor
         # Here we update the integrals later anyways with a new integral map
-        # TODO: change this behavior in qcmaquis
         self.set("integrals", "   0.00000000000              1     1     1     1")
 
     def _make_site_types(self, n_orbitals: int):
@@ -264,8 +265,10 @@ class ParametersWrapper:
         """
         # if spin != 0:
         #     raise ValueError("Only implemented for singlet.")
-        self.set("u1_total_charge1", int(n_electrons / 2) + int(spin / 2))
-        self.set("u1_total_charge2", int(n_electrons / 2) - int(spin / 2))
+        # number of "3"s in det string
+        self.set("u1_total_charge1", int((n_electrons - spin) / 2) + int(spin))
+        # number of "2"s in det string
+        self.set("u1_total_charge2", int((n_electrons - spin) / 2))
         self.set("spin", spin)
         self.set("nelec", n_electrons)
         self.set("L", n_orbitals)
@@ -276,19 +279,28 @@ class ParametersWrapper:
 
     def set_integral_file(self, integral_file: str):
         """Set integral_file."""
+        try:
+            self.erase("integrals", verbose=False)
+        except:
+            pass
         self.set("integral_file", integral_file)
 
     def _make_hf_occupation(self, n_orbitals: int, n_electrons: int, spin: int = 0):
         """Make Hf occupation."""
+        # TODO fix this it is easy
+
+        doubly_occupied_electrons = n_electrons - spin
+        singly_occupied_electrons = spin
+        assert doubly_occupied_electrons % 2 == 0
 
         occupation = ""
         for _ in range(n_orbitals):
-            if n_electrons == 1:
-                occupation += "3,"
-                n_electrons -= 1
-            elif n_electrons > 0:
+            if doubly_occupied_electrons > 0:
                 occupation += "4,"
-                n_electrons -= 2
+                doubly_occupied_electrons -= 2
+            elif singly_occupied_electrons > 0:
+                occupation += "3,"
+                singly_occupied_electrons -= 1
             else:
                 occupation += "1,"
         self.set("hf_occ", occupation[:-1])
@@ -305,9 +317,11 @@ class ParametersWrapper:
 
     def erase(self, parameter_name: str, verbose: bool = True):
         """Erase any parameter from DmrgParameters."""
-        if parameter_name in self._parameter_dict and verbose is True:
+        if verbose is True:
             message = f"{parameter_name} will be removed"
             print(message)
+
+        if parameter_name in self._parameter_dict:
             del self._parameter_dict[parameter_name]
 
         self._parameters.erase(parameter_name)
