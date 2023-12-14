@@ -109,6 +109,10 @@ public:
     void update_integrals(std::string fileName);
     void update_integrals(const integral_map<ScalarType> & integrals);
 
+    /** @brief get fiedler ordering */
+    std::string fiedler_order(int n_states, const std::vector<std::vector<int>>& hf_occupations, std::string checkpoint_name = "");
+
+
     // Get RDMs
     // TODO: This does not work for 2U1/2U1PG symmetry because "oneptdm" measurement is not recognised by the model!
     // Fix the model to recognise it!

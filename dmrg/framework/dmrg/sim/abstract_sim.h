@@ -43,10 +43,10 @@ public:
 
 /**
  * @brief Virtual class defining the scheleton of a simulation object.
- * 
- * This virtual class defines the skeleton of a simulation object 
+ *
+ * This virtual class defines the skeleton of a simulation object
  * that runs a DMRG calculation.
- * 
+ *
  * @tparam Matrix class defining the types of the matrix entering the definition
  * of the block_matrix.
  */
@@ -60,7 +60,7 @@ using TranscorrMap = chem::integral_map<T, chem::Hamiltonian::Electronic, chem::
 template <class Matrix>
 class abstract_interface_sim {
 public:
-    // warning, these types are defiled in model_impl already  
+    // warning, these types are defiled in model_impl already
     using ValueType = typename Matrix::value_type;
     using meas_with_results_type = std::pair<std::vector<std::vector<int> >, std::vector<typename Matrix::value_type> >;
     using results_map_type = std::map<std::string, meas_with_results_type>;
@@ -79,7 +79,7 @@ public:
     virtual void update_tc_integrals(const chem::TranscorrMap<typename Matrix::value_type>&) = 0;
     virtual typename Matrix::value_type get_overlap(const std::string &)=0;
     virtual typename Matrix::value_type getCICoefficient(std::string ciVector)=0;
-//  virtual std::string ... get_fiedler_order
+    virtual std::string get_fiedler_order(int n_states, const std::vector<std::vector<int>>& hf_occupations, std::string checkpoint_name) = 0;
 };
 
 #endif

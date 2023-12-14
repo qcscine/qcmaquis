@@ -35,6 +35,8 @@
 #include "dmrg/sim/symmetry_factory.h"
 #include "dmrg/sim/matrix_types.h"
 #include "dmrg/sim/interface_sim.h"
+#include "dmrg/utils/DmrgParameters.h"
+#include "dmrg/models/measurements/chementropy.h"
 
 namespace maquis
 {
@@ -201,6 +203,17 @@ namespace maquis
     void DMRGInterface<ScalarType, HamiltonianType>::update_integrals(std::string fileName)
     {
         impl_->sim->update_integrals(fileName);
+    }
+
+    template <typename ScalarType, Hamiltonian HamiltonianType>
+    std::string DMRGInterface<ScalarType, HamiltonianType>::fiedler_order(int n_states, const std::vector<std::vector<int>>& hf_occupations, std::string checkpoint_name)
+    {
+      results_map_type tmp_measurements = measurements_;
+      DmrgParameters tmp_parms = parms;
+      std::string ordering = impl_->sim->get_fiedler_order(n_states, hf_occupations, checkpoint_name);
+      measurements_ = tmp_measurements;
+      parms = tmp_parms;
+      return ordering;
     }
 
     template <typename ScalarType, Hamiltonian HamiltonianType>

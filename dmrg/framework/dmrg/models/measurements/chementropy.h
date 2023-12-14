@@ -52,8 +52,7 @@ using std::endl;
 
 namespace entanglement_detail {
 
-    std::vector<std::pair<int, int> > get_labels(const std::vector<std::string> & quant_label)
-    {
+    static std::vector<std::pair<int, int> > get_labels(const std::vector<std::string> & quant_label) {
        std::vector<std::pair<int, int> > labels;
        std::pair<int, int> lab;
           for(int j = 0; j < quant_label.size(); j++){
@@ -67,8 +66,7 @@ namespace entanglement_detail {
           return labels;
     }
 
-    std::vector<int> get_labels_vec(const std::vector<std::string> & quant_label)
-    {
+    static std::vector<int> get_labels_vec(const std::vector<std::string> & quant_label) {
        std::vector<int> labels;
           for(int j = 0; j < quant_label.size(); j++){
              boost::tokenizer<> tok(quant_label[j]);
@@ -330,9 +328,11 @@ LOAD_PAIR(doccndown, ndowndocc) \
     template <class Matrix>
     Matrix two_orb_rdm(int p, int q, EntropyData<Matrix> & data)
     {
+        typedef typename Matrix::value_type value_type;
+        typedef typename maquis::traits::real_type<value_type>::type real_type;
             Matrix pq_dm_matrix(16,16);
-            pq_dm_matrix( 0, 0) = 1 + data.Nupdown(p,0)  + data.Nupdown(q,0) + data.doccdocc(p,q) - data.Ndown(p,0)\
-                                  - data.ndowndocc(p,q) - data.Ndown(q,0) - data.doccndown(p,q)\
+            pq_dm_matrix( 0, 0) = static_cast<real_type>(1) + data.Nupdown(p,0)  + data.Nupdown(q,0) + data.doccdocc(p,q)\
+                                  - data.Ndown(p,0) - data.ndowndocc(p,q) - data.Ndown(q,0) - data.doccndown(p,q)\
                                   + data.ndownndown(p,q) - data.Nup(p,0) - data.nupdocc(p,q) + data.nupndown(p,q)\
                                   - data.Nup(q,0) - data.doccnup(p,q) + data.ndownnup(p,q) + data.nupnup(p,q);
             // O(6)/O(1)
@@ -429,17 +429,17 @@ public:
     }
 
 
-    Matrix s1()
+    Matrix s1() const
     {
         return s1_;
     }
 
-    Matrix s2()
+    Matrix s2() const
     {
         return s2_;
     }
 
-    Matrix I()
+    Matrix I() const
     {
         return I_;
     }
@@ -463,7 +463,7 @@ private:
         {
             m11(i,0) = (data.Nup(i,0) - data.Nupdown(i,0)); // O(11)
             m22(i,0) = (data.Ndown(i,0) - data.Nupdown(i,0)); // O(6)
-            m33(i,0) = (1 - data.Nup(i,0) - data.Ndown(i,0) + data.Nupdown(i,0)); //O(1)
+            m33(i,0) = (static_cast<real_type>(1) - data.Nup(i,0) - data.Ndown(i,0) + data.Nupdown(i,0)); //O(1)
             m44(i,0) = data.Nupdown(i,0); // O(16)
             // handle NaNs for very small entanglements
             value_type logm11 = std::abs(m11(i,0)) > threshold ? log( m11(i,0) ) : 0;

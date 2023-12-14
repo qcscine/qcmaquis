@@ -74,17 +74,18 @@ protected:
     bool dns;
     std::string chkpfile;
     std::string chkpfolder() const {
-        if (parms.is_set("chkpfile"))
+        if (parms.is_set("chkpfile")) {
             return parms["chkpfile"].str();
-        else
+        } else {
             return std::string();
+        }
     }
-    std::string rfile() const
-    {
-        if (parms.is_set("resultfile"))
+    std::string rfile() const {
+        if (parms.is_set("resultfile")) {
             return parms["resultfile"].str();
-        else
+        } else {
             return std::string();
+        }
     };
     time_stopper stop_callback;
     Lattice lat;
