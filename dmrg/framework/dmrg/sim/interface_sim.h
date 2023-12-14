@@ -276,9 +276,10 @@ public:
         factory_->runSingleSweep(sweep);
         storage::disk::sync();
         bool converged = false;
-        maquis::cout << "sweep+1:  " << (sweep + 1) << std::endl;
-        maquis::cout << "measeach: " << meas_each << std::endl;
-        maquis::cout << "result:   " << (sweep + 1)% meas_each << std::endl;
+        maquis::cout << "sweep+1:       " << (sweep + 1) << std::endl;
+        maquis::cout << "measeach:      " << meas_each << std::endl;
+        maquis::cout << "result:        " << (sweep + 1)% meas_each << "  == 0" << std::endl;
+
         if ((sweep+1) % meas_each == 0 || (sweep+1) == nSweeps) {
           dumpParametersAndIterResults(sweep);
           dumpEnergy(sweep);
@@ -287,14 +288,18 @@ public:
           }
           // stop simulation if an energy threshold has been specified
           int prev_sweep = sweep - meas_each;
+          maquis::cout << "prev_sweep:    " << prev_sweep << "  >= 0"<< std::endl;
           if (prev_sweep >= 0) {
+            maquis::cout << "energy_thresh: " << energyThreshold << " 1e-6" << std::endl;
             converged = checkEnergyConvergence(energyThreshold);
+            maquis::cout << "converged:     " << converged  << " true " << true << std::endl;
           }
         }
-        maquis::cout << "converged:   " << converged << std::endl;
         last_sweep_ = sweep;
         /// write checkpoint
+        maquis::cout << "converged:     " << converged  << " true " << true << std::endl;
         bool stopped = stop_callback() || converged;
+        maquis::cout << "stopped:       " << stopped << " true " << true << std::endl;
         if (stopped || (sweep+1) % chkp_each == 0 || (sweep+1) == nSweeps)
           checkpoint_simulation(mps, sweep, -1);
         if (stopped)
@@ -887,9 +892,9 @@ private:
 
   /** @brief Dumps the energy to the result file */
   void dumpEnergy(int iSweep) {
+    auto energy = this->get_energy();
+    energies_.push_back(energy);
     if (!rfile().empty()) {
-      auto energy = this->get_energy();
-      energies_.push_back(energy);
       storage::archive ar(rfile(), "w");
       ar[this->results_archive_path(iSweep) + "/results/Energy/mean/value"] << std::vector<double>(1, energy);
     }
@@ -899,6 +904,9 @@ private:
   bool checkEnergyConvergence(double convergenceThreshold) {
     bool converged = false;
     auto eDiff = std::abs(*(energies_.end()-1) - *(energies_.end()-2));
+    std::cout << "energy 1    " << *(energies_.end()-1) << std::endl;
+    std::cout << "energy 2    " << *(energies_.end()-2) << std::endl;
+    std::cout << "energy diff " << eDiff << std::endl;
     if (eDiff < convergenceThreshold)
       converged = true;
     return converged;
