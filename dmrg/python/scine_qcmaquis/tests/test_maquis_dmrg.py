@@ -96,6 +96,7 @@ def test_maquis_dmrg_sweep_from_fcidump():
 
     dmrg.set_fcidump("fcidump_mock")
     dmrg.run(4, 2, 0, fiedler=False)
+    # from cpp test2
     assert abs(dmrg.get_energy() - -7.90435750473166) < 1e-14
 
     dmrg = MaquisDmrg()
@@ -113,6 +114,7 @@ def test_maquis_dmrg_sweep_from_fcidump():
 
     dmrg.set_fcidump("fcidump_mock")
     dmrg.run(4, 2, 0, fiedler=True)
+    # from cpp test2
     assert abs(dmrg.get_energy() - -7.90435750473166) < 1e-14
 
 

@@ -621,6 +621,112 @@ def test_integral_wrapper_fcidump_body_incorrect_symmetry_in_fcidump():
     assert unique_terms == parser._unique_term
 
 
+def test_integral_wrapper_fcidump():
+    def _write_fcidump():
+        tmp_fcidump = open("fcidump_mock", "w")
+        tmp_fcidump.write("&FCI NORB=19, NELEC=4, MS2=0,\n")
+        tmp_fcidump.write("ORBSYM=1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,\n")
+        tmp_fcidump.write("ISYM=1,\n")
+        tmp_fcidump.write("&END\n")
+        tmp_fcidump.write("  -7.9837309384386277e+00   0   0   0   0\n")
+        tmp_fcidump.write("  -2.4500540021458295e+00   1   1   0   0\n")
+        tmp_fcidump.write("  -7.2269742273922688e-12   1   2   0   0\n")
+        tmp_fcidump.write("  -7.2269742273922688e-12   2   1   0   0\n")
+        tmp_fcidump.write("   3.6933459762744647e-12   1   3   0   0\n")
+        tmp_fcidump.write("  -1.1965308951977782e-11   1   6   0   0\n")
+        tmp_fcidump.write("   1.6482623985379075e+00   1   1   1   1\n")
+        tmp_fcidump.write("  -8.9231283142061496e-02   2   1   1   1\n")
+        tmp_fcidump.write("  -8.9231283142061496e-02   1   1   2   1\n")
+        tmp_fcidump.write("   8.7306915386681453e-03   2   1   2   1\n")
+        tmp_fcidump.write("   8.7306915386681453e-03   1   2   1   2\n")
+        tmp_fcidump.write("   3.4283504997827774e-01   2   2   1   1\n")
+        tmp_fcidump.write("   6.4104605406089948e-03   2   2   2   1\n")
+        tmp_fcidump.write("   4.7954845474515156e-01   2   2   2   2\n")
+        tmp_fcidump.write("  -6.0591020065061930e-02   3   1   1   1\n")
+        tmp_fcidump.write("   4.2163595616380176e-03   3   1   2   1\n")
+        tmp_fcidump.write("  -5.7500401969882015e-03   3   1   2   2\n")
+        tmp_fcidump.write("   4.2203448717115129e-03   3   1   3   1\n")
+        tmp_fcidump.write("   3.6452515524633749e-03   3   2   1   1\n")
+        tmp_fcidump.write("  -1.7606280599412798e-03   3   2   2   1\n")
+        tmp_fcidump.write("  -4.0131224007160043e-02   3   2   2   2\n")
+        tmp_fcidump.write("   4.0416762395947006e-04   3   2   3   1\n")
+        tmp_fcidump.write("   7.3361564717230529e-03   3   2   3   2\n")
+        tmp_fcidump.write("   2.3122843673950771e-01   3   3   1   1\n")
+        tmp_fcidump.write("  -3.0256008119892365e-03   3   3   2   1\n")
+        tmp_fcidump.write("   1.5763733543509206e-01   3   3   2   2\n")
+        tmp_fcidump.write("   1.3138548086074515e-03   3   3   3   1\n")
+        tmp_fcidump.write("   6.1029726451229879e-03   3   3   3   2\n")
+        tmp_fcidump.write("   2.0527241559476508e-01   3   3   3   3\n")
+        tmp_fcidump.write("   2.7912933884382570e-04   4   1   4   1\n")
+        tmp_fcidump.write("   4.8281756725673466e-04   4   2   4   1\n")
+        tmp_fcidump.write("   5.4383779920285152e-03   4   2   4   2\n")
+        tmp_fcidump.write("   7.5847612146573342e-04   4   3   4   1\n")
+        tmp_fcidump.write("   6.4842523433864055e-03   4   3   4   2\n")
+        tmp_fcidump.write("   2.1099942529175689e-02   4   3   4   3\n")
+        tmp_fcidump.write("   1.7497909517853510e-01   4   4   1   1\n")
+        tmp_fcidump.write("  -3.7240137619155936e-04   4   4   2   1\n")
+        tmp_fcidump.write("   1.5589038649219863e-01   4   4   2   2\n")
+        tmp_fcidump.write("   1.2949829141455018e-04   4   4   3   1\n")
+        tmp_fcidump.write("   1.8750572872915801e-03   4   4   3   2\n")
+        tmp_fcidump.write("   1.4661471245002852e-01   4   4   3   3\n")
+        tmp_fcidump.write("   1.4153931193989575e-01   4   4   4   4\n")
+        tmp_fcidump.close()
+    _write_fcidump()
+
+    integral_map = IntegralMapWrapper()
+    integral_map.fill_from_fcidump("fcidump_mock")
+
+    assert integral_map._parser.fcidump_values.norb == 19
+    assert integral_map._parser.fcidump_values.nelec == 4
+    assert integral_map._parser.fcidump_values.ms2 == 0
+    assert integral_map._parser.fcidump_values.orbsym == [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    assert integral_map._parser.fcidump_values.isym == 1
+    assert integral_map._parser.fcidump_values.transcorrelated is False
+    assert integral_map._parser.fcidump_values.unrestricted is False
+    unique_terms = {
+        (0, 0, 0, 0): -7.9837309384386277e+00,
+        (1, 1, 0, 0): -2.4500540021458295e+00,
+        (1, 2, 0, 0): -7.2269742273922688e-12,
+        (1, 3, 0, 0): 3.6933459762744647e-12,
+        (1, 6, 0, 0): -1.1965308951977782e-11,
+        (1, 1, 1, 1): 1.6482623985379075e+00,
+        (2, 1, 1, 1): -8.9231283142061496e-02,
+        (2, 1, 2, 1): 8.7306915386681453e-03,
+        (2, 2, 1, 1): 3.4283504997827774e-01,
+        (2, 2, 2, 1): 6.4104605406089948e-03,
+        (2, 2, 2, 2): 4.7954845474515156e-01,
+        (3, 1, 1, 1): -6.0591020065061930e-02,
+        (3, 1, 2, 1): 4.2163595616380176e-03,
+        (3, 1, 2, 2): -5.7500401969882015e-03,
+        (3, 1, 3, 1): 4.2203448717115129e-03,
+        (3, 2, 1, 1): 3.6452515524633749e-03,
+        (3, 2, 2, 1): -1.7606280599412798e-03,
+        (3, 2, 2, 2): -4.0131224007160043e-02,
+        (3, 2, 3, 1): 4.0416762395947006e-04,
+        (3, 2, 3, 2): 7.3361564717230529e-03,
+        (3, 3, 1, 1): 2.3122843673950771e-01,
+        (3, 3, 2, 1): -3.0256008119892365e-03,
+        (3, 3, 2, 2): 1.5763733543509206e-01,
+        (3, 3, 3, 1): 1.3138548086074515e-03,
+        (3, 3, 3, 2): 6.1029726451229879e-03,
+        (3, 3, 3, 3): 2.0527241559476508e-01,
+        (4, 1, 4, 1): 2.7912933884382570e-04,
+        (4, 2, 4, 1): 4.8281756725673466e-04,
+        (4, 2, 4, 2): 5.4383779920285152e-03,
+        (4, 3, 4, 1): 7.5847612146573342e-04,
+        (4, 3, 4, 2): 6.4842523433864055e-03,
+        (4, 3, 4, 3): 2.1099942529175689e-02,
+        (4, 4, 1, 1): 1.7497909517853510e-01,
+        (4, 4, 2, 1): -3.7240137619155936e-04,
+        (4, 4, 2, 2): 1.5589038649219863e-01,
+        (4, 4, 3, 1): 1.2949829141455018e-04,
+        (4, 4, 3, 2): 1.8750572872915801e-03,
+        (4, 4, 3, 3): 1.4661471245002852e-01,
+        (4, 4, 4, 4): 1.4153931193989575e-01,
+    }
+    assert unique_terms == integral_map._parser._unique_term
+
+
 if __name__ == "__main__":
     test_integral_utils_permute_same_particle()
     test_integral_utils_permute_particle_block()
@@ -632,3 +738,4 @@ if __name__ == "__main__":
     test_integral_parse_one_body()
     test_integral_parse_two_body()
     test_integral_map_wrapper_pyscf()
+    test_integral_wrapper_fcidump()

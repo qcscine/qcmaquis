@@ -3,7 +3,9 @@ import os
 import numpy as np
 import pytest
 
-from scine_qcmaquis.maquis_dmrg import MaquisDmrg
+from scine_qcmaquis.dmrg_wrapper import DmrgWrapper
+from scine_qcmaquis.integral_wrapper import IntegralMapWrapper
+from scine_qcmaquis.parameters_wrapper import ParametersWrapper
 
 
 def test_maquis_dmrg_sweep_from_fcidump():
@@ -81,13 +83,23 @@ def test_maquis_dmrg_sweep_from_fcidump():
         tmp_fcidump.write("-6.71049529388         0   0   0   0\n")
         tmp_fcidump.close()
     _write_fcidump()
-    dmrg = MaquisDmrg()
-    dmrg.set_parameter("optimization", "twosite")
-    dmrg.set_parameter("conv_thresh", 1e-6)
-    dmrg.set_entropies()
-    dmrg.set_fcidump("fcidump_mock")
-    dmrg.run(4, 2, 0)
-    dmrg._dmrg.measure()
+    parameters = ParametersWrapper()
+    parameters._set_defaults()
+    parameters.set_system(4, 2, 0)
+    # parameters.erase("integrals")
+    # parameters.set("integral_file", "fcidump_mock")
+
+    integrals = IntegralMapWrapper()
+    integrals.fill_from_fcidump("fcidump_mock")
+
+    print("----")
+    dmrg = DmrgWrapper()
+    dmrg.set_parameters(parameters)
+    dmrg.set_integrals(integrals)
+    dmrg.run()
+
+    # from cpp test2
+    assert abs(dmrg.get_energy() - -7.90435750473166) < 1e-14
 
 
 if __name__ == "__main__":
