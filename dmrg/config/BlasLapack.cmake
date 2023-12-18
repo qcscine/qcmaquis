@@ -36,6 +36,9 @@ try_run(_IS_32_BIT_INT _COMPILES ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOU
     COPY_FILE ip64test
 )
 
+# Delete the test executable after running
+file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/ip64test)
+
 if (NOT _IS_32_BIT_INT)
     if (LAPACK_64_BIT) # 64-bit integers requested but not supported
         message(FATAL_ERROR "Requested 64 bit integer BLAS but your BLAS library does not support it")
