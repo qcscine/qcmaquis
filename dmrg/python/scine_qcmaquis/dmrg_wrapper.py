@@ -1,16 +1,11 @@
-"""Blub blub."""
-
 from enum import Enum
-from typing import List
+from typing import Any, List, Union
 
 # pylint: disable=import-error
 from _dmrg import DmrgComplex, DmrgReal
 
-from .integral_wrapper import ComplexTCIntegralMap, IntegralMapWrapper  # , TCIntegralMap
+from .integral_wrapper import IntegralMapWrapper
 from .parameters_wrapper import ParametersWrapper
-
-# from _dmrg import DmrgReal
-
 
 # pylint: enable=import-error
 
@@ -26,7 +21,23 @@ class RunOptions(Enum):
 
 
 class DmrgWrapper:
-    """Wrapper for Dmrg Python Interface."""
+    """Wrapper for Dmrg Python Interface.
+
+    Attributes
+    ----------
+    _dmrg : Union[DmrgReal, DmrgComplex]
+        The DMRG interface.
+    _run_flag : bool, default = False
+        Flag indicating if dmrg run.
+    _measure_flag : bool, default = False
+        Flag indicating if dmrg did measurements.
+    _run_option : RunOptions, default = RunOptions.OPTIMIZE
+        Determine the dmrg algorithm.
+    _feast_states : int
+        Number of feast states.
+    """
+
+    __slots__ = ("_dmrg_", "_run_flag", "_measure_flag", "_run_option", "_feast_states", )
 
     def __init__(self):
         """Construct Wrapper."""
@@ -42,7 +53,13 @@ class DmrgWrapper:
         """Number of feast states."""
 
     def set_parameters(self, parameters: ParametersWrapper):
-        """Initialize Dmrg object with DmrgParameters."""
+        """Initialize Dmrg object with DmrgParameters.
+
+        Parameters
+        ----------
+        parameters : ParametersWrapper
+            Wrapper around QCMaquis parameters
+        """
         # in case new measurements appear in parameters
         self._measure_flag = False
         if "transcorrelated_hamiltonian" in parameters.get_parameters_dict():
@@ -55,8 +72,21 @@ class DmrgWrapper:
         else:
             self._dmrg = DmrgReal(parameters.get_parameters())
 
-    def get_fiedler(self, hf_occupations: List[List[int]] = None, n_states: int = None):
-        raise NotImplementedError("Fiedler ordering is currently not supported by the interface")
+    def get_fiedler(self, hf_occupations: List[List[int]] = None, n_states: int = None) -> str:
+        """Evaluate Fiedler ordering.
+
+        Parameters
+        ----------
+        hf_occupations : List[List[int]]
+            The mean field occupation for each state
+        n_states : int
+            number of states
+
+        Return
+        ------
+        fiedler_string : str
+            Orbital order from fiedler
+        """
         if self._dmrg is None:
             raise ValueError("Set parameters before running dmrg!")
 
@@ -72,13 +102,18 @@ class DmrgWrapper:
             fiedler_string += str(int(i) + 1) + ","
 
         fiedler_string = fiedler_string[:-1]
-        print(fiedler_string)
 
         self._dmrg = None
         return fiedler_string
 
     def set_integrals(self, integral_map: IntegralMapWrapper):
-        """Set integrals."""
+        """Set integrals.
+
+        Parameters
+        ----------
+        integral_map : IntegralMapWrapper
+            wrapper around qcmaquis integral map
+        """
         if self._dmrg is None:
             raise ValueError("Set parameters before running dmrg!")
 
@@ -88,7 +123,7 @@ class DmrgWrapper:
             self._dmrg.update_integrals(integral_map.get())
 
     def run(self):
-        """Run Dmrg Calculation"""
+        """Run Dmrg Calculation."""
         if self._dmrg is None:
             raise ValueError("Set parameters before running dmrg!")
 
@@ -101,8 +136,14 @@ class DmrgWrapper:
 
         self._run_flag = True
 
-    def get_energy(self):
-        """Get the energy from last calculation."""
+    def get_energy(self) -> Union[List[float], float]:
+        """Get the energy from last calculation.
+
+        Return
+        ------
+        energy : Union[List[float], float]
+            one energy per state, if only one state is evaluated it's one float
+        """
         if self._run_flag is False:
             raise ValueError("Run DMRG before asking for energies")
         # Feast gives you all energies at once
@@ -117,11 +158,12 @@ class DmrgWrapper:
             return energies
         return self._dmrg.energy()
 
-    def entropies(self):
+    def entropies(self) -> Any:
+        """Getter for entropies."""
         self._dmrg.measure()
         return self._dmrg.mutinf()
 
-    def measure(self):
+    def measure(self) -> Any:
         """Measure set measurements."""
         if self._run_flag is False:
             raise ValueError("Run DMRG before asking for energies")
@@ -131,14 +173,26 @@ class DmrgWrapper:
         self._dmrg.measure()
 
     def get_ci_coefficient(self, det_string: str) -> float:
+        """Getter for ci coeffs.
+
+        Parameters
+        ----------
+        det_string : str
+            QCMaquis compatible determinant string
+
+        Return
+        ------
+        ci coeff : float
+            The correponding CI coefficient.
+        """
         return self._dmrg.getCICoefficient(det_string)
 
-    def onerdm(self):
+    def onerdm(self) -> Any:
         """Get 1rdm."""
         self.measure()
         return self._dmrg.onerdm()
 
-    def twordm(self):
+    def twordm(self) -> Any:
         """Get 2rdm."""
         self.measure()
         return self._dmrg.twordm()

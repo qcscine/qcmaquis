@@ -2,7 +2,7 @@ import re
 from dataclasses import dataclass
 from enum import Enum
 from io import TextIOWrapper
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 from _dmrg import ComplexTCIntegralMap, IntegralMap, TCIntegralMap
@@ -34,7 +34,11 @@ class IntegralMapWrapper:
     _parser : IntegralsParser
         handler to parse integrals
     """
-    # TODO: add __slots__
+    __slots__ = (
+        "_integral_map",
+        "_type",
+        "_parser",
+    )
 
     def __init__(self, ):
         """Constructor."""
@@ -59,13 +63,20 @@ class IntegralMapWrapper:
                 self._integral_map = IntegralMap()
             elif integral_type == IntegralType.TRANSCORRLEATED:
                 # TODO: Check if this has to be complex
-                self._integral_map = ComplexTCIntegralMap()
+                # self._integral_map = ComplexTCIntegralMap()
+                self._integral_map = TCIntegralMap()
             else:
                 raise NotImplementedError(f"IntegralType: <{integral_type}> is unavailable atm.")
 
     # TODO
     def fill_from_fcidump(self, fcidump: str):
-        """Fill IntegralMap from an FCIDUMP."""
+        """Fill IntegralMap from an FCIDUMP.
+
+        Parameters
+        ----------
+        fcidump : str
+            path to fcidump
+        """
         raise NotImplementedError("integrals from fcidump are not yet supported")
 
     def fill_from_pyscf(self, core_value: float, one_body: np.ndarray, two_body: np.ndarray, norb: int):
@@ -102,13 +113,19 @@ class IntegralMapWrapper:
 
         Parameters
         ----------
-        integral_map : IntegralMap
+        integral_map : Union[IntegralMap, TCIntegralMap]
             the new, filled integral_map
         """
         self._integral_map = integral_map
 
-    def _update_from_parsing(self, transcorrelated=False):
-        """Smth."""
+    def _update_from_parsing(self, transcorrelated: Optional[bool] = False):
+        """Update integral map after parsing.
+
+        Parameters
+        ----------
+        transcorrelated : bool, default = False
+            Flag for transcorrelated integrals
+        """
         if transcorrelated is False:
             self._integral_map = IntegralMap()
             for key in self._parser.get_unique_indices():
@@ -138,6 +155,13 @@ class IntegralsParser:
     When storing the integrals, the key is a tuple of indices with a value
     corresponding to the integral.
     """
+
+    __slots__ = (
+        "_unique_term",
+        "_integral_utils",
+        "fcidump_values",
+        "_integral_thresh",
+    )
 
     @dataclass
     class FcidumpValues:
@@ -194,16 +218,40 @@ class IntegralsParser:
         return self._unique_term.keys()
 
     def get_integral_value(self, key: Tuple[int, int, int, int]) -> float:
-        """Get integral_value."""
+        """Get integral_value.
+
+        Parameters
+        ----------
+        key : Tuple[int, int, int, int]
+            index key in chemist notation, e.g. (11|22)
+
+        Return
+        ------
+        integral_value : float
+            Integral value for key
+        """
         return self._unique_term[key]
 
     def parse_fcidump(self, fcidump: str):
-        """Parse fcidump."""
+        """Parse fcidump.
+
+        Parameters
+        ----------
+        fcidump : str
+            path to fcidump
+        """
         fcidump = open(fcidump, "r")
         self._parse_fcidump_header(fcidump)
         self._parse_fcidump_body(fcidump)
 
     def _parse_fcidump_header(self, file: TextIOWrapper):
+        """Parse header of a fcidump.
+
+        Parameters
+        ----------
+        file: TextIOWrapper
+            opened fcidump file to parse
+        """
         parse_header = False
         line = file.readline().lower()
         while line:
@@ -220,6 +268,17 @@ class IntegralsParser:
             line = file.readline().lower()
 
     def _find_keywords(self, line: str):
+        """Find fcidump header keywords.
+
+        Parameters
+        ----------
+        line : str
+            the string to parse
+
+        Note
+        ----
+        Function uses regex to lift formating restrictions of an fcidump.
+        """
         if "norb" in line:
             self.fcidump_values.norb = int(re.search(r"norb\s*=\s*(\d+)", line).group(1))
         if "nelec" in line:
@@ -239,12 +298,35 @@ class IntegralsParser:
             ]
 
     def _parse_fcidump_body(self, file: TextIOWrapper):
+        """Parse fcidump body.
+
+        We define body, as part which consists of indices and corresponding integral values.
+
+        Parameters
+        ----------
+        file: TextIOWrapper
+            opened fcidump file to parse
+
+        Note
+        ----
+        The header should be already parsed in the opened file
+        """
         line = file.readline()
         while line:
             self._add_term(line)
             line = file.readline()
 
     def _add_term(self, line: str):
+        """Add terms to unique terms.
+
+        Checks line from fcidump body for uniqueness and adds it to the internal dict.
+        All indices are in chemist notation.
+
+        Parameters
+        ----------
+        line : str
+            The string to be parsed
+        """
         line = line.split()
         value = float(line[0])
         # pylint: disable=invalid-name
@@ -268,12 +350,25 @@ class IntegralsParser:
             self._unique_term[term] = value
 
     def _is_unique(self, indices: List[int]) -> bool:
+        """Check if term already exists.
+
+        Parameters
+        ----------
+        indices : List[int]
+            indices in chemist notation
+
+        Return
+        ------
+        unique : bool
+            if term was unique or not
+        """
         tmp = self._integral_utils.get_symmetric_indices(indices, "eight")
         for term in tmp:
             if tuple(term) in self._unique_term:
                 return False
         return True
 
+    # TODO merge this function into _is_unique
     def _is_unique_one_body(self, indices: Tuple[int, int, int, int]) -> bool:
         if indices[2] != 0 or indices[3] != 0:
             raise ValueError("wrong indices for one body")
@@ -284,20 +379,42 @@ class IntegralsParser:
             return False
         return True
 
-    def set_core(self, core_value):
-        """From Pyscf."""
+    def set_core(self, core_value: float):
+        """Set core hamiltonian from Pyscf.
+
+        Parameters
+        ----------
+        core_value : float
+            The value of the core hamiltonian
+        """
         self._unique_term[(0, 0, 0, 0)] = core_value
 
-    def parse_one_body(self, one_body_ints, norb):
-        """From Pyscf."""
+    def parse_one_body(self, one_body_ints: np.ndarray, norb: int):
+        """Set one body integrals from pyscf.
+
+        Parameters
+        ----------
+        one_body_ints : np.ndarray
+            Matrix of one body operator
+        norb : int
+            number of orbitals
+        """
         for i in range(norb):
             for j in range(norb):
                 if abs(one_body_ints[i, j]) > self._integral_thresh:
                     if self._is_unique_one_body((i + 1, j + 1, 0, 0)):
                         self._unique_term[(i + 1, j + 1, 0, 0)] = one_body_ints[i, j]
 
-    def parse_two_body(self, two_body_ints, norb):
-        """From Pyscf."""
+    def parse_two_body(self, two_body_ints: np.ndarray, norb: int):
+        """Set two body integrals from pyscf.
+
+        Parameters
+        ----------
+        two_body_ints : np.ndarray
+            Tensor of two body operator
+        norb : int
+            number of orbitals
+        """
         for i in range(1, norb + 1):
             for j in range(1, norb + 1):
                 for k in range(1, norb + 1):
@@ -314,14 +431,33 @@ class IntegralNotation(Enum):
 
 
 class IntegralUtils:
-    """Converte Integrals from extern to qcmaquis notation."""
-    # TODO add __slots__
+    """Converte Integrals from extern to qcmaquis notation.
 
-    def __init__(self):
-        self._notation = IntegralNotation.CHEMISTRY
+    Attributes
+    ----------
+    _notation : IntegralNotation
+        defines if chemist or physics notation is used
+    """
+    __slots__ = ("_notation", )
+
+    def __init__(self, notation=IntegralNotation.CHEMISTRY):
+        """Constructor.
+
+        Parameters
+        ----------
+        notation: IntegralNotation
+            enum value to determine the notation used
+        """
+        self._notation = notation
 
     def set_notation(self, notation: IntegralNotation):
-        """Set notation."""
+        """Set notation.
+
+        Parameters
+        ----------
+        notation: IntegralNotation
+            enum value to determine the notation used
+        """
         self._notation = notation
 
     def _permute_particle_block(

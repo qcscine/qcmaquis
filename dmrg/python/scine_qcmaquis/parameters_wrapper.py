@@ -1,5 +1,3 @@
-"""Blub."""
-
 from enum import Enum
 from typing import Any, Dict, Tuple
 
@@ -27,7 +25,29 @@ class ExcitedStates(Enum):
 
 
 class ParametersWrapper:
-    """Wrapper for DmrgParameters Python Interface."""
+    """Wrapper for DmrgParameters Python Interface.
+
+    Attributes
+    ----------
+    _parameters : DmrgParameters
+        dmrg parameters map
+    _parameter_dict: Dict[str, Any] = {}
+        for reference, same as dmrg parameters but native python
+    _checkpoint_path : str, default = "checkpoint_gs"
+        name and path to store the checkpoint file.
+    _results_path : str, default = "results_file.h5"
+        name and path to store the results file.
+    _excited_state_name : str
+        name for excited states checkpoint files.
+    """
+
+    __slots__ = (
+        "_parameters",
+        "_parameter_dict",
+        "_checkpoint_path",
+        "_results_path",
+        "_excited_state_name",
+    )
 
     def __init__(self):
         """Constructor."""
@@ -77,15 +97,15 @@ class ParametersWrapper:
         "MODEL" = "quantum_chemistry"
         "init_type" = "default"
         "irrep" = 0
-        "nsweeps" = 20
-        "max_bond_dimension" = 2000
+        "nsweeps" = 100
+        "max_bond_dimension" = 250
         "optimization" = "twosite"
+        "conv_thresh" = 1e-6
         "symmetry" = "su2u1pg"
         "CONSERVED_QUANTUMNUMBERS" = "Nup,Ndown"
         "lattice_library" = "coded"
         "model_library" = "coded"
         "LATTICE" = "orbitals"
-        "COMPLEX" = True
 
         "integrals" are set one arbitrary entry, since QcMaquis requires this keyword to be set.
         However it's not used anywhere, since we update the integral map later anyways.
@@ -96,13 +116,7 @@ class ParametersWrapper:
         self.set("nsweeps", 100)
         self.set("max_bond_dimension", 250)
         self.set("optimization", "twosite")
-        # self.set("truncation_initial", 1e-6)
-        # self.set("truncation_final", 1e-10)
         self.set("conv_thresh", 1e-6)
-        # TODO: this alpha is noise ???
-        # Only active for one site optimization
-        self.set("alpha_main", 1e-6)
-        self.set("alpha_final", 1e-16)
         self.set("symmetry", "su2u1pg")
         self.set("CONSERVED_QUANTUMNUMBERS", "Nup,Ndown")
         self.set("lattice_library", "coded")
@@ -140,28 +154,21 @@ class ParametersWrapper:
 
         Note
         ----
+        "simulation_type" = "TD"
         "transcorrelated_hamiltonian" = "yes"
-        "time_step" = 10.
+        "propagator_accuracy" = 1.0E-10
         "propagator_maxiter" = 10
+        "hamiltonian_units" = "Hartree"
+        "time_units" = "fs"
         "imaginary_time" = "yes"
         "TD_backpropagation" = "no"
-        "simulation_type" = "TD"
-        "COMPLEX" = True
-        "time_units" = "fs"
+        "symmetry" = "2u1"
+        "nsweeps" = 10
+        "time_step" = 0.2
         """
-        # self.set("time_step", 1.)
-        # self.set("propagator_maxiter", 10)
-        # self.set("imaginary_time", "yes")
-        # self.set("TD_backpropagation", "no")
-        # self.set("simulation_type", "TD")
-        # self.set("propagator_accuracy", 1.0E-10)
-        # self.set("symmetry", "2u1")
-        # self.set("COMPLEX", True)
-        # self.set("time_units", "fs")
 
         self.set("simulation_type", "TD")
         self.set("transcorrelated_hamiltonian", "yes")
-        # self.set("transcorrelated_hamiltonian", True)
         self.set("propagator_accuracy", 1.0E-10)
         self.set("propagator_maxiter", 10)
         self.set("hamiltonian_units", "Hartree")
@@ -172,6 +179,7 @@ class ParametersWrapper:
         self.set("nsweeps", 10)
         self.set("time_step", 0.2)
         # self.set("delta_t", 0.02)
+        # self.set("COMPLEX", True)
 
     def set_excited_states_feast(self, energy_window: Tuple[float, float], n_states: int = 2):
         """Set FEAST parameters.
@@ -218,22 +226,13 @@ class ParametersWrapper:
         "ortho_states" = self._checkpoint_path
         """
         if n_excited_states == 0:
-            # self.set("resultfile", self._checkpoint_path + ".h5")
             self.set("chkpfile", self._checkpoint_path)
-            # self.set("n_ortho_states", n_excited_states, verbose=False)
-            # self.set("ortho_states", self._checkpoint_path, verbose=False)
         else:
-            # self.set("resultfile", self._excited_state_name[:-1] + str(n_excited_states) + ".h5")
             self.set("chkpfile", self._excited_state_name[:-1] + str(n_excited_states))
             self.set("n_ortho_states", n_excited_states, verbose=False)
             self.set("ortho_states", self._checkpoint_path, verbose=False)
             self._checkpoint_path =\
                 self._checkpoint_path + "," + self._excited_state_name[:-1] + str(n_excited_states)
-            # self.set(
-            #    "ortho_states",
-            #    self._checkpoint_path,
-            #    # verbose=False
-            # )
 
     def set_orbital_optimization(self):
         """Set Orbital optimization parameters.
@@ -249,6 +248,14 @@ class ParametersWrapper:
         self.set("MEASURE[2rdm]", True)
 
     def set_entropies(self):
+        """Set Entropy parameters.
+
+        Note
+        ----
+        Even though the parameters are set to measure the entropies
+        qcmaquis still has to perform the measurement.
+        "MEASURE[ChemEntropy]" = True
+        """
         self.set("MEASURE[ChemEntropy]", True)
 
     def set_system(self, n_orbitals: int, n_electrons: int, spin: int = 0):
@@ -263,8 +270,6 @@ class ParametersWrapper:
         spin : int, default = 0
             spin of the system
         """
-        # if spin != 0:
-        #     raise ValueError("Only implemented for singlet.")
         # number of "3"s in det string
         self.set("u1_total_charge1", int((n_electrons - spin) / 2) + int(spin))
         # number of "2"s in det string
@@ -275,20 +280,30 @@ class ParametersWrapper:
 
         self._make_hf_occupation(n_orbitals, n_electrons, spin)
         self._make_site_types(n_orbitals)
-        # integral_file = "fcidump in correct symmetry"
 
     def set_integral_file(self, integral_file: str):
-        """Set integral_file."""
-        try:
-            self.erase("integrals", verbose=False)
-        except:
-            pass
+        """Set integral_file.
+
+        Parameters
+        ----------
+        integral_file : str
+            path to fcidump
+        """
+        self.erase("integrals", verbose=False)
         self.set("integral_file", integral_file)
 
     def _make_hf_occupation(self, n_orbitals: int, n_electrons: int, spin: int = 0):
-        """Make Hf occupation."""
-        # TODO fix this it is easy
+        """Make Hf occupation.
 
+        Parameters
+        ----------
+        n_orbitals : int
+            number of orbitals
+        n_electrons : int
+            number of electrons
+        spin : int
+            total spin (2S)
+        """
         doubly_occupied_electrons = n_electrons - spin
         singly_occupied_electrons = spin
         assert doubly_occupied_electrons % 2 == 0
@@ -306,7 +321,17 @@ class ParametersWrapper:
         self.set("hf_occ", occupation[:-1])
 
     def set(self, parameter_name: str, parameter_value: Any, verbose: bool = True):
-        """Set any parameter in DmrgParameters."""
+        """Set any parameter in DmrgParameters.
+
+        Parameters
+        ----------
+        parameter_name : str
+            name of the parameter
+        parameter_value : Any
+            value of the parameter
+        verbose : bool, default = True
+            verbosity option
+        """
         if parameter_name in self._parameter_dict and verbose is True:
             message = f"{parameter_name} already set with value"
             message += f" {self._parameter_dict[parameter_name]}; new value {parameter_value}"
@@ -316,7 +341,15 @@ class ParametersWrapper:
         self._parameters.set(parameter_name, parameter_value)
 
     def erase(self, parameter_name: str, verbose: bool = True):
-        """Erase any parameter from DmrgParameters."""
+        """Erase any parameter from DmrgParameters.
+
+        Parameters
+        ----------
+        parameter_name : str
+            name of the parameter
+        verbose : bool, default = True
+            verbosity option
+        """
         if verbose is True:
             message = f"{parameter_name} will be removed"
             print(message)
@@ -327,9 +360,21 @@ class ParametersWrapper:
         self._parameters.erase(parameter_name)
 
     def get_parameters(self) -> DmrgParameters:
-        """Get DmrgParameters  object."""
+        """Get DmrgParameters  object.
+
+        Return
+        ------
+        prameters : DmrgParameters
+            the qcmaquis parameters binding
+        """
         return self._parameters
 
     def get_parameters_dict(self) -> Dict[str, Any]:
-        """Get dict with parameters."""
+        """Get dict with parameters.
+
+        Return
+        ------
+        prameters : Dict[str, Any]
+            all set parameters
+        """
         return self._parameter_dict

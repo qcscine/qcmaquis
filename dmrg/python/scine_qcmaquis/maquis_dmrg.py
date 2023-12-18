@@ -1,5 +1,3 @@
-"""This module provides the public QCMaquis DMRG interface and related functions."""
-from pathlib import Path
 from typing import Any, List, Tuple, Union
 
 import numpy as np
@@ -34,10 +32,23 @@ class MaquisDmrg:
     _energy : Union[float, List[float]]
         the energy of one or more states
     """
-    # TODO: add __slots__
+    __slots__ = (
+        "_dmrg",
+        "_parameters",
+        "_integral_map",
+        "_transcorrelated",
+        "_orbital_optimization",
+        "_excited_states",
+        "_energy",
+    )
 
     def __init__(self):
-        """Construct Wrapper."""
+        """Construct Wrapper.
+
+        Note
+        ----
+        All attributes should be modified by the corresponding functions, to ensure the expected behavior.
+        """
         self._dmrg = DmrgWrapper()
         """Handler for calculations."""
         self._parameters = ParametersWrapper()
@@ -51,7 +62,6 @@ class MaquisDmrg:
         """Flag for orbital optimization."""
         self._excited_states = False
         """Flag for excited states."""
-
         self._energy: Union[float, List[float]] = 0.0
         """Final energy of the system."""
 
@@ -72,7 +82,13 @@ class MaquisDmrg:
         self._parameters.set(parameter_name, parameter_value)
 
     def set_bond_dimension(self, bond_dimension: int):
-        """Set bond dimension."""
+        """Set bond dimension.
+
+        Parameters
+        ----------
+        bond_dimension : int
+            the bond dimension
+        """
         self._parameters.set("max_bond_dimension", bond_dimension)
 
     def set_excited_states(
@@ -81,7 +97,19 @@ class MaquisDmrg:
         n_excited_states: int = None,
         feast_window: List[float] = None
     ):
-        """Enable Excited States."""
+        """Enable Excited States.
+
+        This function acts as general interface to excited states, independent of the requested method.
+
+        Parameters
+        ----------
+        method : ExcitedStates
+            The enum value of the requested method
+        n_excited_states : int
+            number of excited states
+        feast_window: List[float]
+            energy window for feast calculations (only used for FEAST)
+        """
         self._excited_states = True
         if method == ExcitedStates.ORTHO and n_excited_states is None:
             raise ValueError("Orthogonal excited states require 'n_excited_states'")
@@ -94,6 +122,7 @@ class MaquisDmrg:
             raise ValueError("Feast is not implemented yet")
 
     def set_entropies(self):
+        """Enable entropy measurements."""
         self._parameters.set_entropies()
 
     def set_orbital_optimization(self):
@@ -115,7 +144,18 @@ class MaquisDmrg:
         self._parameters.set_transcorrelation_values()
         self._integral_map.set_type(IntegralType.TRANSCORRLEATED)
 
-    def get_entropies(self):
+    def get_entropies(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Getter for entropies.
+
+        Return
+        ------
+        s1 : np.ndarray
+            The s1 entropies
+        s2 : np.ndarray
+            The s2 entropies
+        ipq : np.ndarray
+            The mutual information
+        """
         self._dmrg.measure()
         return self._dmrg.entropies()
 
@@ -149,7 +189,9 @@ class MaquisDmrg:
         energy : Union[float, List[float]]
             the final energies
         """
-        # self._energy = self._dmrg.get_dmrg().energy()
+        if self._energy == 0.0:
+            raise RuntimeWarning("Run DMRG before requesting energies")
+
         return self._energy
 
     def set_feast(self, window: Tuple[float, float], n_states: int):
@@ -164,7 +206,14 @@ class MaquisDmrg:
         """
         self._parameters.set_excited_states_feast(window, n_states)
 
-    def set_fcidump(self, fcidump):
+    def set_fcidump(self, fcidump: str):
+        """Read integrals from fcidump.
+
+        Parameters
+        ----------
+        fcidump : str
+            Path to the fcidump
+        """
         self._parameters.set_integral_file(fcidump)
 
     def run(self, n_orbitals: int, n_electrons: int, spin: int = 0, n_states: int = None, fiedler: bool = False):
@@ -186,87 +235,57 @@ class MaquisDmrg:
             the total spin in the active space, e.g. 2S
         n_states : int, default = None
             number of orthogonal states
+        fiedler : int, default = False
+            Flag to enable Fiedler ordering
         """
-        for i in self._parameters._parameter_dict:
-            print(i, self._parameters._parameter_dict[i])
 
         # excited states
-        # TODO: If should not be required here ...
-        # if n_states is not None:
-        #     self._energy = []
-        #     self._parameters.set_system(n_orbitals, n_electrons, spin)
-        #     self._parameters.set_excited_states_ortho(0)
-        #
-        #     # fiedler needs to be implemented in the interface
-        #     if fiedler is True:
-        #         raise NotImplementedError
-        #         # fiedler_orderer = DmrgWrapper()
-        #         # self._parameters.set("MEASURE[ChemEntropy]", True)
-        #         # fiedler_orderer.set_parameters(self._parameters)
-        #         # if "integral_file" not in self._parameters._parameter_dict:
-        #         #     fiedler_orderer.set_integrals(self._integral_map)
-        #         # # orbital_order = fiedler_orderer.get_fiedler(n_states=n_states)
-        #         # orbital_order = fiedler_orderer.get_fiedler()
-        #         # self._parameters.erase("MEASURE[ChemEntropy]")
-        #         # self._parameters.set("orbital_order", orbital_order)
-        #
-        #         # orbital_order = self._dmrg.get_fiedler(n_states=n_states)
-        #         # self._parameters.set("orbital_order", orbital_order)
-        #
-        #     self._dmrg.set_parameters(self._parameters)
-        #
-        #     if "integral_file" not in self._parameters._parameter_dict:
-        #         self._dmrg.set_integrals(self._integral_map)
-        #
-        #     self._dmrg.run()
-        #     self._energy.append(self._dmrg.get_energy())
-        #
-        #     for i in range(1, n_states):
-        #         self._parameters.set_system(n_orbitals, n_electrons, spin)
-        #         self._parameters.set_excited_states_ortho(i)
-        #         self._dmrg.set_parameters(self._parameters)
-        #         if "integral_file" not in self._parameters._parameter_dict:
-        #             self._dmrg.set_integrals(self._integral_map)
-        #         self._dmrg.run()
-        #         self._energy.append(self._dmrg.get_energy())
-        #
-        # # ground state only
-        # else:
+        if n_states is not None:
+            self._energy = []
+            self._parameters.set_excited_states_ortho(0)
 
         self._parameters.set_system(n_orbitals, n_electrons, spin)
 
-        # fiedler needs to be implemented in the interface
         if fiedler is True:
-            raise NotImplementedError
-            # fiedler_orderer = DmrgWrapper()
-            # self._parameters.set("MEASURE[ChemEntropy]", True)
-            # fiedler_orderer.set_parameters(self._parameters)
-            # if "integral_file" not in self._parameters._parameter_dict:
-            #     fiedler_orderer.set_integrals(self._integral_map)
-            # orbital_order = fiedler_orderer.get_fiedler()
-            # self._parameters.erase("MEASURE[ChemEntropy]")
-            # self._parameters.set("orbital_order", orbital_order)
-
-        # self._parameters.set("orbital_order", "1,2")
-        # integrals will overide integral file
-        # if "integral_file" in self._parameters._parameter_dict:
-        #     self._parameters.erase("integrals", verbose=False)
+            fiedler_orderer = DmrgWrapper()
+            fiedler_orderer.set_parameters(self._parameters)
+            if "integral_file" not in self._parameters._parameter_dict:
+                fiedler_orderer.set_integrals(self._integral_map)
+            orbital_order = fiedler_orderer.get_fiedler()
+            self._parameters.set("orbital_order", orbital_order)
 
         self._dmrg.set_parameters(self._parameters)
+
         if "integral_file" not in self._parameters._parameter_dict:
             self._dmrg.set_integrals(self._integral_map)
-        self._dmrg.run()
-        self._energy = self._dmrg.get_energy()
 
-    def update_integrals(self, integral_map: IntegralMap):
+        for i in self._parameters._parameter_dict:
+            print(i, self._parameters._parameter_dict[i])
+
+        self._dmrg.run()
+        # excited states
+        if n_states is not None:
+            self._energy.append(self._dmrg.get_energy())
+            for i in range(1, n_states):
+                self._parameters.set_system(n_orbitals, n_electrons, spin)
+                self._parameters.set_excited_states_ortho(i)
+                self._dmrg.set_parameters(self._parameters)
+                if "integral_file" not in self._parameters._parameter_dict:
+                    self._dmrg.set_integrals(self._integral_map)
+                self._dmrg.run()
+                self._energy.append(self._dmrg.get_energy())
+        else:
+            self._energy = self._dmrg.get_energy()
+
+    def update_integrals(self, integral_map: Union[IntegralMap, TCIntegralMap, ComplexTCIntegralMap]):
         """Update integrals.
 
         Parameters
         ----------
-        integral_map : IntegralMap
+        integral_map : Union[IntegralMap, TCIntegralMap, ComplexTCIntegralMap]
             the integral map in corresponding symmetry, e.g.
-            8-fold for conventional
-            2-fold for transcorrelated
+            8-fold for conventional (4 indices)
+            2-fold for transcorrelated (6 indices)
         """
         self._integral_map.set(integral_map)
 
@@ -286,28 +305,59 @@ class MaquisDmrg:
         """
         self._integral_map.fill_from_pyscf(core_value, one_body, two_body, norb)
 
-    # unused
-    # def dummy_run_excited_states(self, n_excited_states: int):
-    #     """Dummy function."""
-    #     energies = []
-    #     self._parameters.set_system(2, 2, 0)
-    #     self._dmrg.set_parameters(self._parameters.get())
-    #     self._dmrg.get_dmrg().update_integrals(self._integral_map.get())
-    #     for i in range(n_excited_states):
-    #         self._parameters.set_excited_states_ortho(i)
-    #         self._dmrg.set_parameters(self._parameters.get())
-    #         self._dmrg.get_dmrg().optimize()
-    #         energies.append(self.get_energy())
-
     def init_dmrg(self, checkpoint: str, norb: int, nelec: int, spin: int):
+        """Initialize DMRG object.
+
+        Parameters
+        ----------
+        checkpoint : str
+            Path to the checkpoint file
+        norb : int
+            number of orbitals
+        nelec : int
+            number of electrons
+        spin : int
+            Total spin of the system (2S)
+        """
         self._parameters.set_system(norb, nelec, spin)
         self._parameters.set_checkpoint_path(checkpoint)
         self._dmrg.set_parameters(self._parameters)
 
-    def get_ci_coefficient(self, determinant_string: str):
+    def get_ci_coefficient(self, determinant_string: str) -> float:
+        """Get CI coefficient from determinant string.
+
+        Parameters
+        ----------
+        determinant_string : str
+            a qcmaquis compatible determinant string
+
+        Return
+        ------
+        ci_coeff : float
+            The corresponding ci coefficient
+        """
         return self._dmrg.get_ci_coefficient(determinant_string)
 
-    def get_singles_and_doubles(self, nocc: int, norb: int):
+    def get_singles_and_doubles(self, nocc: int, norb: int) -> Tuple[float, np.ndarray, np.ndarray]:
+        """Get all singles and doubles coefficients.
+
+        Parameters
+        ----------
+        nocc : int
+            number of occupied orbitals
+        norb : int
+            number of orbitals
+
+        Return
+        ------
+        coeff_hf : float
+            coefficient of mean field determinant
+        singles : np.ndarray
+            coefficients of singly excited determinants
+        doubles : np.ndarray
+            coefficients of doubly excited determinants
+        """
+
         nvir = norb - nocc
         hf_string, sign = make_ref(nocc, norb)
         coeff_hf = self._dmrg.get_ci_coefficient(hf_string).real
@@ -340,84 +390,76 @@ class MaquisDmrg:
                         coeff_ab = self._dmrg.get_ci_coefficient(doubles_ab_string)
                         doubles[i * 2, j * 2 + 1, a * 2, b * 2 + 1] = coeff_ab.real
                         doubles[i * 2 + 1, j * 2, a * 2 + 1, b * 2] = coeff_ab.real
-
-                        # if nocc > 1 and nvir > 1:
-                        #     print(doubles_aa_string, coeff_aa)
-                        #     print(doubles_bb_string, coeff_bb)
-                        # print(doubles_ab_string, coeff_ab)
         return coeff_hf, singles, doubles
 
-
-if __name__ == "__main__":
-
-    test_current_path = str(Path.cwd()) + "/python_tests"
-
-    integrals = ComplexTCIntegralMap()
-    integrals.set((1, 1, 0, 0, 0, 0), -1.9410228773342559e+00)
-    integrals.set((1, 2, 0, 0, 0, 0), -3.1641663736652514e-01)
-    integrals.set((2, 1, 0, 0, 0, 0), -3.1641663736652437e-01)
-    integrals.set((2, 2, 0, 0, 0, 0), -9.0227670561564222e-02)
-    integrals.set((3, 3, 0, 0, 0, 0), 7.8499729043522848e-01)
-    integrals.set((4, 4, 0, 0, 0, 0), 7.8499729043522848e-01)
-    integrals.set((5, 5, 0, 0, 0, 0), 7.8499729043522892e-01)
-    integrals.set((1, 1, 1, 1, 0, 0), 1.0183556583001547e+00)
-    integrals.set((1, 1, 2, 1, 0, 0), 3.2114288110690942e-01)
-    integrals.set((1, 1, 2, 2, 0, 0), 8.5366263969801692e-01)
-    integrals.set((1, 1, 3, 3, 0, 0), 9.5116233984037879e-01)
-    integrals.set((1, 1, 4, 4, 0, 0), 9.5116233984037879e-01)
-    integrals.set((1, 1, 5, 5, 0, 0), 9.5116233984037879e-01)
-    integrals.set((1, 2, 1, 1, 0, 0), 3.0476675403355274e-01)
-    integrals.set((1, 2, 1, 2, 0, 0), 2.5174364834784085e-01)
-    integrals.set((1, 2, 2, 1, 0, 0), 2.2385496280331504e-01)
-    integrals.set((1, 2, 2, 2, 0, 0), 2.4714874264182368e-01)
-    integrals.set((1, 2, 3, 3, 0, 0), 2.1082535928181162e-01)
-    integrals.set((1, 2, 4, 4, 0, 0), 2.1082535928181162e-01)
-    integrals.set((1, 2, 5, 5, 0, 0), 2.1082535928181179e-01)
-    integrals.set((1, 3, 1, 3, 0, 0), 1.8330678004452328e-01)
-    integrals.set((1, 3, 2, 3, 0, 0), 2.5134760449013423e-02)
-    integrals.set((1, 3, 3, 1, 0, 0), 1.8098179143498977e-01)
-    integrals.set((1, 3, 3, 2, 0, 0), 4.4024363522944421e-02)
-    integrals.set((1, 4, 1, 4, 0, 0), 1.8330678004452328e-01)
-    integrals.set((1, 4, 2, 4, 0, 0), 2.5134760449013416e-02)
-    integrals.set((1, 4, 4, 1, 0, 0), 1.8098179143498977e-01)
-    integrals.set((1, 4, 4, 2, 0, 0), 4.4024363522944407e-02)
-    integrals.set((1, 5, 1, 5, 0, 0), 1.8330678004452333e-01)
-    integrals.set((1, 5, 2, 5, 0, 0), 2.5134760449013447e-02)
-    integrals.set((1, 5, 5, 1, 0, 0), 1.8098179143498982e-01)
-    integrals.set((1, 5, 5, 2, 0, 0), 4.4024363522944449e-02)
-    integrals.set((2, 1, 2, 1, 0, 0), 1.9596627725878948e-01)
-    integrals.set((2, 1, 3, 3, 0, 0), 2.4775473575494533e-01)
-    integrals.set((2, 1, 4, 4, 0, 0), 2.4775473575494533e-01)
-    integrals.set((2, 1, 5, 5, 0, 0), 2.4775473575494544e-01)
-    integrals.set((2, 2, 2, 1, 0, 0), 2.5546841384748981e-01)
-    integrals.set((2, 2, 2, 2, 0, 0), 7.4940475756065872e-01)
-    integrals.set((2, 2, 3, 3, 0, 0), 7.8286400008585233e-01)
-    integrals.set((2, 2, 4, 4, 0, 0), 7.8286400008585233e-01)
-    integrals.set((2, 2, 5, 5, 0, 0), 7.8286400008585233e-01)
-    integrals.set((2, 3, 2, 3, 0, 0), 3.6676840894247775e-02)
-    integrals.set((2, 3, 3, 1, 0, 0), 4.7410516610267971e-03)
-    integrals.set((2, 3, 3, 2, 0, 0), 2.5466242990294468e-02)
-    integrals.set((2, 4, 2, 4, 0, 0), 3.6676840894247768e-02)
-    integrals.set((2, 4, 4, 1, 0, 0), 4.7410516610267971e-03)
-    integrals.set((2, 4, 4, 2, 0, 0), 2.5466242990294475e-02)
-    integrals.set((2, 5, 2, 5, 0, 0), 3.6676840894247782e-02)
-    integrals.set((2, 5, 5, 1, 0, 0), 4.7410516610267902e-03)
-    integrals.set((2, 5, 5, 2, 0, 0), 2.5466242990294482e-02)
-    integrals.set((3, 1, 3, 1, 0, 0), 1.7865680282545626e-01)
-    integrals.set((3, 2, 3, 1, 0, 0), 2.3630654734957762e-02)
-    integrals.set((3, 2, 3, 2, 0, 0), 1.4255645086341169e-02)
-    integrals.set((3, 3, 3, 3, 0, 0), 9.3158111092842422e-01)
-    integrals.set((3, 3, 4, 4, 0, 0), 9.3158111092842422e-01)
-    integrals.set((3, 3, 5, 5, 0, 0), 9.3158111092842444e-01)
-    integrals.set((4, 1, 4, 1, 0, 0), 1.7865680282545626e-01)
-    integrals.set((4, 2, 4, 1, 0, 0), 2.3630654734957766e-02)
-    integrals.set((4, 2, 4, 2, 0, 0), 1.4255645086341169e-02)
-    integrals.set((4, 4, 4, 4, 0, 0), 9.3158111092842422e-01)
-    integrals.set((4, 4, 5, 5, 0, 0), 9.3158111092842444e-01)
-    integrals.set((5, 1, 5, 1, 0, 0), 1.7865680282545632e-01)
-    integrals.set((5, 2, 5, 1, 0, 0), 2.3630654734957790e-02)
-    integrals.set((5, 2, 5, 2, 0, 0), 1.4255645086341176e-02)
-    integrals.set((5, 5, 5, 5, 0, 0), 9.3158111092842388e-01)
+# if __name__ == "__main__":
+    # test_current_path = str(Path.cwd()) + "/python_tests"
+    # integrals = ComplexTCIntegralMap()
+    # integrals.set((1, 1, 0, 0, 0, 0), -1.9410228773342559e+00)
+    # integrals.set((1, 2, 0, 0, 0, 0), -3.1641663736652514e-01)
+    # integrals.set((2, 1, 0, 0, 0, 0), -3.1641663736652437e-01)
+    # integrals.set((2, 2, 0, 0, 0, 0), -9.0227670561564222e-02)
+    # integrals.set((3, 3, 0, 0, 0, 0), 7.8499729043522848e-01)
+    # integrals.set((4, 4, 0, 0, 0, 0), 7.8499729043522848e-01)
+    # integrals.set((5, 5, 0, 0, 0, 0), 7.8499729043522892e-01)
+    # integrals.set((1, 1, 1, 1, 0, 0), 1.0183556583001547e+00)
+    # integrals.set((1, 1, 2, 1, 0, 0), 3.2114288110690942e-01)
+    # integrals.set((1, 1, 2, 2, 0, 0), 8.5366263969801692e-01)
+    # integrals.set((1, 1, 3, 3, 0, 0), 9.5116233984037879e-01)
+    # integrals.set((1, 1, 4, 4, 0, 0), 9.5116233984037879e-01)
+    # integrals.set((1, 1, 5, 5, 0, 0), 9.5116233984037879e-01)
+    # integrals.set((1, 2, 1, 1, 0, 0), 3.0476675403355274e-01)
+    # integrals.set((1, 2, 1, 2, 0, 0), 2.5174364834784085e-01)
+    # integrals.set((1, 2, 2, 1, 0, 0), 2.2385496280331504e-01)
+    # integrals.set((1, 2, 2, 2, 0, 0), 2.4714874264182368e-01)
+    # integrals.set((1, 2, 3, 3, 0, 0), 2.1082535928181162e-01)
+    # integrals.set((1, 2, 4, 4, 0, 0), 2.1082535928181162e-01)
+    # integrals.set((1, 2, 5, 5, 0, 0), 2.1082535928181179e-01)
+    # integrals.set((1, 3, 1, 3, 0, 0), 1.8330678004452328e-01)
+    # integrals.set((1, 3, 2, 3, 0, 0), 2.5134760449013423e-02)
+    # integrals.set((1, 3, 3, 1, 0, 0), 1.8098179143498977e-01)
+    # integrals.set((1, 3, 3, 2, 0, 0), 4.4024363522944421e-02)
+    # integrals.set((1, 4, 1, 4, 0, 0), 1.8330678004452328e-01)
+    # integrals.set((1, 4, 2, 4, 0, 0), 2.5134760449013416e-02)
+    # integrals.set((1, 4, 4, 1, 0, 0), 1.8098179143498977e-01)
+    # integrals.set((1, 4, 4, 2, 0, 0), 4.4024363522944407e-02)
+    # integrals.set((1, 5, 1, 5, 0, 0), 1.8330678004452333e-01)
+    # integrals.set((1, 5, 2, 5, 0, 0), 2.5134760449013447e-02)
+    # integrals.set((1, 5, 5, 1, 0, 0), 1.8098179143498982e-01)
+    # integrals.set((1, 5, 5, 2, 0, 0), 4.4024363522944449e-02)
+    # integrals.set((2, 1, 2, 1, 0, 0), 1.9596627725878948e-01)
+    # integrals.set((2, 1, 3, 3, 0, 0), 2.4775473575494533e-01)
+    # integrals.set((2, 1, 4, 4, 0, 0), 2.4775473575494533e-01)
+    # integrals.set((2, 1, 5, 5, 0, 0), 2.4775473575494544e-01)
+    # integrals.set((2, 2, 2, 1, 0, 0), 2.5546841384748981e-01)
+    # integrals.set((2, 2, 2, 2, 0, 0), 7.4940475756065872e-01)
+    # integrals.set((2, 2, 3, 3, 0, 0), 7.8286400008585233e-01)
+    # integrals.set((2, 2, 4, 4, 0, 0), 7.8286400008585233e-01)
+    # integrals.set((2, 2, 5, 5, 0, 0), 7.8286400008585233e-01)
+    # integrals.set((2, 3, 2, 3, 0, 0), 3.6676840894247775e-02)
+    # integrals.set((2, 3, 3, 1, 0, 0), 4.7410516610267971e-03)
+    # integrals.set((2, 3, 3, 2, 0, 0), 2.5466242990294468e-02)
+    # integrals.set((2, 4, 2, 4, 0, 0), 3.6676840894247768e-02)
+    # integrals.set((2, 4, 4, 1, 0, 0), 4.7410516610267971e-03)
+    # integrals.set((2, 4, 4, 2, 0, 0), 2.5466242990294475e-02)
+    # integrals.set((2, 5, 2, 5, 0, 0), 3.6676840894247782e-02)
+    # integrals.set((2, 5, 5, 1, 0, 0), 4.7410516610267902e-03)
+    # integrals.set((2, 5, 5, 2, 0, 0), 2.5466242990294482e-02)
+    # integrals.set((3, 1, 3, 1, 0, 0), 1.7865680282545626e-01)
+    # integrals.set((3, 2, 3, 1, 0, 0), 2.3630654734957762e-02)
+    # integrals.set((3, 2, 3, 2, 0, 0), 1.4255645086341169e-02)
+    # integrals.set((3, 3, 3, 3, 0, 0), 9.3158111092842422e-01)
+    # integrals.set((3, 3, 4, 4, 0, 0), 9.3158111092842422e-01)
+    # integrals.set((3, 3, 5, 5, 0, 0), 9.3158111092842444e-01)
+    # integrals.set((4, 1, 4, 1, 0, 0), 1.7865680282545626e-01)
+    # integrals.set((4, 2, 4, 1, 0, 0), 2.3630654734957766e-02)
+    # integrals.set((4, 2, 4, 2, 0, 0), 1.4255645086341169e-02)
+    # integrals.set((4, 4, 4, 4, 0, 0), 9.3158111092842422e-01)
+    # integrals.set((4, 4, 5, 5, 0, 0), 9.3158111092842444e-01)
+    # integrals.set((5, 1, 5, 1, 0, 0), 1.7865680282545632e-01)
+    # integrals.set((5, 2, 5, 1, 0, 0), 2.3630654734957790e-02)
+    # integrals.set((5, 2, 5, 2, 0, 0), 1.4255645086341176e-02)
+    # integrals.set((5, 5, 5, 5, 0, 0), 9.3158111092842388e-01)
     # integrals.set((1, 1, 1, 1, 1, 1), 1.9115381141742809e-03)
     # integrals.set((1, 1, 1, 1, 1, 2), -2.5509485850552923e-04)
     # integrals.set((1, 1, 1, 1, 2, 2), 2.7878203188368704e-03)
@@ -553,30 +595,27 @@ if __name__ == "__main__":
     # integrals.set((2, 2, 0, 0), -0.653221638776)
     # integrals.set((0, 0, 0, 0), 0.176392403557)
 
-    blub = []
-    this_dmrg = MaquisDmrg()
-    print("---------")
+    # blub = []
+    # this_dmrg = MaquisDmrg()
     # this_dmrg.set_transcorrelation()
-    print("---------")
     # this_dmrg.update_integrals(integrals)
-    print("---------")
     # this_dmrg._parameters.erase("integrals")
     # this_dmrg.
     # _parameters.set("integral_file", "/home/max/Programs/coupled_wick_scf/maquis-dmrg_python/dmrg/IntegralFile_H2_Transcorrelated")
-    this_dmrg._parameters.erase("integrals")
-    this_dmrg._parameters.set("nsweeps", 1)
-    this_dmrg._parameters.set("max_bond_dimension", 1000)
-    this_dmrg._parameters.set("integral_file", "/home/max/Programs/coupled_wick_scf/scripts/test/cc-pvdz/trans/0.0/He_cc-pvdz.FCIDUMP")
-    this_dmrg._parameters.set("optimization", "singlesite")
-    this_dmrg._parameters.set("simulation_type", "TD")
-    this_dmrg._parameters.set("propagator_accuracy", 1.0E-10)
-    this_dmrg._parameters.set("propagator_maxiter", 10)
-    this_dmrg._parameters.set("time_step", "0.2")
-    this_dmrg._parameters.set("hamiltonian_units", "Hartree")
-    this_dmrg._parameters.set("time_units", "fs")
-    this_dmrg._parameters.set("imaginary_time", "yes")
-    this_dmrg._parameters.set("TD_backpropagation", "no")
-    this_dmrg._parameters.set("transcorrelated_hamiltonian", "yes")
+    # this_dmrg._parameters.erase("integrals")
+    # this_dmrg._parameters.set("nsweeps", 1)
+    # this_dmrg._parameters.set("max_bond_dimension", 1000)
+    # this_dmrg._parameters.set("integral_file", "/home/max/Programs/coupled_wick_scf/scripts/test/cc-pvdz/trans/0.0/He_cc-pvdz.FCIDUMP")
+    # this_dmrg._parameters.set("optimization", "singlesite")
+    # this_dmrg._parameters.set("simulation_type", "TD")
+    # this_dmrg._parameters.set("propagator_accuracy", 1.0E-10)
+    # this_dmrg._parameters.set("propagator_maxiter", 10)
+    # this_dmrg._parameters.set("time_step", "0.2")
+    # this_dmrg._parameters.set("hamiltonian_units", "Hartree")
+    # this_dmrg._parameters.set("time_units", "fs")
+    # this_dmrg._parameters.set("imaginary_time", "yes")
+    # this_dmrg._parameters.set("TD_backpropagation", "no")
+    # this_dmrg._parameters.set("transcorrelated_hamiltonian", "yes")
 
     # this_dmrg._parameters.set("chh", 1000)
     # this_dmrg._parameters.set("chkpfile", "/home/max/Programs/coupled_wick_scf/maquis-dmrg_python/dmrg/python/checkpoint")
@@ -595,26 +634,26 @@ if __name__ == "__main__":
     # this_dmrg.set_feast((-108.75, -108.74,), 4)
     # this_dmrg.run(28, 14, fiedler=True)
     # this_dmrg.set_feast((-0.7, -0.5,), 8)
-    this_dmrg.run(5, 2, fiedler=False)
+    # this_dmrg.run(5, 2, fiedler=False)
     # print(this_dmrg._dmrg.get_ci_coefficients("3,2,1,1,1"))
     # print("--------------------")
-    this_dmrg.get_singles_and_doubles(1, 2)
-    print(this_dmrg._dmrg._dmrg.getCICoefficients(2))
+    # this_dmrg.get_singles_and_doubles(1, 2)
+    # print(this_dmrg._dmrg._dmrg.getCICoefficients(2))
     # print("0000000000")
-    blub.append(this_dmrg.get_energy())
+    # blub.append(this_dmrg.get_energy())
     # -3.882045755
-    """
-    this_dmrg_2 = MaquisDmrg()
-    this_dmrg_2.set_feast((-0.7, -0.5,), 8)
-    this_dmrg_2.update_integrals(integrals)
-    this_dmrg_2.run(2, 2)
-    this_dmrg_3 = MaquisDmrg()
-    this_dmrg_3.update_integrals(integrals)
-    this_dmrg_3.run(2, 2, n_states=2, fiedler=False)
-    print(this_dmrg.get_energy())
-    print(this_dmrg_2.get_energy())
-    print(this_dmrg_3.get_energy())
-    """
-    for i in blub:
-        print(i)
-        print(i)
+    # """
+    # this_dmrg_2 = MaquisDmrg()
+    # this_dmrg_2.set_feast((-0.7, -0.5,), 8)
+    # this_dmrg_2.update_integrals(integrals)
+    # this_dmrg_2.run(2, 2)
+    # this_dmrg_3 = MaquisDmrg()
+    # this_dmrg_3.update_integrals(integrals)
+    # this_dmrg_3.run(2, 2, n_states=2, fiedler=False)
+    # print(this_dmrg.get_energy())
+    # print(this_dmrg_2.get_energy())
+    # print(this_dmrg_3.get_energy())
+    # """
+    # for i in blub:
+    #     print(i)
+    #     print(i)
