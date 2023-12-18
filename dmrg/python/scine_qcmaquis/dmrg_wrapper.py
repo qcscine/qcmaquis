@@ -4,7 +4,7 @@ from typing import Any, List, Union
 # pylint: disable=import-error
 from _dmrg import DmrgComplex, DmrgReal
 
-from .integral_wrapper import IntegralMapWrapper
+from .integral_wrapper import ComplexTCIntegralMap, IntegralMapWrapper, TCIntegralMap
 from .parameters_wrapper import ParametersWrapper
 
 # pylint: enable=import-error
@@ -117,7 +117,7 @@ class DmrgWrapper:
         if self._dmrg is None:
             raise ValueError("Set parameters before running dmrg!")
 
-        if type(integral_map.get()) is ComplexTCIntegralMap:
+        if type(integral_map.get()) is ComplexTCIntegralMap or type(integral_map.get()) is TCIntegralMap:
             self._dmrg.update_tc_integrals(integral_map.get())
         else:
             self._dmrg.update_integrals(integral_map.get())
