@@ -364,14 +364,11 @@ protected:
       maquis::cout << " - Right boundaries taken from index: " << siteRight_ << std::endl;
       maquis::cout << std::endl;
     } else {
-      std::stringstream stream;
-      stream << (sweepType == SweepDirectionType::Backward ? "  <" : "   ");
-      stream << "-" << siteLeft_ << "-";
+      maquis::cout << (sweepType == SweepDirectionType::Backward ? "  <" : "   ") << "-" << siteLeft_ << "-";
       if (SweepType == SweepOptimizationType::TwoSite) {
-        stream << (siteLeft_ + 1) << "-";
+        maquis::cout << (siteLeft_ + 1) << "-"; 
       }
-      stream << (sweepType == SweepDirectionType::Forward ? "> " : "  ");
-      maquis::cout << stream.str();
+      maquis::cout << (sweepType == SweepDirectionType::Forward ? "> " : "  ") << std::endl;
     }
   }
 
