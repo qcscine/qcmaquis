@@ -171,7 +171,7 @@ inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltoni
     else
         order = parms["sites_order"].as<std::vector<pos_t> >();
     if (order.size() != lat.size())
-        throw std::runtime_error("orbital_order length is not the same as the number of orbitals\n");
+        throw std::runtime_error("sites_order length is not the same as the number of sites\n");
     // Removes 1 (to fullfill the C++ convetion) and calculates the inverse map
     // (which is the one that is actually used in )
     std::transform(order.begin(), order.end(), order.begin(), boost::lambda::_1-1);
@@ -208,7 +208,8 @@ inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltoni
                         tmp[idx] = -inv_order[-tmp[idx]-1]-1;
                 ret.push_back(std::make_pair(tmp, static_cast<T>(coefficient)));
                 // Internal coordinates
-                // NINA potentially remove this part!
+                // NINA potentially remove this part entirely!
+                /*
                 if (coordinateType == WatsonCoordinateType::InternalNormalModes) {
                     auto numberOfMomenta = std::count_if(tmp.begin(), tmp.end(), [](int input) { return input < 0; });
                     if (numberOfMomenta == 2) {
@@ -223,8 +224,8 @@ inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltoni
                         }
                     }
                 }
-            }
-            else {
+                */
+            } else {
                 ++it;
             }
             it += maxInputCouplingOrder;
