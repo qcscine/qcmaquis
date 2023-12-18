@@ -84,9 +84,10 @@ def test_maquis_dmrg_sweep_from_fcidump():
     dmrg = MaquisDmrg()
     dmrg.set_parameter("optimization", "twosite")
     dmrg.set_parameter("conv_thresh", 1e-6)
+    dmrg.set_entropies()
     dmrg.set_fcidump("fcidump_mock")
-    dmrg.run(4, 4, 0)
-    print(dmrg.get_energy())
+    dmrg.run(4, 2, 0)
+    dmrg._dmrg.measure()
 
 
 if __name__ == "__main__":

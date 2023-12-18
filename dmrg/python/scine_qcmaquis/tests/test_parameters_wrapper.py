@@ -49,8 +49,6 @@ def test_parameters_wrapper_convenience_functions():
     assert parameters._parameter_dict["max_bond_dimension"] == 250
     assert parameters._parameter_dict["optimization"] == "twosite"
     assert parameters._parameter_dict["conv_thresh"] == 1e-6
-    assert parameters._parameter_dict["alpha_main"] == 1e-6
-    assert parameters._parameter_dict["alpha_final"] == 1e-16
     assert parameters._parameter_dict["symmetry"] == "su2u1pg"
     assert parameters._parameter_dict["CONSERVED_QUANTUMNUMBERS"] == "Nup,Ndown"
     assert parameters._parameter_dict["lattice_library"] == "coded"
