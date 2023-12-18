@@ -883,9 +883,6 @@ private:
   bool checkEnergyConvergence(double convergenceThreshold) {
     bool converged = false;
     auto eDiff = std::abs(*(energies_.end()-1) - *(energies_.end()-2));
-    std::cout << "energy 1    " << *(energies_.end()-1) << std::endl;
-    std::cout << "energy 2    " << *(energies_.end()-2) << std::endl;
-    std::cout << "energy diff " << eDiff << std::endl;
     if (eDiff < convergenceThreshold)
       converged = true;
     return converged;
