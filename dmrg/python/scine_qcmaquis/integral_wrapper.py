@@ -77,7 +77,8 @@ class IntegralMapWrapper:
         fcidump : str
             path to fcidump
         """
-        raise NotImplementedError("integrals from fcidump are not yet supported")
+        self._parser.parse_fcidump(fcidump)
+        self._update_from_parsing()
 
     def fill_from_pyscf(self, core_value: float, one_body: np.ndarray, two_body: np.ndarray, norb: int):
         """Fill IntegralMap from a PySCF wavefunction.
