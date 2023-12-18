@@ -37,7 +37,7 @@ class DmrgWrapper:
         Number of feast states.
     """
 
-    __slots__ = ("_dmrg_", "_run_flag", "_measure_flag", "_run_option", "_feast_states", )
+    __slots__ = ("_dmrg", "_run_flag", "_measure_flag", "_run_option", "_feast_states", )
 
     def __init__(self):
         """Construct Wrapper."""
