@@ -1,30 +1,9 @@
-/*****************************************************************************
- *
- * ALPS Project: Algorithms and Libraries for Physics Simulations
- *
- * ALPS Libraries
- *
- * Copyright (C) 2021 by Alberto Baiardi <abaiardi@ethz.ch>
- *
- * This software is part of the ALPS libraries, published under the ALPS
- * Library License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Library License along with
- * the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef MAQUIS_DMRG_LANCZOSEVOLVER_H
 #define MAQUIS_DMRG_LANCZOSEVOLVER_H
@@ -61,9 +40,11 @@ struct TimeStepTraits<TimeStepDistributor::FourthOrderMagnus> {
   static constexpr int numberOfFactorsPerExponential = 2;
   using InternalValueType = std::array<std::pair<double, double>, 2>;
   using FactorsType = std::array<InternalValueType, numberOfExponentials>;
+  // @kszenes constexpr sqrt func only implemented in c++26
+  static constexpr double sqrtof3 = 1.7320508075688772;
   static constexpr FactorsType factorsAndSteps 
-    = { InternalValueType({std::make_pair((3.-2.*sqrt(3.))/12., 0.5+sqrt(3.)/6.), std::make_pair((3.+2.*sqrt(3.))/12., 0.5-sqrt(3.)/6.)}),
-        InternalValueType({std::make_pair((3.+2.*sqrt(3.))/12., 0.5+sqrt(3.)/6.), std::make_pair((3.-2.*sqrt(3.))/12., 0.5-sqrt(3.)/6.)}) };
+    = { InternalValueType({std::make_pair((3.-2.*sqrtof3)/12., 0.5+sqrtof3/6.), std::make_pair((3.+2.*sqrtof3)/12., 0.5-sqrtof3/6.)}),
+        InternalValueType({std::make_pair((3.+2.*sqrtof3)/12., 0.5+sqrtof3/6.), std::make_pair((3.-2.*sqrtof3)/12., 0.5-sqrtof3/6.)}) };
 };
 
 template<>

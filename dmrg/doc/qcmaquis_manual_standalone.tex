@@ -29,7 +29,7 @@
 \setcounter{secnumdepth}{4}
 
 % -- New commands --
-\newcommand{\relv}{release version 3.0}
+\newcommand{\relv}{release version 3.1.3}
 \newcommand{\qcm}{\textsc{QCMaquis}}
 \newcommand{\scine}{SCINE}
 \newcommand{\hostp}{\mol}
@@ -47,7 +47,7 @@
 %
     keywords=[1]{L,nelec,spin,nsweeps,max_bond_dimension,integral_file,
 				 init_type,LATTICE,lattice_library,MODEL,model_library,irrep,symmetry},
-	morekeywords=[2]{conv_thresh,integral_cutoff,truncation_initial,truncation_final,
+	morekeywords=[2]{conv_thresh,integral_cutoff,truncation_initial,truncation_main,
 					 MEASURE,chkpfile,resultfile,storagedir},
 	keywordstyle=[1]\color{green!20!red},
 	keywordstyle=[2]\color{green!20!blue},
@@ -124,7 +124,7 @@ ALPS is a general open-source framework for the description of strongly correlat
 For further information on the ALPS project, please visit \href{alps.comp-phys.org}{alps.comp-phys.org} and refer to the following reference papers:
 
 \begin{framed}
-  M. Dolfi, B. Bauer, S. Keller, A. Kosenkov, T. Ewart, A. Kantian, T. Giamarchi, M. Troyer, \textit{Comp. Phys. Commun.} \textbf{2014}, 12, 3430. \href{https://doi.org/10.1016/j.cpc.2014.08.019}{doi:10.1016/j.cpc.2014.08.019} \\
+  \noindent M. Dolfi, B. Bauer, S. Keller, A. Kosenkov, T. Ewart, A. Kantian, T. Giamarchi, M. Troyer, \textit{Comp. Phys. Commun.} \textbf{2014}, 12, 3430. \href{https://doi.org/10.1016/j.cpc.2014.08.019}{doi:10.1016/j.cpc.2014.08.019} \\
   B. Bauer, \textit{et al.} (ALPS Collaboration), The ALPS project release 2.0: open source software for strongly correlated systems, \textit{J. Stat. Mech.} \textbf{2011} P05001. \href{http://dx.doi.org/10.1088/1742-5468/2011/05/P05001}{http://dx.doi.org/10.1088/1742-5468/2011/05/P05001}.
 \end{framed}
 
@@ -392,7 +392,7 @@ By default, \qcm{} calculates excited states with the methods described in Ref.~
 Specifically, the first excited state is obtained with a DMRG optimization that is constrained onto the space orthogonal to the ground state.
 The second excited state is obtained with an optimization orthogonal to the ground and first excited state, and so on.
 Excited states are, therefore, calculated sequentially.
-Table~\ref{tab:eskw} describes the keywords to be activated to run excited-state DMRG calculations.
+Table~\ref{tab:es_kw} describes the keywords to be activated to run excited-state DMRG calculations.
 
 \begin{table}[htbp!]
   \centering
@@ -512,7 +512,7 @@ If a property is available only in 2U1 symmetry, the SU2U1 checkpoint may be tra
   conv_thresh          = 1.0e-6
   // Threshold for the SVD truncation for the initial and sweeps
   truncation_initial   = 1.0e-16
-  truncation_final     = 1.0e-7
+  truncation_main     = 1.0e-7
   // Threshold below which integrals inside the integral_file are neglected
   integral_cutoff      = 1.0e-10
   // Path to the scratch folder (reduces RAM usage)
@@ -1543,4 +1543,3 @@ The examples are organized in different folder, one per feature provided by \qcm
 
 \bibliography{qcmaquis_manual}
 
-\end{document}

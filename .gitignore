@@ -8,6 +8,7 @@ my*
 **check*
 examples/**/*resfile*
 examples/**/*result*
+**resfile*
 dmrg/doc/qcmaquis_manual.aux
 dmrg/doc/qcmaquis_manual.bbl
 dmrg/doc/qcmaquis_manual.blg
@@ -17,7 +18,6 @@ dmrg/doc/qcmaquis_manual.pdf
 dmrg/doc/qcmaquis_manual.toc
 
 *.cache*
-=======
 dmrg/doc/qcmaquis_manual_standalone.aux
 dmrg/doc/qcmaquis_manual_standalone.bbl
 dmrg/doc/qcmaquis_manual_standalone.blg
@@ -30,3 +30,5 @@ dmrg/doc/qcmaquis_manual_standalone.toc
 /dmrg/.idea/
 /dmrg/cmake-build-debug/
 /dmrg/cmake-build-release/
+ip64test
+compile_commands.json

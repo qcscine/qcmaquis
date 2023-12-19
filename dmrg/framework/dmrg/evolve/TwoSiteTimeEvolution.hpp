@@ -1,30 +1,14 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2021 by Alberto Baiardi <abaiardi@ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef TWOSITETIMEEVOLUTION_H
 #define TWOSITETIMEEVOLUTION_H
+
+#include <chrono>
 
 #include "dmrg/mp_tensors/twositetensor.h"
 #include "dmrg/mp_tensors/mpo_ops.h"
@@ -105,7 +89,7 @@ public:
   {
     // Initialization
     typename MPSTensor<Matrix, SymmGroup>::scalar_type dipole;
-    boost::chrono::high_resolution_clock::time_point sweep_now = boost::chrono::high_resolution_clock::now();
+    std::chrono::high_resolution_clock::time_point sweep_now = std::chrono::high_resolution_clock::now();
     iteration_results_.clear();
     // Definition of the initial site
     int _site = 0, site;
@@ -235,8 +219,8 @@ public:
       iteration_results_["SmallestEV"]        << trunc.smallest_ev;
       iteration_results_["Dipole"]            << dipole;
       parallel::meminfo();
-      boost::chrono::high_resolution_clock::time_point sweep_then = boost::chrono::high_resolution_clock::now();
-      double elapsed = boost::chrono::duration<double>(sweep_then - sweep_now).count();
+      std::chrono::high_resolution_clock::time_point sweep_then = std::chrono::high_resolution_clock::now();
+      double elapsed = std::chrono::duration<double>(sweep_then - sweep_now).count();
       maquis::cout << "Sweep has been running for " << elapsed << " seconds." << std::endl;
       if (stop_callback())
         throw dmrg::time_limit(sweep, _site+1);
@@ -257,11 +241,10 @@ private:
      * @param lr: direction of the sweep
      */
     void print_header(int& sweep, int& site1, int& site2, int& lr){
-        char buffer[50] ;
-        int a = (lr == 1) ? 2*sweep+1 : 2*sweep+2;
-        std::cout << " +--------------------------------------------+" << std::endl ;
-        std::cout << "  Sweep number " << a << " - site numbers " << site1 << " and " << site2 << std::endl;
-        std::cout << " +--------------------------------------------+" << std::endl;
+      int a = (lr == 1) ? 2*sweep+1 : 2*sweep+2;
+      std::cout << " +--------------------------------------------+" << std::endl ;
+      std::cout << "  Sweep number " << a << " - site numbers " << site1 << " and " << site2 << std::endl;
+      std::cout << " +--------------------------------------------+" << std::endl;
     }
 };
 

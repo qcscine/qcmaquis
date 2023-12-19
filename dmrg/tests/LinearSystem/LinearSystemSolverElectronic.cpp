@@ -1,28 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2022 Institute for Theoretical Physics, ETH Zurich
- *               2022 by Alberto Baiardi <abaiardi@ethz.ch>
- * 
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- * 
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #define BOOST_TEST_MODULE LinearSolverElectronic
 
@@ -50,7 +31,7 @@ BOOST_FIXTURE_TEST_CASE(Test_LinearSolver_Electronic, BenzeneFixture) {
   parametersBenzene.set("hf_occ", "4,4,4,1,1,1");
   parametersBenzene.set("nsweeps", 10);
   parametersBenzene.set("truncation_initial", 1.0E-30);
-  parametersBenzene.set("truncation_final", 1.0E-30);
+  parametersBenzene.set("truncation_main", 1.0E-30);
   parametersBenzene.set("linsystem_init", "last");
   parametersBenzene.set("linsystem_max_it", 1);
   parametersBenzene.set("linsystem_tol", 1.0E-10);
@@ -78,5 +59,5 @@ BOOST_FIXTURE_TEST_CASE(Test_LinearSolver_Electronic, BenzeneFixture) {
                                                                      benzeneModel.total_quantum_numbers(parametersBenzene), 100);
   BOOST_CHECK_SMALL(std::abs(error), 1.0E-10);
 }
+#endif // HAVE_TwoU1PG
 
-#endif // HAVE_TrivialGroup

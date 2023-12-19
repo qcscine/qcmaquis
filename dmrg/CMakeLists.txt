@@ -62,6 +62,7 @@ option (BUILD_MPS_COMPRESS "Build mps_compress binary for MPS compression (not w
 option (BUILD_MPS_OVERLAP "Build MPS Overlap calculator" OFF)
 option (BUILD_ONETDM_DIAG "Build 1-TDM diagonal elements calculator (deprecated by dmrg_meas and the binary interface)" OFF)
 option (BUILD_MPS2CI "Build CI coefficient reconstruction facilities" OFF)
+option (BUILD_SRCAS "Build SRCAS tool for vibrational and/or electronic symmetries" OFF)
 option (BUILD_DEAS "Build s1 and I printer tool" OFF)
 option (BUILD_MPS_TRANSFORM "Build MPS SU2->2U1 symmetry group transformation tool" OFF)
 option (BUILD_DMRG_EVOLVE "Build the time-evolution DMRG module" OFF)
@@ -250,10 +251,15 @@ if((BUILD_VIBRATIONAL))
   endif()
 endif()
 
+# SRCAS-specific flag
+if((BUILD_SRCAS))
+  message(STATUS "Building SRCAS")
+endif()
+
 # Vibronic-specific flag
 if(BUILD_VIBRONIC)
   if (NOT DMRG_HAS_U1)
-    message(FATAL_ERROR "U1 symmetry should be activated for vibrational calculations")
+    message(FATAL_ERROR "U1 symmetry should be activated for vibronic calculations")
   else()
     list(APPEND DMRG_DEFINITIONS -DDMRG_VIBRONIC)
     set(DMRG_VIBRONIC TRUE)
@@ -587,6 +593,9 @@ if(QCMAQUIS_TESTS)
     add_test(NAME Excitonic_Optimization COMMAND test_Excitonic)
     add_test(NAME Vibronic_Optimization COMMAND test_Vibronic)
   endif(BUILD_VIBRONIC)
+  if (BUILD_SRCAS)
+    add_test(NAME Test_SRCAS COMMAND test_srcas)
+  endif(BUILD_SRCAS)
 endif(QCMAQUIS_TESTS)
 
 ######################################################################
