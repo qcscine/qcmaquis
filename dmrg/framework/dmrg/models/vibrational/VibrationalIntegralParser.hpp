@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -92,6 +92,7 @@ NModeIntegralParser(BaseParameters & parms, Lattice const & lat)
                 indices.push_back(t.first);
             }
         }
+        orb_file.close();
     }
     // Serialized integral object
     else if (parms.is_set("integrals_binary")) {
@@ -115,7 +116,8 @@ NModeIntegralParser(BaseParameters & parms, Lattice const & lat)
     if (parms["nmode_dumpIntegral"] == "yes" && parms.is_set("resultfile")) {
         // dump indices but starting with 1 and with 0 as originally in the FCIDUMP
         std::vector<Lattice::pos_t> indices_vec;
-        indices_vec.reserve(chem::getIndexDim(chem::Hamiltonian::VibrationalNMode)*indices.size());
+        auto indexDim = chem::getIndexDim(chem::Hamiltonian::VibrationalNMode, chem::HamiltonianTransformation::Conventional);
+        indices_vec.reserve(indexDim*indices.size());
         for (auto&& idx: indices)
             for (auto&& i: idx)
                 indices_vec.push_back(i);
@@ -152,13 +154,13 @@ NModeIntegralParser(BaseParameters & parms, Lattice const & lat)
  */
 
 template<class T>
-inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical)>, T > >
+inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical, chem::HamiltonianTransformation::Conventional)>, T > >
     WatsonIntegralParser(BaseParameters& parms, const Lattice& lat, WatsonCoordinateType coordinateType,
                          int maxCoupling, int maxManyBodyCoupling, int maxInputCouplingOrder)
 {
     // Types definition
     using pos_t = Lattice::pos_t;
-    using KeyType = std::array<int, chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical)>;
+    using KeyType = std::array<int, chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical, chem::HamiltonianTransformation::Conventional)>;
     using RetType = std::vector< std::pair< KeyType, T> > ;
     using InputType = double;
     // Load ordering and determine inverse ordering
@@ -173,7 +175,8 @@ inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltoni
         throw std::runtime_error("orbital_order length is not the same as the number of orbitals\n");
     // Removes 1 (to fullfill the C++ convetion) and calculates the inverse map
     // (which is the one that is actually used in )
-    std::transform(order.begin(), order.end(), order.begin(), boost::lambda::_1-1);
+    std::transform(order.begin(), order.end(), order.begin(),
+        [](const int e){ return e - 1; });
     inv_order.resize(order.size());
     for (int p = 0; p < order.size(); ++p)
         inv_order[p] = std::distance(order.begin(), std::find(order.begin(), order.end(), p));
@@ -181,7 +184,7 @@ inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltoni
     RetType ret;
     if (parms.is_set("integral_file")) {
         std::string integral_file = parms["integral_file"];
-        if (!boost::filesystem::exists(integral_file))
+        if (!std::filesystem::exists(integral_file))
             throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
         std::ifstream orb_file;
         orb_file.open(integral_file.c_str());
@@ -228,6 +231,7 @@ inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltoni
             }
             it += maxInputCouplingOrder;
         }
+        orb_file.close();
     }
     else if (parms.is_set("integrals_binary")) {
         // parse serialized integrals

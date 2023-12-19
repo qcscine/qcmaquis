@@ -1,9 +1,11 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
+
+#include "dmrg/evolve/TimeEvolvers/LanczosEvolver.h"
 
 template<class Matrix, class SymmGroup, TimeStepDistributor TimeStepDistributorClass>
 template<class SiteProblem, class MatrixType>
@@ -128,12 +130,7 @@ void LanczosEvolver<Matrix, SymmGroup, TimeStepDistributorClass>::apply_exponent
   for (std::size_t i = 0; i < local_dim_; i++) {
     for (std::size_t j = 0; j < local_dim_; j++) {
       if (i==j || i==j+1 || i==j-1) {
-        //if (!is_imag_) {
         H_hess(i, j) = initial_convert<ArgType>(hamiltonian_matrix(i,j));
-        //}
-        //else {
-        //  H_hess(i, j) = -initial_convert<ArgType>(hamiltonian_matrix(i,j))*std::complex<double>(time_step_, 0.);
-        //}
       }
       else {
         H_hess(i, j) = std::complex<double>(0., 0.);

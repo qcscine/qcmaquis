@@ -1,0 +1,1113 @@
+  SCINE QCMaquis 
+  Quantum Chemical Density Matrix Renormalization group
+  available from https://scine.ethz.ch/download/qcmaquis
+  based on the ALPS MPS codes from http://alps.comp-phys.org/
+  copyright (c) 2015-2018 Laboratory of Physical Chemistry, ETH Zurich
+  copyright (c) 2012-2016 by Sebastian Keller
+  copyright (c) 2016-2018 by Alberto Baiardi, Leon Freitag, 
+  Stefan Knecht, Yingjin Ma 
+  for details see the publication: 
+  S. Keller et al., J. Chem. Phys. 143, 244118 (2015)
+
+This binary contains symmetries: u1dg 2u1 2u1pg su2u1pg 
+DMRG version 3.1.0-0a16862dc132f9e3849ef20f8a6d3545f1fb796f (TranscorrelatedHamiltonian) release-3.0.6-gitlab
+Temporary storage is disabled
+MPO Bond 0: 10/0
+MPO Bond 1: 10/0
+MPO Bond 2: 6/0
+MPO Bond 3: 1/0
+site_types: 0 0 0 0 
+phys[0]: |( <1,1>: 1 )( <1,0>: 1 )( <0,1>: 1 )( <0,0>: 1 )|
+Right end: <2,1>
+init norm: 0.01388888889
+MPS site 0
+|( <0,0>: 1 )|
+Sum: 1
+|( <1,1>: 1 )( <1,0>: 1 )( <0,1>: 1 )( <0,0>: 1 )|
+Sum: 4
+MPS site 1
+|( <1,1>: 1 )( <1,0>: 1 )( <0,1>: 1 )( <0,0>: 1 )|
+Sum: 4
+|( <2,1>: 1 )( <2,0>: 1 )( <1,1>: 2 )( <1,0>: 2 )( <0,1>: 1 )( <0,0>: 1 )|
+Sum: 8
+MPS site 2
+|( <2,1>: 1 )( <2,0>: 1 )( <1,1>: 2 )( <1,0>: 2 )( <0,1>: 1 )( <0,0>: 1 )|
+Sum: 8
+|( <2,1>: 1 )( <2,0>: 1 )( <1,1>: 1 )( <1,0>: 1 )|
+Sum: 4
+MPS site 3
+|( <2,1>: 1 )( <2,0>: 1 )( <1,1>: 1 )( <1,0>: 1 )|
+Sum: 4
+|( <2,1>: 1 )|
+Sum: 1
+
+site 0 activating sector <1,1>
+site 1 activating sector <2,1>
+site 2 activating sector <2,1>
+site 3 activating sector <2,1>
+MPS initialization has finished...
+Expecting 0 states to orthogonalize to.
+Boundaries are partially initialized...
+Boundaries are fully initialized...
+Done init_left_right
+Sweep 0, optimizing site 0
+JCD used 4 iterations.
+Time elapsed in JCD: 0.0042503
+Energy 1 -1.80642384936075
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.009523178 seconds.
+Sweep 0, optimizing site 1
+JCD used 10 iterations.
+Time elapsed in JCD: 0.020669235
+Energy 1 -5.61697956856684
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.033560297 seconds.
+Sweep 0, optimizing site 2
+JCD used 10 iterations.
+Time elapsed in JCD: 0.019451966
+Energy 1 -6.41124591923841
+Growing, alpha = 1e-30
+Sum: 18 -> 5
+Sweep has been running for 0.056436486 seconds.
+Sweep 0, optimizing site 3
+JCD used 5 iterations.
+Time elapsed in JCD: 0.005857314
+Energy 1 -6.41134602761148
+Sweep has been running for 0.063163786 seconds.
+Syncing storage
+Sweep 0, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001219353
+Energy -1 -6.41134602465551
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.066231184 seconds.
+Sweep 0, optimizing site 2
+JCD used 10 iterations.
+Time elapsed in JCD: 0.039524001
+Energy -1 -6.41147454979996
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.118874865 seconds.
+Sweep 0, optimizing site 1
+JCD used 10 iterations.
+Time elapsed in JCD: 0.022810272
+Energy -1 -6.41838941527751
+Growing, alpha = 1e-30
+Sum: 18 -> 4
+Sweep has been running for 0.150402127 seconds.
+Sweep 0, optimizing site 0
+JCD used 4 iterations.
+Time elapsed in JCD: 0.009360526
+Energy -1 -6.41838947112152
+Sweep has been running for 0.161232951 seconds.
+Sweep 1, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.002535172
+Energy 1 -6.41838947046322
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.016528258 seconds.
+Sweep 1, optimizing site 1
+JCD used 10 iterations.
+Time elapsed in JCD: 0.045637956
+Energy 1 -6.41839004133027
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.070811824 seconds.
+Sweep 1, optimizing site 2
+JCD used 10 iterations.
+Time elapsed in JCD: 0.038780355
+Energy 1 -6.41849306169678
+Growing, alpha = 1e-30
+Sum: 18 -> 4
+Sweep has been running for 0.113402127 seconds.
+Sweep 1, optimizing site 3
+JCD used 4 iterations.
+Time elapsed in JCD: 0.007532809
+Energy 1 -6.41849305700849
+Sweep has been running for 0.121750297 seconds.
+Syncing storage
+Sweep 1, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.000894742
+Energy -1 -6.41849305927678
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.129770374 seconds.
+Sweep 1, optimizing site 2
+JCD used 10 iterations.
+Time elapsed in JCD: 0.03248589
+Energy -1 -6.41849306200597
+Growing, alpha = 1e-30
+Sum: 12 -> 9
+Sweep has been running for 0.170066668 seconds.
+Sweep 1, optimizing site 1
+JCD used 10 iterations.
+Time elapsed in JCD: 0.046614979
+Energy -1 -6.41850236894181
+Growing, alpha = 1e-30
+Sum: 20 -> 4
+Sweep has been running for 0.230044973 seconds.
+Sweep 1, optimizing site 0
+JCD used 4 iterations.
+Time elapsed in JCD: 0.009758565
+Energy -1 -6.41850236688094
+Sweep has been running for 0.240696374 seconds.
+Sweep 2, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.005168462
+Energy 1 -6.41850236600872
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.007045273 seconds.
+Sweep 2, optimizing site 1
+JCD used 10 iterations.
+Time elapsed in JCD: 0.025010703
+Energy 1 -6.41850237159355
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.035479155 seconds.
+Sweep 2, optimizing site 2
+JCD used 10 iterations.
+Time elapsed in JCD: 0.02046856
+Energy 1 -6.41850289450504
+Growing, alpha = 1e-30
+Sum: 18 -> 5
+Sweep has been running for 0.059296835 seconds.
+Sweep 2, optimizing site 3
+JCD used 4 iterations.
+Time elapsed in JCD: 0.007177202
+Energy 1 -6.41850289603813
+Sweep has been running for 0.067520847 seconds.
+Syncing storage
+Sweep 2, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001189704
+Energy -1 -6.4185028932312
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.070642485 seconds.
+Sweep 2, optimizing site 2
+JCD used 7 iterations.
+Time elapsed in JCD: 0.014152735
+Energy -1 -6.41850289517844
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.088575202 seconds.
+Sweep 2, optimizing site 1
+JCD used 10 iterations.
+Time elapsed in JCD: 0.026102849
+Energy -1 -6.41850292257385
+Growing, alpha = 1e-30
+Sum: 18 -> 6
+Sweep has been running for 0.117884917 seconds.
+Sweep 2, optimizing site 0
+JCD used 4 iterations.
+Time elapsed in JCD: 0.006193256
+Energy -1 -6.41850292408419
+Sweep has been running for 0.125172341 seconds.
+Sweep 3, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.00102256
+Energy 1 -6.41850292503056
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.002957468 seconds.
+Sweep 3, optimizing site 1
+JCD used 9 iterations.
+Time elapsed in JCD: 0.022820907
+Energy 1 -6.41850292212898
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.029063602 seconds.
+Sweep 3, optimizing site 2
+JCD used 10 iterations.
+Time elapsed in JCD: 0.020869565
+Energy 1 -6.41850292841225
+Growing, alpha = 1e-30
+Sum: 18 -> 6
+Sweep has been running for 0.052891484 seconds.
+Sweep 3, optimizing site 3
+JCD used 3 iterations.
+Time elapsed in JCD: 0.006345347
+Energy 1 -6.41850292546257
+Sweep has been running for 0.060177148 seconds.
+Syncing storage
+Sweep 3, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001583859
+Energy -1 -6.41850292770782
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.064010332 seconds.
+Sweep 3, optimizing site 2
+JCD used 5 iterations.
+Time elapsed in JCD: 0.022959797
+Energy -1 -6.41850292974662
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.095351899 seconds.
+Sweep 3, optimizing site 1
+JCD used 10 iterations.
+Time elapsed in JCD: 0.033527305
+Energy -1 -6.41850292417364
+Growing, alpha = 1e-30
+Sum: 18 -> 4
+Sweep has been running for 0.153110397 seconds.
+Sweep 3, optimizing site 0
+JCD used 2 iterations.
+Time elapsed in JCD: 0.004860219
+Energy -1 -6.41850293024756
+Sweep has been running for 0.158946998 seconds.
+Sweep 4, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.009423426
+Energy 1 -6.41850292795048
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.011162665 seconds.
+Sweep 4, optimizing site 1
+JCD used 2 iterations.
+Time elapsed in JCD: 0.014998465
+Energy 1 -6.41850292469225
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.043902125 seconds.
+Sweep 4, optimizing site 2
+JCD used 10 iterations.
+Time elapsed in JCD: 0.056483122
+Energy 1 -6.4185029274258
+Growing, alpha = 1e-30
+Sum: 18 -> 4
+Sweep has been running for 0.103051663 seconds.
+Sweep 4, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.000873342
+Energy 1 -6.41850292797283
+Sweep has been running for 0.104607679 seconds.
+Syncing storage
+Sweep 4, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.000911079
+Energy -1 -6.41850292797283
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.115001211 seconds.
+Sweep 4, optimizing site 2
+JCD used 2 iterations.
+Time elapsed in JCD: 0.002668499
+Energy -1 -6.41850293052976
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.120593495 seconds.
+Sweep 4, optimizing site 1
+JCD used 6 iterations.
+Time elapsed in JCD: 0.019627966
+Energy -1 -6.4185029252608
+Growing, alpha = 1e-30
+Sum: 18 -> 7
+Sweep has been running for 0.154753165 seconds.
+Sweep 4, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001043846
+Energy -1 -6.41850292797489
+Sweep has been running for 0.1567159 seconds.
+Sweep 5, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001005561
+Energy 1 -6.41850292797489
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.005906415 seconds.
+Sweep 5, optimizing site 1
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001427091
+Energy 1 -6.41850292797489
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.010715564 seconds.
+Sweep 5, optimizing site 2
+JCD used 5 iterations.
+Time elapsed in JCD: 0.007362302
+Energy 1 -6.41850292611738
+Growing, alpha = 1e-30
+Sum: 18 -> 5
+Sweep has been running for 0.023861531 seconds.
+Sweep 5, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001085436
+Energy 1 -6.41850292797508
+Sweep has been running for 0.025838706 seconds.
+Syncing storage
+Sweep 5, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001324287
+Energy -1 -6.41850292797508
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.029855046 seconds.
+Sweep 5, optimizing site 2
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001482223
+Energy -1 -6.41850292797509
+Growing, alpha = 1e-30
+Sum: 12 -> 9
+Sweep has been running for 0.034448061 seconds.
+Sweep 5, optimizing site 1
+JCD used 3 iterations.
+Time elapsed in JCD: 0.007107972
+Energy -1 -6.4185029260072
+Growing, alpha = 1e-30
+Sum: 20 -> 5
+Sweep has been running for 0.044812347 seconds.
+Sweep 5, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.000976374
+Energy -1 -6.4185029279751
+Sweep has been running for 0.04690444 seconds.
+Sweep 6, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.009975989
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.020525096 seconds.
+Sweep 6, optimizing site 1
+JCD used 1 iterations.
+Time elapsed in JCD: 0.00138862
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.025119335 seconds.
+Sweep 6, optimizing site 2
+JCD used 2 iterations.
+Time elapsed in JCD: 0.002620842
+Energy 1 -6.41850292979912
+Growing, alpha = 1e-30
+Sum: 18 -> 4
+Sweep has been running for 0.041196402 seconds.
+Sweep 6, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.00098184
+Energy 1 -6.4185029279751
+Sweep has been running for 0.043002028 seconds.
+Syncing storage
+Sweep 6, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001280658
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.059277026 seconds.
+Sweep 6, optimizing site 2
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001662666
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 12 -> 9
+Sweep has been running for 0.067209622 seconds.
+Sweep 6, optimizing site 1
+JCD used 1 iterations.
+Time elapsed in JCD: 0.014301749
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 20 -> 5
+Sweep has been running for 0.084746324 seconds.
+Sweep 6, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001200535
+Energy -1 -6.4185029279751
+Sweep has been running for 0.087059699 seconds.
+Sweep 7, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.008032256
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.010056799 seconds.
+Sweep 7, optimizing site 1
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001220696
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.029553282 seconds.
+Sweep 7, optimizing site 2
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001313484
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 18 -> 5
+Sweep has been running for 0.038316931 seconds.
+Sweep 7, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.002496309
+Energy 1 -6.4185029279751
+Sweep has been running for 0.047099051 seconds.
+Syncing storage
+Sweep 7, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001481921
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.058367099 seconds.
+Sweep 7, optimizing site 2
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001397747
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 12 -> 9
+Sweep has been running for 0.083666821 seconds.
+Sweep 7, optimizing site 1
+JCD used 1 iterations.
+Time elapsed in JCD: 0.0048438
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 20 -> 8
+Sweep has been running for 0.119465918 seconds.
+Sweep 7, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.0184223
+Energy -1 -6.41850292797511
+Sweep has been running for 0.139140304 seconds.
+Sweep 8, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001054374
+Energy 1 -6.41850292797511
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.012343323 seconds.
+Sweep 8, optimizing site 1
+JCD used 1 iterations.
+Time elapsed in JCD: 0.002565413
+Energy 1 -6.41850292797511
+Growing, alpha = 1e-30
+Sum: 12 -> 9
+Sweep has been running for 0.030815288 seconds.
+Sweep 8, optimizing site 2
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001385781
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 20 -> 5
+Sweep has been running for 0.051432117 seconds.
+Sweep 8, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.003647601
+Energy 1 -6.4185029279751
+Sweep has been running for 0.056077825 seconds.
+Syncing storage
+Sweep 8, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.005281897
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.072388973 seconds.
+Sweep 8, optimizing site 2
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001528756
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.077151641 seconds.
+Sweep 8, optimizing site 1
+JCD used 1 iterations.
+Time elapsed in JCD: 0.005127551
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 18 -> 5
+Sweep has been running for 0.087284319 seconds.
+Sweep 8, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.004884369
+Energy -1 -6.4185029279751
+Sweep has been running for 0.093313568 seconds.
+Sweep 9, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.012287237
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.014343614 seconds.
+Sweep 9, optimizing site 1
+JCD used 1 iterations.
+Time elapsed in JCD: 0.0095972
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.041364462 seconds.
+Sweep 9, optimizing site 2
+JCD used 1 iterations.
+Time elapsed in JCD: 0.014966291
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 18 -> 4
+Sweep has been running for 0.061088849 seconds.
+Sweep 9, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.003617556
+Energy 1 -6.4185029279751
+Sweep has been running for 0.065708136 seconds.
+Syncing storage
+Sweep 9, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.010906513
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.078485213 seconds.
+Sweep 9, optimizing site 2
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001592964
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 12 -> 9
+Sweep has been running for 0.083180047 seconds.
+Sweep 9, optimizing site 1
+JCD used 1 iterations.
+Time elapsed in JCD: 0.010272269
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 20 -> 4
+Sweep has been running for 0.098563629 seconds.
+Sweep 9, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.000989307
+Energy -1 -6.4185029279751
+Sweep has been running for 0.104852122 seconds.
+Sweep 10, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001173054
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.012733231 seconds.
+Sweep 10, optimizing site 1
+JCD used 1 iterations.
+Time elapsed in JCD: 0.002067345
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.020584022 seconds.
+Sweep 10, optimizing site 2
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001596597
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 18 -> 6
+Sweep has been running for 0.037986692 seconds.
+Sweep 10, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001078229
+Energy 1 -6.4185029279751
+Sweep has been running for 0.039964503 seconds.
+Syncing storage
+Sweep 10, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.000997317
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.042625618 seconds.
+Sweep 10, optimizing site 2
+JCD used 1 iterations.
+Time elapsed in JCD: 0.016746772
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.067697368 seconds.
+Sweep 10, optimizing site 1
+JCD used 1 iterations.
+Time elapsed in JCD: 0.002285042
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 18 -> 5
+Sweep has been running for 0.081147363 seconds.
+Sweep 10, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001673926
+Energy -1 -6.4185029279751
+Sweep has been running for 0.084744279 seconds.
+Sweep 11, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.015294881
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.020129205 seconds.
+Sweep 11, optimizing site 1
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001439002
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.035189174 seconds.
+Sweep 11, optimizing site 2
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001482525
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 18 -> 7
+Sweep has been running for 0.040230162 seconds.
+Sweep 11, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.016061724
+Energy 1 -6.4185029279751
+Sweep has been running for 0.058819761 seconds.
+Syncing storage
+Sweep 11, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.01633172
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.078932886 seconds.
+Sweep 11, optimizing site 2
+JCD used 1 iterations.
+Time elapsed in JCD: 0.005574233
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.09117661 seconds.
+Sweep 11, optimizing site 1
+JCD used 1 iterations.
+Time elapsed in JCD: 0.012044793
+Energy -1 -6.41850292797511
+Growing, alpha = 1e-30
+Sum: 18 -> 5
+Sweep has been running for 0.110245134 seconds.
+Sweep 11, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.012934031
+Energy -1 -6.41850292797511
+Sweep has been running for 0.128904647 seconds.
+Sweep 12, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001031409
+Energy 1 -6.41850292797511
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.015463615 seconds.
+Sweep 12, optimizing site 1
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001390733
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.023443605 seconds.
+Sweep 12, optimizing site 2
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001414498
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 18 -> 6
+Sweep has been running for 0.056496954 seconds.
+Sweep 12, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001041127
+Energy 1 -6.4185029279751
+Sweep has been running for 0.058458649 seconds.
+Syncing storage
+Sweep 12, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001057613
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.061314371 seconds.
+Sweep 12, optimizing site 2
+JCD used 1 iterations.
+Time elapsed in JCD: 0.00151208
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.074677059 seconds.
+Sweep 12, optimizing site 1
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001559685
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 18 -> 4
+Sweep has been running for 0.091101055 seconds.
+Sweep 12, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001258212
+Energy -1 -6.4185029279751
+Sweep has been running for 0.093586159 seconds.
+Sweep 13, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.0028404
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.009931058 seconds.
+Sweep 13, optimizing site 1
+JCD used 1 iterations.
+Time elapsed in JCD: 0.0016532
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.018426668 seconds.
+Sweep 13, optimizing site 2
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001770554
+Energy 1 -6.41850292797511
+Growing, alpha = 1e-30
+Sum: 18 -> 5
+Sweep has been running for 0.023862952 seconds.
+Sweep 13, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001173645
+Energy 1 -6.4185029279751
+Sweep has been running for 0.027295108 seconds.
+Syncing storage
+Sweep 13, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001265877
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.03381221 seconds.
+Sweep 13, optimizing site 2
+JCD used 1 iterations.
+Time elapsed in JCD: 0.002431777
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.040257622 seconds.
+Sweep 13, optimizing site 1
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001884102
+Energy -1 -6.41850292797511
+Growing, alpha = 1e-30
+Sum: 18 -> 5
+Sweep has been running for 0.046218697 seconds.
+Sweep 13, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.006192147
+Energy -1 -6.4185029279751
+Sweep has been running for 0.053937771 seconds.
+Sweep 14, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.00143378
+Energy 1 -6.41850292797511
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.00442038 seconds.
+Sweep 14, optimizing site 1
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001742249
+Energy 1 -6.41850292797511
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.010383109 seconds.
+Sweep 14, optimizing site 2
+JCD used 1 iterations.
+Time elapsed in JCD: 0.009333401
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 18 -> 5
+Sweep has been running for 0.025277 seconds.
+Sweep 14, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001594126
+Energy 1 -6.41850292797511
+Sweep has been running for 0.03013559 seconds.
+Syncing storage
+Sweep 14, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.012941268
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.047474722 seconds.
+Sweep 14, optimizing site 2
+JCD used 1 iterations.
+Time elapsed in JCD: 0.002773293
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.056991311 seconds.
+Sweep 14, optimizing site 1
+JCD used 1 iterations.
+Time elapsed in JCD: 0.004682846
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 18 -> 6
+Sweep has been running for 0.070774135 seconds.
+Sweep 14, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001312451
+Energy -1 -6.4185029279751
+Sweep has been running for 0.073433745 seconds.
+Sweep 15, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.005257223
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.011431237 seconds.
+Sweep 15, optimizing site 1
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001811236
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.02178007 seconds.
+Sweep 15, optimizing site 2
+JCD used 1 iterations.
+Time elapsed in JCD: 0.003784875
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 18 -> 6
+Sweep has been running for 0.0302014 seconds.
+Sweep 15, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001408154
+Energy 1 -6.41850292797511
+Sweep has been running for 0.033510941 seconds.
+Syncing storage
+Sweep 15, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001599511
+Energy -1 -6.41850292797511
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.040327166 seconds.
+Sweep 15, optimizing site 2
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001908188
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.046681728 seconds.
+Sweep 15, optimizing site 1
+JCD used 1 iterations.
+Time elapsed in JCD: 0.00205138
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 18 -> 6
+Sweep has been running for 0.06729494 seconds.
+Sweep 15, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001464296
+Energy -1 -6.4185029279751
+Sweep has been running for 0.070376519 seconds.
+Sweep 16, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.00156609
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.004577201 seconds.
+Sweep 16, optimizing site 1
+JCD used 1 iterations.
+Time elapsed in JCD: 0.002013828
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.011375988 seconds.
+Sweep 16, optimizing site 2
+JCD used 1 iterations.
+Time elapsed in JCD: 0.00184084
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 18 -> 6
+Sweep has been running for 0.022171847 seconds.
+Sweep 16, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.00129899
+Energy 1 -6.41850292797511
+Sweep has been running for 0.024614467 seconds.
+Syncing storage
+Sweep 16, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001462045
+Energy -1 -6.41850292797511
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.038566388 seconds.
+Sweep 16, optimizing site 2
+JCD used 1 iterations.
+Time elapsed in JCD: 0.006120479
+Energy -1 -6.41850292797511
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.050480023 seconds.
+Sweep 16, optimizing site 1
+JCD used 1 iterations.
+Time elapsed in JCD: 0.005398711
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 18 -> 5
+Sweep has been running for 0.064917901 seconds.
+Sweep 16, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001497138
+Energy -1 -6.41850292797511
+Sweep has been running for 0.069866889 seconds.
+Sweep 17, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001586152
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.004209191 seconds.
+Sweep 17, optimizing site 1
+JCD used 1 iterations.
+Time elapsed in JCD: 0.002104935
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.010864772 seconds.
+Sweep 17, optimizing site 2
+JCD used 1 iterations.
+Time elapsed in JCD: 0.002964805
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 18 -> 5
+Sweep has been running for 0.019459227 seconds.
+Sweep 17, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.00135681
+Energy 1 -6.41850292797511
+Sweep has been running for 0.022006435 seconds.
+Syncing storage
+Sweep 17, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001814505
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.026702347 seconds.
+Sweep 17, optimizing site 2
+JCD used 1 iterations.
+Time elapsed in JCD: 0.004812488
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.035855016 seconds.
+Sweep 17, optimizing site 1
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001972861
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 18 -> 4
+Sweep has been running for 0.042351945 seconds.
+Sweep 17, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001503073
+Energy -1 -6.4185029279751
+Sweep has been running for 0.048986597 seconds.
+Sweep 18, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001324546
+Energy 1 -6.41850292797511
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.004323119 seconds.
+Sweep 18, optimizing site 1
+JCD used 1 iterations.
+Time elapsed in JCD: 0.002252129
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.011071875 seconds.
+Sweep 18, optimizing site 2
+JCD used 1 iterations.
+Time elapsed in JCD: 0.003063531
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 18 -> 7
+Sweep has been running for 0.018415529 seconds.
+Sweep 18, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001252219
+Energy 1 -6.41850292797511
+Sweep has been running for 0.020801624 seconds.
+Syncing storage
+Sweep 18, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001286809
+Energy -1 -6.41850292797511
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.024779442 seconds.
+Sweep 18, optimizing site 2
+JCD used 1 iterations.
+Time elapsed in JCD: 0.002061465
+Energy -1 -6.41850292797511
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.033165513 seconds.
+Sweep 18, optimizing site 1
+JCD used 1 iterations.
+Time elapsed in JCD: 0.003194664
+Energy -1 -6.41850292797511
+Growing, alpha = 1e-30
+Sum: 18 -> 5
+Sweep has been running for 0.040444035 seconds.
+Sweep 18, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001393808
+Energy -1 -6.41850292797511
+Sweep has been running for 0.043108094 seconds.
+Sweep 19, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.003663169
+Energy 1 -6.41850292797511
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.016930341 seconds.
+Sweep 19, optimizing site 1
+JCD used 1 iterations.
+Time elapsed in JCD: 0.003092626
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.043493964 seconds.
+Sweep 19, optimizing site 2
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001358545
+Energy 1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 18 -> 5
+Sweep has been running for 0.049793146 seconds.
+Sweep 19, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.003062344
+Energy 1 -6.4185029279751
+Sweep has been running for 0.053691549 seconds.
+Syncing storage
+Sweep 19, optimizing site 3
+JCD used 1 iterations.
+Time elapsed in JCD: 0.009647396
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 4 -> 4
+Sweep has been running for 0.070002971 seconds.
+Sweep 19, optimizing site 2
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001454255
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 12 -> 8
+Sweep has been running for 0.109642545 seconds.
+Sweep 19, optimizing site 1
+JCD used 1 iterations.
+Time elapsed in JCD: 0.001404431
+Energy -1 -6.4185029279751
+Growing, alpha = 1e-30
+Sum: 18 -> 5
+Sweep has been running for 0.128354138 seconds.
+Sweep 19, optimizing site 0
+JCD used 1 iterations.
+Time elapsed in JCD: 0.000962472
+Energy -1 -6.4185029279751
+Sweep has been running for 0.1304381 seconds.
+Task took 4.099721 seconds.

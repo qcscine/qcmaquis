@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -49,16 +49,15 @@ namespace ts_reduction {
     {
         m2 = block_matrix<Matrix, SymmGroup>();
 
-        typedef std::size_t size_t;
-        typedef typename SymmGroup::subcharge spin_t;
-        typedef typename SymmGroup::charge charge;
-        typedef typename Matrix::value_type value_type;
+        using size_t = std::size_t;
+        using spin_t = typename SymmGroup::subcharge;
+        using charge = typename SymmGroup::charge;
+        using value_type = typename Matrix::value_type;
 
         Index<SymmGroup> phys2_i = physical_i_left*physical_i_right;
         ProductBasis<SymmGroup> phys_pb(physical_i_left, physical_i_right);
-        ProductBasis<SymmGroup> in_right(phys2_i, right_i,
-                                         boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                             -boost::lambda::_1, boost::lambda::_2));
+        ProductBasis<SymmGroup> in_right(phys2_i, right_i, 
+            [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); });
 
         //std::transform(phys_out.begin(), phys_out.end(), phys_out.begin(),
         //               boost::lambda::bind(&std::make_pair<charge, size_t>,
@@ -158,10 +157,10 @@ namespace ts_reduction {
     {
         m2 = block_matrix<Matrix, SymmGroup>();
 
-        typedef std::size_t size_t;
-        typedef typename SymmGroup::subcharge spin_t;
-        typedef typename SymmGroup::charge charge;
-        typedef typename Matrix::value_type value_type;
+        using size_t = std::size_t;
+        using spin_t = typename SymmGroup::subcharge;
+        using charge = typename SymmGroup::charge;
+        using value_type = typename Matrix::value_type;
 
         Index<SymmGroup> phys2_i = physical_i_left*physical_i_right;
         ProductBasis<SymmGroup> phys_pb(physical_i_left, physical_i_right);

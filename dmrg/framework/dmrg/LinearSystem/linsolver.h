@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -10,13 +10,14 @@
 
 #include <complex>
 #include <tuple>
-// #include <Eigen/Core>
-// #include <Eigen/Dense>
-// #include <Eigen/IterativeLinearSolvers>
-// #include <unsupported/Eigen/IterativeSolvers>
-// #include <Eigen/Eigenvalues>
+#include <Eigen/Core>
+#include <Eigen/Dense>
+#include <Eigen/IterativeLinearSolvers>
+#include <unsupported/Eigen/IterativeSolvers>
+#include <Eigen/Eigenvalues>
 #include <boost/numeric/bindings/lapack.hpp>
 #include "linsolver_helper.h"
+#include "LinSolverWrapper.h"
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/siteproblem.h"
 
@@ -47,17 +48,40 @@ public:
    */
   LinSolver(std::shared_ptr<SiteProblem<Matrix, SymmGroup>> sp, const MPSTensorType& initialMPS,
             const MPSTensorType& rhsMPS, ScalarType shift, BaseParameters & parms,
-            std::shared_ptr<block_matrix<Matrix, SymmGroup>> precond, bool verbose)
-    : sp_(sp), parms_(parms), rhsMPS_(rhsMPS), shift_(shift), precond_(precond), verbose_(verbose)
+            std::shared_ptr<block_matrix<Matrix, SymmGroup>> precond, bool verbose, RealType coreEnergy = 0)
+    : sp_(sp), parms_(parms), rhsMPS_(rhsMPS), shift_(shift), precond_(precond), verbose_(verbose), coreEnergy_(coreEnergy)
     //, isFolded_(false)
   {
-    if (parms_["linsystem_init"] == "zero")
+    // Which linsolver
+    if (parms_["linsystem_solver"] == "GMRES") {
+      if (verbose_) maquis::cout << " - Solving the linear system with ALPS-based GMRES" << std::endl;
+    } else if (parms_["linsystem_solver"] == "MINRES") {
+      if (verbose_) maquis::cout << " - Solving the linear system with ALPS-based MINRES" << std::endl;
+    } else if ((parms_["linsystem_solver"] == "GMRES_EIGEN") || (parms_["linsystem_solver"] == "BiCGSTAB_EIGEN")) {
+      if (parms_["linsystem_solver"] == "GMRES_EIGEN") {
+        if (verbose_) maquis::cout << " - Solving the linear system with Eigen-based GMRES" << std::endl;
+      } else if (parms_["linsystem_solver"] == "BiCGSTAB_EIGEN") {
+        if (verbose_) maquis::cout << " - Solving the linear system with Eigen-based BiCGSTAB" << std::endl;
+      }
+      if (parms_["linsystem_precond"] == "no") {
+        if (verbose_) maquis::cout << " - Deactivating preconditioning" << std::endl;
+      } else if (parms_["linsystem_precond"] == "diagonal") {
+        if (verbose_) maquis::cout << " - Activating diagonal preconditioning" << std::endl;
+      } else {
+        throw std::runtime_error("[linsystem_precond] parameter not recognized");
+      }
+    } else {
+      throw std::runtime_error("[linsystem_solver] parameter not recognized");
+    }
+
+    if (parms_["linsystem_init"] == "zero") {
       currentSolution_ = 0.*initialMPS;
-    else
+    } else {
       currentSolution_ = initialMPS;
+    }
     //rhs.conjugate_inplace();
     // Parameters that are specific of the solution of the linear system.
-    numberOfMacroIterations_ = parms_["linsystem_max_it"].as<int>();
+    numberOfMacroIterations_ = parms_["linsystem_max_it"].template as<int>();
     gmresTol_ = parms_["linsystem_tol"];
     krylovDim_ = parms_["linsystem_krylov_dim"];
     rhsNorm_ = ietl::two_norm(rhsMPS_);
@@ -65,7 +89,7 @@ public:
 
   /** @brief Solves the linear system */
   std::tuple<energy_type, energy_type, MPSTensorType> res() {
-    int prec = maquis::cout.precision();
+    long prec = maquis::cout.precision();
     if (verbose_) {
       maquis::cout.precision(15);
       maquis::cout << std::endl;
@@ -75,12 +99,26 @@ public:
       maquis::cout << std::endl;
     }
     for (int iCycle = 0; iCycle < numberOfMacroIterations_; iCycle++) {
-      if (parms_["linsystem_solver"] == "GMRES")
+      if (parms_["linsystem_solver"] == "GMRES") {
         gmres();
-      else if (parms_["linsystem_solver"] == "MINRES")
+      } else if (parms_["linsystem_solver"] == "MINRES") {
         minres();
-      else
+      }
+      else if (parms_["linsystem_solver"] == "GMRES_EIGEN" ) {
+        if (parms_["linsystem_precond"] == "no") {
+          eigenLinearSolver<EigenSolverType::GMRES, PreconditionerType::IdentityPreconditioner>();
+        } else if (parms_["linsystem_precond"] == "diagonal") {
+          eigenLinearSolver<EigenSolverType::GMRES, PreconditionerType::DiagonalPreconditioner>();
+        }
+      } else if (parms_["linsystem_solver"] == "BiCGSTAB_EIGEN" ) {
+        if (parms_["linsystem_precond"] == "no") {
+          eigenLinearSolver<EigenSolverType::BiCGSTAB, PreconditionerType::IdentityPreconditioner>();
+        } else if (parms_["linsystem_precond"] == "diagonal") {
+          eigenLinearSolver<EigenSolverType::BiCGSTAB, PreconditionerType::DiagonalPreconditioner>();
+        }
+      } else {
         throw std::runtime_error("[linsystem_solver] parameter not recognized");
+      }
     }
     auto tmp3 = applyOperator(currentSolution_);
     auto finalError = ietl::two_norm(tmp3-rhsMPS_);
@@ -89,11 +127,10 @@ public:
       maquis::cout << " Final ||Ax - b|| norm =  " << finalError << std::endl;
     }
     // == Finalization ==
-    // ietl::mult(sp, x, tmp2, 0, false);
     ietl::mult(*sp_, currentSolution_, tmp3);
     auto en = maquis::real(ietl::dot(currentSolution_, tmp3) / ietl::dot(currentSolution_, currentSolution_));
     if (verbose_) {
-      maquis::cout << " Final energy = " << en << std::endl;
+      maquis::cout << " Final energy = " << en + coreEnergy_ << std::endl;
       maquis::cout << std::endl;
     }
     maquis::cout.precision(prec);
@@ -105,25 +142,42 @@ public:
 
 protected:
 
+  /** @brief Solves the linear system with eigen */
+  template<EigenSolverType EigenSolver, PreconditionerType Preconditioner>
+  void eigenLinearSolver() {
+    using MatrixWrapperType = LinearSolverWrapper<Matrix, SymmGroup>;
+    using SolverType = typename EigenSolverTraitClass<MatrixWrapperType, EigenSolver, Preconditioner>::SolverType;
+    auto matrixFreeWrapper_ = MatrixWrapperType(sp_, rhsMPS_, precond_, shift_);
+    SolverType solver;
+    solver.setTolerance(gmresTol_);
+    solver.setMaxIterations(krylovDim_);
+    solver.compute(matrixFreeWrapper_);
+    // suppose unitary variance matrix to generate initial guess
+    Eigen::Matrix<ScalarType, Eigen::Dynamic, 1> initialEigenMatrix = currentSolution_.getEigenRepresentation();
+    Eigen::Matrix<ScalarType, Eigen::Dynamic, 1> rhsMatrix = rhsMPS_.getEigenRepresentation();
+    Eigen::Matrix<ScalarType, Eigen::Dynamic, 1> newEigenVector = solver.solveWithGuess(rhsMatrix, initialEigenMatrix);
+    maquis::cout << std::endl;
+    maquis::cout << " - Linear solver converged after " << solver.iterations() << " iterations." << std::endl;
+    maquis::cout << " - Final error: " << solver.error() << std::endl;
+    currentSolution_.fillWithEigenVector(newEigenVector);
+  }
+
   /**
    * @brief Solve the local linear system with the GMRES algorithm.
    * The implementation is based on Saad's book on iterative methods.
    */
   void gmres() {
-    if (verbose_) {
-      maquis::cout << " ------------------------------------- " << std::endl;
-      maquis::cout << " Iteration  | Rel. error estimate      " << std::endl;
-      maquis::cout << " ------------------------------------- " << std::endl;
-    }
     // Sets up the initial value of all parameters.
     int iter = 0;
     bool exit = false;
-    std::vector<MPSTensorType> vecSpace, precondVecSpace;
+    std::vector<MPSTensorType> vecSpace;
+    std::vector<MPSTensorType> precondVecSpace;
     std::vector<double> residual;
     residual.reserve(krylovDim_);
     vecSpace.reserve(krylovDim_);
-    if (precond_)
+    if (precond_) {
       precondVecSpace.reserve(krylovDim_);
+    }
     // vec_type y = vec_type::Zero(krylov_dim+1);
     vec_type y = vec_type(krylovDim_+1, 0.);
     std::vector<GivensType> givensRotations;
@@ -132,7 +186,8 @@ protected:
     // mat_type R = mat_type::Zero(krylov_dim+1, krylov_dim);
     mat_type H(krylovDim_+1, krylovDim_, 0.);
     mat_type R(krylovDim_+1, krylovDim_, 0.);
-    MPSTensorType initialError = rhsMPS_ - applyOperator(currentSolution_), preconditionedError;
+    MPSTensorType initialError = rhsMPS_ - applyOperator(currentSolution_);
+    MPSTensorType preconditionedError;
     double initialErrorNorm;
     if (precond_) {
       preconditionedError = initialError;
@@ -155,26 +210,31 @@ protected:
       }
     }
     y[0] = residual[0];
+    if (verbose_ && (residual[iter] > gmresTol_)) {
+      maquis::cout << " ------------------------------------- " << std::endl;
+      maquis::cout << " Iteration  | Rel. error estimate      " << std::endl;
+      maquis::cout << " ------------------------------------- " << std::endl;
+      maquis::cout << std::setw(5) << iter << "          " << std::setw(15) << std::scientific
+                   << residual[iter] << std::endl;
+    }
     // == MAIN LOOP ==
     while (residual[iter] > gmresTol_ && iter < krylovDim_-1 && !exit) {
-      if (verbose_) {
-        maquis::cout << std::setw(5) << iter << "          " << std::setw(15) << std::scientific
-                     << residual[iter] << std::endl;
-      }
       // Begin of the Arnoldi part
       auto Av = applyOperator(vecSpace[iter]);
       if (iter > 0) {
           H(iter-1, iter) = H(iter, iter-1);
-          if (precond_)
+          if (precond_) {
               Av -= H(iter, iter-1)*precondVecSpace[iter-1];
-          else
+          } else {
               Av -= H(iter, iter-1)*vecSpace[iter-1];
+          }
       }
       auto alpha = ietl::dot(vecSpace[iter], Av);
-      if (precond_)
+      if (precond_) {
           Av -= alpha*precondVecSpace[iter];
-      else
+      } else {
           Av -= alpha*vecSpace[iter];
+      }
       H(iter, iter) += alpha;
       MPSTensorType pAv;
       if (precond_) {
@@ -199,15 +259,21 @@ protected:
           }
       }
       // Solution of the linear system
-      for (int iRow = 0; iRow < iter+2; iRow++)
+      for (int iRow = 0; iRow < iter+2; iRow++) {
           R(iRow, iter) = H(iRow, iter);
-      for (int iPair = 0; iPair < iter; iPair++)
+      }
+      for (int iPair = 0; iPair < iter; iPair++) {
           std::tie(R(iPair, iter), R(iPair+1, iter)) = givensRotations[iPair].apply(R(iPair, iter), R(iPair+1, iter));
+      }
       givensRotations.emplace_back(GivensType(R(iter, iter), R(iter+1, iter)));
       std::tie(R(iter, iter), R(iter+1, iter)) = givensRotations[iter].apply(R(iter, iter), R(iter+1, iter));
       std::tie(y[iter], y[iter+1]) = givensRotations[iter].apply(y[iter], y[iter+1]);
       residual.push_back(std::abs(y[iter+1])/rhsNorm_);
       iter += 1;
+      if (verbose_) {
+        maquis::cout << std::setw(5) << iter << "          " << std::setw(15) << std::scientific
+                     << residual[iter] << std::endl;
+      }
     }
     // Final back-substitution
     if (iter != 0) {
@@ -216,8 +282,9 @@ protected:
       mat_type smallerMatrix(iter, iter, 0.);
       vec_type smallerVector(iter);
       for (int i = 0; i < iter; i++) {
-        for (int j = 0; j < iter; j++)
+        for (int j = 0; j < iter; j++) {
           smallerMatrix(i, j) = R(i, j);
+        }
         smallerVector[i] = y[i];
       }
       /*
@@ -230,10 +297,12 @@ protected:
       }
       */
       auto info = boost::numeric::bindings::lapack::gels(smallerMatrix, smallerVector);
-      if (info != 0)
+      if (info != 0) {
         throw std::runtime_error("Error in the solution of the linear systen");
-      for (int iFinal = 0; iFinal < iter; iFinal++)
+      }
+      for (int iFinal = 0; iFinal < iter; iFinal++) {
         currentSolution_ += smallerVector[iFinal]*vecSpace[iFinal];
+      }
         //currentSolution_ += result[iFinal]*vecSpace[iFinal];
       // DEBUG
       // vec_type diff(iter, 0.);
@@ -257,12 +326,14 @@ protected:
     // Sets up the initial value of all parameters.
     int iter = 0;
     bool exit = false;
-    std::vector<MPSTensorType> vecSpace, precondVecSpace;
+    std::vector<MPSTensorType> vecSpace;
+    std::vector<MPSTensorType> precondVecSpace;
     std::vector<double> residual;
     residual.reserve(krylovDim_);
     vecSpace.reserve(krylovDim_);
-    if (precond_)
+    if (precond_) {
       precondVecSpace.reserve(krylovDim_);
+    }
     // mat_type H = mat_type::Zero(krylov_dim+1, krylov_dim);
     mat_type H(krylovDim_+1, krylovDim_, 0.);
     auto v = applyOperator(rhsMPS_);
@@ -276,7 +347,8 @@ protected:
     std::vector<ScalarType> y(2);
     y[0] = residual[0];
     auto yk = 0.*rhsMPS_;
-    GivensType G1, G2;
+    GivensType G1;
+    GivensType G2;
     MPSTensorType MAv;
     // == MAIN LOOP ==
     while (residual[iter] > gmresTol_ && iter < krylovDim_-1 && !exit) {
@@ -287,16 +359,18 @@ protected:
       auto Av = applyOperator(vecSpace[iter]);
       if (iter > 0) {
         H(iter-1, iter) = H(iter, iter-1);
-        if (precond_)
+        if (precond_) {
           Av -= H(iter, iter-1)*precondVecSpace[iter-1];
-        else
+        } else {
           Av -= H(iter, iter-1)*vecSpace[iter-1];
+        }
       }
       auto alpha = ietl::dot(vecSpace[iter], Av);
-      if (precond_)
+      if (precond_) {
         Av -= alpha*precondVecSpace[iter];
-      else
+      } else {
         Av -= alpha*vecSpace[iter];
+      }
       H(iter, iter) = alpha;
       if (precond_) {
           MAv = Av;
@@ -322,22 +396,26 @@ protected:
       // vec_type R = vec_type::Zero(4);
       vec_type R(4, 0.);
       R(1) = maquis::real(H(iter-1, iter));
-      if (G1.isActivated())
+      if (G1.isActivated()) {
         std::tie(R(0), R(1)) = G1.apply(R(0), R(1));
+      }
       R(2) = maquis::real(H(iter, iter));
       R(3) = maquis::real(H(iter+1, iter));
-      if (G2.isActivated())
+      if (G2.isActivated()) {
         std::tie(R(1), R(2)) = G1.apply(R(1), R(2));
+      }
       G1 = G2;
       G2 = GivensType(R(2), R(3));
       R(2) = G2.getR();
       R(3) = 0.0;
       std::tie(y[0], y[1]) = G2.apply(y[0], y[1]);
       auto z = vecSpace[iter]/R(2);
-      if (iter > 2)
+      if (iter > 2) {
         z -= R(0)*W[0]/R(2);
-      if (iter > 1)
+      }
+      if (iter > 1) {
         z -= R(1)*W[1]/R(2);
+      }
       W[0] = W[1];
       W[1] = z;
       yk = yk + y[0]*z;
@@ -361,7 +439,7 @@ public:
     //if (isFolded_) {
     //    ietl::mult(sp, inputVec, retSquared, 0, true);
     //    if (params["lin_alg"] == "feast")
-    //        ret = retSquared - 2.*maquis::real(Z)*ret + inputVec*std::norm(Z);
+    //        ret = retSquared - 2.*maquis::real(Z)*ret + inputVec*std::abs(Z);
     //    else
     //        ret = retSquared - 2.*sigma*ret + inputVec*sigma*sigma;
     //}
@@ -381,8 +459,9 @@ private:
       for (size_t i = 0; i < num_rows(data[b]); ++i) {
         for (size_t j = 0; j < num_cols(data[b]); ++j) {
           denom = (precond_->operator[](b)(i, j) - shift_);
-          if (std::fabs(denom) > 1.0E-10)
-            data[b](i, j) /= std::fabs(denom);
+          if (std::abs(denom) > 1.0E-10) {
+            data[b](i, j) /= std::abs(denom);
+          }
         }
       }
     }
@@ -410,6 +489,7 @@ private:
   RealType rhsNorm_;                                         // Norm of the rhs term.
   static constexpr double zeroThresh_ = 1.0E-16;             // Numerical zero
   bool verbose_;                                             // Verbosity flag
+  RealType coreEnergy_;                                      // Core energy to be added to local result (nonzero for electronic problems)
 };
 
 #endif

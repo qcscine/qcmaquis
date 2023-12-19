@@ -10,7 +10,7 @@
 #define BOOST_NUMERIC_BINDINGS_BOOST_ARRAY_HPP
 
 #include <boost/numeric/bindings/detail/adaptor.hpp>
-#include <boost/array.hpp>
+#include <array>
 
 namespace boost {
 namespace numeric {
@@ -18,7 +18,7 @@ namespace bindings {
 namespace detail {
 
 template< typename T, std::size_t N, typename Id, typename Enable >
-struct adaptor< boost::array<T,N>, Id, Enable > {
+struct adaptor< std::array<T,N>, Id, Enable > {
 
     typedef typename copy_const< Id, T >::type value_type;
     typedef mpl::map<

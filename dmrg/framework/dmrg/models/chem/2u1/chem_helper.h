@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -18,18 +18,18 @@ namespace detail {
     class ChemHelper
     {
     public:
-        typedef typename M::value_type value_type;
+        using value_type = typename M::value_type;
         using InputType = double;
-        typedef ::term_descriptor<value_type> term_descriptor;
-        typedef typename TagHandler<M, S>::tag_type tag_type;
-        typedef Lattice::pos_t pos_t;
+        using term_descriptor = ::term_descriptor<value_type>;
+        using tag_type = typename TagHandler<M, S>::tag_type;
+        using pos_t = Lattice::pos_t;
 
         ChemHelper(BaseParameters & parms, Lattice const & lat_
                    , std::vector<tag_type> const & ident_, std::vector<tag_type> const & fill_
                    , std::shared_ptr<TagHandler<M, S> > tag_handler_)
-            : lat(lat_), ident(ident_), fill(fill_), tag_handler(tag_handler_)
+            : ident(ident_), fill(fill_), tag_handler(tag_handler_), lat(lat_)
         {
-            boost::tie(idx_, matrix_elements) = parse_integrals<InputType, S>(parms, lat);
+            std::tie(idx_, matrix_elements) = parse_integrals<InputType, S>(parms, lat);
 
             for (std::size_t m=0; m < matrix_elements.size(); ++m) {
                 IndexTuple pos;
@@ -45,13 +45,13 @@ namespace detail {
         }
 
         void commit_terms(std::vector<term_descriptor> & tagterms) {
-            for (typename std::map<IndexTuple, term_descriptor>::const_iterator it = two_terms.begin();
-                    it != two_terms.end(); ++it)
-                tagterms.push_back(it->second);
+            for (const auto& term : two_terms) {
+                tagterms.push_back(term.second);
+            }
 
-            for (typename std::map<SixTuple, term_descriptor>::const_iterator it = three_terms.begin();
-                    it != three_terms.end(); ++it)
-                tagterms.push_back(it->second);
+            for (const auto& term : three_terms) {
+                tagterms.push_back(term.second);
+            }
         }
 
         void add_term(std::vector<term_descriptor> & tagterms,
@@ -64,8 +64,9 @@ namespace detail {
             if (two_terms.count(id) == 0) {
                 two_terms[id] = term;
             }
-            else
+            else {
                 two_terms[id].coeff += term.coeff;
+            }
         }
 
         // two positions with four operators - multiply first and second operator pairs
@@ -73,7 +74,8 @@ namespace detail {
                       value_type scale, int p1, int p2, std::vector<tag_type> const & op_1, std::vector<tag_type> const & op_2,
                                                         std::vector<tag_type> const & op_3, std::vector<tag_type> const & op_4)
         {
-            std::pair<tag_type, value_type> ptag1, ptag2;
+            std::pair<tag_type, value_type> ptag1;
+            std::pair<tag_type, value_type> ptag2;
             ptag1 = tag_handler->get_product_tag(op_1[lat.get_prop<typename S::subcharge>("type", p1)],
                                                  op_2[lat.get_prop<typename S::subcharge>("type", p1)]);
             ptag2 = tag_handler->get_product_tag(op_3[lat.get_prop<typename S::subcharge>("type", p2)],
@@ -90,8 +92,9 @@ namespace detail {
             if (two_terms.count(id) == 0) {
                 two_terms[id] = term;
             }
-            else
+            else {
                 two_terms[id].coeff += term.coeff;
+            }
         }
 
         void add_term(std::vector<term_descriptor> & tagterms,
@@ -108,8 +111,9 @@ namespace detail {
             if (three_terms.count(id) == 0) {
                 three_terms[id] = term;
             }
-            else
+            else {
                 three_terms[id].coeff += term.coeff;
+            }
         }
 
         void add_term(std::vector<term_descriptor> & tagterms,
@@ -122,8 +126,9 @@ namespace detail {
 
                 // if i>j, we switch l,j to get the related term
                 // if j<i, we have to switch i,k, otherwise we get a forbidden permutation
-                IndexTuple self(i,j,k,l), twin(i,l,k,j);
-                if (i<j) twin = IndexTuple(k,j,i,l);
+                IndexTuple self(i,j,k,l);
+                IndexTuple twin(i,l,k,j);
+                if (i<j) { twin = IndexTuple(k,j,i,l); }
 
                 if (self > twin) {
 

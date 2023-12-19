@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -22,9 +22,9 @@ namespace generate_mpo
     template<class Matrix, class SymmGroup>
     class MPOMaker
     {
-        typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
-        typedef boost::tuple<size_t, size_t, op_t> block;
-        typedef vector< pair<op_t, op_t> > op_pairs;
+        using op_t = typename OPTable<Matrix, SymmGroup>::op_t;
+        using block = std::tuple<size_t, size_t, op_t>;
+        using op_pairs = vector<pair<op_t, op_t>>;
         
     public:
         MPOMaker(Lattice const& lat_,
@@ -43,7 +43,7 @@ namespace generate_mpo
             for (size_t p = 0; p < length; ++p)
             {
                 if (p+1 < length)
-                    prempo[p].push_back(boost::make_tuple(std::size_t(0), std::size_t(0), identities[lat.get_prop<int>("type",p)]));
+                    prempo[p].push_back(std::make_tuple(std::size_t(0), std::size_t(0), identities[lat.get_prop<int>("type",p)]));
             }
         }
         
@@ -72,7 +72,7 @@ namespace generate_mpo
                 size_t second_use_b = (it->first == maxp ? 1 : use_b);
                 assert( it->first < prempo.size() );
                 if (minp != maxp) { // bond term
-                    prempo[it->first].push_back(boost::make_tuple(first_use_b, second_use_b, it->second));
+                    prempo[it->first].push_back(std::make_tuple(first_use_b, second_use_b, it->second));
                     used_dims[it->first].insert(use_b);
                 } else // site term
                     site_terms[it->first] += it->second;
@@ -82,7 +82,7 @@ namespace generate_mpo
             for (size_t p = minp; p <= maxp; ++p)
                 if (!done[p]) {
                     op_t const& current_filling = (term.with_sign) ? fillings[lat.get_prop<int>("type",p)] : identities[lat.get_prop<int>("type",p)];
-                    prempo[p].push_back( boost::make_tuple(use_b, use_b, current_filling));
+                    prempo[p].push_back( std::make_tuple(use_b, use_b, current_filling));
                     used_dims[p].insert(use_b);
                     done[p] = true;
                 }
@@ -121,10 +121,10 @@ namespace generate_mpo
         {
             for (typename std::map<std::size_t, op_t>::const_iterator it = site_terms.begin();
                  it != site_terms.end(); ++it)
-                prempo[it->first].push_back( boost::make_tuple(0, 1, it->second) );
+                prempo[it->first].push_back( std::make_tuple(0, 1, it->second) );
 
             for (size_t p = leftmost_right + 1; p < length; ++p)
-                prempo[p].push_back( boost::make_tuple(1, 1, identities[lat.get_prop<int>("type",p)]) );
+                prempo[p].push_back( std::make_tuple(1, 1, identities[lat.get_prop<int>("type",p)]) );
 
             for (typename vector<vector<block> >::iterator it = prempo.begin();
                  it + 1 != prempo.end();

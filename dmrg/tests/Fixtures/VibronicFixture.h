@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -22,40 +22,43 @@ struct VibronicFixture
         parametersExcitonicAggregate.set("LATTICE", "vibronic lattice");
         parametersExcitonicAggregate.set("MODEL", "excitonic");
         parametersExcitonicAggregate.set("Nmax", 8);
-        parametersExcitonicAggregate.set("vibronic_nstates", 1);
-        parametersExcitonicAggregate.set("vibronic_nmodes", 10);
-        parametersExcitonicAggregate.set("n_excitons", 6);
-        parametersExcitonicAggregate.set("J_coupling", -500);
-        parametersExcitonicAggregate.set("J_interaction", "nn");
+        parametersExcitonicAggregate.set("vibronic_num_elestates", 1);
+        parametersExcitonicAggregate.set("vibronic_num_vibmodes", 10);
+        parametersExcitonicAggregate.set("vibronic_num_molecules", 6);
+        parametersExcitonicAggregate.set("vibronic_J_coupling", -500);
+        parametersExcitonicAggregate.set("vibronic_J_interaction_type", "nn");
         parametersExcitonicAggregate.set("integral_file", "integral_file_Excitonic");
+        parametersExcitonicAggregate.set("hamiltonian_units", "cm-1");
         //
         parametersExcitonicAggregateTwoSites.set("L", 22);
         parametersExcitonicAggregateTwoSites.set("symmetry", "u1");
         parametersExcitonicAggregateTwoSites.set("LATTICE", "vibronic lattice");
         parametersExcitonicAggregateTwoSites.set("MODEL", "excitonic");
         parametersExcitonicAggregateTwoSites.set("Nmax", 8);
-        parametersExcitonicAggregateTwoSites.set("vibronic_nstates", 1);
-        parametersExcitonicAggregateTwoSites.set("vibronic_nmodes", 10);
-        parametersExcitonicAggregateTwoSites.set("n_excitons", 2);
-        parametersExcitonicAggregateTwoSites.set("J_coupling", -500);
-        parametersExcitonicAggregateTwoSites.set("J_interaction", "nn");
+        parametersExcitonicAggregateTwoSites.set("vibronic_num_elestates", 1);
+        parametersExcitonicAggregateTwoSites.set("vibronic_num_vibmodes", 10);
+        parametersExcitonicAggregateTwoSites.set("vibronic_num_molecules", 2);
+        parametersExcitonicAggregateTwoSites.set("vibronic_J_coupling", -500);
+        parametersExcitonicAggregateTwoSites.set("vibronic_J_interaction_type", "nn");
         parametersExcitonicAggregateTwoSites.set("integral_file", "integral_file_Excitonic");
+        parametersExcitonicAggregateTwoSites.set("hamiltonian_units", "cm-1");
         // Vibronic models for S1/S2 states of pyrazine --> L=26
         parametersVibronic.set("L", 26);
         parametersVibronic.set("symmetry", "u1");
         parametersVibronic.set("LATTICE", "vibronic lattice");
         parametersVibronic.set("MODEL", "vibronic");
         parametersVibronic.set("Nmax", 6);
-        parametersVibronic.set("vibronic_nstates", 2);
-        parametersVibronic.set("vibronic_nmodes", 24);
+        parametersVibronic.set("vibronic_num_elestates", 2);
+        parametersVibronic.set("vibronic_num_vibmodes", 24);
+        parametersVibronic.set("hamiltonian_units", "cm-1");
         // "Fake" vibronic Hamiltonian with only a single state, with an Harmonic PES.
         parametersFakeVibronic.set("L", 4);
         parametersFakeVibronic.set("symmetry", "u1");
         parametersFakeVibronic.set("LATTICE", "vibronic lattice");
         parametersFakeVibronic.set("MODEL", "vibronic");
         parametersFakeVibronic.set("Nmax", 6);
-        parametersFakeVibronic.set("vibronic_nstates", 1);
-        parametersFakeVibronic.set("vibronic_nmodes", 3);
+        parametersFakeVibronic.set("vibronic_num_elestates", 1);
+        parametersFakeVibronic.set("vibronic_num_vibmodes", 3);
         parametersFakeVibronic.set("integral_file", "integral_file_VibronicFile");
         // Vibronic Hamiltonian for pyrazine, for the 4-mode Harmonic Hamiltonian.
         parametersVibronicPyrazineRedDim.set("L", 6);
@@ -63,18 +66,95 @@ struct VibronicFixture
         parametersVibronicPyrazineRedDim.set("LATTICE", "vibronic lattice");
         parametersVibronicPyrazineRedDim.set("MODEL", "vibronic");
         parametersVibronicPyrazineRedDim.set("Nmax", 6);
-        parametersVibronicPyrazineRedDim.set("vibronic_nstates", 2);
-        parametersVibronicPyrazineRedDim.set("vibronic_nmodes", 4);
+        parametersVibronicPyrazineRedDim.set("vibronic_num_elestates", 2);
+        parametersVibronicPyrazineRedDim.set("vibronic_num_vibmodes", 4);
         parametersVibronicPyrazineRedDim.set("integral_file", "integral_file_vibronic_Pyrazine_RedDim");
+        parametersVibronicPyrazineRedDim.set("hamiltonian_units", "cm-1");
         // Vibronic Hamiltonian for pyrazine, for the 4-mode full vibronic Hamiltonian.
         parametersVibronicPyrazineRedDimFull.set("L", 6);
         parametersVibronicPyrazineRedDimFull.set("symmetry", "u1");
         parametersVibronicPyrazineRedDimFull.set("LATTICE", "vibronic lattice");
         parametersVibronicPyrazineRedDimFull.set("MODEL", "vibronic");
         parametersVibronicPyrazineRedDimFull.set("Nmax", 6);
-        parametersVibronicPyrazineRedDimFull.set("vibronic_nstates", 2);
-        parametersVibronicPyrazineRedDimFull.set("vibronic_nmodes", 4);
+        parametersVibronicPyrazineRedDimFull.set("vibronic_num_elestates", 2);
+        parametersVibronicPyrazineRedDimFull.set("vibronic_num_vibmodes", 4);
         parametersVibronicPyrazineRedDimFull.set("integral_file", "integral_file_vibronic_Pyrazine_RedDim_Full");
+        parametersVibronicPyrazineRedDimFull.set("hamiltonian_units", "cm-1");
+        // Vibronic Hamiltonian for the thiphene dimer with a single harmonic mode
+        parametersVibronicThiopheneDimer.set("L", 4);
+        parametersVibronicThiopheneDimer.set("symmetry", "u1");
+        parametersVibronicThiopheneDimer.set("LATTICE", "vibronic lattice");
+        parametersVibronicThiopheneDimer.set("MODEL", "excitonic");
+        parametersVibronicThiopheneDimer.set("Nmax", 6); 
+        parametersVibronicThiopheneDimer.set("vibronic_num_elestates", 1);
+        parametersVibronicThiopheneDimer.set("vibronic_num_vibmodes", 1);
+        parametersVibronicThiopheneDimer.set("vibronic_num_molecules", 2);
+        parametersVibronicThiopheneDimer.set("vibronic_num_excitons", 1);
+        parametersVibronicThiopheneDimer.set("vibronic_J_coupling", 0);
+        parametersVibronicThiopheneDimer.set("vibronic_sorting", "intertwined");
+        parametersVibronicThiopheneDimer.set("integral_file", "integralFileThiopheneDimer");
+        parametersVibronicThiopheneDimer.set("nsweeps", 6);
+        parametersVibronicThiopheneDimer.set("max_bond_dimension",  20);
+        parametersVibronicThiopheneDimer.set("init_type", "basis_state_generic");
+        parametersVibronicThiopheneDimer.set("init_basis_state", "1,0,0,0");
+        parametersVibronicThiopheneDimer.set("simulation_type", "TD");
+        parametersVibronicThiopheneDimer.set("propagator_accuracy", 1.0E-10);
+        parametersVibronicThiopheneDimer.set("propagator_maxiter", 10);
+        parametersVibronicThiopheneDimer.set("time_step", 1);
+        parametersVibronicThiopheneDimer.set("hamiltonian_units", "Hartree");
+        parametersVibronicThiopheneDimer.set("time_units", "as");
+        //
+        parametersTestNmax.set("nsweeps", 10);
+        parametersTestNmax.set("max_bond_dimension", 20);
+        parametersTestNmax.set("optimization", "twosite");
+        parametersTestNmax.set("integral_file", "integralFileTestNmax");
+        parametersTestNmax.set("init_type", "basis_state_generic");
+        parametersTestNmax.set("init_basis_state", "0,0,0,1,0,0,0,0");
+        parametersTestNmax.set("Nmax", "1,2,3,4,5");
+        parametersTestNmax.set("symmetry", "u1");
+        parametersTestNmax.set("LATTICE", "vibronic lattice");
+        parametersTestNmax.set("MODEL", "excitonicextended");
+        parametersTestNmax.set("vibronic_J_coupling", 0);
+        parametersTestNmax.set("vibronic_sorting", "intertwined");
+        parametersTestNmax.set("vibronic_num_elestates", 1);
+        parametersTestNmax.set("vibronic_num_vibmodes", 2);
+        parametersTestNmax.set("vibronic_num_molecules", 3);
+        parametersTestNmax.set("vibronic_num_excitons", 1);
+        parametersTestNmax.set("vibronic_num_connectingmodes", 1);
+        parametersTestNmax.set("L", 8);
+        parametersTestNmax.set("simulation_type", "TD");
+        parametersTestNmax.set("propagator_accuracy", 1.0E-10);
+        parametersTestNmax.set("propagator_maxiter", 10);
+        parametersTestNmax.set("time_step", 1);
+        parametersTestNmax.set("hamiltonian_units", "Hartree");
+        parametersTestNmax.set("time_units", "as");
+        //
+        parametersExcitonicExtendedAggregate.set("L", 2);
+        parametersExcitonicExtendedAggregate.set("symmetry", "u1");
+        parametersExcitonicExtendedAggregate.set("LATTICE", "vibronic lattice");
+        parametersExcitonicExtendedAggregate.set("MODEL", "excitonic"); //still have to change this...
+        parametersExcitonicExtendedAggregate.set("Nmax", 8); 
+        parametersExcitonicExtendedAggregate.set("vibronic_num_elestates", 1);
+        parametersExcitonicExtendedAggregate.set("vibronic_num_vibmodes", 1);
+        parametersExcitonicExtendedAggregate.set("vibronic_num_molecules", 1);
+        parametersExcitonicExtendedAggregate.set("vibronic_J_coupling", -2);
+        parametersExcitonicExtendedAggregate.set("integral_file", "integral_file_ExcitonicExtended");
+        parametersExcitonicExtendedAggregate.set("hamiltonian_units", "Hartree");
+        //
+        parametersSimpleCoherent.set("max_bond_dimension", 50);
+        parametersSimpleCoherent.set("integral_file", "integral_file_simpleCoherent");
+        parametersSimpleCoherent.set("L", 4);
+        parametersSimpleCoherent.set("Nmax", 6);
+        parametersSimpleCoherent.set("symmetry", "u1");
+        parametersSimpleCoherent.set("LATTICE", "vibronic lattice");
+        parametersSimpleCoherent.set("MODEL", "excitonicextended");
+        parametersSimpleCoherent.set("vibronic_J_coupling", -0.0461);
+        parametersSimpleCoherent.set("vibronic_sorting", "intertwined");
+        parametersSimpleCoherent.set("vibronic_num_elestates", 1);        
+        parametersSimpleCoherent.set("vibronic_num_vibmodes", 1);
+        parametersSimpleCoherent.set("vibronic_num_molecules", 2);
+        parametersSimpleCoherent.set("vibronic_num_excitons", 1);
+        parametersSimpleCoherent.set("vibronic_num_connectingmodes", 0);
         //
         integralFileFakeVibronic.open("integral_file_VibronicFile");
         integralFileFakeVibronic << "EL_ST 0 0 " << std::endl;
@@ -232,6 +312,39 @@ struct VibronicFixture
         integralFilePyrazineRedDimFull << "  -44.44114904          2      4" << std::endl;
         integralFilePyrazineRedDimFull << "   10.24324125          3      4" << std::endl;
         integralFilePyrazineRedDimFull.close();
+        //
+        integralFileThiopheneDimer.open("integralFileThiopheneDimer");
+        integralFileThiopheneDimer << "-0.002633     -1      -1" << std::endl;
+        integralFileThiopheneDimer << "0.002633       1       1" << std::endl;
+        integralFileThiopheneDimer << "0              1       0" << std::endl;
+        integralFileThiopheneDimer.close();
+        //
+        integralFileExcitonicExtended.open("integral_file_ExcitonicExtended");
+        integralFileExcitonicExtended << "0.1       0       0       -1      -1" << std::endl;
+        integralFileExcitonicExtended << "0.2       0       0        1       1" << std::endl;
+        integralFileExcitonicExtended << "0.3       1       0       -1      -1" << std::endl;
+        integralFileExcitonicExtended << "0.4       1       0        0       0" << std::endl;
+        integralFileExcitonicExtended << "0.5       1       0        1       0" << std::endl;
+        integralFileExcitonicExtended << "0.6       1       0        1       1" << std::endl;
+        integralFileExcitonic.close();
+        //
+        integralFileTestNmax.open("integralFileTestNmax");
+        integralFileTestNmax << "-1. 0 0 -1 -1" << std::endl;
+        integralFileTestNmax << "1. 0 0 1 1" << std::endl;
+        integralFileTestNmax << "-1. 1 0 -1 -1" << std::endl;
+        integralFileTestNmax << "1. 1 0 1 1" << std::endl;
+        integralFileTestNmax << "-1.5 0 1 -2 -2" << std::endl;
+        integralFileTestNmax << "1.5 0 1 2 2" << std::endl;
+        integralFileTestNmax << "-2. 1 1 -2 -2" << std::endl;
+        integralFileTestNmax << "2. 1 1 2 2" << std::endl;
+        integralFileTestNmax.close();
+        //
+        IntegralFileSimpleCoherent.open("integral_file_simpleCoherent");
+        IntegralFileSimpleCoherent << "-1.0 0 0 -1 -1" << std::endl;
+        IntegralFileSimpleCoherent << "1.0 0 0 1 1" << std::endl;
+        IntegralFileSimpleCoherent << "-2.0 1 0 -1 -1" << std::endl;
+        IntegralFileSimpleCoherent << "2.0 1 0 1 1" << std::endl;
+        IntegralFileSimpleCoherent.close();
     }
 
     /** @brief Class destructor */
@@ -245,9 +358,10 @@ struct VibronicFixture
 
     // Class members
     DmrgParameters parametersVibronic, parametersFakeVibronic, parametersExcitonicAggregate,
-        parametersExcitonicAggregateTwoSites, parametersVibronicPyrazineRedDim, parametersVibronicPyrazineRedDimFull;
+        parametersExcitonicAggregateTwoSites, parametersVibronicPyrazineRedDim, parametersVibronicPyrazineRedDimFull, parametersVibronicThiopheneDimer,
+        parametersExcitonicExtendedAggregate, parametersTestNmax, parametersSimpleCoherent;
     std::ofstream integralFileFakeVibronic, integralFileExcitonic, integralFileExcitonicHarmonic,
-        integralFilePyrazineRedDim, integralFilePyrazineRedDimFull;
+        integralFilePyrazineRedDim, integralFilePyrazineRedDimFull, integralFileThiopheneDimer, integralFileExcitonicExtended, integralFileTestNmax, IntegralFileSimpleCoherent;
 };
 
 #endif

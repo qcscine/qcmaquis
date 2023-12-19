@@ -1,12 +1,14 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
 #ifndef MAQUIS_DMRG_PREBO_TERMGENERATOR_HPP
 #define MAQUIS_DMRG_PREBO_TERMGENERATOR_HPP
+
+#ifdef DMRG_PREBO
 
 #include "dmrg/models/lattice/lattice.h"
 #include "dmrg/models/OperatorHandlers/TagHandler.h"
@@ -15,7 +17,6 @@
 #include "prebo_TagGenerator.hpp"
 #include "integral_interface.h"
 
-#ifdef DMRG_PREBO
 
 namespace prebo {
 

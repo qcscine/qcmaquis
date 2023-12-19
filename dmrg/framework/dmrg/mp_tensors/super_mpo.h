@@ -1,12 +1,15 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
 #ifndef SUPER_MPO_H
 #define SUPER_MPO_H
+
+#include <tuple>
+#include <unordered_map>
 
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
@@ -14,11 +17,11 @@
 
 
 namespace detail {
-    /// This functor is needed because boost::function<> f = boost::lambda::bind()
+    /// This functor is needed because std::function<> f = boost::lambda::bind()
     /// fails with Boost 1.57.0 and Clang compilers.
     template <class SymmGroup>
     struct phys_fuse_functor {
-        typedef typename SymmGroup::charge charge;
+        using charge = typename SymmGroup::charge;
         charge operator()(charge a, charge b) {
             return SymmGroup::fuse(a, -b);
         }
@@ -52,10 +55,10 @@ template <class Matrix, class SymmGroup>
 typename std::enable_if<!symm_traits::HasSU2<SymmGroup>::value, MPS<Matrix, SymmGroup> >::type
 mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<SymmGroup> const& phys_i)
 {
-    typedef typename SymmGroup::charge charge;
-    typedef boost::unordered_map<size_t,std::pair<charge,size_t> > bond_charge_map;
-    typedef typename MPOTensor<Matrix, SymmGroup>::row_proxy row_proxy;
-    typedef typename operator_selector<Matrix, SymmGroup>::type op_t;
+    using charge = typename SymmGroup::charge;
+    using bond_charge_map = std::unordered_map<size_t, std::pair<charge, size_t>>;
+    using row_proxy = typename MPOTensor<Matrix, SymmGroup>::row_proxy;
+    using op_t = typename operator_selector<Matrix, SymmGroup>::type;
 
     MPS<Matrix, SymmGroup> mps(mpo.size());
 
@@ -88,7 +91,7 @@ mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<SymmGroup> const& phys_i)
 
                     /// note: this has to be here, because we don't know if b1 exists
                     charge l_charge; size_t ll;
-                    boost::tie(l_charge, ll) = left_map[b1];
+                    std::tie(l_charge, ll) = left_map[b1];
                     size_t l_size = left_i[left_i.position(l_charge)].second;
 
                     typename Matrix::value_type scale = mpo[i].at(b1, b2).scale();
@@ -96,9 +99,9 @@ mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<SymmGroup> const& phys_i)
                     for (size_t n=0; n<in_block.n_blocks(); ++n)
                     {
                         charge s1_charge; size_t size1;
-                        boost::tie(s1_charge, size1) = boost::make_tuple(in_block.basis().left_charge(n), in_block.basis().left_size(n));
+                        std::tie(s1_charge, size1) = std::make_tuple(in_block.basis().left_charge(n), in_block.basis().left_size(n));
                         charge s2_charge; size_t size2;
-                        boost::tie(s2_charge, size2) = boost::make_tuple(in_block.basis().right_charge(n), in_block.basis().right_size(n));
+                        std::tie(s2_charge, size2) = std::make_tuple(in_block.basis().right_charge(n), in_block.basis().right_size(n));
 
                         charge s_charge = phys_fuse(s1_charge, s2_charge);
                         charge out_l_charge = SymmGroup::fuse(s_charge, l_charge);
@@ -193,17 +196,18 @@ template <class Matrix, class InSymm>
 MPS<Matrix, typename grouped_symmetry<InSymm>::type> mpo_to_smps_group(MPO<Matrix, InSymm> const& mpo, Index<InSymm> const& phys_i,
                                                                        std::vector<Index<typename grouped_symmetry<InSymm>::type> > const& allowed)
 {
-    typedef typename operator_selector<Matrix, InSymm>::type op_t;
-    typedef typename grouped_symmetry<InSymm>::type OutSymm;
-    typedef typename InSymm::charge in_charge;
-    typedef typename OutSymm::charge out_charge;
-    typedef boost::unordered_map<size_t,std::pair<out_charge,size_t> > bond_charge_map;
-    typedef typename MPOTensor<Matrix, InSymm>::row_proxy row_proxy;
+    using op_t = typename operator_selector<Matrix, InSymm>::type;
+    using OutSymm = typename grouped_symmetry<InSymm>::type;
+    using in_charge = typename InSymm::charge;
+    using out_charge = typename OutSymm::charge;
+    using bond_charge_map = std::unordered_map<size_t, std::pair<out_charge, size_t>>;
+    using row_proxy = typename MPOTensor<Matrix, InSymm>::row_proxy;
 
     MPS<Matrix, OutSymm> mps(mpo.size());
 
-    boost::function<out_charge (in_charge, in_charge)> phys_group = boost::lambda::bind(static_cast<out_charge(*)(in_charge, in_charge)>(group),
-                                                                                        boost::lambda::_1, -boost::lambda::_2);
+    auto phys_group = [](const in_charge& a, const in_charge& b){
+      return group(a, b);
+    };
 
     Index<OutSymm> phys2_i = group(phys_i, adjoin(phys_i));
     Index<OutSymm> left_i, right_i;
@@ -238,9 +242,9 @@ MPS<Matrix, typename grouped_symmetry<InSymm>::type> mpo_to_smps_group(MPO<Matri
                         for (size_t n=0; n<in_block.n_blocks(); ++n)
                         {
                             in_charge s1_charge; size_t size1;
-                            boost::tie(s1_charge, size1) = boost::make_tuple(in_block.basis().left_charge(n), in_block.basis().left_size(n));
+                            std::tie(s1_charge, size1) = std::make_tuple(in_block.basis().left_charge(n), in_block.basis().left_size(n));
                             in_charge s2_charge; size_t size2;
-                            boost::tie(s2_charge, size2) = boost::make_tuple(in_block.basis().right_charge(n), in_block.basis().right_size(n));
+                            std::tie(s2_charge, size2) = std::make_tuple(in_block.basis().right_charge(n), in_block.basis().right_size(n));
 
                             out_charge s_charge = phys_group(s1_charge, s2_charge);
                             out_charge out_l_charge = OutSymm::fuse(s_charge, l_charge);

@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -12,6 +12,8 @@
 #include <vector>
 
 // Unit test for integral map
+#include <array>
+#include <utility>
 #include <boost/test/included/unit_test.hpp>
 #include "utils/fpcomparison.h"
 #include "dmrg/block_matrix/symmetry/gsl_coupling.h"

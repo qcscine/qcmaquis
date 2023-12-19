@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -19,19 +19,14 @@ inline std::pair<std::vector<chem::index_type<chem::Hamiltonian::PreBO>>, std::v
 parse_integrals(BaseParameters & parms, Lattice const & lat)
 {
     typedef Lattice::pos_t pos_t;
-
     std::vector<T> matrix_elements;
-
-    // ********************************************************************
-    // *** Parse orbital data *********************************************
-    // ********************************************************************
-
     std::vector<chem::index_type<chem::Hamiltonian::PreBO>> indices;
 
     if (parms.is_set("integral_file")) {
         std::string integral_file = parms["integral_file"];
-        if (!boost::filesystem::exists(integral_file))
+        if (!std::filesystem::exists(integral_file)) {
             throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
+        }
 
         std::ifstream orb_file;
         std::string line_string;
@@ -50,13 +45,11 @@ parse_integrals(BaseParameters & parms, Lattice const & lat)
         //                                               The matrix element would be
         //                                               zero otherwise.
         while (getline(orb_file, line_string)) {
-            if (line_string[0] == '#' || line_string == "")
-                continue;
+            if (line_string[0] == '#' || line_string == "") { continue; }
             // initialize integral value
             T integral;
             // initialize splitted line
             std::vector<std::string> line_splitted;
-            std::vector<std::size_t> size_vec;
             // -- Main data parsing --
             // Trim leading and final spaces in the string.
             line_string.erase(line_string.begin(),
@@ -101,8 +94,9 @@ parse_integrals(BaseParameters & parms, Lattice const & lat)
                     if (i < indices_str.size()) {
                         t.first[i] = std::stoul(indices_str[i]);
                         assert(t.first[i] < lat.size());
-                    } else
+                    } else {
                         t.first[i] = -1;
+                    }
                 }
             }
             if (std::abs(t.second) > parms["integral_cutoff"]) {
@@ -128,8 +122,9 @@ parse_integrals(BaseParameters & parms, Lattice const & lat)
             }
         }
     }
-    else
+    else {
         throw std::runtime_error("Integrals are not defined in the input.");
+    }
 
     // Integral dumping into HDF5 below MUST BE DISABLED
     // if one builds dmrg_multi_meas!
@@ -140,10 +135,12 @@ parse_integrals(BaseParameters & parms, Lattice const & lat)
         // dump indices but starting with 1 and with 0 as originally in the FCIDUMP
         std::vector<Lattice::pos_t> indices_vec;
 
-        indices_vec.reserve(chem::getIndexDim(chem::Hamiltonian::PreBO)*indices.size());
-        for (auto&& idx: indices)
-            for (auto&& i: idx)
+        indices_vec.reserve(chem::getIndexDim(chem::Hamiltonian::PreBO, chem::HamiltonianTransformation::Conventional)*indices.size());
+        for (auto&& idx: indices) {
+            for (auto&& i: idx) {
                 indices_vec.push_back(i);
+            }
+        }
 
         storage::archive ar(parms["resultfile"], "w");
         ar["/integrals/elements"] << matrix_elements;

@@ -1,28 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2023 Reiher Group, ETH Zurich
- *               2023- by Nina Glaser <nglaser@phys.chem.ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #include "srcas_utilities.h"
 
@@ -40,18 +21,20 @@ template <typename ScalarType> // real or complex
 SRCAS<ScalarType>::SRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceType> interface) :
     interface_(interface), uniformDist_(0.,1.), uniformRandomNumber_(generator_,uniformDist_),
     geomDist_(1.0-parameters["srcas_samplingSpeed"]), geometricRandomNumber_(generator_,geomDist_),
-    parms_(parameters)
+    parms_(parameters), verboseForPlotting_(false)
 {
+    if (parms_["srcas_veryVerbose"] == "yes")
+        verboseForPlotting_ = true;
     generator_.seed(parms_["seed"]);
-    // Get the number of modes and the maximum occupation of each one
-    if(parms_["MODEL"] == "nmode") {
+    // Get the sampling space
+    if(parms_["MODEL"] == "nmode") { // Get the number of modes and the maximum occupation of each one
         numParticles_ = parms_["nmode_num_modes"];
         maxDetStr_ = parms_["nmode_num_basis"].str();
-        detSpace_ = parms_["nmode_num_basis"].as<std::vector<int> >();
+        detSpace_ = parms_["nmode_num_basis"].template as<std::vector<int> >();
     } else if (parms_["MODEL"] == "watson") {
         numParticles_ = parms_["L"];
         maxDetStr_ = parms_["Nmax"].str();
-        detSpace_ = parms_["Nmax"].as<std::vector<int> >();
+        detSpace_ = parms_["Nmax"].template as<std::vector<int> >();
         if (detSpace_.size()!=numParticles_ && detSpace_.size()!=1){
             throw std::runtime_error("The Nmax parameter must be either a single integer, or a vector of lenght L");
         }
@@ -64,10 +47,12 @@ SRCAS<ScalarType>::SRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceTy
             detSpace_ = std::move(tmpVec);
         }
     } else if (parms_["MODEL"] == "quantum_chemistry") {
-        if (parms_["symmetry"]=="su2u1" || parms_["symmetry"]=="su2u1pg")
+        if (parms_["symmetry"]=="su2u1" || parms_["symmetry"]=="su2u1pg") {
             numParticles_ = parms_["nelec"];
-        else
+            maquis::cout << "WARNING: SU2 symmetry is not properly supported in SRCAS (yet)!" << std::endl;
+        } else {
             numParticles_ = int(parms_["u1_total_charge1"])+ int(parms_["u1_total_charge2"]);
+        }
         maxDetStr_ = "4";
         for (int i=1; i<parms_["L"]; i++) {
             maxDetStr_ += ",4";
@@ -81,14 +66,14 @@ SRCAS<ScalarType>::SRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceTy
     // If user set a starting det, use this, otherwise use the HF/VSCF ground state
     if (parms_.is_set("init_basis_state")) {
         startingDet_ = parms_["init_basis_state"].str();
-        detQueen_ = parms_["init_basis_state"].as<std::vector<int> >();
+        detQueen_ = parms_["init_basis_state"].template as<std::vector<int> >();
     } else {
         if (parms_["MODEL"] == "nmode" || parms_["MODEL"] == "watson") {
             startingDet_ = "0";
             for (int i=1; i<numParticles_; i++) startingDet_ += ",0";
             std::vector<int> tmpVec(numParticles_, 0);
             detQueen_ = std::move(tmpVec);
-        } else {
+        } else { // Electronic case: use HF det as starting point
             int numDoubleOcc = numParticles_ / 2;
             startingDet_ = "";
             detQueen_.resize(parms_["L"]);
@@ -120,7 +105,7 @@ SRCAS<ScalarType>::SRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceTy
     detTmp_ = detQueen_;
 }
 
-template <typename ScalarType> // real or complex, nmode or canonical (watson)
+template <typename ScalarType>
 void SRCAS<ScalarType>::printSRCASSettings() {
     maquis::cout << std::endl << "----- SRCAS SETTINGS -----" << std::endl;
     maquis::cout << "MPS taken from:                             " << parms_["chkpfile"].str() << std::endl;
@@ -131,10 +116,13 @@ void SRCAS<ScalarType>::printSRCASSettings() {
     maquis::cout << "Maximum number of iterations is:            " << parms_["srcas_maxNumIterations"] << std::endl;
     maquis::cout << "Number of samples per iteration is:         " << parms_["srcas_numSamples"] << std::endl;
     maquis::cout << "Random number seed is:                      " << parms_["seed"] << std::endl;
-    maquis::cout << "Sampling speed for simultaneous updates is: " << parms_["srcas_samplingSpeed"] << std::endl;
+    if (parms_["MODEL"] != "quantum_chemistry") {
+        maquis::cout << "Sampling speed for simultaneous updates is: " << parms_["srcas_samplingSpeed"] << std::endl;
+    }
+    maquis::cout << "SRCAS veryVerbose setting is:               " << verboseForPlotting_ << std::endl;
 }
 
-template <typename ScalarType> // real or complex, nmode or canonical (watson)
+template <typename ScalarType>
 void SRCAS<ScalarType>::quicksort(std::string dets[], ScalarType b[], int left, int right) {
     double pivot = std::abs(b[(left+right)/2]);
     int l = left;
@@ -163,7 +151,7 @@ void SRCAS<ScalarType>::quicksort(std::string dets[], ScalarType b[], int left, 
     if (l < right) quicksort(dets, b, l, right);
 }
 
-template <typename ScalarType> // real or complex
+template <typename ScalarType>
 int SRCAS<ScalarType>::getARandomOccSpinOrb(std::vector<int> det) {
     std::vector<int> indices;
     for (int i = 1; i<= det.size(); i++) {
@@ -180,7 +168,7 @@ int SRCAS<ScalarType>::getARandomOccSpinOrb(std::vector<int> det) {
     return indices[whichIndex];
 }
 
-template <typename ScalarType> // real or complex
+template <typename ScalarType>
 int SRCAS<ScalarType>::getARandomUnoccSpinOrb(std::vector<int> det) {
     std::vector<int> indices;
     for (int i = 1; i<= det.size(); i++) {
@@ -197,7 +185,8 @@ int SRCAS<ScalarType>::getARandomUnoccSpinOrb(std::vector<int> det) {
     return indices[whichIndex];
 }
 
-template <typename ScalarType> // real or complex
+// checks whether electronic symmetries are fulfilled
+template <typename ScalarType>
 bool SRCAS<ScalarType>::symmetriesFulfilled(std::vector<int> det) {
     int nUnpaired=0;
     int nAlpha=0;
@@ -220,7 +209,7 @@ bool SRCAS<ScalarType>::symmetriesFulfilled(std::vector<int> det) {
         return ((nAlpha==parms_["u1_total_charge1"]) && (nBeta==parms_["u1_total_charge2"]));
 }
 
-template <typename ScalarType> // real or complex
+template <typename ScalarType>
 std::vector<int> SRCAS<ScalarType>::generateNewDet() {
     // Start from queen
     detTmp_= detQueen_;
@@ -263,7 +252,7 @@ void SRCAS<ScalarType>::run() {
     hashTable_[detQueen_] = overlap;
 
     // Initialize variables that are used during the sampling
-    double x, ci_ratio, sum_ci2 = 0.0;
+    double x, ci_ratio, sum_ci2 = addToCompleteness(overlap, detQueen_);
     ScalarType ci_tmp, ci0 = overlap;
      
     int nMacroIter = 0, nSampled = 1, nAcceptedQueen = 0;    
@@ -277,8 +266,8 @@ void SRCAS<ScalarType>::run() {
             // Get new determinant
             detTmp_ = generateNewDet();
 
-            // Updates the data if the determinant has not been visited yet.
-            iter_ = hashTable_.find(detTmp_) ;
+            iter_ = hashTable_.find(detTmp_);
+            // Updates the lookup table if the determinant has not been visited yet
             if(iter_ == hashTable_.end()) {
                 detTmpStr_ = std::to_string(detTmp_[0]);
                 for (int i=1; i<detTmp_.size(); i++) {
@@ -286,10 +275,11 @@ void SRCAS<ScalarType>::run() {
                     detTmpStr_ += std::to_string(detTmp_[i]);
                 }
                 overlap = interface_->getCICoefficient(detTmpStr_);
-                // The data are stored based on the CI_threshold parameter
+                // The dets are stored based on the CI_threshold parameter
                 if(std::abs(overlap) >= parms_["srcas_overlapThreshold"]) {
                     hashTable_[detTmp_] = overlap;
                     nSampled++;
+                    sum_ci2 += addToCompleteness(overlap, detTmp_);
                 }
             } else {
                 overlap = iter_->second;
@@ -302,6 +292,9 @@ void SRCAS<ScalarType>::run() {
                 detQueen_ = detTmp_;
                 ci0 = overlap;
                 nAcceptedQueen++ ;
+            }
+            if (verboseForPlotting_){
+                maquis::cout << "Macroiteration = " << nMacroIter << ", sample = " << isample << ", completeness = " << sum_ci2 << std::endl; 
             }
         }
         sum_ci2 = calculateCompleteness();
@@ -323,21 +316,26 @@ template <typename ScalarType> // real or complex
 double SRCAS<ScalarType>::calculateCompleteness () {
     double sum_ci2 = 0.0;
     for (iter_=hashTable_.begin(); iter_!=hashTable_.end(); iter_++) {
-        double factor = 1.0;
-        if (parms_["symmetry"]=="su2u1" || parms_["symmetry"]=="su2u1pg"){
-            std::vector<int> det = iter_->first;
-            int nUnpaired = 0;
-            for (int i=0; i< det.size(); i++) {       
-                if (det[i]==3 || det[i]==2)
-                    nUnpaired++;
-            }
-            if (nUnpaired>0)
-                factor /= pow(2.0, nUnpaired);
-        }
-        sum_ci2 += factor * pow(std::abs(iter_->second),2.0);
+        sum_ci2 += addToCompleteness(iter_->second, iter_->first);
     }
     return sum_ci2;
 }
+
+template <typename ScalarType> // real or complex
+double SRCAS<ScalarType>::addToCompleteness (ScalarType coeff, std::vector<int> det) {
+    double factor = 1.0;
+    if (parms_["symmetry"]=="su2u1" || parms_["symmetry"]=="su2u1pg"){
+        int nUnpaired = 0;
+        for (int i=0; i< det.size(); i++) {       
+            if (det[i]==3 || det[i]==2)
+                nUnpaired++;
+        }
+        if (nUnpaired>0)
+            factor /= pow(2.0, nUnpaired);
+    }
+    return factor * pow(std::abs(coeff),2.0);
+}
+
 
 // +---------------+
 //   FINAL PRINTING

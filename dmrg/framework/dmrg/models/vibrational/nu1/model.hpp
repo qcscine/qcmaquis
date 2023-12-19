@@ -1,28 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2017 Institute for Theoretical Physics, ETH Zurich
- *               2017- by Alberto Baiardi <alberto.baiardi@phys.chem.ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef MODELS_VIBRATIONAL_NU1_H
 #define MODELS_VIBRATIONAL_NU1_H
@@ -297,12 +278,10 @@ private:
         pos.reserve(ham_term.size());
         do {
             // Retrieves matrix element
-            // auto offset = lattice.get_prop<int>("sublatticePos", ham_term[2*jCont]-1);
-            // auto index  = ham_term[2*jCont+1] + offset;
             auto index = lattice.get_prop<int>("absolutePositionInLattice", ham_term[2*jCont]-1, ham_term[2*jCont+1]);
             assert(index < lattice_size);
             pos.push_back(index);
-            if (jCont % 2 == 0)
+            if (jCont % 2 == 0) // since operators always come pairwise per mode
                ops.push_back(create[siteTypes[index]]);
             else
                ops.push_back(destroy[siteTypes[index]]);

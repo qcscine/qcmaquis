@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -31,8 +31,8 @@ public:
     
   /** @brief Class constructor */
   explicit VibronicLattice(BaseParameters & parameters) 
-      : L(0), vector_types(0), nElecStates(parameters["vibronic_nstates"].as<int>()), 
-        nModes(parameters["vibronic_nmodes"].as<int>()), nParticles(0), eleFirst(false)
+      : L(0), nElecStates(parameters["vibronic_num_elestates"].as<int>()), vector_types(0),
+        nModes(parameters["vibronic_num_vibmodes"].as<int>()), nParticles(0), eleFirst(false)
   {
     // Checks consistency
     // Determines the number of particles. Note that here by number of particles
@@ -43,7 +43,12 @@ public:
     else if (parameters["MODEL"] == "excitonic") {
         if (nElecStates != 1)
             throw std::runtime_error("Excitonic model currently supports only 1 electronic state");
-        nParticles = parameters["n_excitons"].as<int>();
+        nParticles = parameters["vibronic_num_molecules"].as<int>();
+    }
+    else if (parameters["MODEL"] == "excitonicextended") {
+        if (nElecStates != 1)
+            throw std::runtime_error("Extended excitonic model currently supports only 1 electronic state");
+        nParticles = parameters["vibronic_num_molecules"].as<int>();
     }
     else {
         throw std::runtime_error("Lattice not coherent with the current MODEL");
@@ -52,9 +57,20 @@ public:
     // Note that here we assume that, for the excitonic case, all molecules are 
     // described by the same Hamiltonian. This means, in practice, that, for each "particle",
     // we have the same number of modes and electronic states. The number of particles is
-    // 1 for the excitonic case.
-    if ((nModes+nElecStates)*nParticles != L)
-      throw std::runtime_error("Incoherence in lattice size for this vibronic lattice");
+    // 1 for the vibronic case.
+    if(parameters["MODEL"] == "vibronic" || parameters["MODEL"] == "excitonic"){
+      if ((nModes+nElecStates)*nParticles != L){
+        throw std::runtime_error("Incoherence in lattice size for this vibronic lattice");
+      }
+    }
+
+    if(parameters["MODEL"] == "excitonicextended"){
+      int nConnecting = parameters["vibronic_num_connectingmodes"].as<int>();
+      if (((nModes+nElecStates)*nParticles-nConnecting) != L){
+        throw std::runtime_error("Incoherence in lattice size for this vibronic lattice"); 
+      }
+    }
+
     vector_types.resize(L);
     // Sites sorting. If == "firstele", put first all the excited states.
     // Otherwise, intertwine electronic and vibrational DOF (for the excitonic case).
@@ -62,16 +78,48 @@ public:
       eleFirst = true;
     // The site type is used to distinguish between electronic and vibrational degrees
     // of freedom. Note that we don't distinguish between different "electronic particles"
-    // since it 
-    if (eleFirst)
-      for (auto idx1 = 0; idx1 < nParticles*nElecStates; idx1++)
-        vector_types[idx1] = 1;
-    else
-      for (auto idx1 = 0; idx1 < nParticles; idx1++)
-        for (auto idx2 = 0; idx2 < nElecStates; idx2++)
-          vector_types[(nModes+nElecStates)*idx1+idx2] = 1;
-    // Monodimensional chain, the maximum number of vertex is 1.
-    numTypes = 2;
+    // since it
+    if(parameters["MODEL"] == "excitonicextended"){
+      int nConnecting = parameters["vibronic_num_connectingmodes"].as<int>();
+      if (eleFirst){
+        throw std::runtime_error("only intertwined sorting possible for this model");
+      }
+      else{
+        int vibtype = 1;
+        for (auto idx1 = 0; idx1 < nParticles; idx1++){
+          for (auto idx2 = 0; idx2 < nElecStates; idx2++){
+            vector_types[(nModes+nElecStates)*idx1+idx2] = 0; //electronic type
+            for(auto idx3 = 1; idx3 <= nModes; idx3++){
+              if((nModes+nElecStates)*idx1+idx2+idx3 < L) { //checks whether still within allowed range
+                vector_types[(nModes+nElecStates)*idx1+idx2+idx3] = vibtype; //vibrational type
+                vibtype++;
+              }
+            }
+          }
+        }
+      }
+      numTypes = nModes*nParticles-nConnecting+1;
+    } else { 
+      if (eleFirst) {
+        for (auto idx1 = 0; idx1 < nParticles*nElecStates; idx1++) {
+          vector_types[idx1] = 0; // electronic site
+        }
+        for (auto idxVib = nParticles*nElecStates; idxVib < L; idxVib++) {
+          vector_types[idxVib] = 1; // vibrational site
+        }
+      } else {
+        for (auto idx1 = 0; idx1 < nParticles; idx1++) {
+          for (auto idx2 = 0; idx2 < nElecStates; idx2++) {
+            vector_types[(nModes+nElecStates)*idx1+idx2] = 0; // electronic site
+          }
+          for (auto idxVib = 0; idxVib < nModes; idxVib++) {
+            vector_types[(nModes+nElecStates)*idx1+nElecStates+idxVib] = 1; // vibrational site
+          }
+        }
+      }
+      // Monodimensional chain, the maximum number of vertex is 1.
+      numTypes = 2;
+    }
   }
 
   /** @brief Returns the next position in the lattice */
@@ -102,35 +150,35 @@ public:
    * 
    * @param property Property identified
    * @param pos vector with the positions associated with the property to be calculated.
-   * @return boost::any requested property.
+   * @return std::any requested property.
    */
-  boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const
+  std::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const
   {
     if (property == "label" && pos.size() == 1)
-      return boost::any(site_label(pos[0]));
+      return std::any(site_label(pos[0]));
     else if (property == "label" && pos.size() == 2)
-      return boost::any(bond_label(pos[0], pos[1]));
+      return std::any(bond_label(pos[0], pos[1]));
     else if (property == "type" && pos.size() == 1)
-      return boost::any(vector_types[pos[0]]);
+      return std::any(vector_types[pos[0]]);
     else if (property == "ParticleType" && pos.size() == 1)
-      return boost::any(vector_types[pos[0]]);
+      return std::any(vector_types[pos[0]]);
     else if (property == "NumTypes")
-      return boost::any(2);
+      return std::any(2);
     else if (property == "vibindex" && pos.size() == 2)
       // In this case the first index is the molecule, the second one is the specific
       // mode that molecule.
-      return (eleFirst) ? boost::any(nParticles*nElecStates+pos[0]*nModes+pos[1]) :
-                          boost::any((nElecStates+nModes)*pos[0]+nElecStates+pos[1]);
+      return (eleFirst) ? std::any(nParticles*nElecStates+pos[0]*nModes+pos[1]) :
+                          std::any((nElecStates+nModes)*pos[0]+nElecStates+pos[1]);
     else if (property == "eleindex" && pos.size() == 2)
       // In this case the first index is the molecule, the second one is the specific
       // excited state of that molecule.
-      return (eleFirst) ? boost::any(nElecStates*pos[0]+pos[1]) :
-                          boost::any((nElecStates+nModes)*pos[0]+pos[1]);
+      return (eleFirst) ? std::any(nElecStates*pos[0]+pos[1]) :
+                          std::any((nElecStates+nModes)*pos[0]+pos[1]);
     else {
       std::ostringstream ss;
       ss << "No property '" << property << "' with " << pos.size() << " points implemented.";
       throw std::runtime_error(ss.str());
-      return boost::any();
+      return std::any();
     }
   }
 
@@ -147,7 +195,7 @@ private:
   pos_t nElecStates;
   /** Number of vibrational modes */
   pos_t nModes;
-  /** Number of excitons */
+  /** Number of monomer systems */
   pos_t nParticles;
   /** Maximum number of vertexes */
   int numTypes;

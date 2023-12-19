@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -39,18 +39,19 @@ namespace maquis
     {
 
 #if defined(HAVE_SU2U1PG)
-        typedef SU2U1PG SU2U1grp;
-        typedef TwoU1PG TwoU1grp;
+        using SU2U1grp = SU2U1PG;
+        using TwoU1grp = TwoU1PG;
 #elif defined(HAVE_SU2U1)
-        typedef SU2U1 SU2U1grp;
-        typedef TwoU1 TwoU1grp;
+        using SU2U1grp = SU2U1;
+        using TwoU1grp = TwoU1;
 #endif
 
-        typedef alps::numeric::matrix<V> Matrix;
+        using Matrix = alps::numeric::matrix<V>;
         // Overlap calculation
         V overlap_2u1(const std::string& bra_checkpoint, const std::string& ket_checkpoint)
         {
-            MPS<Matrix, TwoU1grp> bra, ket;
+            MPS<Matrix, TwoU1grp> bra;
+            MPS<Matrix, TwoU1grp> ket;
             load(bra_checkpoint, bra);
             load(ket_checkpoint, ket);
             return (V) ::overlap(bra, ket);
@@ -58,7 +59,8 @@ namespace maquis
 
         V overlap_su2u1(const std::string& bra_checkpoint, const std::string& ket_checkpoint)
         {
-            MPS<matrix, SU2U1grp> bra, ket;
+            MPS<matrix, SU2U1grp> bra;
+            MPS<matrix, SU2U1grp> ket;
             load(bra_checkpoint, bra);
             load(ket_checkpoint, ket);
             return (V) ::overlap(bra, ket);
@@ -70,14 +72,16 @@ namespace maquis
             // hope this isn't too performance consuming
 
             int idx = allowed_names_states(pname, state);
-            if (idx == -1)
+            if (idx == -1) {
                 throw std::runtime_error("Do not know the project name " + pname );
+            }
 
-            if (Ms > multiplicities_[idx])
+            if (Ms > multiplicities_[idx]) {
                 throw std::runtime_error("Invalid Ms in twou1_name");
+            }
 
             // append '.rotated' to pname if rotated == true
-            if (rotated) pname += ".rotated";
+            if (rotated) { pname += ".rotated"; }
 
             return maquis::interface_detail::twou1_name(pname, state, nel_, multiplicities_[idx], Ms);
 
@@ -107,9 +111,11 @@ namespace maquis
             Matrix t_mat(dim,dim);
 
             int idx = 0;
-            for (int i = 0; i < dim; i++)
-                for (int j = 0; j < dim; j++)
+            for (int i = 0; i < dim; i++) {
+                for (int j = 0; j < dim; j++) {
                     t_mat(i,j) = t[idx++];
+                }
+            }
 
 
             MPS<Matrix, grp> mps;
@@ -125,22 +131,24 @@ namespace maquis
             // check if we have "2u1" or "2u1pg": "su2u1"/"su2u1pg" should NOT work
             // i.e. 2u1 must be found at the beginning of the string
             std::size_t twou1_pos = sym.find("2u1");
-            if ((twou1_pos == std::string::npos) || (twou1_pos > 0))
+            if ((twou1_pos == std::string::npos) || (twou1_pos > 0)) {
                 throw std::runtime_error("checkpoint for MPS rotation does not have 2U1 symmetry");
+            }
 
             mps_rotate::rotate_mps(mps, t_mat, scale_inactive);
             save(checkpoint_name_rotated, mps);
 
             // copy over props.h5 file, overwriting the old one
-            if (boost::filesystem::exists(checkpoint_name_rotated + "/props.h5"))
-                boost::filesystem::remove(checkpoint_name_rotated + "/props.h5");
-            boost::filesystem::copy(checkpoint_name + "/props.h5", checkpoint_name_rotated + "/props.h5");
+            if (std::filesystem::exists(checkpoint_name_rotated + "/props.h5"))
+                std::filesystem::remove(checkpoint_name_rotated + "/props.h5");
+            std::filesystem::copy(checkpoint_name + "/props.h5", checkpoint_name_rotated + "/props.h5");
 
         }
 
         // Constructor that takes project names and states to get the multiplicities
         Impl(const std::vector<std::string> & project_names, const std::vector<std::vector<int> >& states)
-            : project_names_(project_names), nel_(-1), multiplicities_(states.size()), states_(states)
+            : states_(states), project_names_(project_names),
+              multiplicities_(states.size()), nel_(-1)
         {
             assert(project_names.size() == states.size());
 
@@ -158,17 +166,19 @@ namespace maquis
 
                 std::string su2u1_checkpoint_name = maquis::interface_detail::su2u1_name(pname, state);
                 BaseParameters parms;
-                if (!boost::filesystem::exists(su2u1_checkpoint_name))
+                if (!std::filesystem::exists(su2u1_checkpoint_name)) {
                     throw std::runtime_error("SU2U1 MPS checkpoint " + su2u1_checkpoint_name + " is required but does not exist\n"
                                               "You might be getting this error because qcm_checkpoint_rename.py did not run properly.\n");
+                }
 
                 storage::archive ar_in(su2u1_checkpoint_name + "/props.h5");
 
                 ar_in["/parameters"] >> parms; // TODO: check if /parameters/nelec and /parameters/spin can be read directly and if it saves time
 
                 int nel = parms["nelec"];
-                if ((nel_ != -1) && (nel_ != nel))
+                if ((nel_ != -1) && (nel_ != nel)) {
                     throw std::runtime_error("Different electron numbers in different project groups: This is not supported in MPSSI yet.");
+                }
                 nel_ = nel;
                 multiplicities_[i] = parms["spin"];
 
@@ -189,8 +199,9 @@ namespace maquis
                         }
                     }
 
-                    for (auto&& m: mult_totransform)
+                    for (auto&& m: mult_totransform) {
                         maquis::transform(pname, st, m);
+                    }
 
                 }
             }
@@ -204,8 +215,9 @@ namespace maquis
         {
             // find the project in the project name
             auto index_itr = std::find_if(project_names_.cbegin(), project_names_.cend(), [&pname](const std::string& key)->bool{ return pname == key; });
-            if (index_itr == project_names_.cend())
+            if (index_itr == project_names_.cend()) {
                 throw std::runtime_error("cannot find multiplicity for project name "+pname);
+            }
 
             // get the corresponding multiplicity
             return multiplicities_[std::distance(project_names_.cbegin(), index_itr)];
@@ -221,15 +233,15 @@ namespace maquis
         {
             // check if pname is allowed
             auto index_itr = std::find_if(project_names_.cbegin(), project_names_.cend(), [&pname](const std::string& key)->bool{ return pname == key; });
-            if (index_itr == project_names_.cend())
+            if (index_itr == project_names_.cend()) {
                 return -1;
+            }
 
             int idx = std::distance(project_names_.cbegin(), index_itr);
 
             // check if the state is found
             auto index_st_itr = std::find_if(states_[idx].cbegin(), states_[idx].cend(), [&state](const int key)->bool{ return state == key; });
-            if (index_st_itr == states_[idx].cend())
-                return -1;
+            if (index_st_itr == states_[idx].cend()) { return -1; }
 
             return idx;
         }
@@ -335,7 +347,8 @@ namespace maquis
 
         typedef alps::numeric::matrix<V> Matrix;
         DmrgParameters parms;
-        std::string ket_name, bra_name;
+        std::string ket_name;
+        std::string bra_name;
 
         // Calculate Ms according to OpenMOLCAS logic: Ms=min(S_bra, S_ket)
         int S_bra = impl_->get_multiplicity(bra_pname);
@@ -411,14 +424,14 @@ namespace maquis
     {
         if ((bra_pname == ket_pname) && su2u1)
         {
-            if (bra_state == ket_state) return (V)1.0;
+            if (bra_state == ket_state) { return (V)1.0; }
             std::string ket_name = maquis::interface_detail::su2u1_name(ket_pname, ket_state);
             std::string bra_name = maquis::interface_detail::su2u1_name(bra_pname, bra_state);
             return impl_->overlap_su2u1(ket_name, bra_name);
         }
         else
         {
-            if ((bra_state == ket_state) && (bra_pname == ket_pname)) return (V)1.0;
+            if ((bra_state == ket_state) && (bra_pname == ket_pname)) { return (V)1.0; }
             bool rotated = (bra_pname != ket_pname);
 
             // Actually this does not matter, but we need to provide some Ms
@@ -436,4 +449,3 @@ namespace maquis
 
     template class MPSSIInterface<double>;
 }
-

@@ -1,67 +1,111 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
-#include "dmrg/mp_tensors/reshapes.h"
+#include "dmrg/block_matrix/block_matrix.h"
+
+#include "dmrg/mp_tensors/mpotensor.h"
+
+/**
+ * @brief Outputs the spasity pattern of the CSCMatrix
+ *        drawing non-zeros elements as "x" and zeros as " ".
+ */
+template <class CSCMatrix>
+void printCSC(const CSCMatrix& col_tags) {
+  std::cout << "\nMPO (" << col_tags.size1() << " x " << col_tags.size2() << ")" << std::endl;
+  for (std::size_t i = 0; i < col_tags.size1(); ++i) {
+    for (std::size_t j = 0; j < col_tags.size2(); ++j) {
+        if (col_tags(i, j).empty()) {
+            std::cout << " ";
+        } else {
+            std::cout << "x";
+        }
+    }
+    std::cout << "|" << std::endl;
+}
+}
 
 template<class Matrix, class SymmGroup>
 MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld, index_type rd, prempo_t tags,
                                         op_table_ptr tbl_, MPOTensor_detail::Hermitian h_,
                                         spin_index const & lspins, spin_index const & rspins)
-    : left_i(ld), right_i(rd), left_spins(lspins), right_spins(rspins), col_tags(ld, rd),
-      operator_table(tbl_), herm_info(ld, rd)
+    : herm_info(ld, rd), left_i(ld), right_i(rd),
+      left_spins(lspins), right_spins(rspins),
+      col_tags(ld, rd), operator_table(tbl_)
 {
-    using namespace boost::tuples;
     row_index.resize(ld);
-    if (tags.size() > 0 && operator_table.get() != NULL) {
-        // sort tags in order used by the CSC (sparse) matrix
+    if (tags.size() > 0 && operator_table.get() != nullptr) {
+        // sort tags column-wise in order used by the CSC (sparse) matrix
         std::sort(tags.begin(), tags.end(), MPOTensor_detail::col_cmp<typename prempo_t::value_type>());
-        for (typename prempo_t::const_iterator it = tags.begin(); it != tags.end(); ++it) {
-            internal_value_type & element = col_tags(get<0>(*it), get<1>(*it)).ref();
-            if (element.size() == 0) {
-                element = internal_value_type(1, std::make_pair(get<2>(*it), get<3>(*it)));
-                row_index[get<0>(*it)].insert(get<1>(*it));
-            }
-            else {
-                // avoid resize, as that might increase the capacity beyond the new size
-                internal_value_type new_element(element.size() + 1);
-                std::copy(element.begin(), element.end(), new_element.begin()+1);
-                *new_element.begin() = std::make_pair(get<2>(*it), get<3>(*it));
-                std::swap(element, new_element);
-            }
-        }
-        for (std::size_t i = 0; i < operator_table->size(); ++i)
-            operator_table->operator[](i).update_sparse();
+        loadTagsIntoCSCMatrix(tags);
     }
     else {
         // Initialize a private operator table
         operator_table = op_table_ptr(new OPTable<Matrix, SymmGroup>());
     }
 
+    computeRowColNonZeros();
+
+    // printCSC(col_tags);
+
+    // maquis::cout << "nr1r: " << row_dim() - num_one_rows_ << " nr1c: " << col_dim() - num_one_cols_ << std::endl;
+
+    // if the optional Hermitian object h_ is valid, adopt it
+    if (h_.left_size() == left_i && h_.right_size() == right_i) {
+        herm_info = h_;
+    }
+}
+
+/**
+ * @brief Populates entries of the sparse CSC matrix with the given tags.
+ *
+ * @param tags A vector of tuples (row, col, tag_number, scale_factor).
+ */
+template<class Matrix, class SymmGroup>
+void MPOTensor<Matrix, SymmGroup>::loadTagsIntoCSCMatrix(const prempo_t& tags){
+  for (const auto& [row, col, tag_id, scale_factor] : tags) {
+    internal_value_type& element = col_tags(row, col).ref();
+    if (element.empty()) {
+      element = internal_value_type(1, std::make_pair(tag_id, scale_factor));
+      row_index[row].insert(col);
+    }
+    else {
+      // avoid resize, as that might increase the capacity beyond the new size
+      internal_value_type new_element(element.size() + 1);
+      std::copy(element.begin(), element.end(), new_element.begin()+1);
+      new_element.front() = std::make_pair(tag_id, scale_factor);
+      std::swap(element, new_element);
+    }
+  }
+  for (std::size_t i = 0; i < operator_table->size(); ++i) {
+    operator_table->operator[](i).update_sparse();
+  }
+}
+
+/**
+ * @brief Computes the number of non-zero elements in each row and column as
+ *        well as the number of rows and columns with only one non-zero element.
+ */
+template<class Matrix, class SymmGroup>
+void MPOTensor<Matrix, SymmGroup>::computeRowColNonZeros(){
     // provide information about number of non-zeros in rows and columns
     row_non_zeros.resize(row_dim());
     col_non_zeros.resize(col_dim());
-    for (index_type b2 = 0; b2 < col_dim(); ++b2)
-    {
+    for (index_type b2 = 0; b2 < col_dim(); ++b2) {
         col_proxy col_b2 = column(b2);
-        for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it)
-        {
+        for (auto col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
             index_type b1 = col_it.index();
             row_non_zeros[b1]++;
             col_non_zeros[b2]++;
         }
     }
 
+    // Compute rows with only one non-zero element
     num_one_rows_ = std::count(row_non_zeros.begin(), row_non_zeros.end(), 1);
     num_one_cols_ = std::count(col_non_zeros.begin(), col_non_zeros.end(), 1);
-    // maquis::cout << "nr1r: " << row_dim() - num_one_rows_ << " nr1c: " << col_dim() - num_one_cols_ << std::endl;
-
-    // if the optional Hermitian object h_ is valid, adopt it
-    if (h_.left_size() == left_i && h_.right_size() == right_i)
-        herm_info = h_;
 }
 
 /*
@@ -176,8 +220,9 @@ MPOTensor<Matrix, SymmGroup>::at(index_type left_index, index_type right_index) 
 template<class Matrix, class SymmGroup>
 MPOTensor_detail::term_descriptor<Matrix, SymmGroup, false>
 MPOTensor<Matrix, SymmGroup>::at(index_type left_index, index_type right_index) {
-    if (!this->has(left_index, right_index))
+    if (!this->has(left_index, right_index)) {
         this->set(left_index, right_index, op_t(), 1.);
+    }
     typename CSCMatrix::value_type & p = col_tags(left_index, right_index).ref();
     return MPOTensor_detail::term_descriptor<Matrix, SymmGroup, false>(p, operator_table);
 }
@@ -185,7 +230,7 @@ MPOTensor<Matrix, SymmGroup>::at(index_type left_index, index_type right_index) 
 template<class Matrix, class SymmGroup>
 typename MPOTensor<Matrix, SymmGroup>::row_proxy MPOTensor<Matrix, SymmGroup>::row(index_type row_i) const
 {
-    return row_proxy(row_index[row_i].begin(), row_index[row_i].end());
+    return {row_index[row_i].begin(), row_index[row_i].end()};
 }
 
 template<class Matrix, class SymmGroup>
@@ -210,15 +255,13 @@ void MPOTensor<Matrix, SymmGroup>::multiply_by_scalar(value_type v)
 {
     for (typename CSCMatrix::iterator2 it2 = col_tags.begin2(); it2 != col_tags.end2(); ++it2)
         for (typename CSCMatrix::iterator1 it1 = it2.begin(); it1 != it2.end(); ++it1)
-            std::for_each((*it1).begin(), (*it1).end(), boost::lambda::bind(&std::pair<tag_type, value_type>::second, boost::lambda::_1) *= v);
+            std::for_each((*it1).begin(), (*it1).end(), [&v](std::pair<tag_type, value_type> &element){ element.second *= v; });
 }
 
 template<class Matrix, class SymmGroup>
 void MPOTensor<Matrix, SymmGroup>::divide_by_scalar(value_type v)
 {
-    for (typename CSCMatrix::iterator2 it2 = col_tags.begin2(); it2 != col_tags.end2(); ++it2)
-        for (typename CSCMatrix::iterator1 it1 = it2.begin(); it1 != it2.end(); ++it1)
-            std::for_each((*it1).begin(), (*it1).end(), boost::lambda::bind(&std::pair<tag_type, value_type>::second, boost::lambda::_1) /= v);
+  multiply_by_scalar(1.0 / v);
 }
 
 template<class Matrix, class SymmGroup>

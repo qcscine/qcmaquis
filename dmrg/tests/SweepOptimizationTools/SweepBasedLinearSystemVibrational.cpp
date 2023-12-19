@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -39,8 +39,8 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedLinearSystemSS_Vibrational_Bilinearlty, W
   interfaceBilinearly.optimize();
   double energyFromInterface = interfaceBilinearly.energy();
   // Parameters that are specific for the solution of the linear system.
-  parametersBilinearly.set("linsystem_precond", "yes");
-  parametersBilinearly.set("linsystem_init", "mps");
+  parametersBilinearly.set("linsystem_precond", "diagonal");
+  parametersBilinearly.set("linsystem_init", "last");
   parametersBilinearly.set("linsystem_max_it", 1);
   parametersBilinearly.set("linsystem_tol", 1.0E-10);
   parametersBilinearly.set("linsystem_krylov_dim", 20);
@@ -48,7 +48,7 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedLinearSystemSS_Vibrational_Bilinearlty, W
   // Set the shift of DMRG[IPI] as the energy shifted by -0.1 (note that this Hamiltonian is unitless)
   parametersBilinearly.set("ipi_shift", energyFromInterface-0.1);
   parametersBilinearly.set("ipi_sweep_threshold", 1.0E-5);
-  parametersBilinearly.set("ipi_sweeps_per_system", 2);
+  parametersBilinearly.set("nsweeps", 2);
   parametersBilinearly.set("ipi_iterations", 10);
   maquis::DMRGInterface<double> interfaceBilinearlyIpi(parametersBilinearly);
   interfaceBilinearlyIpi.runInversePowerIteration();

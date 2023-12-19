@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -51,6 +51,7 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_Ethylene_Harmonic_TwoRows, Watson
     parametersEthyleneWatsonHarmonicTwoRows.set("nsweeps", 20);
     parametersEthyleneWatsonHarmonicTwoRows.set("max_bond_dimension", 20);
     parametersEthyleneWatsonHarmonicTwoRows.set("MODEL", "watson");
+    parametersEthyleneWatsonHarmonicTwoRows.set("MEASURE[ModeExcitationDegree]", 1);
     // Creates the interface
     InterfaceType interface(parametersEthyleneWatsonHarmonicTwoRows);
     interface.optimize();
@@ -58,6 +59,8 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_Ethylene_Harmonic_TwoRows, Watson
     // Checks that the overlap of the final wave function with the hf determinant is = 1.
     auto targetOverlap = interface.getCICoefficient("0,0,0,0,0,0,0,0,0,0,0,0");
     BOOST_CHECK_CLOSE(std::abs(targetOverlap), 1.0, 1.0E-12);
+    // Runs the measurement
+    auto&& measurements = interface.measurements();
 }
 
 /**

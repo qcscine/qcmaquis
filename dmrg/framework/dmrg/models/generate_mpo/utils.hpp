@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -17,16 +17,13 @@
 #include <string>
 #include <sstream>
 
-#include <boost/bind.hpp>
-
-namespace generate_mpo
-{
+namespace generate_mpo {
 	template<class Matrix, class SymmGroup>
 	struct OperatorTagTerm
 	{
-		typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
-        typedef typename Lattice::pos_t pos_t;
-		typedef std::pair<pos_t, tag_type> op_pair_t;
+		using tag_type = typename OPTable<Matrix, SymmGroup>::tag_type;
+    using pos_t = typename Lattice::pos_t;
+		using op_pair_t = std::pair<pos_t, tag_type>;
         
 		std::vector<op_pair_t> operators;
 		tag_type fill_operator;
@@ -37,32 +34,34 @@ namespace generate_mpo
         
         void canonical_order() // TODO: check and fix for fermions
         {
-            std::sort(operators.begin(), operators.end(),
-                      boost::bind(&op_pair_t::first, _1) <
-                      boost::bind(&op_pair_t::first, _2));
+            std::sort(
+                operators.begin(), operators.end(),
+                [](const op_pair_t& a, const op_pair_t& b){
+                    return a.first < b.first;
+                });
         }
         
         bool operator< (OperatorTagTerm const & rhs) const
         {
-            if (operators[0].first == rhs.operators[0].first)
+            if (operators[0].first == rhs.operators[0].first) {
                 return operators.size() >= rhs.operators.size();
+            }
             return operators[0].first < rhs.operators[0].first;
         }
         
         bool site_match (OperatorTagTerm const & rhs) const
         {
-            if (operators.size() == rhs.operators.size())
-            {
+            if (operators.size() == rhs.operators.size()) {
                 bool ret = true;
-                for (std::size_t p=0; p<operators.size() && ret; ++p)
+                for (std::size_t p=0; p<operators.size() && ret; ++p) {
                     ret = (operators[p].first == rhs.operators[p].first);
+                }
                 return ret;
-            } else if (operators.size() == 2 && rhs.operators.size() == 1)
+            } else if (operators.size() == 2 && rhs.operators.size() == 1) {
                 return (operators[0].first == rhs.operators[0].first || operators[1].first == rhs.operators[0].first);
-            else if (operators.size() == 1 && rhs.operators.size() == 2)
+            } else if (operators.size() == 1 && rhs.operators.size() == 2) {
                 return (operators[0].first == rhs.operators[0].first || operators[0].first == rhs.operators[1].first);
-            else
-            {
+            } else {
                 throw std::runtime_error("site_match not implemented for this type of operator." );
                 return false;
             }
@@ -82,18 +81,19 @@ namespace generate_mpo
         os << "sign: " << op.with_sign << std::endl;
         os << "scale: " << op.scale << std::endl;
         os << "operators:";
-        for (int i=0; i<op.operators.size(); ++i)
-            os << " {"  << op.operators[i].first << "," << op.operators[i].second << "}";
-            os << std::endl;
+        for (const auto& e : op.operators) {
+          os << " {"  << e.first << "," << e.second << "}";
+          os << std::endl;
+        }
         return os;
     }
     
 	template<class Matrix, class SymmGroup>
 	struct OperatorTerm
 	{
-		typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
-        typedef Lattice::pos_t pos_t;
-		typedef std::pair<pos_t, op_t> op_pair_t;
+		using op_t = typename OPTable<Matrix, SymmGroup>::op_t;
+    using pos_t = Lattice::pos_t;
+		using op_pair_t = std::pair<pos_t, op_t>;
         
 		std::vector<op_pair_t> operators;
 		op_t fill_operator;
@@ -103,15 +103,18 @@ namespace generate_mpo
         
         void canonical_order() // TODO: check and fix for fermions
         {
-            std::sort(operators.begin(), operators.end(),
-                      boost::bind(&op_pair_t::first, _1) <
-                      boost::bind(&op_pair_t::first, _2));
+            std::sort(
+                operators.begin(), operators.end(),
+                [](const op_pair_t& a, const op_pair_t& b){
+                    return a.first < b.first;
+                });
         }
         
         bool operator< (OperatorTerm const & rhs) const
         {
-            if (operators[0].first == rhs.operators[0].first)
+            if (operators[0].first == rhs.operators[0].first) {
                 return operators.size() >= rhs.operators.size();
+            }
             return operators[0].first < rhs.operators[0].first;
         }
 
@@ -120,15 +123,15 @@ namespace generate_mpo
             if (operators.size() == rhs.operators.size())
             {
                 bool ret = true;
-                for (std::size_t p=0; p<operators.size() && ret; ++p)
+                for (std::size_t p=0; p<operators.size() && ret; ++p) {
                     ret = (operators[p].first == rhs.operators[p].first);
+                }
                 return ret;
-            } else if (operators.size() == 2 && rhs.operators.size() == 1)
+            } else if (operators.size() == 2 && rhs.operators.size() == 1) {
                 return (operators[0].first == rhs.operators[0].first || operators[1].first == rhs.operators[0].first);
-            else if (operators.size() == 1 && rhs.operators.size() == 2)
+            } else if (operators.size() == 1 && rhs.operators.size() == 2) {
                 return (operators[0].first == rhs.operators[0].first || operators[0].first == rhs.operators[1].first);
-            else
-            {
+            } else {
                 throw std::runtime_error("site_match not implemented for this type of operator." );
                 return false;
             }
@@ -143,7 +146,6 @@ namespace generate_mpo
 	};
    
     using namespace std;
-    using namespace boost::tuples;
 
     inline size_t next_free(vector<size_t> const & out_taken,
                             vector<size_t> const & in_taken)
@@ -151,55 +153,65 @@ namespace generate_mpo
         for (size_t k = 0; true; ++k)
         {
             if (count(out_taken.begin(), out_taken.end(), k) == 0 &&
-                count(in_taken.begin(), in_taken.end(), k) == 0)
-                return k;
+                count(in_taken.begin(), in_taken.end(), k) == 0) {
+                return k;// +-------------+
+            }
         }
     }
     
     inline size_t next_free(set<size_t> const & s)
     {
-        for (size_t k = 2; true; ++k)
-            if (s.count(k) == 0)
+        for (size_t k = 2; true; ++k) {
+            if (s.count(k) == 0) {
                 return k;
+            }
+        }
     }
     
     template<class Vector>
     void compress_on_bond(Vector & pm1, Vector & pm2)
     {
         std::set<size_t> bond_used_dims;
-        for (typename Vector::iterator it = pm1.begin(); it != pm1.end(); ++it)
-            if (get<1>(*it) > 1)
-                bond_used_dims.insert(get<1>(*it));
-        for (typename Vector::iterator it = pm2.begin(); it != pm2.end(); ++it)
-            if (get<0>(*it) > 1)
-                bond_used_dims.insert(get<0>(*it));
-        
+        for (const auto& it : pm1) {
+            if (get<1>(it) > 1) { bond_used_dims.insert(get<1>(it)); }
+        }
+        for (const auto& it : pm2) {
+            if (get<0>(it) > 1) { bond_used_dims.insert(get<0>(it)); }
+        }
+
         std::map<size_t, size_t> compression_map;
         size_t c = 2;
-        for (set<size_t>::iterator it = bond_used_dims.begin();
-             it != bond_used_dims.end(); ++it)
-            compression_map[*it] = c++;
+        for (unsigned long bond_used_dim : bond_used_dims) {
+            compression_map[bond_used_dim] = c++;
+        }
         
-        for (typename Vector::iterator it = pm1.begin(); it != pm1.end(); ++it)
-            if (compression_map.count(get<1>(*it)) > 0)
-                get<1>(*it) = compression_map[get<1>(*it)];
-        for (typename Vector::iterator it = pm2.begin(); it != pm2.end(); ++it)
-            if (compression_map.count(get<0>(*it)) > 0)
-                get<0>(*it) = compression_map[get<0>(*it)];
+        for (auto& it : pm1) {
+          if (compression_map.count(get<1>(it)) > 0) {
+            get<1>(it) = compression_map[get<1>(it)];
+
+          }
+        }
+        for (auto& it : pm2) {
+            if (compression_map.count(get<0>(it)) > 0) {
+                get<0>(it) = compression_map[get<0>(it)];
+            }
+        }
     }
 
     template<class Vector>
     std::pair<size_t, size_t> rcdim(Vector const & pm)
     {
-        std::list<size_t> l, r;
-        for (typename Vector::const_iterator it = pm.begin(); it != pm.end(); ++it) {
-            l.push_back( get<0>(*it) );
-            r.push_back( get<1>(*it) );
+        std::list<size_t> l;
+        std::list<size_t> r;
+        for (const auto& it : pm) {
+          l.push_back( get<0>(it) );
+          r.push_back( get<1>(it) );
         }
         
-        size_t ldim=0, rdim=0;
-        if (l.size() > 0) ldim = *max_element(l.begin(), l.end())+1;
-        if (r.size() > 0) rdim = *max_element(r.begin(), r.end())+1;
+        size_t ldim=0;
+        size_t rdim=0;
+        if (!l.empty()) { ldim = *max_element(l.begin(), l.end())+1; }
+        if (!r.empty()) { rdim = *max_element(r.begin(), r.end())+1; }
         return make_pair(ldim, rdim);
     }
     
@@ -210,7 +222,7 @@ namespace generate_mpo
     }
 
     struct pos_tag_lt {
-        typedef std::pair<int, unsigned int> value_type;
+        using value_type = std::pair<int, unsigned int>;
         inline bool operator() (value_type const& lhs, value_type const& rhs)
         {
             return (lhs.first < rhs.first);

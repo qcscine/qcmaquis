@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -15,7 +15,7 @@
 #include <alps/hdf5.hpp>
 
 #include <boost/serialization/serialization.hpp>
-#include <boost/array.hpp>
+#include <array>
 
 class TrivialGroup
 {
@@ -30,7 +30,7 @@ public:
     }
 
 	static inline charge fuse(charge a, charge b) { return Plus; }
-	template<int R> static charge fuse(boost::array<charge, R>) { return Plus; }
+	template<int R> static charge fuse(std::array<charge, R>) { return Plus; }
 };
 
 namespace boost {

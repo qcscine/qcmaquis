@@ -1,31 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2012-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
- *                            Sebastian Keller <sebkelle@phys.ethz.ch>
- *               2020- by Robin Feldmann <robinfe@phys.chem.ethz.ch>
- *               2022- by Alberto Baiardi <abaiardi@ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef MAQUIS_DMRG_NMODE_LATTICE
 #define MAQUIS_DMRG_NMODE_LATTICE
@@ -38,6 +16,7 @@
 #include <set>
 #include <boost/lexical_cast.hpp>
 #include <boost/lambda/lambda.hpp>
+#include <any>
 #include <numeric>
 #include "dmrg/utils/BaseParameters.h"
 #include "LatticeHelperClass.hpp"
@@ -115,7 +94,7 @@ public:
   }
 
   /** @brief Returns the next position in the lattice */
-  std::vector<pos_t> forward(pos_t i) const {
+  std::vector<pos_t> forward(pos_t i) const override {
     std::vector<pos_t> ret;
     if (i < L-1)
         ret.push_back(i+1);
@@ -123,7 +102,7 @@ public:
   }
 
   /** @brief Returns the neighbors of a given site */
-  std::vector<pos_t> all(pos_t i) const {
+  std::vector<pos_t> all(pos_t i) const override {
     std::vector<pos_t> ret;
     if (i < L-1)
         ret.push_back(i+1);
@@ -144,25 +123,25 @@ public:
    *
    * @param property string identifier for the property
    * @param pos vector of positions
-   * @return boost::any requested property
+   * @return std::any requested property
    */
-  boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const
+  std::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const
   {
     if (property == "label" && pos.size() == 1)
-      return boost::any(site_label(pos[0]));
+      return std::any(site_label(pos[0]));
     else if (property == "label" && pos.size() == 2)
-      return boost::any(bond_label(pos[0], pos[1]));
+      return std::any(bond_label(pos[0], pos[1]));
     else if (property == "type" && pos.size() == 1)
-      return boost::any(vector_types[pos[0]]);
+      return std::any(vector_types[pos[0]]);
     else if (property == "type" && pos.size() == 2)
-      return boost::any(0);
+      return std::any(0);
     else if (property == "absolutePositionInLattice" && pos.size() == 2) {
       int posInConventionalSorting = vectorWithStartingPositions[pos[0]] + pos[1];
-      return boost::any(inverseOrder[posInConventionalSorting]);
+      return std::any(inverseOrder[posInConventionalSorting]);
     }
     else if (property == "sublatticePos" && pos.size() == 1) {
       assert (pos[0] >= 0 && pos[0] < L);
-      return boost::any(vectorWithStartingPositions[pos[0]]);
+      return std::any(vectorWithStartingPositions[pos[0]]);
     }
     else if (property == "ParticleType" && pos.size() == 1) {
       assert (pos[0] >= 0 && pos[0] < L);
@@ -175,12 +154,12 @@ public:
       std::ostringstream ss;
       ss << "No property '" << property << "' with " << pos.size() << " points implemented.";
       throw std::runtime_error(ss.str());
-      return boost::any();
+      return std::any();
     }
   }
 
   /** @brief Getter for the lattice size */
-  pos_t size() const { return L; }
+  pos_t size() const override { return L; }
 
   /** @brief Getter for the number of types of sites */
   int getMaxType() const override { return numTypes; }

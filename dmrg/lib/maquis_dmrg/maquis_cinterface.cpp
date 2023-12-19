@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 #include "maquis_cinterface.h"
@@ -68,7 +68,7 @@ extern "C"
         {
             std::string site_types_str;
             for (int i = 0; i < L; i++)
-                site_types_str += "0" + (i < L - 1) ? "," : "" ;
+                site_types_str += std::string("0") + ((i < L - 1) ? "," : "") ;
             parms.set("site_types", site_types_str);
         }
 
@@ -89,7 +89,7 @@ extern "C"
 
         pname = m[1];
         std::string props_name = std::string(checkpoint_name) + "/props.h5";
-        if (!boost::filesystem::exists(props_name))
+        if (!std::filesystem::exists(props_name))
             throw std::runtime_error("Filename " + props_name + " cannot be found.");
 
         storage::archive props(props_name);
@@ -333,7 +333,7 @@ extern "C"
         if (parms.is_set("resultfile"))
             old_rfile = parms["resultfile"].str();
 
-        if (!boost::filesystem::exists(bra_chkp))
+        if (!std::filesystem::exists(bra_chkp))
             throw std::runtime_error("QCMaquis checkpoint " + bra_chkp +
                 " does not exist. Did you optimise the wavefunction for this state?");
         BaseParameters meas_parms = parms.measurements();
@@ -366,19 +366,19 @@ extern "C"
         if (!iter.empty())
         {
             // iter contains results, one element per microiteration
-            const std::vector<boost::any>& m_vec = iter["BondDimension"].get();
-            const std::vector<boost::any>& ev_vec = iter["SmallestEV"].get();
+            const std::vector<std::any>& m_vec = iter["BondDimension"].get();
+            const std::vector<std::any>& ev_vec = iter["SmallestEV"].get();
 
             // if we do single-site optimization, we will not have TruncatedWeight or TruncatedFraction, so check whether we have it
-            const std::vector<boost::any>& tw_vec = (iter.has("TruncatedWeight")) ? iter["TruncatedWeight"].get() : std::vector<boost::any>();
-            const std::vector<boost::any>& tf_vec = (iter.has("TruncatedFraction")) ? iter["TruncatedFraction"].get() : std::vector<boost::any>();
+            const std::vector<std::any>& tw_vec = (iter.has("TruncatedWeight")) ? iter["TruncatedWeight"].get() : std::vector<std::any>();
+            const std::vector<std::any>& tf_vec = (iter.has("TruncatedFraction")) ? iter["TruncatedFraction"].get() : std::vector<std::any>();
 
             // We return the sum of these values for the last sweep
             // this should be done with transform_reduce
-            *m = 0; for (auto&& m_ : m_vec) *m += boost::any_cast<std::size_t>(m_);
-            *truncated_weight = 0; for (auto&& tw_ : tw_vec) *truncated_weight += boost::any_cast<V>(tw_);
-            *truncated_fraction = 0; for (auto&& tf_ : tf_vec) *truncated_fraction += boost::any_cast<V>(tf_);
-            *smallest_ev = 0; for (auto&& ev_ : ev_vec) *smallest_ev += boost::any_cast<V>(ev_);
+            *m = 0; for (auto&& m_ : m_vec) *m += std::any_cast<std::size_t>(m_);
+            *truncated_weight = 0; for (auto&& tw_ : tw_vec) *truncated_weight += std::any_cast<V>(tw_);
+            *truncated_fraction = 0; for (auto&& tf_ : tf_vec) *truncated_fraction += std::any_cast<V>(tf_);
+            *smallest_ev = 0; for (auto&& ev_ : ev_vec) *smallest_ev += std::any_cast<V>(ev_);
 
             *nsweeps = interface_ptr->get_last_sweep()+1;
         }
@@ -445,10 +445,10 @@ extern "C"
 
 
         // remove the absolute directory for checkpoint and result files
-        boost::filesystem::path chkp_name(twou1_checkpoint_name);
+        std::filesystem::path chkp_name(twou1_checkpoint_name);
         parms_rdm.set("chkpfile", chkp_name.filename().string());
 
-        boost::filesystem::path res_name(twou1_result_name);
+        std::filesystem::path res_name(twou1_result_name);
         parms_rdm.set("resultfile", res_name.filename().string());
 
         parms_rdm.set("u1_total_charge1", Nup);
@@ -458,7 +458,7 @@ extern "C"
             parms_rdm.set("MEASURE[4rdm]", "p4:p3:p1:p2@LLL,KKK,III,JJJ");
         else if (tpl == TEMPLATE_TRANSITION_3RDM)
         {
-            boost::filesystem::path bra_name(maquis::interface_detail::twou1_name(pname, state_j, nel, multiplicity));
+            std::filesystem::path bra_name(maquis::interface_detail::twou1_name(pname, state_j, nel, multiplicity));
             parms_rdm.set("MEASURE[trans3rdm]", bra_name.filename().string() + ";p1:p2@III,JJJ");
         }
         else

@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -97,6 +97,12 @@ public:
       auto energy = ietl::get_energy(*(siteProblem_.get()), mpsToPropagate) + maquis::real(mpoContainer_.getMPO().getCoreEnergy());
       resultOfLocalSiteProblem_.first = energy;
       maquis::cout << std::setprecision(10) << " Energy = " << std::setprecision(16) << resultOfLocalSiteProblem_.first << std::endl;
+      //normalize the mps
+      mpsToPropagate.divide_by_scalar(mpsToPropagate.scalar_norm());
+      #ifndef NDEBUG
+      maquis::cout << "Wave function norm " << mpsToPropagate.scalar_norm() << std::endl;
+      #endif
+
     }
     iterationResults_["Energy"] << resultOfLocalSiteProblem_.first;
     resultOfLocalSiteProblem_.second = mpsToPropagate;

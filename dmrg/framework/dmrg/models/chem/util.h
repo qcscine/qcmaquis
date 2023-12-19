@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -83,11 +83,11 @@ namespace detail {
     class IndexTuple : public NU1Charge<4>
     {
     public:
-        typedef std::array<int, 4> array_type;
-        typedef NU1Charge<4> base;
+        using array_type = std::array<int, 4>;
+        using base = NU1Charge<4>;
         using base::base;
 
-        IndexTuple() {}
+        IndexTuple() = default;
         IndexTuple(int i, int j, int k, int l) {
             (*this)[0] = i; (*this)[1] = j; (*this)[2] = k; (*this)[3] = l;
         }
@@ -100,7 +100,7 @@ namespace detail {
 
 	template <>
     inline IndexTuple align<U1DG>(int i, int j, int k, int l) {
-        return IndexTuple(i,j,k,l);
+        return {i,j,k,l};
     }
 
 	template <class SymmGroup>
@@ -132,7 +132,7 @@ namespace detail {
     class SixTuple : public NU1Charge<6>
     {
     public:
-        SixTuple() {}
+        SixTuple() = default;
         SixTuple(int t0, int t1, int t2, int t3, int t4, int t5) {
             (*this)[0] = t0;
             (*this)[1] = t1;
@@ -146,7 +146,7 @@ namespace detail {
     class EightTuple : public NU1Charge<8>
     {
     public:
-        EightTuple() {}
+        EightTuple() = default;
         EightTuple(IndexTuple const & a, IndexTuple const & b) {
             for (int i=0; i<4; i++) { (*this)[i] = a[i]; (*this)[i+4] = b[i]; }
         }
@@ -221,7 +221,7 @@ namespace detail {
     }
 
     template <class Matrix, class SymmGroup>
-    inline std::vector<Index<SymmGroup> > make_2u1_site_basis(int L, int Nup, int Ndown, std::string site_types)
+    inline std::vector<Index<SymmGroup> > make_2u1_site_basis(int L, int Nup, int Ndown, const std::string& site_types)
     {
         BaseParameters parms = set_2u1_parameters(L, Nup, Ndown);
         parms.set("site_types", site_types);

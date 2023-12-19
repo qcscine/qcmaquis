@@ -1,17 +1,17 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
 #define BOOST_TEST_MAIN
 
 #include <boost/test/included/unit_test.hpp>
-#include <boost/filesystem/operations.hpp>
 #include "utils/fpcomparison.h"
 #include "utils/io.hpp" // has to be first include because of impi
 #include <iostream>
+#include <boost/filesystem.hpp>
 
 #include "maquis_dmrg.h"
 #include "test_detail.h"
@@ -54,15 +54,15 @@ BOOST_AUTO_TEST_CASE( Test_HiRDM )
      "   1.58753163271              0     0     0     0\n");
 
 
-    p.set("integrals",integrals);
+    p.set("integrals", integrals);
 
 
-    p.set("site_types","0,0,0");
-    p.set("L",3);
-    p.set("irrep",0);
+    p.set("site_types", "0,0,0");
+    p.set("L", 3);
+    p.set("irrep", 0);
 
-    p.set("nsweeps",2);
-    p.set("max_bond_dimension",100);
+    p.set("nsweeps", 2);
+    p.set("max_bond_dimension", 100);
 
     // for SU2U1
     p.set("nelec",4);

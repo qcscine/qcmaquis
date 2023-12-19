@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -29,8 +29,8 @@ TwoU1PG
 BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPO_Times_MPS_ExpVal, S, symmetries, H2Fixture ) 
 {
     // Generates the HF MPS
-    parametersH2.set("init_type", "hf");
-    parametersH2.set("hf_occ", "4,1");
+    parametersH2.set("init_type", "basis_state_generic");
+    parametersH2.set("init_basis_state", "4,1");
     auto lattice = Lattice(parametersH2);
     auto model = Model<matrix, S>(lattice, parametersH2);
     auto mpsHF = MPS<matrix, S>(lattice.size(), *(model.initializer(lattice, parametersH2)));
@@ -40,7 +40,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPO_Times_MPS_ExpVal, S, symmetries, H2Fi
                                                        parametersH2["max_bond_dimension"]);
     auto ionizedMPS = traitClass.ionizeMPS(0, generate_mpo::IonizedOrbital::Up);
     // Creates the ionized MPS from the mps_intializer
-    parametersH2.set("hf_occ", "2,1");
+    parametersH2.set("init_basis_state", "2,1");
     parametersH2.set("u1_total_charge1", 0);
     parametersH2.set("u1_total_charge2", 1);
     auto modelCation = Model<matrix, S>(lattice, parametersH2);

@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 #include "starting_guess.h"
@@ -9,38 +9,7 @@
 #include "dmrg/models/measurements/chementropy.h"
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/sim/matrix_types.h"
-
-#include "dmrg/models/chem/cideas/cideas.hpp"
-
-
-// namespace chem
-// {
-//     namespace detail
-//     {
-//         template <class V>
-//         inline
-//         BaseParameters set_su2u1_parameters(int L, int Nel, int spin, const chem::integral_map<V> & integrals, const std::vector<int> & site_types)
-//         {
-//             BaseParameters parms;
-
-//             parms.set("L", L);
-//             parms.set("nelec", Nel);
-//             parms.set("spin", spin);
-
-//             // take care of site types
-//             std::string site_types_str;
-//             assert(site_types.size() == L);
-//             for (int i = 0; i < L; i++)
-//                 site_types_str += std::to_string(site_types[i]) + ((i < L - 1) ? "," : "") ;
-//             parms.set("site_types", site_types_str);
-
-//             // integrals
-//             parms.set("integrals_binary", chem::serialize(integrals));
-
-//             return parms;
-//         }
-//     }
-// }
+#include "dmrg/models/MolecularHamiltonians/cideas/cideas.hpp"
 
 namespace maquis
 {
@@ -59,7 +28,7 @@ namespace maquis
 #endif
             Impl(const DmrgParameters& parms, const std::string& pname, int nstates, bool do_fiedler, bool do_cideas,
                  const std::vector<std::vector<int> > & hf_occupations)
-                : parms_(parms), nstates_(nstates), pname_(pname), pname_guess_(pname + "_guess"), do_fiedler_(do_fiedler), do_cideas_(do_cideas)
+                : parms_(parms), pname_(pname), pname_guess_(pname + "_guess"), nstates_(nstates), do_fiedler_(do_fiedler), do_cideas_(do_cideas)
             {
 
                 parms_.erase_measurements();
@@ -111,8 +80,6 @@ namespace maquis
                     // set correct checkpoints and result file names
                     std::string chkpfile = checkpoint_name(pname_guess_, i);
                     parms_.set("chkpfile", chkpfile);
-                    // std::string rfile = pname_guess_ + ".results_state." + std::to_string(i) + ".h5";
-                    // parms_.set("rfile", rfile);
 
                     // set HF occupation
                     if (!hf_occupations.empty())
@@ -177,8 +144,8 @@ namespace maquis
                 for (int i = 0; i < nstates_; i++)
                 {
                     std::string chkpfile = checkpoint_name(pname_guess_, i);
-                    if (boost::filesystem::exists(chkpfile))
-                        boost::filesystem::remove_all(chkpfile);
+                    if (std::filesystem::exists(chkpfile))
+                        std::filesystem::remove_all(chkpfile);
                 }
             }
 
@@ -231,7 +198,6 @@ namespace maquis
 
                 // add 1 to each element because in the parameters our counting starts with 1
                 for (auto&& n: order) n++;
-                // std::transform(order.begin(), order.end(), order.begin(), [](int i){ return i+1; });
 
                 // convert the ordering into a string
                 return vector_tostring(order);

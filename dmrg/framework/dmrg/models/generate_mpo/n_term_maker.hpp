@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -11,6 +11,7 @@
 
 #include <alps/numeric/matrix.hpp>
 #include "dmrg/block_matrix/detail/alps.hpp"
+#include "dmrg/models/lattice/lattice.h"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
@@ -18,9 +19,9 @@
 template<class Matrix, class SymmGroup>
 class NTermsMPO
 {
-	typedef Lattice::pos_t pos_t;
-	typedef typename operator_selector<Matrix, SymmGroup>::type op_t;
-	typedef std::pair<pos_t, op_t> pos_op_t;
+	using pos_t = int;
+	using op_t = typename operator_selector<Matrix, SymmGroup>::type;
+	using pos_op_t = std::pair<pos_t, op_t>;
 
 public:
 	NTermsMPO(Lattice const& lat_,
@@ -35,8 +36,12 @@ public:
 	{
 		// Assuming all operators are fermionic!!
 		bool trivial_fill=true;
-		std::sort(ops.begin(),ops.end(), boost::bind(&pos_op_t::first, _1) < 
-										 boost::bind(&pos_op_t::first, _2));
+		std::sort(
+        ops.begin(),ops.end(),
+        [](const pos_op_t& a, const pos_op_t& b){
+            return a.first < b.first;
+        }
+    );
 
 		for (pos_t p = 0; p < lat.size(); ++p){
 			for (typename std::vector<pos_op_t>::iterator it = ops.begin(); it != ops.end(); ++it) {

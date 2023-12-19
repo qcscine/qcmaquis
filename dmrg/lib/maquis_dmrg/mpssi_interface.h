@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 #ifndef MPSSI_INTERFACE_H
@@ -17,7 +17,7 @@ namespace maquis
         public:
             // typedef for measurements
             // Intel compiler seems not to like it
-            typedef maquis::meas_with_results_type<V> meas_with_results_type;
+            using meas_with_results_type = maquis::meas_with_results_type<V>;
             MPSSIInterface(const std::vector<std::string>& project_names,
                            const std::vector<std::vector<int> >& states);
 

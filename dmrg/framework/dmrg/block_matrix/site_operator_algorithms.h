@@ -1,20 +1,17 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
 #ifndef SITE_OPERATOR_ALGORITHMS_H
 #define SITE_OPERATOR_ALGORITHMS_H
 
-//#include <boost/lambda/lambda.hpp>
-//#include <boost/function.hpp>
-
-#include "dmrg/utils/logger.h"
+#include "dmrg/block_matrix/detail/alps_detail.hpp"
+#include "dmrg/block_matrix/symmetry/gsl_coupling.h"
 #include "dmrg/utils/utils.hpp"
 #include "utils/timings.h"
-#include "utils/traits.hpp"
 #include "utils/bindings.hpp"
 
 #include "dmrg/block_matrix/site_operator.h"
@@ -30,8 +27,8 @@ void gemm(SiteOperator<Matrix1, SymmGroup> const & A,
     C.clear();
     assert(B.basis().is_sorted());
 
-    typedef typename SymmGroup::charge charge;
-    typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
+    using charge = typename SymmGroup::charge;
+    using const_iterator = typename DualIndex<SymmGroup>::const_iterator;
     const_iterator B_begin = B.basis().begin();
     const_iterator B_end = B.basis().end();
     for (std::size_t k = 0; k < A.n_blocks(); ++k) {
@@ -55,8 +52,9 @@ void gemm(SiteOperator<Matrix1, SymmGroup> const & A,
         C.size_index.resize(C.n_blocks()); // propagating A size_index onto C - otherwise might C.index_sizes();
         for(size_t k = 0; k < A.n_blocks(); ++k){
             size_t matched_block = B_left_basis.position(A.basis().right_charge(k));
-            if(matched_block != B.n_blocks())
+            if(matched_block != B.n_blocks()) {
                 C.size_index(C.find_block(A.basis().left_charge(k), B.basis().right_charge(matched_block))) = A.size_index(k);
+            }
         }
     }
 }
@@ -80,10 +78,11 @@ template<class Matrix, class SymmGroup>
 SiteOperator<Matrix, SymmGroup> adjoin(SiteOperator<Matrix, SymmGroup> const & m) // error: it should be adjoin_t_
 {
     SiteOperator<Matrix, SymmGroup> ret;
-    for (std::size_t k = 0; k < m.n_blocks(); ++k)
+    for (std::size_t k = 0; k < m.n_blocks(); ++k) {
         ret.insert_block(m[k],
                          -m.basis().left_charge(k),
                          -m.basis().right_charge(k));
+    }
     return ret;
 }
 
@@ -92,14 +91,15 @@ bool is_hermitian(SiteOperator<Matrix, SymmGroup> const & m)
 {
     bool ret = true;
     for (size_t k=0; ret && k < m.n_blocks(); ++k) {
-        if (m.basis().left_size(k) != m.basis().right_size(k))
+        if (m.basis().left_size(k) != m.basis().right_size(k)) {
             return false;
-        else if (m.basis().left_charge(k) == m.basis().right_charge(k))
+        } else if (m.basis().left_charge(k) == m.basis().right_charge(k)) {
             ret = is_hermitian(m[k]);
-        else if (! m.has_block(m.basis().right_charge(k), m.basis().left_charge(k)))
+        } else if (! m.has_block(m.basis().right_charge(k), m.basis().left_charge(k))) {
             return false;
-        else
+        } else {
             ret = ( m[k] == transpose(conj( m(m.basis().right_charge(k), m.basis().left_charge(k)) )) );
+        }
     }
     return ret;
 }
@@ -109,12 +109,14 @@ SiteOperator<Matrix, SymmGroup> op_exp_hermitian(Index<SymmGroup> const & phys,
                                                  SiteOperator<Matrix, SymmGroup> M,
                                                  A const & alpha = 1.)
 {
-    for (typename Index<SymmGroup>::const_iterator it_c = phys.begin(); it_c != phys.end(); it_c++)
-        if (M.has_block(it_c->first, it_c->first))
+    for (typename Index<SymmGroup>::const_iterator it_c = phys.begin(); it_c != phys.end(); it_c++) {
+        if (M.has_block(it_c->first, it_c->first)) {
             M(it_c->first, it_c->first) = exp_hermitian(M(it_c->first, it_c->first), alpha);
-        else
+        } else {
             M.insert_block(Matrix::identity_matrix(phys.size_of_block(it_c->first)),
                            it_c->first, it_c->first);
+        }
+    }
     return M;
 }
 
@@ -124,12 +126,14 @@ OutOp op_exp_hermitian(Index<SymmGroup> const & phys,
                        A const & alpha = 1.)
 {
     OutOp ret(M.basis());
-    for (typename Index<SymmGroup>::const_iterator it_c = phys.begin(); it_c != phys.end(); it_c++)
-        if (M.has_block(it_c->first, it_c->first))
+    for (typename Index<SymmGroup>::const_iterator it_c = phys.begin(); it_c != phys.end(); it_c++) {
+        if (M.has_block(it_c->first, it_c->first)) {
             ret(it_c->first, it_c->first) = exp_hermitian(M(it_c->first, it_c->first), alpha);
-        else
+        } else {
             ret.insert_block(Matrix::identity_matrix(phys.size_of_block(it_c->first)),
                            it_c->first, it_c->first);
+        }
+    }
     return ret;
 }
 
@@ -155,12 +159,14 @@ template <class Matrix, class SymmGroup, class A> SiteOperator<Matrix, SymmGroup
                                        SiteOperator<Matrix, SymmGroup> M,
                                        A const & alpha = 1.)
 {
-    for (typename Index<SymmGroup>::const_iterator it_c = phys.begin(); it_c != phys.end(); it_c++)
-        if (M.has_block(it_c->first, it_c->first))
+    for (typename Index<SymmGroup>::const_iterator it_c = phys.begin(); it_c != phys.end(); it_c++) {
+        if (M.has_block(it_c->first, it_c->first)) {
             M(it_c->first, it_c->first) = detail::exp_dispatcher(M(it_c->first, it_c->first), alpha);
-        else
+        } else {
             M.insert_block(Matrix::identity_matrix(phys.size_of_block(it_c->first)),
                            it_c->first, it_c->first);
+        }
+    }
     return M;
 }
 
@@ -223,21 +229,23 @@ void op_kron(Index<SymmGroup> const & phys_A,
              SpinDescriptor<symm_traits::SU2Tag> target_spin
               = SpinDescriptor<symm_traits::SU2Tag>(-1,0,0))
 {
-    typedef typename SymmGroup::charge charge;
-    typedef typename SymmGroup::subcharge subcharge;
-    typedef typename Matrix2::value_type value_type;
+    using charge = typename SymmGroup::charge;
+    using subcharge = typename SymmGroup::subcharge;
+    using value_type = typename Matrix2::value_type;
 
     ProductBasis<SymmGroup> pb_left(phys_A, phys_B);
     ProductBasis<SymmGroup> const& pb_right = pb_left;
 
-    SiteOperator<Matrix1, SymmGroup> A = Ao, B = Bo;
+    SiteOperator<Matrix1, SymmGroup> A = Ao;
+    SiteOperator<Matrix1, SymmGroup> B = Bo;
 
     //*************************************
     // expand the small identity to the full one (Hack)
 
     if (A.spin().get() > 0 && B.spin().get() == 0)
     {
-        charge cb = phys_B[1].first, cc = phys_B[2].first;
+        charge cb = phys_B[1].first;
+        charge cc = phys_B[2].first;
         if (!B.has_block(cb,cc))
         {
             B.insert_block(Matrix1(1,1,1), cb, cc);
@@ -246,7 +254,8 @@ void op_kron(Index<SymmGroup> const & phys_A,
     }
     if (A.spin().get() == 0 && B.spin().get() > 0)
     {
-        charge cb = phys_A[1].first, cc = phys_A[2].first;
+        charge cb = phys_A[1].first;
+        charge cc = phys_A[2].first;
 
         if (!A.has_block(cb,cc))
         {
@@ -258,7 +267,12 @@ void op_kron(Index<SymmGroup> const & phys_A,
     //*************************************
     // MPO matrix basis spin QN's
 
-    int k1 = A.spin().get(), k2 = B.spin().get(), k, j, jp, jpp;
+    int k1 = A.spin().get();
+    int k2 = B.spin().get();
+    int k;
+    int j;
+    int jp;
+    int jpp;
 
     j = lspin.get();
     jpp = mspin.get();
@@ -270,7 +284,7 @@ void op_kron(Index<SymmGroup> const & phys_A,
     //*************************************
     // Tensor + Kronecker product
 
-    typedef std::pair<charge, charge> charge_pair;
+    using charge_pair = std::pair<charge, charge>;
     std::map<charge_pair, std::pair<std::vector<subcharge>, std::vector<subcharge> >, compare_pair<charge_pair> > basis_spins;
 
     block_matrix<Matrix2, SymmGroup> blocks;
@@ -293,8 +307,12 @@ void op_kron(Index<SymmGroup> const & phys_A,
                                           A.basis().left_size(i), B.basis().left_size(j),
                                           A.basis().right_size(i), B.basis().right_size(j));
 
-            int j1  = std::abs(SymmGroup::spin(inA)),  j2  = std::abs(SymmGroup::spin(inB)),  J = productSpin<SymmGroup>(inA, inB);
-            int j1p = std::abs(SymmGroup::spin(outA)), j2p = std::abs(SymmGroup::spin(outB)), Jp = productSpin<SymmGroup>(outA, outB);
+            int j1  = std::abs(SymmGroup::spin(inA));
+            int j2  = std::abs(SymmGroup::spin(inB));
+            int J = productSpin<SymmGroup>(inA, inB);
+            int j1p = std::abs(SymmGroup::spin(outA));
+            int j2p = std::abs(SymmGroup::spin(outB));
+            int Jp = productSpin<SymmGroup>(outA, outB);
 
             typename Matrix2::value_type coupling = SU2::mod_coupling(j1,j2,J,k1,k2,k,j1p,j2p,Jp);
             tmp *= coupling;
@@ -357,7 +375,7 @@ void op_kron(Index<SymmGroup> const & phys_A,
 //
 //            if (val != 0.) {
 //                typename MultiIndex<SymmGroup>::coord_t coord_l, coord_r;
-//                boost::tie(coord_l, coord_r) = midx.get_coords(s, *it);
+//                std::tie(coord_l, coord_r) = midx.get_coords(s, *it);
 //                if (run == 0)
 //                    C.reserve(coord_l.first, coord_r.first,
 //                              midx.left_size(s, coord_l.first), midx.right_size(s, coord_r.first));

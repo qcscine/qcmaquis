@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -16,11 +16,15 @@ struct coded_model_factory<Matrix, TrivialGroup> {
     // Factory class
     static PointerType parse(Lattice const& lattice, BaseParameters & parms)
     {
+#ifdef DMRG_VIBRATIONAL
         if (parms["MODEL"] == std::string("watson"))
             return PointerType( new WatsonHamiltonian<Matrix>(lattice, parms, false));
         else {
+#endif
             throw std::runtime_error("Don't know this model with None symmetry group!");
             return PointerType();
+#ifdef DMRG_VIBRATIONAL
         }
+#endif
     }
 };

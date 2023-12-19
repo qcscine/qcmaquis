@@ -161,7 +161,10 @@ public:
         Index<TwoU1> two_site_mutations = one_site_mutations * phys_i * adjoin(phys_i);
         // TwoU1 only
         index_iterator new_end =
-            std::remove_if(two_site_mutations.begin(), two_site_mutations.end(), boost::bind(&index_value_t::second, boost::lambda::_1) < 6);
+            std::remove_if(
+                two_site_mutations.begin(),
+                two_site_mutations.end(),
+                [](const auto& e){ return e.second < 6; });
         two_site_mutations.erase(new_end, two_site_mutations.end());
 
         maquis::cout << "One site and twosite mutations:\n";

@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -14,8 +14,7 @@
 #endif
 
 #include <boost/algorithm/string.hpp>
-
-#include "utils/sizeof.h"
+#include <utility>
 
 #include "ietl_lanczos_solver.h"
 #include "ietl_jacobi_davidson.h"
@@ -27,6 +26,7 @@
 #include "dmrg/utils/time_limit_exception.h"
 #include "dmrg/utils/checks.h"
 #include "dmrg/mp_tensors/siteproblem.h"
+#include "dmrg/mp_tensors/mpo.h"
 
 #define BEGIN_TIMING(name) \
 now = std::chrono::high_resolution_clock::now();
@@ -36,10 +36,12 @@ maquis::cout << "Time elapsed in " << name << ": " << std::chrono::duration<doub
 
 inline double log_interpolate(double y0, double y1, int N, int i)
 {
-    if (N < 2)
+    if (N < 2) {
         return y1;
-    if (y0 == 0)
+    }
+    if (y0 == 0) {
         return 0;
+    }
     double x = log(y1/y0)/(N-1);
     return y0*exp(x*i);
 }
@@ -49,29 +51,30 @@ enum OptimizeDirection { Both, LeftOnly, RightOnly };
 template<class Matrix, class SymmGroup, class Storage>
 class optimizer_base
 {
-    typedef contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> contr;
+    using contr = contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>;
 public:
     optimizer_base(MPS<Matrix, SymmGroup> & mps_,
                    MPO<Matrix, SymmGroup> const & mpo_,
                    BaseParameters & parms_,
-                   boost::function<bool ()> stop_callback_,
+                   std::function<bool ()> stop_callback_,
                    int site=0)
     : mps(mps_)
     , mpo(mpo_)
     , parms(parms_)
-    , stop_callback(stop_callback_)
+    , stop_callback(std::move(stop_callback_))
     {
-        std::size_t L = mps.length();
 
         mps.canonize(site);
-        for(int i = 0; i < mps.length(); ++i)
+        for(int i = 0; i < mps.length(); ++i) {
             Storage::StoreToFile(mps[i]);
+        }
 
         northo = parms_["n_ortho_states"];
         maquis::cout << "Expecting " << northo << " states to orthogonalize to." << std::endl;
 
-        if (northo > 0 && !parms_.is_set("ortho_states"))
+        if (northo > 0 && !parms_.is_set("ortho_states")) {
             throw std::runtime_error("Parameter \"ortho_states\" is not set\n");
+        }
 
         if (parms_.is_set("ortho_states")) {
             ortho_mps.resize(northo);
@@ -94,7 +97,7 @@ public:
         maquis::cout << "Done init_left_right" << std::endl;
     }
 
-    virtual ~optimizer_base() {}
+    virtual ~optimizer_base() = default;
 
     virtual void sweep(int sweep, OptimizeDirection d = Both) = 0;
 
@@ -105,15 +108,17 @@ protected:
     inline void boundary_left_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
         left_[site+1] = contr::overlap_mpo_left_step(mps[site], mps[site], left_[site], mpo[site]);
-        for (int n = 0; n < northo; ++n)
+        for (int n = 0; n < northo; ++n) {
             ortho_left_[n][site+1] = contr::overlap_left_step(mps[site], ortho_mps[n][site], ortho_left_[n][site]);
+        }
     }
 
     inline void boundary_right_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
         right_[site] = contr::overlap_mpo_right_step(mps[site], mps[site], right_[site+1], mpo[site]);
-        for (int n = 0; n < northo; ++n)
+        for (int n = 0; n < northo; ++n) {
             ortho_right_[n][site] = contr::overlap_right_step(mps[site], ortho_mps[n][site], ortho_right_[n][site+1]);
+        }
     }
 
     void init_left_right(MPO<Matrix, SymmGroup> const & mpo, int site)
@@ -167,10 +172,11 @@ protected:
     double get_cutoff(int sweep) const
     {
         double cutoff;
-        if (sweep >= parms.template get<int>("ngrowsweeps"))
+        if (sweep >= parms.template get<int>("ngrowsweeps")) {
             cutoff = parms.template get<double>("truncation_main");
-        else
+        } else {
             cutoff = log_interpolate(parms.template get<double>("truncation_initial"), parms.template get<double>("truncation_main"), parms.template get<int>("ngrowsweeps"), sweep);
+        }
         return cutoff;
     }
 
@@ -179,12 +185,14 @@ protected:
         std::size_t Mmax;
         if (parms.is_set("sweep_bond_dimensions")) {
             std::vector<std::size_t> ssizes = parms.template get<std::vector<std::size_t> >("sweep_bond_dimensions");
-            if (sweep >= ssizes.size())
+            if (sweep >= ssizes.size()) {
                 Mmax = *ssizes.rbegin();
-            else
+            } else {
                 Mmax = ssizes[sweep];
-        } else
+}
+        } else {
             Mmax = parms.template get<std::size_t>("max_bond_dimension");
+        }
         return Mmax;
     }
 
@@ -195,7 +203,7 @@ protected:
     MPO<Matrix, SymmGroup> const& mpo;
 
     BaseParameters & parms;
-    boost::function<bool ()> stop_callback;
+    std::function<bool ()> stop_callback;
 
     std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> > left_, right_;
 

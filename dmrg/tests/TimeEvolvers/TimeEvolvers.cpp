@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -35,7 +35,7 @@ TwoU1PG
 #endif
 > symmetries;
 
-/** Checks that the number of overall blocks of a block_matrix is correct */
+/** @brief Checks that the number of overall blocks of a block_matrix is correct */
 BOOST_AUTO_TEST_CASE_TEMPLATE(TimeEvolversAddTime, S, symmetries) {
 #ifdef DMRG_TD
     // The parameters are not really used
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TimeEvolversAddTime, S, symmetries) {
 
 #ifdef DMRG_TD
 
-/** Checks that the energy of an MPS is conserved after the propagation of a SiteProblem */
+/** @brief Checks that the energy of an MPS is conserved after the propagation of a SiteProblem */
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestEnergyConservationSiteproblem, S, symmetries, TestTimeEvolverFixture) {
     // Types declaration
     using BoundaryType = Boundary<typename storage::constrained<cmatrix>::type, S>;

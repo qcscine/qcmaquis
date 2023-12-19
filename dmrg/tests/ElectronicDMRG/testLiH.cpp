@@ -1,15 +1,15 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
 #define BOOST_TEST_MODULE TestLiH
 
+#include <filesystem>
 #include <boost/mpl/list.hpp>
 #include <boost/test/included/unit_test.hpp>
-#include <boost/filesystem/operations.hpp>
 #include "Fixtures/LiHFixture.h"
 
 //TODO NOTE THAT THE 2U1 VERSION OF THESE TESTS GETS STUCK IN A LOCAL MINIMUM -- TO BE CHECKED
@@ -74,8 +74,8 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_LiH_DMRG_BoundaryStorage, S, symmetries, L
   BOOST_CHECK_CLOSE(energyFromSS, energyFromTS, 1.0E-8);
   // This reference is taken from test2.cpp
   BOOST_CHECK_CLOSE(energyFromSS, referenceEnergy, 1.0e-7);
-  boost::filesystem::remove_all("tmpDMRGSS");
-  boost::filesystem::remove_all("tmpDMRGTS");
+  std::filesystem::remove_all("tmpDMRGSS");
+  std::filesystem::remove_all("tmpDMRGTS");
 }
 
 /** @brief Test DMRG-IPI with dumping the boundaries to File */
@@ -83,18 +83,17 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_LiH_IPI_BoundaryStorage, S, symmetries, Li
 {
   // Generic parameters
   parametersLiH.set("max_bond_dimension", 50);
-  parametersLiH.set("init_type", "hf");
-  parametersLiH.set("hf_occ", "4,1,1,1");
+  parametersLiH.set("init_type", "basis_state_generic");
+  parametersLiH.set("init_basis_state", "4,1,1,1");
   parametersLiH.set("orbital_order", "4,1,2,3");
   parametersLiH.set("symmetry", symm_traits::SymmetryNameTrait<S>::symmName());
-  parametersLiH.set("nsweeps", 20);
+  parametersLiH.set("nsweeps", 5);
   parametersLiH.set("ngrowsweeps", 2);
   parametersLiH.set("nmainsweeps", 5);
   parametersLiH.set("optimization", "twosite");
   // IPI-specific parametrs
   parametersLiH.set("ipi_sweep_energy_threshold", 1.0E-10);
   parametersLiH.set("ipi_sweep_overlap_threshold", 1.0E-10);
-  parametersLiH.set("ipi_sweeps_per_system", 5);
   parametersLiH.set("ipi_iterations", 5);
   parametersLiH.set("ipi_shift", -7.905);
   // DMRG-IPI calculation via interface without storing
@@ -109,5 +108,5 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_LiH_IPI_BoundaryStorage, S, symmetries, Li
   // Consistency check
   BOOST_CHECK_CLOSE(energy, energyStorage, 1.0e-10);
   BOOST_CHECK_CLOSE(energy, referenceEnergy, 1.0e-10);
-  boost::filesystem::remove_all("tmpIPI");
+  std::filesystem::remove_all("tmpIPI");
 }

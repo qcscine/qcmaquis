@@ -1,19 +1,16 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
 #ifndef MAQUIS_DMRG_lattice_hpp
 #define MAQUIS_DMRG_lattice_hpp
 
-#include <numeric>
 #include <sstream>
-#include <set>
 #include <vector>
 #include <boost/lexical_cast.hpp>
-#include <boost/lambda/lambda.hpp>
 #include "dmrg/models/lattice/lattice.h"
 #include "dmrg/utils/BaseParameters.h"
 
@@ -32,66 +29,72 @@ public:
     : L(L_), pbc(pbc_) { }
 
   /** @brief Get next position in the lattice */
-  std::vector<pos_t> forward(pos_t i) const
+  std::vector<pos_t> forward(pos_t i) const override
   {
     std::vector<pos_t> ret;
-    if (i < L-1)
+    if (i < L-1) {
       ret.push_back(i+1);
-    if (pbc && i == L-1)
+    }
+    if (pbc && i == L-1) {
       ret.push_back(0);
+    }
     return ret;
   }
 
   /** @brief Getter for the neighbours of a given site */
-  std::vector<pos_t> all(pos_t i) const
+  std::vector<pos_t> all(pos_t i) const override
   {
     std::vector<pos_t> ret;
-    if (i < L-1)
+    if (i < L-1) {
       ret.push_back(i+1);
-    if (i > 0)
+    }
+    if (i > 0) {
       ret.push_back(i-1);
-    if (pbc && i == L-1)
+    }
+    if (pbc && i == L-1) {
       ret.push_back(0);
-    if (pbc && i == 0)
+    }
+    if (pbc && i == 0) {
       ret.push_back(L-1);
+    }
     return ret;
   }
 
   /** @brief Getter for a generic property of the lattice */
-  boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const
+  std::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const override
   {
-    if (property == "label" && pos.size() == 1)
-      return boost::any( site_label(pos[0]) );
-    else if (property == "label" && pos.size() == 2)
-      return boost::any( bond_label(pos[0], pos[1]) );
-    else if (property == "type" && pos.size() == 1)
-      return boost::any( 0 );
-    else if (property == "type" && pos.size() == 2)
-      return boost::any( 0 );
-    else if (property == "x" && pos.size() == 1)
-      return boost::any( pos[0] );
-    else if (property == "at_open_boundary" && pos.size() == 1)
-      return boost::any( (!pbc) && (pos[0]==0 || pos[0]==L-1) );
-    else if (property == "at_open_left_boundary" && pos.size() == 1)
-      return boost::any( (!pbc) && pos[0]==0 );
-    else if (property == "at_open_right_boundary" && pos.size() == 1)
-      return boost::any( (!pbc) && pos[0]==L-1 );
-    else if (property == "wraps_pbc" && pos.size() == 2)
-      return boost::any( (pos[0] < pos[1]) );
-    else if (property == "NumTypes")
-      return boost::any( 1 );
-    else if (property == "ParticleType" && pos.size() == 1)
-      return boost::any( 0 );
-    else {
+    if (property == "label" && pos.size() == 1) {
+      return std::any( site_label(pos[0]) );
+    } else if (property == "label" && pos.size() == 2) {
+      return std::any( bond_label(pos[0], pos[1]) );
+    } else if (property == "type" && pos.size() == 1) {
+      return std::any( 0 );
+    } else if (property == "type" && pos.size() == 2) {
+      return std::any( 0 );
+    } else if (property == "x" && pos.size() == 1) {
+      return std::any( pos[0] );
+    } else if (property == "at_open_boundary" && pos.size() == 1) {
+      return std::any( (!pbc) && (pos[0]==0 || pos[0]==L-1) );
+    } else if (property == "at_open_left_boundary" && pos.size() == 1) {
+      return std::any( (!pbc) && pos[0]==0 );
+    } else if (property == "at_open_right_boundary" && pos.size() == 1) {
+      return std::any( (!pbc) && pos[0]==L-1 );
+    } else if (property == "wraps_pbc" && pos.size() == 2) {
+      return std::any( (pos[0] < pos[1]) );
+    } else if (property == "NumTypes") {
+      return std::any( 1 );
+    } else if (property == "ParticleType" && pos.size() == 1) {
+      return std::any( 0 );
+    } else {
       std::ostringstream ss;
       ss << "No property '" << property << "' with " << pos.size() << " points implemented.";
       throw std::runtime_error(ss.str());
-      return boost::any();
+      return std::any();
     }
   }
 
   /** @brief Getter for the lattice size */
-  pos_t size() const { return L; }
+  pos_t size() const override { return L; }
 
   /** @brief Getter for the number of site types */
   int getMaxType() const override { return 1; }

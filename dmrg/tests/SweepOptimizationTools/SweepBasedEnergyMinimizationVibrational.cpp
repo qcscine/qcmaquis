@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -39,7 +39,7 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedEnergyMinimizerSS_Vibrational_Watson, Wat
   parametersEthyleneWatsonHarmonic.set("seed", 30031989);
   auto mpsDefault = MPS<matrix, TrivialGroup>(lattice.size(), *(watsonModel.initializer(lattice, parametersEthyleneWatsonHarmonic)));
   mpsDefault.normalize_right();
-  auto energyMinimizer = SweepBasedMinimizerSS(mpsDefault, watsonHarmonicMPO, parametersEthyleneWatsonHarmonic, watsonModel, lattice, false);
+  SweepBasedMinimizerSS energyMinimizer(mpsDefault, watsonHarmonicMPO, parametersEthyleneWatsonHarmonic, watsonModel, lattice, false);
   energyMinimizer.runSweepSimulation();
   double optimalEnergyFromSweeper = energyMinimizer.getSpecificResult<double>("Energy");
   // Now does the same with the interface
@@ -68,7 +68,7 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedEnergyMinimizerTS_Vibrational_Bilinearly,
   // TSOptimizer calculation
   auto mpsConst = MPS<matrix, TrivialGroup>(lattice.size(), *(bilinearlyModel.initializer(lattice, parametersBilinearly)));
   mpsConst.normalize_right();
-  auto energyMinimizer = SweepBasedMinimizerTS(mpsConst, bilinearlyMPO, parametersBilinearly, bilinearlyModel, lattice, false);
+  SweepBasedMinimizerTS energyMinimizer(mpsConst, bilinearlyMPO, parametersBilinearly, bilinearlyModel, lattice, false);
   energyMinimizer.runSweepSimulation();
   double optimalEnergyFromSweeper = energyMinimizer.getSpecificResult<double>("Energy");
   // Interface calculation

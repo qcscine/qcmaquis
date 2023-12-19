@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -28,11 +28,11 @@ class SiteShifter
 {
 public:
     /** Types definition */
-    using bm_type = typename block_matrix<Matrix, SymmGroup>::block_matrix;
-    using MPS_type = typename MPS<Matrix, SymmGroup>::MPS;
-    using MPO_type = typename MPO<Matrix, SymmGroup>::MPO;
-    using MPSTen_type = typename MPSTensor<Matrix, SymmGroup>::MPSTensor;
-    using MPOTen_type = typename MPOTensor<Matrix, SymmGroup>::MPOTensor;
+    using bm_type = block_matrix<Matrix, SymmGroup>;
+    using MPS_type = MPS<Matrix, SymmGroup>;
+    using MPO_type = MPO<Matrix, SymmGroup>;
+    using MPSTen_type = MPSTensor<Matrix, SymmGroup>;
+    using MPOTen_type = MPOTensor<Matrix, SymmGroup>;
     using value_type = typename MPS_type::value_type;
     using scalar_type = typename MPS_type::scalar_type;
     using real_type = double;

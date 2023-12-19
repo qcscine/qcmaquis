@@ -33,7 +33,6 @@
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
 
-#include <boost/tuple/tuple.hpp>
 #include <set>
 
 namespace mpos {
@@ -81,11 +80,11 @@ namespace mpos {
     }
     
     template<class Matrix, class SymmGroup>
-    void compress_on_bond(std::vector<boost::tuple<size_t, size_t, block_matrix<Matrix, SymmGroup> > > & pm1,
-                          std::vector<boost::tuple<size_t, size_t, block_matrix<Matrix, SymmGroup> > > & pm2)
+    void compress_on_bond(std::vector<std::tuple<size_t, size_t, block_matrix<Matrix, SymmGroup> > > & pm1,
+                          std::vector<std::tuple<size_t, size_t, block_matrix<Matrix, SymmGroup> > > & pm2)
     {
         typedef block_matrix<Matrix, SymmGroup> op_t;
-        typedef boost::tuple<size_t, size_t, op_t> block;
+        typedef std::tuple<size_t, size_t, op_t> block;
         
         set<size_t> bond_used_dims;
         for (typename vector<block>::iterator it = pm1.begin(); it != pm1.end(); ++it)
@@ -110,10 +109,10 @@ namespace mpos {
     
     template<class Matrix, class SymmGroup>
     std::pair<size_t, size_t>
-    rcdim(std::vector<boost::tuple<size_t, size_t, block_matrix<Matrix, SymmGroup> > > const & pm)
+    rcdim(std::vector<std::tuple<size_t, size_t, block_matrix<Matrix, SymmGroup> > > const & pm)
     {
         typedef block_matrix<Matrix, SymmGroup> op_t;
-        typedef boost::tuple<size_t, size_t, op_t> block;
+        typedef std::tuple<size_t, size_t, op_t> block;
         
         list<size_t> l, r;
         
@@ -137,14 +136,14 @@ namespace mpos {
     class CorrMaker
     {
         typedef block_matrix<Matrix, SymmGroup> op_t;
-        typedef boost::tuple<size_t, size_t, op_t> block;
+        typedef std::tuple<size_t, size_t, op_t> block;
         typedef vector<
 	        pair<
     		    block_matrix<Matrix, SymmGroup>,
 		        block_matrix<Matrix, SymmGroup>
 	        >
         > op_pairs;
-        typedef boost::tuple<size_t, size_t, string> tag;
+        typedef std::tuple<size_t, size_t, string> tag;
         
     public:
         CorrMaker(std::size_t L,
@@ -230,13 +229,13 @@ namespace mpos {
         {
             size_t u2 = 0;
             while (used[p].count(u2) > 0) ++u2;
-            prempo[p].push_back( boost::make_tuple(u1, u2, op) );
+            prempo[p].push_back( std::make_tuple(u1, u2, op) );
             used[p].insert(u2);
 //            maquis::cout << "Adding a " << (trivial ? "trivial " : "") << "term at " << p << ", " << u1 << " -> " << u2 << std::endl;
             if (trivial)
-                tags[p].push_back( boost::make_tuple(u1, u2, "trivial") );
+                tags[p].push_back( std::make_tuple(u1, u2, "trivial") );
             else
-                tags[p].push_back( boost::make_tuple(u1, u2, "nontriv") );
+                tags[p].push_back( std::make_tuple(u1, u2, "nontriv") );
             return u2;
         }
         
@@ -305,7 +304,7 @@ namespace mpos {
     class MPOMaker
     {
         typedef block_matrix<Matrix, SymmGroup> op_t;
-        typedef boost::tuple<size_t, size_t, op_t> block;
+        typedef std::tuple<size_t, size_t, op_t> block;
         typedef vector<
           pair<
             block_matrix<Matrix, SymmGroup>,
@@ -326,7 +325,7 @@ namespace mpos {
             for (size_t p = 0; p < adj.size(); ++p)
             {
                 if (p+1 < adj.size())
-                    prempo[p].push_back( boost::make_tuple(0, 0, H.get_identity()) );
+                    prempo[p].push_back( std::make_tuple(0, 0, H.get_identity()) );
             }
         }
         
@@ -377,14 +376,14 @@ namespace mpos {
                 size_t first_use_b = (it->first == minp ? 0 : use_b);
                 size_t second_use_b = (it->first == maxp ? 1 : use_b);
                 assert( it->first < prempo.size() );
-                prempo[it->first].push_back( boost::make_tuple(first_use_b, second_use_b, it->second) );
+                prempo[it->first].push_back( std::make_tuple(first_use_b, second_use_b, it->second) );
                 used_dims[it->first].insert(use_b);
                 done[it->first] = true;
             }
             
             for (int p = minp; p <= maxp; ++p)
                 if (!done[p]) {
-                    prempo[p].push_back( boost::make_tuple(use_b, use_b, H.get_free()) );
+                    prempo[p].push_back( std::make_tuple(use_b, use_b, H.get_free()) );
                     used_dims[p].insert(use_b);
                     done[p] = true;
                 }
@@ -395,7 +394,7 @@ namespace mpos {
         MPO<Matrix, SymmGroup> create_mpo()
         {
             for (int p = leftmost_right + 1; p < adj.size(); ++p)
-                prempo[p].push_back( boost::make_tuple(1, 1, H.get_identity()) );
+                prempo[p].push_back( std::make_tuple(1, 1, H.get_identity()) );
             
             for (typename vector<vector<block> >::iterator it = prempo.begin();
                  it + 1 != prempo.end();

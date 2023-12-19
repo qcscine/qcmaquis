@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -27,11 +27,11 @@ namespace SU2 {
                      Index<SymmGroup> const & phys_i,
                      ProductBasis<SymmGroup> const & left_pb)
     {
-        typedef typename MPOTensor<OtherMatrix, SymmGroup>::index_type index_type;
-        typedef typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy col_proxy;
-        typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
-        typedef typename SymmGroup::charge charge;
-        typedef typename Matrix::value_type value_type;
+        using index_type = typename MPOTensor<OtherMatrix, SymmGroup>::index_type;
+        using col_proxy = typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy;
+        using const_iterator = typename DualIndex<SymmGroup>::const_iterator;
+        using charge = typename SymmGroup::charge;
+        using value_type = typename Matrix::value_type;
 
         block_matrix<Matrix, SymmGroup> ret;
 
@@ -86,7 +86,7 @@ namespace SU2 {
                         couplings[0] = prefactor * (value_type)::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
                         couplings[1] = prefactor * (value_type)::SU2::mod_coupling(j, 2,     jp, a,k,ap, i, 2,      ip);
 
-                        typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
+                        using block_iterator = typename SiteOperator<Matrix, SymmGroup>::const_iterator;
                         std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
 
                         for (block_iterator it = blocks.first; it != blocks.second; ++it)
@@ -101,11 +101,16 @@ namespace SU2 {
                             typename Matrix::value_type alfa_t = it->coefficient * couplings[casenr];
 
                             // copy the diagonal multplied by alfa_t into the output result: ret(·, col_i) += alfa_t * diag(L)
-                            for (size_t col_i = 0; col_i < right_i[block].second; ++col_i)
-                                std::transform(left_diagonal.begin(), left_diagonal.end(),
-                                               &ret[o](left_offset + ss1 * left_i[l].second, col_i),
-                                               &ret[o](left_offset + ss1 * left_i[l].second, col_i),
-                                               boost::lambda::_2 += boost::lambda::_1 * alfa_t);
+                            for (size_t col_i = 0; col_i < right_i[block].second; ++col_i) {
+                              std::transform(
+                                  left_diagonal.begin(),
+                                  left_diagonal.end(),
+                                  &ret[o](left_offset + ss1 * left_i[l].second, col_i),
+                                  &ret[o](left_offset + ss1 * left_i[l].second, col_i),
+                                  [&](const auto& a, const auto& b){
+                                      return b + a * alfa_t;
+                                  });
+                            }
                         }
                     } // wblock
                 } // phys_i s
@@ -122,7 +127,7 @@ namespace SU2 {
                          MPOTensor<Matrix, SymmGroup> const & mpo,                         
                          MPSTensor<Matrix, SymmGroup> const & x)
     {
-        typedef typename SymmGroup::charge charge;
+        using charge = typename SymmGroup::charge;
 
         Index<SymmGroup> const & physical_i = x.site_dim();
         Index<SymmGroup> right_i = x.col_dim(),
@@ -144,9 +149,13 @@ namespace SU2 {
                 size_t rblock = right[b2].find_block(in_r_charge, in_r_charge);
                 if (rblock != right[b2].n_blocks())
                 {
-                    for (size_t c = 0; c < num_cols(lb2[block]); ++c)
-                        std::transform(lb2[block].col(c).first, lb2[block].col(c).second, lb2[block].col(c).first,
-                                       boost::lambda::_1 * right[b2][rblock](c,c));
+                    for (size_t c = 0; c < num_cols(lb2[block]); ++c) {
+                      std::transform(
+                          lb2[block].col(c).first,
+                          lb2[block].col(c).second,
+                          lb2[block].col(c).first,
+                          [&](const auto& a){ a * right[b2][rblock](c, c); });
+                    }
                     ret.match_and_add_block(lb2[block], in_r_charge, in_r_charge);
                 }
             }

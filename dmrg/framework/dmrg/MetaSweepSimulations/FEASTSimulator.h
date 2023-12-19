@@ -1,14 +1,13 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
 #ifndef FEAST_SIMULATOR
 #define FEAST_SIMULATOR
 
-#include <omp.h>
 #include <cstdlib>
 #include "dmrg/models/model.h"
 #include "dmrg/models/lattice/lattice.h"
@@ -43,43 +42,44 @@ public:
 
   /** @brief Class constructor */
   FEASTSimulator(BaseParameters& parms, const ModelType& model, const LatticeType& inputLattice, const MPOType& mpo)
-    : currentIter(0), isSingleSite(true), parameters(parms), mpo_(mpo), lattice(inputLattice), calculateExactError(false),
-      model_(model), feastMPSs(), calculateVariance(false)
+    : parameters(parms), currentIter(0), isSingleSite(true),
+      calculateExactError(false), calculateVariance(false),
+      mpo_(mpo), lattice(inputLattice), model_(model) 
   {
     // Retrieve simulation parameters
     verbose_ = (parameters["feast_verbose"] == "yes");
+    linSysVerbose_ = (parameters["linsystem_verbose"] == "yes");
     printTimings_ = (parameters["feast_print_timings"] == "yes");
-    numStates = parameters["feast_num_states"].as<int>();
-    maxFeastIter = parameters["feast_max_iter"].as<int>();
-    eMin = parameters["feast_emin"].as<double>();
-    eMax = parameters["feast_emax"].as<double>();
-    mMax = parameters["max_bond_dimension"].as<int>();
-    feastThresholdEnergy = parameters["feast_energy_convergence_threshold"].as<double>();
-    feastThresholdOverlap = parameters["feast_overlap_convergence_threshold"].as<double>();
-    numQuadraturePoint = parameters["feast_num_points"].as<int>();
-    intModality = parameters["feast_integral_type"].as<std::string>();
-    truncModality = parameters["feast_truncation_type"].as<std::string>();
+    numStates = parameters["feast_num_states"].template as<int>();
+    maxFeastIter = parameters["feast_max_iter"].template as<int>();
+    eMin = parameters["feast_emin"].template as<double>();
+    eMax = parameters["feast_emax"].template as<double>();
+    mMax = parameters["max_bond_dimension"].template as<int>();
+    feastThresholdEnergy = parameters["feast_energy_convergence_threshold"].template as<double>();
+    feastThresholdOverlap = parameters["feast_overlap_convergence_threshold"].template as<double>();
+    numQuadraturePoint = parameters["feast_num_points"].template as<int>();
+    intModality = parameters["feast_integral_type"].template as<std::string>();
+    truncModality = parameters["feast_truncation_type"].template as<std::string>();
     truncateEach = (truncModality == "each");
-    initType = parameters["init_type"].as<std::string>();
-    if (parameters["linsystem_exact_error"] == "yes")
-      calculateExactError = true;
+    initType = parameters["init_type"].template as<std::string>();
+    isSingleSite = !(parameters["optimization"] == "twosite");
+    calculateExactError = (parameters["linsystem_exact_error"] == "yes");
     calculateVariance = (parameters["feast_calculate_standard_deviation"] == "yes");
     // Checks consistency of the input
     if (intModality != "half" && intModality != "full")
       throw std::runtime_error("Parameter [feast_integral_type] not recognized");
     if (truncModality != "each" && truncModality != "end")
       throw std::runtime_error("Parameter [feast_truncation_type] not recognized");
+
+    printHeader();
     // Generates the initial guess for the MPSs
     generateSeed(parms);
     initializeGuess(parms, model_);
     quadPoints = FeastHelper::getQuadraturePoints(numQuadraturePoint);
     this->generateComplexQuadrature();
-    if (parameters["optimization"] == "twosite")
-      isSingleSite = false;
     postProcessor = std::make_unique<PostProcessorType>(numStates, numQuadraturePoint, complexWeights, model_, lattice,
-                                                        parameters, eMin, eMax);
+                                                        parameters, eMin, eMax, verbose_);
     resultContainer = std::make_shared<ResultContainerType>();
-    printHeader();
   }
 
   /** @brief FEAST simulation (which is composed by multiple FEAST iterations) */
@@ -176,14 +176,14 @@ private:
     // *and* of the number of target states.
     auto initialTime = std::chrono::high_resolution_clock::now();
     //
-#pragma omp parallel for collapse(2)
+#pragma omp parallel for collapse(2) // All independent states are collapsed into one parallelization layer
     for (int quadPoint = 0; quadPoint < numQuadraturePoint; quadPoint++) {
       for (int iGuess = 0; iGuess < numStates; iGuess++) {
         auto localParameters = parameters;
         auto mpsTmp = mpsGuess[iGuess];
         // Here there is a bit of code repetition because the pointer type is different for SS and TS.
         if (isSingleSite) {
-          auto ssSimulator = std::make_unique<LinearSystemSSSimulationType>(mpsTmp, mpo_, localParameters, model_, lattice, verbose_);
+          auto ssSimulator = std::make_unique<LinearSystemSSSimulationType>(mpsTmp, mpo_, localParameters, model_, lattice, linSysVerbose_);
           ssSimulator->setShift(complexNodes[quadPoint]);
           auto initialInnerTime = std::chrono::high_resolution_clock::now();
           ssSimulator->runSweepSimulation();
@@ -191,14 +191,14 @@ private:
           auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::duration<double>(finalInnerTime - initialInnerTime)).count();
 #pragma omp critical (PrintResults)
           {
-            if (!verbose_) {
+            if (verbose_) {
               printLinearSystemHeader(complexNodes[quadPoint], complexWeights[quadPoint], iGuess, duration);
               ssSimulator->printSummary();
             }
           }
         }
         else {
-          auto tsSimulator = std::make_unique<LinearSystemTSSimulationType>(mpsTmp, mpo_, localParameters, model_, lattice, verbose_);
+          auto tsSimulator = std::make_unique<LinearSystemTSSimulationType>(mpsTmp, mpo_, localParameters, model_, lattice, linSysVerbose_);
           tsSimulator->setShift(complexNodes[quadPoint]);
           auto initialInnerTime = std::chrono::high_resolution_clock::now();
           tsSimulator->runSweepSimulation();
@@ -206,7 +206,7 @@ private:
           auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::duration<double>(finalInnerTime - initialInnerTime)).count();
 #pragma omp critical (PrintResults)
           {
-            if (!verbose_) {
+            if (verbose_) {
               printLinearSystemHeader(complexNodes[quadPoint], complexWeights[quadPoint], iGuess, duration);
               tsSimulator->printSummary();
             }
@@ -282,18 +282,19 @@ private:
 
   /** @brief Generates the guess for FEAST */
   void initializeGuess(BaseParameters& parms, const ModelType& model) {
-    bool needToWriteONV = (initType == "basis_state_generic" || initType == "hf");
+    bool needToWriteStates = (initType == "basis_state_generic" || initType == "hf" || initType == "coherent");
     std::vector<std::string> specifiedStates;
     int numSpecifiedStates = 0;
-    if (needToWriteONV) {
-      std::string states = parms["init_basis_state"].as<std::string>();
+    if (needToWriteStates) {
+      std::string states;
+      states = (initType == "coherent") ? parms["init_file"].as<std::string>() : parms["init_basis_state"].as<std::string>();
       boost::split(specifiedStates, states, boost::is_any_of("|"));
       numSpecifiedStates = specifiedStates.size();
       if (numSpecifiedStates < 1 || numSpecifiedStates > numStates){
-        throw std::runtime_error("You should specify at least one and at most num_states init_onv's if init_type is set to basis_state_generic/hf");
+        throw std::runtime_error("You should specify at least one and at most num_states init_states's if init_type is set to basis_state_generic or coherent");
       }
       if (numSpecifiedStates != numStates) {
-        maquis::cout << "WARNING! Not all feast states have been provided an ONV for initialization, so the remaining ones will be initialized with generic_default" << std::endl;
+        maquis::cout << "WARNING! Not all feast states have been provided an specified state for initialization, so the remaining ones will be initialized with generic_default" << std::endl;
       }
     }
     // Generates the guess MPS
@@ -301,17 +302,15 @@ private:
       auto parametersTmp = parms;
       parametersTmp.set("seed", seedForInit[iState]);
       parametersTmp.set("init_type", initType);
-      if (needToWriteONV) {
+      if (needToWriteStates) {
         if (iState < numSpecifiedStates) {
-          if (parametersTmp["MODEL"] == "quantum_chemistry")
-            parametersTmp.set("hf_occ", specifiedStates[iState]);
-          else
+          if (initType == "coherent") {
+            parametersTmp.set("init_file", specifiedStates[iState]); // initialize the specified states with the initfiles containing the ONVs
+          } else {
             parametersTmp.set("init_basis_state", specifiedStates[iState]); // initialize the specified states with the provided ONVs
+          }
         } else { // the rest of the states are not specified
-          if (parametersTmp["MODEL"] == "quantum_chemistry")
-            parametersTmp.set("init_type", "const "); // initialize the remaining electronic states with const
-          else
-            parametersTmp.set("init_type", "basis_state_generic_default"); // initialize the remaining vibrational states with generic_default
+          parametersTmp.set("init_type", "basis_state_generic_default"); // initialize the remaining states with generic_default
         }
       }
       mpsGuess.push_back(MPSType(lattice.size(), *(model.initializer(lattice, parametersTmp))));
@@ -338,7 +337,7 @@ private:
     maquis::cout << " - Maximum number of FEAST iterations: " << maxFeastIter << std::endl;
     maquis::cout << " - Number of targeted states: " << numStates << std::endl;
     maquis::cout << " - Lower bound for the complex contour integration: " << eMin << std::endl;
-    maquis::cout << " - Uppwer bound for the complex contour integration: " << eMax << std::endl;
+    maquis::cout << " - Upper bound for the complex contour integration: " << eMax << std::endl;
     maquis::cout << " - Number of quadrature points: " << numQuadraturePoint << std::endl;
     maquis::cout << " - Energy convergence threshold for FEAST: " << feastThresholdEnergy << std::endl;
     maquis::cout << " - Overlap convergence threshold for FEAST: " << feastThresholdOverlap << std::endl;
@@ -389,7 +388,7 @@ private:
   const MPOType& mpo_;                                                                 // Matrix product operator
   const LatticeType& lattice;                                                          // DMRG lattice object.
   const ModelType& model_;                                                             // Model object.
-  bool verbose_, printTimings_;                                                        // Verbosity flags.
+  bool verbose_, linSysVerbose_, printTimings_;                                        // Verbosity flags.
   // Constexpr for the imaginary unit
   static constexpr ComplexType imagUnity = ComplexType(0., 1.);
 };

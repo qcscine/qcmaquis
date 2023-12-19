@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -16,17 +16,19 @@
 
 #ifdef MAQUIS_OPENMP
 #include <omp.h>
+
+#include <utility>
 #endif
 
 template <class Matrix, class SymmGroup>
 class dmrg_init {
 public:
-    typedef typename SymmGroup::charge charge;
-    typedef std::pair<charge, size_t> local_state;
-    typedef typename std::vector<local_state>::const_iterator states_iterator;
+    using charge = typename SymmGroup::charge;
+    using local_state = std::pair<charge, size_t>;
+    using states_iterator = typename std::vector<local_state>::const_iterator;
 
-    dmrg_init(DmrgParameters const & parms_)
-    : parms(parms_)
+    dmrg_init(DmrgParameters  parms_)
+    : parms(std::move(parms_))
     , chkpfile(parms["chkpfile"].str())
     , nthreads(1)
     {
@@ -124,8 +126,11 @@ private:
             std::vector<local_state> state(L);
             for (size_t i=0; i<L; ++i)
                 state[i] = *(it[i]);
-            charge N = std::accumulate(state.begin(), state.end(), SymmGroup::IdentityCharge,
-                                       boost::bind(static_cast<charge(*)(charge,charge)>(&SymmGroup::fuse), _1,  boost::bind(&local_state::first, _2)) );
+            charge N = std::accumulate(
+                state.begin(), state.end(), SymmGroup::IdentityCharge,
+                [&](const charge& acc, const local_state& x){
+                    return SymmGroup::fuse(acc, x.first);
+                });
             if (N == initc)
                 add_state(state);
 

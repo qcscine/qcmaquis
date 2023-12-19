@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -9,6 +9,8 @@
 #define SYMMETRY_TRAITS_H
 
 #include <boost/type_traits.hpp>
+
+#include <dmrg/block_matrix/symmetry.h>
 
 namespace symm_traits {
 
@@ -18,12 +20,12 @@ class AbelianTag {};
 class SU2Tag {};
 
 template <class SymmGroup>
-struct SymmType { typedef AbelianTag type; };
+struct SymmType { using type = AbelianTag; };
 template<>
-struct SymmType<SU2U1> { typedef SU2Tag type; };
+struct SymmType<SU2U1> { using type = SU2Tag; };
 
 template <>
-struct SymmType<SU2U1PG> { typedef SU2Tag type; };
+struct SymmType<SU2U1PG> { using type = SU2Tag; };
 
 template <class SymmGroup>
 struct HasU1DG : public std::false_type {};

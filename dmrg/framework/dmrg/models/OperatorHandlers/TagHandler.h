@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -13,31 +13,31 @@
 #include <utility>
 #include <stdexcept>
 
-#include <boost/shared_ptr.hpp>
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
 #include "dmrg/block_matrix/site_operator.h"
 #include "dmrg/block_matrix/site_operator_algorithms.h"
 #include "dmrg/models/tag_detail.h"
+#include "dmrg/models/OperatorHandlers/OpTable.h"
 
 template <class Matrix, class SymmGroup>
 class TagHandler
 {
 public:
-    typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
-    typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
+    using tag_type = typename OPTable<Matrix, SymmGroup>::tag_type;
+    using op_t = typename OPTable<Matrix, SymmGroup>::op_t;
 
 protected:
-    typedef typename Matrix::value_type value_type;
-    typedef std::pair<tag_type, tag_type> tag_pair_t;
-    typedef std::map<tag_pair_t, std::pair<tag_type, value_type>, compare_pair<tag_pair_t> > pair_map_t;
-    typedef typename pair_map_t::const_iterator pair_map_it_t;
+    using value_type = typename Matrix::value_type;
+    using tag_pair_t = std::pair<tag_type, tag_type>;
+    using pair_map_t = std::map<tag_pair_t, std::pair<tag_type, value_type>, compare_pair<tag_pair_t>>;
+    using pair_map_it_t = typename pair_map_t::const_iterator;
 
 public:
     // constructors
     TagHandler() : operator_table(new OPTable<Matrix, SymmGroup>()) { }
     TagHandler(std::shared_ptr<OPTable<Matrix, SymmGroup> > tbl_) : operator_table(tbl_) { }
-    TagHandler(TagHandler const & a);
+    TagHandler(TagHandler const & rhs);
 
     // simple const query
     tag_type size() const;
@@ -55,11 +55,11 @@ public:
     // access operators
     typename OPTable<Matrix, SymmGroup>::value_type & get_op(tag_type i);
     typename OPTable<Matrix, SymmGroup>::value_type const & get_op(tag_type i) const;
-    std::vector<typename OPTable<Matrix, SymmGroup>::value_type> get_ops(std::vector<tag_type> const & i) const;
+    std::vector<typename OPTable<Matrix, SymmGroup>::value_type> get_ops(std::vector<tag_type> const & tags) const;
 
     // compute products (WARNING: not thread safe!)
     std::pair<tag_type, value_type> get_product_tag(const tag_type t1, const tag_type t2);
-    std::pair<std::vector<tag_type>, std::vector<value_type> > get_product_tags(const std::vector<tag_type> & t1, const std::vector<tag_type> & t2);
+    std::pair<std::vector<tag_type>, std::vector<value_type> > get_product_tags(const std::vector<tag_type> & ops1, const std::vector<tag_type> & ops2);
 
     // Diagnostics
     tag_type prod_duplicates() const { return duplicates_(product_tags); }

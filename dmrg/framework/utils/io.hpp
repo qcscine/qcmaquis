@@ -13,11 +13,16 @@ namespace maquis {
     
     template<class T, class Stream>
     class ostream_iterator_
-    : public std::iterator<std::output_iterator_tag, void, void, void, void>
     {
     public:
-        typedef std::string         char_type;
-        typedef Stream              ostream_type;
+        using iterator_category = std::output_iterator_tag;
+        using value_type = void; 
+        using difference_type = void;
+        using pointer = void;
+        using reference = void;
+
+        using char_type = std::string;
+        using ostream_type = Stream;
         
     private:
         ostream_type*	    _M_stream;

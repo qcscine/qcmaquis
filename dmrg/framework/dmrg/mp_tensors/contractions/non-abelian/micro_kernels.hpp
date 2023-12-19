@@ -1,13 +1,14 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
 #ifndef CONTRACTIONS_SU2_MICRO_KERNELS_HPP
 #define CONTRACTIONS_SU2_MICRO_KERNELS_HPP
 
+#include "dmrg/block_matrix/detail/alps_detail.hpp"
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/sparse_operator.h"
 
@@ -128,7 +129,7 @@ namespace detail {
     template <typename T>
     struct micro_task
     {
-        typedef unsigned short IS;
+        using IS = unsigned short;
 
         //T const* source;
         T scale;
@@ -147,7 +148,8 @@ namespace detail {
     };
 
     template <class Matrix, class SymmGroup>
-    void op_iterate(typename operator_selector<Matrix, SymmGroup>::type const & W, std::size_t w_block,
+    void op_iterate(typename operator_selector<Matrix, SymmGroup>::type const & W,
+                    std::size_t w_block,
                     typename Matrix::value_type couplings[],
                     std::vector<micro_task<typename Matrix::value_type> > & tasks,
                     micro_task<typename Matrix::value_type> tpl,
@@ -165,9 +167,13 @@ namespace detail {
             std::size_t rspin = it->row_spin;
             std::size_t cspin = it->col_spin;
             std::size_t casenr = 0;
-            if (rspin == 2 && cspin == 2) casenr = 3;
-            else if (rspin == 2) casenr = 1;
-            else if (cspin == 2) casenr = 2;
+            if (rspin == 2 && cspin == 2) {
+              casenr = 3;
+            } else if (rspin == 2) {
+              casenr = 1;
+            } else if (cspin == 2) {
+              casenr = 2;
+            }
 
             //task.source = source + ss1*tpl.l_size;
             task.in_offset = in_offset + ss1*tpl.l_size;

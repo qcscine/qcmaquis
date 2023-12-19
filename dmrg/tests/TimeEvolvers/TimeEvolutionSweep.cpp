@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -34,6 +34,7 @@ TwoU1PG
 #endif
 > symmetries;
 
+#ifdef DMRG_TD
 /** Checks the constructor of a site shifter object */
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestConstructorSingleSiteEvolution, S, symmetries, TestTimeEvolverFixture) {
     using SingleSiteTimeEvolution = SingleSiteTimeEvolution<cmatrix, S, storage::disk>;
@@ -180,4 +181,5 @@ BOOST_FIXTURE_TEST_CASE(TestSingleSiteImaginaryTimeVsTIRelativistic, TestTimeEvo
     BOOST_CHECK_CLOSE(maquis::real(iTDEnergy), -1.0780470133e+02, 1.0E-7);
 }
 
-#endif
+#endif // HAVE_U1DG
+#endif // DMRG_TD

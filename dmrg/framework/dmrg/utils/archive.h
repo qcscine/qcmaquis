@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -53,7 +53,7 @@ namespace storage {
         void operator >> (T& obj){
             (*impl) >> obj;
         }
-        alps::hdf5::detail::archive_proxy<alps::hdf5::archive> operator[](std::string path){
+        alps::hdf5::detail::archive_proxy<alps::hdf5::archive> operator[](const std::string& path){
             return (*impl)[path];
         }
 

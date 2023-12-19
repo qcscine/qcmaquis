@@ -1,12 +1,14 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
 #ifndef MAQUIS_DMRG_PREBO_TAGGENERATOR_HPP
 #define MAQUIS_DMRG_PREBO_TAGGENERATOR_HPP
+
+#ifdef DMRG_PREBO
 
 #include "dmrg/models/model.h"
 #include "dmrg/utils/BaseParameters.h"
@@ -16,7 +18,6 @@
 #include <alps/numeric/matrix/matrix.hpp>
 #include <map>
 
-#ifdef DMRG_PREBO
 
 namespace prebo {
 

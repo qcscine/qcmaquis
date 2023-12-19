@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -75,8 +75,8 @@ template<int Q>
 class Zq
 {
 public:
-    typedef ZqCharge<Q> charge;
-    typedef int subcharge; // Used if charge is site-dependent
+    using charge = ZqCharge<Q>;
+    using subcharge = int; // Used if charge is site-dependent
     
     static const charge IdentityCharge;
     static const bool finite = true;
@@ -90,7 +90,7 @@ public:
 
     static subcharge particleNumber(charge a) { return 1; }
     
-    template<int R> static charge fuse(const boost::array<charge, R> &v)
+    template<int R> static charge fuse(const std::array<charge, R> &v)
     {
         charge ret = v[0];
         for (int i = 1; i < R; i++)

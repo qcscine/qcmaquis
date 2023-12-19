@@ -43,10 +43,6 @@ namespace alps {
 
 namespace {
 
-void static_assertion() {
-  BOOST_STATIC_ASSERT(sizeof(long long) == 8);
-}
-    
 } // end namespace
 
 #endif

@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -23,8 +23,8 @@ MPO<Matrix, SymmGroup> block_to_mpo(Index<SymmGroup> const & phys_i,
 {
     MPO<Matrix, SymmGroup> mpo(length);
     
-    typedef typename MultiIndex<SymmGroup>::index_id index_id;
-    typedef typename MultiIndex<SymmGroup>::set_id set_id;
+    using index_id = typename MultiIndex<SymmGroup>::index_id;
+    using set_id = typename MultiIndex<SymmGroup>::set_id;
     
     
     Index<SymmGroup> alpha_i, beta_i;
@@ -130,7 +130,7 @@ MPO<Matrix, SymmGroup> block_to_mpo(Index<SymmGroup> const & phys_i,
                  it++)
             {
                 typename MultiIndex<SymmGroup>::coord_t lc, rc;
-                boost::tie(lc, rc) = midx_mpo.get_coords(curr_mpo_s, *it);
+                std::tie(lc, rc) = midx_mpo.get_coords(curr_mpo_s, *it);
                 if (!btmp.has_block(lc.first, rc.first))
                     continue;
 

@@ -1,16 +1,19 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
 #ifndef SINGLESITETIMEEVOLUTION_H
 #define SINGLESITETIMEEVOLUTION_H
 
+#include <chrono>
+
 #include "dmrg/mp_tensors/mpo_ops.h"
 #include "dmrg/evolve/TimeEvolutionSweep.h"
 #include "dmrg/utils/DmrgParameters.h"
+#include <chrono>
 
 /**
  * @brief Class implementing the single-site time-evolution algorithm with a sweep-based Trotter decomposition.
@@ -55,7 +58,7 @@ public:
    * @param initial_site_: site in which the optimization is started.
    */
   SingleSiteTimeEvolution(MPS<Matrix, SymmGroup> & mps, MPO<Matrix, SymmGroup> const & mpo,
-                          BaseParameters & parms, boost::function<bool ()> stop_callback, int initial_site_ = 0)
+                          BaseParameters & parms, std::function<bool ()> stop_callback, int initial_site_ = 0)
         : base(mps, mpo, parms, stop_callback, to_site(mps.length(), initial_site_)) { };
 
   /**
@@ -77,7 +80,7 @@ public:
    */
   void evolve_sweep(int sweep) override {
     // Initialization
-    boost::chrono::high_resolution_clock::time_point sweep_now = boost::chrono::high_resolution_clock::now();
+    std::chrono::high_resolution_clock::time_point sweep_now = std::chrono::high_resolution_clock::now();
     // Clears the vector with the results of the previous iteration
     iteration_results_.clear();
     typename MPSTensor<Matrix, SymmGroup>::scalar_type dipole;
@@ -89,7 +92,7 @@ public:
     Storage::prefetch(right_[_site+1]);
     // Main loop
     for (; _site < 2*L_; ++_site) {
-      boost::chrono::high_resolution_clock::time_point now, then;
+      std::chrono::high_resolution_clock::time_point now, then;
       site = to_site(L_, _site);
       int lr = (_site < L) ? +1 : -1;
       print_header(sweep, site, lr);
@@ -183,8 +186,8 @@ public:
       iteration_results_["BondDimension"] << trunc.bond_dimension;
       iteration_results_["TruncatedWeight"] << trunc.truncated_weight;
       iteration_results_["SmallestEV"] << trunc.smallest_ev;
-      boost::chrono::high_resolution_clock::time_point sweep_then = boost::chrono::high_resolution_clock::now();
-      double elapsed = boost::chrono::duration<double>(sweep_then - sweep_now).count();
+      std::chrono::high_resolution_clock::time_point sweep_then = std::chrono::high_resolution_clock::now();
+      double elapsed = std::chrono::duration<double>(sweep_then - sweep_now).count();
       maquis::cout << " Sweep has been running for " << elapsed << " seconds. \n" << std::endl;
       parallel::meminfo();
       if (stop_callback())
@@ -200,19 +203,12 @@ private:
    * @param site: site of the optimization.
    * @param lr: direction of the optimization
    */
-  void print_header(int& sweep, int& site, int& lr) {
+  void print_header(int sweep, int site, int lr) {
     char buffer[40];
-    int n, a;
-    if (lr == 1) {
-        a = 2*sweep+1;
-        n = sprintf(buffer, "  Sweep number %3d - site number %3d", a, site);
-    } else {
-        a = 2*sweep+2;
-        n = sprintf(buffer, "  Sweep number %3d - site number %3d", a, site);
-    }
-    std::cout << " +-----------------------------------+" << std::endl;
-    std::cout << buffer << std::endl;
-    std::cout << " +-----------------------------------+" << std::endl;
+    int a = (lr == 1) ? 2*sweep+1 : 2*sweep+2;
+    std::cout << " +-------------------------------------------+" << std::endl;
+    std::cout << "   Sweep number " << a << " - site number " << site << std::endl;
+    std::cout << " +-------------------------------------------+" << std::endl;
   }
 };
 

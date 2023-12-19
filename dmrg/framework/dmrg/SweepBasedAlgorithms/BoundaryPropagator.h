@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -43,7 +43,7 @@ public:
 
   /** @brief Class constructor */
   BoundaryPropagator(const MPSType& mps, const MPOType& mpo, int initSite=0)
-    : initSite_(initSite), L_(mps.length()), mps_(mps), mpo_(mpo)
+    : L_(mps.length()), initSite_(initSite), mpo_(mpo), mps_(mps)
   {
     left_.resize(L_+1);
     right_.resize(L_+1);

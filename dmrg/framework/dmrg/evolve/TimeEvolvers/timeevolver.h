@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -21,6 +21,7 @@
 #include "TimeEvolutionAlgorithm.h"
 #include "LanczosEvolver.h"
 #include "RKEvolver.h"
+#include "ArnoldiEvolver.h"
 
 /** @brief Wrapper class for time-evolution methods */
 template<class Matrix, class SymmGroup, class ParameterType>
@@ -32,6 +33,7 @@ class TimeEvolver {
   using scalar_type = typename MPSTensor<Matrix, SymmGroup>::scalar_type;
   using time_evolution_algorithm = TimeEvolutionAlgorithm<Matrix, SymmGroup>;
   using time_type = double;
+  using ArnoldiEvolverType = ArnoldiEvolver<Matrix, SymmGroup>;
   using LanczosTI = LanczosEvolver<Matrix, SymmGroup, TimeStepDistributor::Standard>;
   using LanczosEMR = LanczosEvolver<Matrix, SymmGroup, TimeStepDistributor::ExponentialMidpoint>;
   using LanczosFourthOrder = LanczosEvolver<Matrix, SymmGroup, TimeStepDistributor::FourthOrderMagnus>;

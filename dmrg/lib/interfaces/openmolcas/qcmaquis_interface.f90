@@ -6,7 +6,7 @@
 !!        (C) 2013-2019 Leon Freitag, Erik Hedegaard, Sebastian Keller,
 !!                      Stefan Knecht, Yingjin Ma, Christopher Stein
 !!                      and Markus Reiher
-!!                      Laboratory for Physical Chemistry, ETH Zurich
+!!                      Department of Chemistry and Applied Biosciences, ETH Zurich
 !!  dmrg-interface-utils is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU Lesser General Public License as published by
 !!  the Free Software Foundation, either version 3 of the License, or

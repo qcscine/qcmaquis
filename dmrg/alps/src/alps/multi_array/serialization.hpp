@@ -55,7 +55,7 @@ namespace alps{
 
     typedef typename multi_array<T,D,Allocator>::size_type size_type;
 
-    boost::array<size_type, D> dimensions;
+    std::array<size_type, D> dimensions;
     ar >> make_nvp("dimensions", make_array(dimensions.c_array(), D));
     t.resize(dimensions); 
     ar >> make_nvp("data", make_array(t.data(), t.num_elements())); 

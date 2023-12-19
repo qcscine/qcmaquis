@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -50,8 +50,8 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2, S, symmetries, H2Fixt
   interfaceOptimizerES.optimize();
   auto energyFromOptimizerES = interfaceOptimizerES.energy();
   // Cleans up stuff
-  boost::filesystem::remove_all("GS.H2.FEAST.chkp.h5");
-  boost::filesystem::remove_all("ES.H2.FEAST.chkp.h5");
+  std::filesystem::remove_all("GS.H2.FEAST.chkp.h5");
+  std::filesystem::remove_all("ES.H2.FEAST.chkp.h5");
   // FEAST for ground state
   auto eMin = energyFromOptimizerGS - (energyFromOptimizerES-energyFromOptimizerGS)/10.;
   auto eMax = energyFromOptimizerGS + (energyFromOptimizerES-energyFromOptimizerGS)/10.;
@@ -152,7 +152,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_LiH_TwoGuesses, LiHFixture)
   parametersLiH.set("truncation_main", 1.0E-30);
   parametersLiH.set("linsystem_exact_error", "yes");
   // Linear system parameters (note that the same set of parameters is used also for DMRG[FEAST])
-  // parametersLiH.set("linsystem_precond", "yes");
+  // parametersLiH.set("linsystem_precond", "diagonal");
   parametersLiH.set("linsystem_init", "last");
   parametersLiH.set("linsystem_max_it", 1);
   parametersLiH.set("linsystem_tol", 1.0E-10);
@@ -322,15 +322,15 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_LiH, LiHFixture)
   using ModelType = Model<cmatrix, SU2U1PG>;
   // Generic parameters
   parametersLiH.set("max_bond_dimension", 50);
-  parametersLiH.set("init_type", "hf");
-  parametersLiH.set("hf_occ", "4,1,1,1");
+  parametersLiH.set("init_type", "basis_state_generic");
+  parametersLiH.set("init_basis_state", "4,1,1,1");
   parametersLiH.set("optimization", "twosite");
   parametersLiH.set("symmetry", "su2u1pg");
   parametersLiH.set("init_type", "const");
   // IPI-specific parameters
   parametersLiH.set("ipi_sweep_overlap_threshold", 1.0E-5);
   parametersLiH.set("ipi_sweep_energy_threshold", 1.0E-5);
-  parametersLiH.set("ipi_sweeps_per_system", 5);
+  parametersLiH.set("nsweeps", 5);
   parametersLiH.set("ipi_iterations", 8);
   // Linear system parameters (note that the same set of parameters is used also for DMRG[FEAST])
   parametersLiH.set("linsystem_precond", "no");

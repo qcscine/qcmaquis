@@ -1,20 +1,22 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
 #ifndef CONTRACTIONS_IMPL_MEMSAVE_HPP
 #define CONTRACTIONS_IMPL_MEMSAVE_HPP
 
+#include "dmrg/block_matrix/block_matrix.h"
+#include "dmrg/mp_tensors/mpotensor.h"
+
 namespace contraction {
 
     template<class Matrix, class SymmGroup>
     class ContractionGrid {
     public:
-        ContractionGrid(MPOTensor<Matrix, SymmGroup> const & mpo, size_t s1, size_t s2) : granularity(1) {
-        }
+        ContractionGrid(MPOTensor<Matrix, SymmGroup> const & mpo, size_t s1, size_t s2) : granularity(1) {}
         block_matrix<Matrix, SymmGroup>& operator()(size_t b1, size_t b2){
             return data_;
         }

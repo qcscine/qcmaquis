@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 #include "maquis_cppinterface.h"
@@ -255,17 +255,17 @@ integral_indices[i][3]};
         results_collector& iter = cpp_interface_ptr->get_iteration_results();
 
         // iter contains results, one element per microiteration
-        const std::vector<boost::any>& m_vec = iter["BondDimension"].get();
-        const std::vector<boost::any>& tw_vec = iter["TruncatedWeight"].get();
-        const std::vector<boost::any>& tf_vec = iter["TruncatedFraction"].get();
-        const std::vector<boost::any>& ev_vec = iter["SmallestEV"].get();
+        const std::vector<std::any>& m_vec = iter["BondDimension"].get();
+        const std::vector<std::any>& tw_vec = iter["TruncatedWeight"].get();
+        const std::vector<std::any>& tf_vec = iter["TruncatedFraction"].get();
+        const std::vector<std::any>& ev_vec = iter["SmallestEV"].get();
 
         // We return the sum of these values for the last sweep
         // this should be done with transform_reduce
 
-        *m = 0; for (auto&& m_ : m_vec) *m += boost::any_cast<std::size_t>(m_);
-        *truncated_weight = 0; for (auto&& tw_ : tw_vec) *truncated_weight += boost::any_cast<V>(tw_);
-        *truncated_fraction = 0; for (auto&& tf_ : tf_vec) *truncated_fraction += boost::any_cast<V>(tf_);
-        *smallest_ev = 0; for (auto&& ev_ : ev_vec) *smallest_ev += boost::any_cast<V>(ev_);
+        *m = 0; for (auto&& m_ : m_vec) *m += std::any_cast<std::size_t>(m_);
+        *truncated_weight = 0; for (auto&& tw_ : tw_vec) *truncated_weight += std::any_cast<V>(tw_);
+        *truncated_fraction = 0; for (auto&& tf_ : tf_vec) *truncated_fraction += std::any_cast<V>(tf_);
+        *smallest_ev = 0; for (auto&& ev_ : ev_vec) *smallest_ev += std::any_cast<V>(ev_);
         *nsweeps = cpp_interface_ptr->get_last_sweep();
     }

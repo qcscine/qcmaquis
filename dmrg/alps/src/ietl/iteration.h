@@ -54,7 +54,7 @@ namespace ietl {
     }
     
     inline bool converged(T r, T lambda) {
-      return (r <= rtol_ * std::fabs(lambda) || r < atol_); // relative or absolute tolerance.
+      return (r <= rtol_ * std::abs(lambda) || r < atol_); // relative or absolute tolerance.
     }    
     
     inline void operator++() { ++i; }  

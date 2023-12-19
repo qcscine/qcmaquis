@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -17,15 +17,15 @@ namespace detail {
     class ChemHelperSU2
     {
     public:
-        typedef typename M::value_type value_type;
-        typedef ::term_descriptor<value_type> term_descriptor;
-        typedef Lattice::pos_t pos_t;
+        using value_type = typename M::value_type;
+        using term_descriptor = ::term_descriptor<value_type>;
+        using pos_t = Lattice::pos_t;
         using InputType = double;
 
         ChemHelperSU2(BaseParameters & parms, Lattice const & lat, std::shared_ptr<TagHandler<M, S> > tag_handler_)
             : tag_handler(tag_handler_)
         {
-            boost::tie(idx_, matrix_elements) = parse_integrals<InputType, S>(parms, lat);
+            std::tie(idx_, matrix_elements) = parse_integrals<InputType, S>(parms, lat);
 
             for (std::size_t m=0; m < matrix_elements.size(); ++m) {
                 IndexTuple pos;
@@ -43,8 +43,9 @@ namespace detail {
 
         void commit_terms(std::vector<term_descriptor> & tagterms) {
             for (typename std::map<IndexTuple, term_descriptor>::const_iterator it = two_terms.begin();
-                    it != two_terms.end(); ++it)
+                    it != two_terms.end(); ++it) {
                 tagterms.push_back(it->second);
+            }
 
             for (typename std::map<SixTuple, term_descriptor>::const_iterator it = three_terms.begin();
                     it != three_terms.end(); ++it)

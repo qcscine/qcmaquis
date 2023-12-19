@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -13,20 +13,19 @@
 #include <utility>
 #include <stdexcept>
 
-#include <boost/shared_ptr.hpp>
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
 #include "dmrg/block_matrix/site_operator.h"
 #include "dmrg/block_matrix/site_operator_algorithms.h"
 #include "dmrg/models/tag_detail.h"
-#include "TagHandler.h"
+#include "dmrg/models/OperatorHandlers/TagHandler.h"
 
 template <class Matrix, class SymmGroup>
 class KronHandler : public TagHandler<Matrix, SymmGroup>
 {
-    typedef TagHandler<Matrix, SymmGroup> base;
-    typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
-    typedef typename base::op_t op_t;
+    using base = TagHandler<Matrix, SymmGroup>;
+    using tag_type = typename OPTable<Matrix, SymmGroup>::tag_type;
+    using op_t = typename base::op_t;
 
 public:
 

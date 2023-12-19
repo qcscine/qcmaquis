@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -13,6 +13,7 @@
 
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/indexing.h"
+#include <Eigen/Dense>
 //#include "solver.h"
 
 enum boundary_flag_t {no_boundary_f,l_boundary_f,r_boundary_f};
@@ -21,7 +22,7 @@ enum MPSStorageLayout { LeftPaired, RightPaired };
 enum Indicator { Unorm, Lnorm, Rnorm };
 enum DecompMethod {QR, SVD};
 
-static DecompMethod DefaultSolver() {return QR;} // QR or SVD
+static inline DecompMethod DefaultSolver() {return QR;} // QR or SVD
 
 template<class Matrix, class SymmGroup>
 class TwoSiteTensor;
@@ -30,11 +31,12 @@ template<class Matrix, class SymmGroup>
 class MPSTensor
 {
 public:
-    typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
-    typedef typename maquis::traits::real_type<Matrix>::type real_type;
-    typedef typename Matrix::value_type value_type;
-    typedef double magnitude_type; // should become future (todo: Matthias, 30.04.12 / scalar-value types)
-    typedef std::size_t size_type;
+    using scalar_type = typename maquis::traits::scalar_type<Matrix>::type;
+    using real_type = typename maquis::traits::real_type<Matrix>::type;
+    using value_type = typename Matrix::value_type;
+    using EigenVectorType = Eigen::Matrix<value_type, Eigen::Dynamic, 1>;
+    using magnitude_type = double; // should become future (todo: Matthias, 30.04.12 / scalar-value types)
+    using size_type = std::size_t;
     using BlockMatrixType = block_matrix<Matrix, SymmGroup>;
     using BlockMatrixDiagonalType = block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup>;
 
@@ -96,6 +98,9 @@ public:
 
     std::vector<block_matrix<Matrix, SymmGroup> > to_list() const;
 
+    /** @brief Scales each block of an MPS by the exponential of the product of the corresponding charges */
+    void scaleByExponentialProductOfCharges(value_type scalingFactor);
+
     template<class Matrix_, class SymmGroup_>
     friend std::ostream& operator<<(std::ostream&, MPSTensor<Matrix_, SymmGroup_> const &);
 
@@ -108,6 +113,10 @@ public:
 
     void make_left_paired() const;
     void make_right_paired() const;
+    
+    // Eigen-specific methods
+    EigenVectorType getEigenRepresentation() const;
+    void fillWithEigenVector(const EigenVectorType& inputVector);
 
     void clear();
     void conjugate_inplace();

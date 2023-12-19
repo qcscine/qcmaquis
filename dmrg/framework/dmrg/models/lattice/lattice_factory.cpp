@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -20,7 +20,7 @@
 std::shared_ptr<lattice_impl>
 lattice_factory(BaseParameters & parms)
 {
-    typedef std::shared_ptr<lattice_impl> impl_ptr;
+    using impl_ptr = std::shared_ptr<lattice_impl>;
 
     if (parms["lattice_library"] == "coded") {
         return coded_lattice_factory(parms);

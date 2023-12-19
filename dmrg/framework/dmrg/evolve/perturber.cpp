@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -37,7 +37,7 @@ template<class Matrix, class SymmGroup>
 void Perturber<Matrix, SymmGroup>::perturb_mps(MPSTensor_type& MPS, site_type site, bool is_left) const
 {
     // Builds the perturber (which is a boundary)
-    typename Boundary<Matrix, SymmGroup>::Boundary perturber;
+    Boundary<Matrix, SymmGroup> perturber;
     // Generates the correct pairing
     if (perturb_MPS_) {
         if (is_left) {
