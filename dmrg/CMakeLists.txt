@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.20)
 
 ######################################################################
 # Machine Config
@@ -24,7 +24,7 @@ project (MAQUIS_DMRG)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/config)
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 # set proper rpath for installed binaries
 # @stknecht: make sure this works also for OS X with MACOS_RPATH
@@ -158,7 +158,7 @@ endif()
 ######################################################################
 
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-    include("config/clang_fixes.cmake")
+    include("cmake/clang_fixes.cmake")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 endif(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
 
@@ -575,14 +575,14 @@ if(QCMAQUIS_TESTS)
 
   # Adds the tests
   add_subdirectory(tests)
-  add_test(NAME Test1 COMMAND test1)
-  add_test(NAME Test2 COMMAND test2)
+  add_test(NAME TestH2GroundState COMMAND testH2GroundState)
+  add_test(NAME TestLihGroundAndExcited COMMAND testLiHGroundAndExcited)
   add_test(NAME TestFHRealSpace COMMAND test_FH_RealSpace)
   add_test(NAME TestFHMomentumSpace COMMAND test_FH_MomentumSpace)
   if(BUILD_TRANSCORRELATED_DMRG)
     add_test(NAME TestTranscorrelatedMolecular COMMAND test_transcorrelated_molecular)
   endif(BUILD_TRANSCORRELATED_DMRG)
-  add_test(NAME Test_Relativistic COMMAND test_rel)
+  add_test(NAME Test_Relativistic COMMAND test_Relativistic)
   add_test(NAME Test_Integral_Map COMMAND test_integral_map)
   add_test(NAME Test_IndexTuple COMMAND test_IndexTuple)
   add_test(NAME Test_HiRDM COMMAND test_hirdm)
@@ -623,11 +623,11 @@ if(QCMAQUIS_TESTS)
   endif(BUILD_DMRG_EVOLVE)
   # PreBO tests
   if(BUILD_PREBO)
-    add_test(NAME PreBO_Test1 COMMAND prebo_test1)
-    add_test(NAME PreBO_Test2 COMMAND prebo_test2)
-    add_test(NAME PreBO_Test_Model COMMAND prebo_test_model)
-    add_test(NAME PreBO_Test_SymbolicOperator COMMAND test_prebo_symbolic_operator)
-    add_test(NAME PreBO_Test_SymbolicJordanWigner COMMAND test_prebo_symbolic_jw)
+    add_test(NAME PreBO_H2 COMMAND testPreBOH2)
+    add_test(NAME PreBO_HeHHe COMMAND testPreBOHeHHe)
+    add_test(NAME PreBO_Model COMMAND testPreBOModel)
+    add_test(NAME PreBO_SymbolicOperator COMMAND testPreBOSymbolicOperator)
+    add_test(NAME PreBO_SymbolicJordanWigner COMMAND testPreBOSymbolicJordanWigner)
   endif(BUILD_PREBO)
   # Vibrational tests
   if(BUILD_VIBRATIONAL)
