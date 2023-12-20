@@ -23,7 +23,7 @@
 #include "dmrg/models/model.h"
 #include "dmrg/models/generate_mpo.hpp"
 #include "dmrg/sim/matrix_types.h"
-#include "dmrg/evolve/TimeEvolvers/timeevolver.h"
+#include "dmrg/evolve/TimeEvolvers/TimeEvolver.h"
 #include "dmrg/evolve/siteshifter.h"
 #include "dmrg/evolve/perturber.h"
 #include "Fixtures/TimeEvolversFixture.h"

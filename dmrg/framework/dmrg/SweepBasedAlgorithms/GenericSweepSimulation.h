@@ -360,6 +360,7 @@ protected:
       } else {
         maquis::cout << " , backward sweep" << std::endl;
       }
+      maquis::cout << std::endl;
       maquis::cout << " - Left boundaries taken from index: " << siteLeft_ << std::endl;
       maquis::cout << " - Right boundaries taken from index: " << siteRight_ << std::endl;
       maquis::cout << std::endl;
@@ -368,7 +369,7 @@ protected:
       if (SweepType == SweepOptimizationType::TwoSite) {
         maquis::cout << (siteLeft_ + 1) << "-"; 
       }
-      maquis::cout << (sweepType == SweepDirectionType::Forward ? "> " : "  ") << std::endl;
+      maquis::cout << (sweepType == SweepDirectionType::Forward ? "> " : "  ");
     }
   }
 

@@ -31,7 +31,8 @@ private:
     {
         using parameters::value;
 
-                // General settings
+        // General settings
+        add_option("verbose", "Verbosity level of the DMRG calculation", value(0));
         add_option("seed", "Seed for all random number generators, for instance in the random MPS initalization, the SRCAS sampling, etc.", value(42));
         add_option("COMPLEX", "use complex numbers", value(false));
         add_option("MAGNETIC", "external magnetic field applied", value(false));

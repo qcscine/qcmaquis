@@ -191,6 +191,7 @@ public:
     try {
       for (int sweep=init_sweep; sweep < nSweeps; ++sweep) {
         factory_->runSingleSweep(sweep);
+        energies_.push_back(this->get_energy());
         storage::disk::sync();
         bool converged = false;
         if ((sweep+1) % meas_each == 0 || (sweep+1) == nSweeps) {

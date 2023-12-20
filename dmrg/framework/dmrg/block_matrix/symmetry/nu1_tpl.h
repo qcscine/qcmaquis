@@ -8,6 +8,7 @@
 #ifndef SYMMETRY_NU1_TEMPLATE_H
 #define SYMMETRY_NU1_TEMPLATE_H
 
+#include <cassert>
 #include <iostream>
 #include <vector>
 #include <list>
@@ -46,6 +47,7 @@ public:
     }
     NU1Charge(std::vector<S> const & rhs) : NU1Charge(0)
     {
+        assert(rhs.size() <= N);
         std::copy(rhs.begin(), rhs.end(), this->begin());
     }
     NU1Charge(std::vector<unsigned int> const & temp) : NU1Charge(0)

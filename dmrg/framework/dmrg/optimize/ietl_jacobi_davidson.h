@@ -20,7 +20,8 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
                MPSTensor<Matrix, SymmGroup> const & initial,
                BaseParameters & params,
                std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector<MPSTensor<Matrix, SymmGroup> >(),
-               double thresholdForCompleteness=1.0E-10)
+               double thresholdForCompleteness=1.0E-10,
+               bool verbose=false)
 {
     
     auto start = std::chrono::high_resolution_clock::now();
@@ -63,14 +64,14 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
         ietl::jacobi_davidson<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >
         jd(sp, vs, ietl::Smallest);
         contraction::ContractionGrid<Matrix, SymmGroup>::iterate_reduction_layout(0, params["ietl_jcd_maxiter"]);
-//        maquis::cout << "Ortho vecs " << ortho_vecs.size() << std::endl;
-        for (int n = 0; n < ortho_vecs_local.size(); ++n) {
-//            maquis::cout << "Ortho norm " << n << ": " << ietl::two_norm(ortho_vecs[n]) << std::endl;
-            maquis::cout << "Input <MPS|O[" << n << "]> : " << ietl::dot(initial, ortho_vecs_local[n]) << std::endl;
-        }
         r0 = jd.calculate_eigenvalue(initial, jcd_gmres, iter);
-        for (int n = 0; n < ortho_vecs_local.size(); ++n) {
+        if (verbose) {
+          //        maquis::cout << "Ortho vecs " << ortho_vecs.size() << std::endl;
+          for (int n = 0; n < ortho_vecs_local.size(); ++n) {
+            //            maquis::cout << "Ortho norm " << n << ": " << ietl::two_norm(ortho_vecs[n]) << std::endl;
+            maquis::cout << "Input <MPS|O[" << n << "]> : " << ietl::dot(initial, ortho_vecs_local[n]) << std::endl;
             maquis::cout << "Output <MPS|O[" << n << "]> : " << ietl::dot(r0.second, ortho_vecs_local[n]) << std::endl;
+          }
         }
     }
     else {
@@ -82,9 +83,11 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
     }
     auto stop = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration_milisec = stop - start;
-    maquis::cout << " Jacobi-Davidson diagonalization converged after "
-      << iter.iterations() << " iterations."
-      << " [" << duration_milisec.count() << " ms]\n";
+    if (verbose) {
+      maquis::cout << " Jacobi-Davidson diagonalization converged after "
+        << iter.iterations() << " iterations."
+        << " [" << duration_milisec.count() << " ms]\n";
+    }
     return r0;
 }
 

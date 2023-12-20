@@ -22,7 +22,7 @@
 #include "dmrg/utils/storage.h"
 #include "dmrg/utils/time_limit_exception.h"
 #include "dmrg/utils/checks.h"
-#include "dmrg/evolve/TimeEvolvers/timeevolver.h"
+#include "dmrg/evolve/TimeEvolvers/TimeEvolver.h"
 #include "dmrg/evolve/siteshifter.h"
 #include "dmrg/evolve/perturber.h"
 #include "dmrg/mp_tensors/siteproblem.h"

@@ -46,31 +46,32 @@ public:
     : sweepType_(sweepType)
   {
     // Optimization
+    bool verbose = (parms["verbose"] > 0);
     if (simulationName == "optimize") {
       if (sweepType_ == SweepOptimizationType::SingleSite) {
-        ssSimulator_ = std::make_unique<OptimizationSSSimulationType>(mps, mpo, parms, model, lattice, false);
+        ssSimulator_ = std::make_unique<OptimizationSSSimulationType>(mps, mpo, parms, model, lattice, verbose);
       }
       else if (sweepType_ == SweepOptimizationType::TwoSite) {
-        tsSimulator_ = std::make_unique<OptimizationTSSimulationType>(mps, mpo, parms, model, lattice, false);
+        tsSimulator_ = std::make_unique<OptimizationTSSimulationType>(mps, mpo, parms, model, lattice, verbose);
       }
     }
     // Solution of a linear system
     else if (simulationName == "linear_system") {
-      bool verbose = (parms["linsystem_verbose"] == "yes");
+      bool linsystem_verbose = (parms["linsystem_verbose"] == "yes");
       if (sweepType_ == SweepOptimizationType::SingleSite) {
-        ssSimulator_ = std::make_unique<LinearSystemSSSimulationType>(mps, mpo, parms, model, lattice, verbose);
+        ssSimulator_ = std::make_unique<LinearSystemSSSimulationType>(mps, mpo, parms, model, lattice, linsystem_verbose);
       }
       else if (sweepType_ == SweepOptimizationType::TwoSite) {
-        tsSimulator_ = std::make_unique<LinearSystemTSSimulationType>(mps, mpo, parms, model, lattice, verbose);
+        tsSimulator_ = std::make_unique<LinearSystemTSSimulationType>(mps, mpo, parms, model, lattice, linsystem_verbose);
       }
     }
 #ifdef DMRG_TD
     else if (simulationName == "evolve") {
       if (sweepType_ == SweepOptimizationType::SingleSite) {
-        ssSimulator_ = std::make_unique<EvolverSSSimulationType>(mps, mpo, parms, model, lattice, true);
+        ssSimulator_ = std::make_unique<EvolverSSSimulationType>(mps, mpo, parms, model, lattice, verbose);
       }
       else if (sweepType_ == SweepOptimizationType::TwoSite) {
-        tsSimulator_ = std::make_unique<EvolverTSSimulationType>(mps, mpo, parms, model, lattice, true);
+        tsSimulator_ = std::make_unique<EvolverTSSimulationType>(mps, mpo, parms, model, lattice, verbose);
       }
     }
 #endif // DMRG_TD
