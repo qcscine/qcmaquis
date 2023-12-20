@@ -175,8 +175,8 @@ public:
     auto stop_sweep = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> duriation_sweep = stop_sweep - start_sweep;
     this->finalizeSweep();
-    double energy = this->getSpecificResult<double>("Energy");
-    maquis::cout << "  Final Energy = " << std::setprecision(16) << energy << '\n';
+    // double energy = this->getSpecificResult<double>("Energy");
+    // maquis::cout << "  Final Energy = " << std::setprecision(16) << energy << '\n';
     maquis::cout << "[Sweep " << iSweep << " took "
       << std::setprecision(2) << duriation_sweep.count() << std::setprecision(6)
       << " s]\n\n";
