@@ -16,4 +16,5 @@ Diagnostics:
       cppcoreguidelines-non-private-member-variables-in-classes,
       readability-magic-numbers,
       readability-identifier-length,
-      readability-else-after-return]
+      readability-else-after-return,
+      readability-inconsistent-declaration-parameter-name]

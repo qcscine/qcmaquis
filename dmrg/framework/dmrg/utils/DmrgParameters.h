@@ -56,7 +56,7 @@ private:
         add_option("nmainsweeps", "Number of main sweeps (used for the main truncation and noise parameters)", 5);
 
         // Setting to terminate DMRG before nsweeps are completed
-        add_option("conv_thresh", "Energy convergence threshold to stop the simulation (use same units as integral file is provided in)", value(-1));
+        add_option("conv_thresh", "Energy convergence threshold to stop the simulation (use same units as integral file is provided in)", value(1e-14));
         add_option("run_seconds", "Maximum time in seconds to run the calculation for, activate by setting a limit > 0", value(0));
 
         // Noise to be added to the MPS during the optimization/evolution
