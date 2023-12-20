@@ -318,7 +318,7 @@ protected:
     maquis::cout << "+--------------------------------------------------+\n"
                  << " " << SweepTraitClass::getSimulationTypeName() 
                  << " " << simulationName_ << '\n'
-                 << " Max Sweeps: " << nSweeps_ << '\n'
+                 << " - Max Sweeps: " << nSweeps_ << '\n'
                  << "+--------------------------------------------------+\n";
   }
 

@@ -50,7 +50,7 @@ class TimeEvolver {
   /* Time-evolution methods */
   template<class SiteProblem, class MatrixType>
   void evolve(SiteProblem const& site_problem, MatrixType& matrix, bool is_forward, bool isTerminal) const;
-  void print_header(bool verbose) const;
+  void print_header(bool verbose, const std::string& algo_string) const;
 
  private:
   /* Private attributes */
