@@ -167,6 +167,7 @@ public:
   void runAlternatingLeastSquares(std::string simulationType, int nSweeps, double energyThreshold, const ModelType& inputModel,
                                   DmrgParameters& inputParameters)
   {
+    bool verbose = inputParameters["verbose"] > 0;
     // Reads in input parameters
     int meas_each = parms["measure_each"];
     int chkp_each = parms["chkp_each"];
@@ -186,7 +187,10 @@ public:
     auto always_measurements = this->iteration_measurements(init_sweep);
     auto firstEnergy = this->get_energy();
     energies_.push_back(firstEnergy);
-    maquis::cout << "Initial energy is: " << std::setprecision(15) << firstEnergy << std::endl;
+
+    if (verbose) {
+      maquis::cout << "Initial energy is: " << std::setprecision(15) << firstEnergy << std::endl;
+    }
     // Run the sweep-based simulation.
     try {
       for (int sweep=init_sweep; sweep < nSweeps; ++sweep) {
@@ -200,12 +204,10 @@ public:
           if (!rfile().empty() && always_measurements.size() > 0) {
             this->measure(this->results_archive_path(sweep) + "/results/", always_measurements);
           }
-          int prev_sweep = sweep - meas_each;
-          // stop simulation if an energy threshold has been specified
-          // Do not check convergence for propagation, since energy should be conserved by definition
-          if (prev_sweep >= 0 && !(simulationType=="evolve" && parms["imaginary_time"] == "no")) {
-            converged = checkEnergyConvergence(energyThreshold);
-          }
+        }
+        // Do not check convergence for propagation, since energy should be conserved by definition
+        if (!(simulationType=="evolve" && parms["imaginary_time"] == "no")) {
+          converged = checkEnergyConvergence(energyThreshold);
         }
         if (converged) { 
           maquis::cout << "ALS CONVERGED -- SWEEPING PROCEDURE TERMINATED" << std::endl;
@@ -620,7 +622,6 @@ private:
   void dumpEnergy(int iSweep) {
     if (!rfile().empty()) {
       auto energy = this->get_energy();
-      energies_.push_back(energy);
       storage::archive ar(rfile(), "w");
       ar[this->results_archive_path(iSweep) + "/results/Energy/mean/value"] << std::vector<double>(1, energy);
     }
