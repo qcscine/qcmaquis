@@ -75,7 +75,9 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
         }
     }
     else {
-        maquis::cout << "Vector space too small, diagonalization skipped" << std::endl;
+        if (verbose) {
+          maquis::cout << "Vector space too small, diagonalization skipped" << std::endl;
+        }
         auto sigmaVector = initial;
         ietl::mult(sp, initial, sigmaVector);
         auto energy = ietl::dot(initial, sigmaVector);

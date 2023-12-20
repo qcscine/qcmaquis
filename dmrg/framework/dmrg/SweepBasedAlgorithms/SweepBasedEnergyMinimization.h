@@ -102,7 +102,9 @@ public:
     }
     // Loads the final results
     auto energy = resultOfLocalSiteProblem_.first + mpoContainer_.getMPO().getCoreEnergy();
-    maquis::cout << std::setprecision(10) << " Energy = " << std::setprecision(16) << energy << "  ";
+    if (verbose) {
+      maquis::cout << std::setprecision(10) << " Energy = " << std::setprecision(16) << energy << "  ";
+    }
     iterationResults_["Energy"] << energy;
     return resultOfLocalSiteProblem_.second;
   }

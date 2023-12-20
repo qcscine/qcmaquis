@@ -77,7 +77,7 @@ public:
 
   /** @brief Gets the string identifier of the simulation type */
   static std::string getSimulationTypeName() {
-    return std::string("Single site");
+    return std::string("Single-Site");
   }
 
   // Static members
@@ -138,7 +138,7 @@ public:
 
   /** @brief Gets the string identifier of the simulation type */
   static std::string getSimulationTypeName() {
-    return std::string("Two site");
+    return std::string("Two-Site");
   }
 
   // Static members

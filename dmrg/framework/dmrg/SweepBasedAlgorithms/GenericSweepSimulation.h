@@ -70,7 +70,6 @@ public:
    */
   void runSweepSimulation() {
     // == LOOP OVER THE SWEEPS ==
-    printGenericInfo();
     for (int iSweep = 0; iSweep < nSweeps_; iSweep++) {
       this->runSingleSweep(iSweep);
     }
@@ -103,7 +102,9 @@ public:
       //   Storage::sync();
       // }
       this->updateSites();
-      printMicroiterInfo(sweepType);
+      if (verbose_) {
+        printMicroiterInfo(sweepType);
+      }
       // Gets the boundary that are needed. Note that, in a forward sweep, the left boundary is assumed
       // to have been generated during the previous boundary update and, therefore, is not fetched.
       if (sweepType == SweepDirectionType::Backward || indexOfMicroIteration_ == 0) {
@@ -161,12 +162,12 @@ public:
       }
       this->finalizeMicroIteration(truncationResults);
       indexOfMicroIteration_ += 1;
-      if (verbose_) {
-        maquis::cout << std::endl;
-      }
       auto stop = std::chrono::high_resolution_clock::now();
-      std::chrono::duration<double, std::milli> duration_milisec = stop - start;
-      maquis::cout << "[Time: " << duration_milisec.count() << " ms]\n";
+      auto duration = std::chrono::duration_cast<std::chrono::duration<double>>(stop - start);
+      if (verbose_) {
+        maquis::cout << "[Time: " << std::setprecision(2) << duration.count()
+          << std::setprecision(6) << " s]\n";
+      }
     }
     // At the end, just stores to file the final right boundary (if needed, one can use it for the next sweep)
     // Storage::StoreToFile(boundaryPropagator_->getRightBoundary(siteRight_-1));
@@ -174,7 +175,11 @@ public:
     auto stop_sweep = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> duriation_sweep = stop_sweep - start_sweep;
     this->finalizeSweep();
-    maquis::cout << "[Sweep " << iSweep << " took " << duriation_sweep.count() << " s]\n\n";
+    double energy = this->getSpecificResult<double>("Energy");
+    maquis::cout << "  Final Energy = " << std::setprecision(16) << energy << '\n';
+    maquis::cout << "[Sweep " << iSweep << " took "
+      << std::setprecision(2) << duriation_sweep.count() << std::setprecision(6)
+      << " s]\n\n";
   }
 
   /** @brief Gets the container with the results of each iteration */
@@ -310,67 +315,28 @@ protected:
 
   /** @brief Prints generic information about the */
   void printGenericInfo() const {
-    if (verbose_) {
-      maquis::cout << std::endl;
-      maquis::cout << "+----------------------------------+" << std::endl;
-      maquis::cout << " NEW SWEEP-BASED SIMULATION STARTED" << std::endl;
-      maquis::cout << "+----------------------------------+" << std::endl;
-      maquis::cout << std::endl;
-      maquis::cout << " Simulation settings:" << std::endl;
-      maquis::cout << " - Simulation type: " << simulationName_ << std::endl;
-      maquis::cout << " - Sweep-based modality: " << SweepTraitClass::getSimulationTypeName() << std::endl;
-      if (nSweeps_ != 0) {
-        maquis::cout << " - Maximum number of sweeps: " << nSweeps_ << std::endl;
-      }
-    } else {
-      maquis::cout << "+----------------------------------+\n"
-                   << " NEW SWEEP-BASED SIMULATION STARTED\n"
-                   << " Type: " << SweepTraitClass::getSimulationTypeName() 
-                   << " " << simulationName_ << "\n" 
-                   << "+----------------------------------+\n";
-    }
+    maquis::cout << "+--------------------------------------------------+\n"
+                 << " " << SweepTraitClass::getSimulationTypeName() 
+                 << " " << simulationName_ << '\n'
+                 << " Max Sweeps: " << nSweeps_ << '\n'
+                 << "+--------------------------------------------------+\n";
   }
 
   /** @brief Prints info that are sweep-specific */
   void printSweepSpecificInfo(int iSweep) const {
-    if (verbose_) {
-      maquis::cout << std::endl;
-      maquis::cout << " --------------------------" << std::endl;
-      maquis::cout << "   SWEEP NUMBER            " << iSweep << std::endl;
-      maquis::cout << " --------------------------" << std::endl;
-      maquis::cout << " - Noise parameter:        " << this->getAlpha(iSweep) << std::endl;
-      maquis::cout << " - Maximum bond dimension: " << this->get_Mmax(iSweep) << std::endl;
-      maquis::cout << " - Truncation parameter:   " << this->get_cutoff(iSweep) << std::endl;
-      maquis::cout << std::endl;
-    } else {
-      maquis::cout << "SWEEP " << iSweep << "; Noise: " << this->getAlpha(iSweep)
-                   << "; Max Bond Dim: " << this->get_Mmax(iSweep) 
-                   << "; Truncation: " << this->get_cutoff(iSweep) << '\n';
-
-
-    }
+    maquis::cout << "SWEEP " << iSweep << "; Noise: " << this->getAlpha(iSweep)
+                 << "; Max Bond Dim: " << this->get_Mmax(iSweep) 
+                 << "; Truncation: " << this->get_cutoff(iSweep) << '\n';
   }
 
   /** @brief Prints information regarding the current microiteration */
   void printMicroiterInfo(SweepDirectionType sweepType) const {
-    if (verbose_) {
-      maquis::cout << " MICROITERATION NUMBER = " << indexOfMicroIteration_ << " ";
-      if (sweepType == SweepDirectionType::Forward) {
-        maquis::cout << " , forward sweep" << std::endl;
-      } else {
-        maquis::cout << " , backward sweep" << std::endl;
-      }
-      maquis::cout << std::endl;
-      maquis::cout << " - Left boundaries taken from index: " << siteLeft_ << std::endl;
-      maquis::cout << " - Right boundaries taken from index: " << siteRight_ << std::endl;
-      maquis::cout << std::endl;
-    } else {
-      maquis::cout << (sweepType == SweepDirectionType::Backward ? "  <" : "   ") << "-" << siteLeft_ << "-";
-      if (SweepType == SweepOptimizationType::TwoSite) {
-        maquis::cout << (siteLeft_ + 1) << "-"; 
-      }
-      maquis::cout << (sweepType == SweepDirectionType::Forward ? "> " : "  ");
+    maquis::cout << std::flush;
+    maquis::cout << (sweepType == SweepDirectionType::Backward ? "  <" : "   ") << "-" << siteLeft_ << "-";
+    if (SweepType == SweepOptimizationType::TwoSite) {
+      maquis::cout << (siteLeft_ + 1) << "-"; 
     }
+    maquis::cout << (sweepType == SweepDirectionType::Forward ? "> " : "  ");
   }
 
   /** @brief Checks whether the current microiteration is associated with a terminal site */
