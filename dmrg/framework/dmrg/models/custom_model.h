@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -20,20 +20,20 @@
 template <class Matrix, class SymmGroup>
 class custom_model_impl : public model_impl<Matrix, SymmGroup>
 {
-    typedef model_impl<Matrix, SymmGroup> base;
+    using base = model_impl<Matrix, SymmGroup>;
 
-    typedef typename base::table_type table_type;
-    typedef typename base::table_ptr table_ptr;
-    typedef typename base::tag_type tag_type;
+    using table_type = typename base::table_type;
+    using table_ptr = typename base::table_ptr;
+    using tag_type = typename base::tag_type;
 
-    typedef typename base::term_descriptor term_descriptor;
-    typedef typename base::terms_type terms_type;
-    typedef typename base::measurements_type measurements_type;
+    using term_descriptor = typename base::term_descriptor;
+    using terms_type = typename base::terms_type;
+    using measurements_type = typename base::measurements_type;
 
 public:
-    typedef typename base::size_t size_t;
-    typedef typename Matrix::value_type value_type;
-    typedef typename base::op_t op_t;
+    using size_t = typename base::size_t;
+    using value_type = typename Matrix::value_type;
+    using op_t = typename base::op_t;
 
     custom_model_impl (Index<SymmGroup> const& phys_)
     : tag_handler(new table_type())
@@ -49,7 +49,7 @@ public:
 
         term_descriptor term;
         term.coeff = coeff;
-        term.push_back( boost::make_tuple(i, op_tag) );
+        term.push_back( std::make_tuple(i, op_tag) );
         this->terms_.push_back(term);
     }
     void add_bondterm(op_t const& op_left, size_t i, op_t const& op_right, size_t j, value_type const& coeff=1.)
@@ -59,18 +59,18 @@ public:
 
         term_descriptor term;
         term.coeff = coeff;
-        term.push_back( boost::make_tuple(i, tag_left) );
-        term.push_back( boost::make_tuple(j, tag_right) );
+        term.push_back( std::make_tuple(i, tag_left) );
+        term.push_back( std::make_tuple(j, tag_right) );
         this->terms_.push_back(term);
     }
-    void add_nterm(std::vector<boost::tuple<size_t, op_t> > const& ops, value_type const& coeff=1.)
+    void add_nterm(std::vector<std::tuple<size_t, op_t> > const& ops, value_type const& coeff=1.)
     {
         term_descriptor term;
         term.coeff = coeff;
-        for (typename std::vector<boost::tuple<size_t, op_t> >::const_iterator it = ops.begin();
+        for (typename std::vector<std::tuple<size_t, op_t> >::const_iterator it = ops.begin();
              it != ops.end(); ++it) {
-            tag_type tag = tag_handler->register_op(boost::get<1>(*it), tag_detail::bosonic);
-            term.push_back( boost::make_tuple(boost::get<0>(*it), tag) );
+            tag_type tag = tag_handler->register_op(std::get<1>(*it), tag_detail::bosonic);
+            term.push_back( std::make_tuple(std::get<0>(*it), tag) );
         }
         this->terms_.push_back(term);
     }
@@ -126,12 +126,12 @@ private:
 /// pimpl for CustomModel
 template <class Matrix, class SymmGroup>
 class CustomModel {
-    typedef custom_model_impl<Matrix, SymmGroup> impl_type;
-    typedef std::shared_ptr<impl_type> impl_ptr;
+    using impl_type = custom_model_impl<Matrix, SymmGroup>;
+    using impl_ptr = std::shared_ptr<impl_type>;
 public:
-    typedef typename impl_type::size_t size_t;
-    typedef typename impl_type::value_type value_type;
-    typedef typename impl_type::op_t op_t;
+    using size_t = typename impl_type::size_t;
+    using value_type = typename impl_type::value_type;
+    using op_t = typename impl_type::op_t;
 
     CustomModel(Index<SymmGroup> const& phys)
     : impl_(new impl_type(phys))
@@ -150,7 +150,7 @@ public:
     {
         return impl_->add_bondterm(op_left, i, op_right, j, coeff);
     }
-    void add_nterm(std::vector<boost::tuple<size_t, op_t> > const& ops, value_type const& coeff=1.)
+    void add_nterm(std::vector<std::tuple<size_t, op_t> > const& ops, value_type const& coeff=1.)
     {
         return impl_->add_nterm(ops, coeff);
     }

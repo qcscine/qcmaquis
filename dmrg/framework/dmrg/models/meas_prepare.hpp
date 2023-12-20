@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -36,21 +36,19 @@ namespace meas_prepare {
                 }
             } else {
                 std::vector<Lattice::pos_t> neighs = lat.forward(p);
-                for (typename std::vector<Lattice::pos_t>::const_iterator hopto = neighs.begin();
-                     hopto != neighs.end();
-                     ++hopto)
+                for (int neigh : neighs)
                 {
                     int type1 = lat.get_prop<int>("type", p);
-                    int type2 = lat.get_prop<int>("type", *hopto);
+                    int type2 = lat.get_prop<int>("type", neigh);
                     if (ops[0].first[type1].n_blocks() > 0 && ops[1].first[type2].n_blocks() > 0) {
                         generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(lat, identities, fillings);
                         generate_mpo::OperatorTerm<Matrix, SymmGroup> term;
                         term.operators.push_back( std::make_pair(p, ops[0].first[type1]) );
-                        term.operators.push_back( std::make_pair(*hopto, ops[1].first[type2]) );
+                        term.operators.push_back( std::make_pair(neigh, ops[1].first[type2]) );
                         term.with_sign = ops[0].second;
                         mpom.add_term(term);
                         
-                        mpos[ lat.get_prop<std::string>("label", p, *hopto) ] = mpom.create_mpo();
+                        mpos[ lat.get_prop<std::string>("label", p, neigh) ] = mpom.create_mpo();
                     }
                 }
             }
@@ -78,12 +76,10 @@ namespace meas_prepare {
             } else {
                 term.with_sign = ops[0].second;
             	std::vector<Lattice::pos_t> neighs = lat.forward(p);
-            	for (typename std::vector<Lattice::pos_t>::const_iterator hopto = neighs.begin();
-            		 hopto != neighs.end();
-            		 ++hopto)
+            	for (int neigh : neighs)
             	{
                     generate_mpo::OperatorTerm<Matrix, SymmGroup> term2(term);
-                    term2.operators.push_back( std::make_pair(*hopto, ops[1].first[lat.get_prop<int>("type", p)]) );
+                    term2.operators.push_back( std::make_pair(neigh, ops[1].first[lat.get_prop<int>("type", p)]) );
                     mpom.add_term(term2);
             	}
                 

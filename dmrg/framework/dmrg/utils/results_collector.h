@@ -1,24 +1,25 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
 #ifndef UTILS_RESULTS_COLLECTOR_H
 #define UTILS_RESULTS_COLLECTOR_H
 
-#include <map>
-#include <boost/any.hpp>
+#include <any>
 #include <vector>
 #include <memory>
 #include <map>
+#include <string>
+
 
 /**
  * @brief Class used to store the results of a generic sweep-based algorithm 
- * The object is basically a wrapper around a string --> vector<boost::any> object.
+ * The object is basically a wrapper around a string --> vector<std::any> object.
  * The string identifies the specific result of the simulation.
- * The vector<boost::any> object is represented, in practice, by a pointer to a 
+ * The vector<std::any> object is represented, in practice, by a pointer to a 
  * [collector_impl_base] object. The latter is, in turn, a interface class
  * that in implemented, by the [collector_impl] class in the "<<" operator.
  */
@@ -29,8 +30,8 @@ private:
     class collector_impl_base;
 
     /**
-     * @brief Actual implementation based on a boost::any vector 
-     * Note that the template parameter T represents the type used for the casting of boost::any.
+     * @brief Actual implementation based on a std::any vector 
+     * Note that the template parameter T represents the type used for the casting of std::any.
      */
     template <class T>
     class collector_impl;
@@ -42,7 +43,7 @@ public:
      * So this proxy class does not assume anything about its implementation.
      */
     class collector_proxy {
-    typedef std::shared_ptr<results_collector::collector_impl_base> coll_type;
+    using coll_type = std::shared_ptr<results_collector::collector_impl_base>;
     public:
 
         /** @brief Class constructor, just stores the reerence to the pointer */
@@ -60,15 +61,15 @@ public:
         template<class T>
         void operator>>(T const& val);
 
-        /** @brief Gets the underlying boost::get object */
-        const std::vector<boost::any>& get() const;
+        /** @brief Gets the underlying std::get object */
+        const std::vector<std::any>& get() const;
 
     private:
         coll_type& collector;
     };
 
     /** @brief Getter of a given result */
-    collector_proxy operator[] (std::string name);
+    collector_proxy operator[] (const std::string& name);
 
     /** @brief Reset method */
     void clear();
@@ -85,7 +86,7 @@ public:
     bool empty() const;
 
     /** @brief Checks the presence of a given element in the collector */
-    bool has(const std::string key) const { return collection.find(key) != collection.end(); }
+    bool has(const std::string& key) const { return collection.find(key) != collection.end(); }
 
 private:
     std::map<std::string, std::shared_ptr<collector_impl_base> > collection;

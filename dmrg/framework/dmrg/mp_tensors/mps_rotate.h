@@ -16,8 +16,8 @@
 #include "dmrg/mp_tensors/mpo.h"
 #include "integral_interface.h"
 #include "dmrg/models/generate_mpo.hpp"
-#include "dmrg/models/chem/transform_symmetry.hpp"
-#include "dmrg/models/chem/su2u1/term_maker.h"
+#include "dmrg/models/MolecularHamiltonians/transform_symmetry.hpp"
+#include "dmrg/models/MolecularHamiltonians/su2u1/term_maker.h"
 
 // Functions required for MPSSI
 // Equation numbers are from S. Knecht et al, JCTC 2016, 12, 5881
@@ -41,8 +41,8 @@ namespace mps_rotate
     void scale_MPSTensor(MPSTensor<Matrix, SymmGroup> & mps,
                         typename Matrix::value_type tjj)
     {
-        typedef std::size_t size_t;
-        typedef typename SymmGroup::charge charge;
+        using size_t = std::size_t;
+        using charge = typename SymmGroup::charge;
 
         mps.make_left_paired();
         maquis::cout << "scaling factor " << tjj << std::endl;
@@ -95,9 +95,9 @@ namespace mps_rotate
     {
         std::vector<MPO<Matrix, SymmGroup> > operator()(const Matrix & t, int j, const Lattice& lat, const Model<Matrix, SymmGroup> & model)
         {
-            typedef Lattice::pos_t pos_t;
-            typedef typename MPOTensor<Matrix, SymmGroup>::tag_type tag_type;
-            typedef typename SymmGroup::subcharge sc_t;
+            using pos_t = Lattice::pos_t;
+            using tag_type = typename MPOTensor<Matrix, SymmGroup>::tag_type;
+            using sc_t = typename SymmGroup::subcharge;
             std::vector<tag_type> ident, fill;
             for (int iSite = 0; iSite < lat.getMaxType(); iSite++)
             {
@@ -113,8 +113,8 @@ namespace mps_rotate
                         std::vector<tag_type> operators_up, operators_down;
                         operators_up.push_back(model.get_operator_tag("create_up", lat.get_prop<sc_t>("type", i)));
                         operators_up.push_back(model.get_operator_tag("destroy_up", lat.get_prop<sc_t>("type", j)));
-                        operators_down.push_back(model.get_operator_tag("create_down", lat.get_prop<sc_t>("type", i)));
-                        operators_down.push_back(model.get_operator_tag("destroy_down", lat.get_prop<sc_t>("type", j)));
+                        operators_down.push_back(model.get_operator_tag("create_down_for_meas", lat.get_prop<sc_t>("type", i)));
+                        operators_down.push_back(model.get_operator_tag("destroy_down_for_meas", lat.get_prop<sc_t>("type", j)));
 
                         ret.push_back(generate_mpo::make_1D_mpo(positions, operators_up, ident, fill, model.operators_table(), lat, t(i,j)/t(j,j)));
                         ret.push_back(generate_mpo::make_1D_mpo(positions, operators_down, ident, fill, model.operators_table(), lat, t(i,j)/t(j,j)));
@@ -204,17 +204,14 @@ namespace mps_rotate
 
     // MPS compression to keep the dimensions reasonable
     template <class Matrix, class SymmGroup>
-    void compress_mps(MPS<Matrix, SymmGroup> & mps, std::string text="")
+    void compress_mps(MPS<Matrix, SymmGroup> & mps, const std::string& text="")
     {
         maquis::cout << "- MPS compression - input MPS: "<< text << std::endl;
-
-        typename Matrix::value_type final_norm        = norm(mps);
+        // typename Matrix::value_type final_norm        = norm(mps);
         typename Matrix::value_type compression_trace = 1.0;
-
         mps = compression::l2r_compress(mps, 8000, 1e-8, compression_trace);
-        maquis::cout << "- compression trace          : "<< compression_trace << std::endl;
-        mps[0].multiply_by_scalar(compression_trace*sqrt(final_norm));
-
+        maquis::cout << "- (Relative) norm reduction : "<< compression_trace << std::endl;
+        // mps[0].multiply_by_scalar(compression_trace*sqrt(final_norm));
     }
 
     // MPS rotation as described in Sections III.b.2.b and III.b.2.c
@@ -223,8 +220,8 @@ namespace mps_rotate
     template <class Matrix, class SymmGroup>
     void rotate_mps(MPS<Matrix, SymmGroup> & mps, const Matrix& t, typename Matrix::value_type inactive_scaling)
     {
-        typedef Lattice::pos_t pos_t;
-        typedef typename Matrix::value_type value_type;
+        using pos_t = Lattice::pos_t;
+        using value_type = typename Matrix::value_type;
 
         typename SymmGroup::subcharge Ndown, Nup;
 
@@ -265,7 +262,6 @@ namespace mps_rotate
         for (pos_t j = 0; j < L; ++j)
         {
             maquis::cout << "ROTATION of site "<< j << std::endl << "---------------- "<<      std::endl;
-
             // scale the j-th MPS tensor wrt the occupation of the j-th orbital
 
             scale_MPSTensor<Matrix, SymmGroup>(mps[j], t(j,j));
@@ -285,7 +281,6 @@ namespace mps_rotate
 
             maquis::cout << "- first correction MPS obtained - "<<      std::endl;
             //debug::mps_print_ci(mps_prime, "dets.txt");
-
 
             mps = join(mps, mps_prime);
             //debug::mps_print(mps, "Intermediate MPS at site ");

@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -15,7 +15,7 @@ namespace parallel {
         typedef traits::resource_iterator resource_iterator;
 
         struct index {
-            index() : max_iterations(1), iteration(0) {}
+            index() :  iteration(0), max_iterations(1) {}
             void set(int i, int max){
                 iteration = i;
                 max_iterations = max;

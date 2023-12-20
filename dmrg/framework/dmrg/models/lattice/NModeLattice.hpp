@@ -16,6 +16,7 @@
 #include <set>
 #include <boost/lexical_cast.hpp>
 #include <boost/lambda/lambda.hpp>
+#include <any>
 #include <numeric>
 #include "dmrg/utils/BaseParameters.h"
 #include "LatticeHelperClass.hpp"
@@ -122,25 +123,25 @@ public:
    *
    * @param property string identifier for the property
    * @param pos vector of positions
-   * @return boost::any requested property
+   * @return std::any requested property
    */
-  boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const override
+  std::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const
   {
     if (property == "label" && pos.size() == 1)
-      return boost::any(site_label(pos[0]));
+      return std::any(site_label(pos[0]));
     else if (property == "label" && pos.size() == 2)
-      return boost::any(bond_label(pos[0], pos[1]));
+      return std::any(bond_label(pos[0], pos[1]));
     else if (property == "type" && pos.size() == 1)
-      return boost::any(vector_types[pos[0]]);
+      return std::any(vector_types[pos[0]]);
     else if (property == "type" && pos.size() == 2)
-      return boost::any(0);
+      return std::any(0);
     else if (property == "absolutePositionInLattice" && pos.size() == 2) {
       int posInConventionalSorting = vectorWithStartingPositions[pos[0]] + pos[1];
-      return boost::any(inverseOrder[posInConventionalSorting]);
+      return std::any(inverseOrder[posInConventionalSorting]);
     }
     else if (property == "sublatticePos" && pos.size() == 1) {
       assert (pos[0] >= 0 && pos[0] < L);
-      return boost::any(vectorWithStartingPositions[pos[0]]);
+      return std::any(vectorWithStartingPositions[pos[0]]);
     }
     else if (property == "ParticleType" && pos.size() == 1) {
       assert (pos[0] >= 0 && pos[0] < L);
@@ -153,7 +154,7 @@ public:
       std::ostringstream ss;
       ss << "No property '" << property << "' with " << pos.size() << " points implemented.";
       throw std::runtime_error(ss.str());
-      return boost::any();
+      return std::any();
     }
   }
 

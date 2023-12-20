@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -12,11 +12,17 @@
 #include "dmrg/models/lattice/ChainLattice.hpp"
 #include "dmrg/models/lattice/SquareLattice.hpp"
 #include "dmrg/models/lattice/OrbitalLattice.hpp"
-#include "dmrg/models/lattice/PreBOLattice.hpp"
-#include "dmrg/models/lattice/NModeLattice.hpp"
-#include "dmrg/models/lattice/WatsonLattice.hpp"
-#include "dmrg/models/lattice/VibronicLattice.hpp"
 
+#ifdef DMRG_PREBO
+#include "dmrg/models/lattice/PreBOLattice.hpp"
+#endif
+#ifdef DMRG_VIBRATIONAL
+#include "dmrg/models/lattice/WatsonLattice.hpp"
+#include "dmrg/models/lattice/NModeLattice.hpp"
+#endif
+#ifdef DMRG_VIBRONIC
+#include "dmrg/models/lattice/VibronicLattice.hpp"
+#endif
 /**
  * @brief Factory method returning the requested lattice
  * @param parms parameter container
@@ -25,37 +31,37 @@
  */
 inline std::shared_ptr<lattice_impl> coded_lattice_factory(BaseParameters & parms)
 {
-    typedef std::shared_ptr<lattice_impl> impl_ptr;
-    if (parms["LATTICE"] == std::string("periodic chain lattice"))
+    using impl_ptr = std::shared_ptr<lattice_impl>;
+    if (parms["LATTICE"] == std::string("periodic chain lattice")) {
         return impl_ptr(new ChainLattice(parms, true));
-    else if (parms["LATTICE"] == std::string("chain lattice"))
+    } else if (parms["LATTICE"] == std::string("chain lattice")) {
         return impl_ptr(new ChainLattice(parms, false));
-    else if (parms["LATTICE"] == std::string("open chain lattice"))
+    } else if (parms["LATTICE"] == std::string("open chain lattice")) {
         return impl_ptr(new ChainLattice(parms, false));
-    else if (parms["LATTICE"] == std::string("square lattice"))
+    } else if (parms["LATTICE"] == std::string("square lattice")) {
         return impl_ptr(new SquareLattice(parms));
-    else if (parms["LATTICE"] == std::string("open square lattice"))
+    } else if (parms["LATTICE"] == std::string("open square lattice")) {
         return impl_ptr(new SquareLattice(parms));
-    else if (parms["LATTICE"] == std::string("orbitals"))
+    } else if (parms["LATTICE"] == std::string("orbitals")) {
         return impl_ptr(new Orbitals(parms));
-    else if (parms["LATTICE"] == std::string("spinors"))
+    } else if (parms["LATTICE"] == std::string("spinors")) {
         return impl_ptr(new Orbitals(parms));
 #ifdef DMRG_PREBO
-    else if (parms["LATTICE"] == std::string("preBO lattice"))
+    } else if (parms["LATTICE"] == std::string("preBO lattice")) {
         return impl_ptr(new PreBOLattice(parms));
 #endif
 #ifdef DMRG_VIBRATIONAL
-    else if (parms["LATTICE"] == std::string("nmode lattice"))
+    } else if (parms["LATTICE"] == std::string("nmode lattice")) {
         return impl_ptr(new NModeLattice(parms));
-    else if (parms["LATTICE"] == std::string("watson lattice"))
+    } else if (parms["LATTICE"] == std::string("watson lattice")) {
         return impl_ptr(new WatsonLattice(parms));
 #endif
 #ifdef DMRG_VIBRONIC
-    else if (parms["LATTICE"] == std::string("vibronic lattice"))
+    } else if (parms["LATTICE"] == std::string("vibronic lattice")) {
         return impl_ptr(new VibronicLattice(parms));
 #endif
-    else {
-        throw std::runtime_error("Don't know this lattice!");
+    } else {
+        throw std::runtime_error("Don't know this lattice: ");
     }
 }
 

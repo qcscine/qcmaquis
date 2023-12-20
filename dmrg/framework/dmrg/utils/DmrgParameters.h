@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -13,7 +13,7 @@
 class DmrgParameters : public BaseParameters
 {
 public:
-    DmrgParameters() : BaseParameters() { init_options(); }
+    DmrgParameters() { init_options(); }
     DmrgParameters(std::ifstream& param_file)
     : BaseParameters(param_file)
     {
@@ -31,7 +31,7 @@ private:
     {
         using parameters::value;
 
-        // General settings
+                // General settings
         add_option("seed", "Seed for all random number generators, for instance in the random MPS initalization, the SRCAS sampling, etc.", value(42));
         add_option("COMPLEX", "use complex numbers", value(false));
         add_option("MAGNETIC", "external magnetic field applied", value(false));
@@ -90,6 +90,7 @@ private:
         // Settings for integral read-in
         add_option("integral_file", "Path to model parameters, e.g. FCIDUMP-style integral file", value("FCIDUMP"));
         add_option("integral_cutoff", "Ignore integrals below a certain magnitude", value(0));
+        add_option("beta_mode", "", value(0));
 
         // Jacobi-Davidson-related options
         add_option("eigensolver", "", value("IETL_JCD"));
@@ -105,9 +106,28 @@ private:
         add_option("donotsave", "", value(0));
 
         add_option("use_compressed", "", value(0));
-
         add_option("entanglement_spectra", "", value(0));
 
+        // Parameters related to the Fermi-Hubbard model
+        add_option("U_FermiHubbard", "Potential term entering the Fermi-Hubbard model", value(0.));
+        add_option("t_FermiHubbard", "Hopping term entering the Fermi-Hubbard model", value(1.));
+        add_option("tx_FermiHubbard", "Hopping term for the x dimension entering the two-dimensional Fermi-Hubbard model", value(1.));
+        add_option("ty_FermiHubbard", "Hopping term for the y dimension entering the two-dimensional Fermi-Hubbard model", value(1.));
+        add_option("width_FermiHubbard", "Width of the Fermi-Hubbard lattice");
+        add_option("height_FermiHubbard", "Height of the Fermi-Hubbard lattice");
+
+        // Parameters related to the transcorrelation
+        add_option("transcorrelated_hamiltonian", "If yes, transcorrelates (if possible) the Hamiltonian", value("no"));
+        add_option("J_Transcorrelated", "Scalar factor for the Gutzwiller correlator (used only for Fermi--Hubbard Hamiltonians)", value(0.));
+        add_option("transcorrelated_3body", "If no, does not add the three-body part of the transcorrelated Hamiltonian", value("yes"));
+        add_option("transcorrelated_3body_max_coupling", "Maximum many-body coupling order for the transcorrelated Hamiltonian", value(6));
+        add_option("transcorrelated_nsweeps_TI", "Number of preliminary TI-DMRG sweeps for a tcDMRG calculation", value(5));
+        add_option("transcorrelated_nsweeps_TC", "Number of iTD-DMRG sweeps for a tcDMRG calculation", value(20));
+        add_option("transcorrelated_integral_file", "Name of the file storing the transcorrelated integrals");
+
+        // Choice for the format of the Hamiltonian
+        add_option("quantum_computing_format", "If yes, assumes that the Hamiltonian is in the quantum computing format", value("no"));
+        add_option("transcorrelated_quantum_computing_format", "If yes, assumes that the transcorrelated Hamiltonian is in the quantum computing format", value("no"));
         add_option("ngrainings", "", value(0));
         add_option("finegrain_optim", "", value(false));
 
@@ -162,6 +182,7 @@ private:
 
         // TD-related parameters
         add_option("propagator_accuracy", "Accuracy of the iterative approximation of the time-evolution operator", value(1.0E-10));
+        add_option("propagator_maxiter", "Maximum number of iterations of the iterative approximation of the propagator", value(10));
         add_option("time_step", "Time-step for the TD-DMRG propagation");
         add_option("hamiltonian_units", "Units in which the SQ Hamiltonian is expressed", value("Hartree"));
         add_option("time_units", "Units in which the time-step is expressed");
@@ -253,11 +274,6 @@ private:
         add_option("J1", "");
         add_option("J2", "");
 
-        add_option("U", "");
-        add_option("t", "");
-        add_option("t1", "");
-        add_option("t2", "");
-
         add_option("theta", "");
         add_option("h0", "");
         add_option("pin", "");
@@ -310,22 +326,25 @@ private:
 };
 
 
-inline DmrgParameters load_parms_and_model(std::string parms_fname, std::string model_fname="")
+inline DmrgParameters load_parms_and_model(const std::string& parms_fname, std::string model_fname="")
 {
     /// Load parameters
     std::ifstream param_file(parms_fname.c_str());
-    if (!param_file)
+    if (!param_file) {
         throw std::runtime_error("Could not open parameter file " + parms_fname);
+    }
     DmrgParameters parms(param_file);
 
     /// Load model parameters from second input (if needed)
     std::string model_file;
-    if (parms.is_set("model_file") && model_fname.empty())
+    if (parms.is_set("model_file") && model_fname.empty()) {
         model_fname = parms["model_file"].str();
+    }
     if (!model_fname.empty()) {
         std::ifstream model_ifs(model_fname.c_str());
-        if (!model_ifs)
+        if (!model_ifs) {
             throw std::runtime_error("Could not open model_file.");
+        }
         parms << ModelParameters(model_ifs);
     }
 

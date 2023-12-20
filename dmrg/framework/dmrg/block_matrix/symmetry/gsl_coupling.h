@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -75,10 +75,8 @@ class WignerWrapper
         inline static double gsl_sf_coupling_9j(int two_ja, int two_jb, int two_jc, int two_jd, int two_je, int two_jf, int two_jg, int two_jh, int two_ji)
         {
 
-            double phase = 1.;
-
             // Consider symmetry properties
-            if (triangle_9j_fails(two_ja, two_jb, two_jc, two_jd, two_je, two_jf, two_jg, two_jh, two_ji)) return 0.0;
+            if (triangle_9j_fails(two_ja, two_jb, two_jc, two_jd, two_je, two_jf, two_jg, two_jh, two_ji)) { return 0.0; }
 
             // Reflection along the diagonals does not change the wigner 9j symbol
             if ((two_jb < two_jd) && (two_jc < two_jg) && (two_jf < two_jh))
@@ -105,8 +103,8 @@ class WignerWrapper
 
 
         private:
-            typedef std::tuple<int, int, int, int, int, int, int, int, int> gsl_indices;
-            typedef std::unordered_map<gsl_indices, double, hash_tuple::hash<gsl_indices> > map_type;
+            using gsl_indices = std::tuple<int, int, int, int, int, int, int, int, int>;
+            using map_type = std::unordered_map<gsl_indices, double, hash_tuple::hash<gsl_indices>>;
 
             // The map that stores the values
             static map_type map;

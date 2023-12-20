@@ -39,7 +39,7 @@
 #include <boost/mpl/or.hpp>
 #include <boost/mpl/and.hpp>
 #include <boost/utility/enable_if.hpp>
-#include <boost/array.hpp>
+#include <array>
 
 #include <algorithm>
 
@@ -65,7 +65,7 @@ inline void resize_same_as(alps::multi_array<T, N> & a, alps::multi_array<U, N> 
 }
 
 template<typename T, typename U, std::size_t N>
-inline void resize_same_as(boost::array<T, N> & a, boost::array<U, N> const & y)
+inline void resize_same_as(std::array<T, N> & a, std::array<U, N> const & y)
 {
 }
 

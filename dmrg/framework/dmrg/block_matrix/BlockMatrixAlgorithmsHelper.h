@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -37,7 +37,7 @@ public:
           exit = true;
         }
         else if (iRow == num_rows(eigenVectors)-1) {
-          vectorOfPhases.push_back(std::complex<double>(1., 0.));
+          vectorOfPhases.emplace_back(1., 0.);
           exit = true;
         }
         else {

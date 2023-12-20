@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -17,7 +17,8 @@ namespace parallel {
         template<class Matrix>
         scheduler_balanced(const Matrix& m) : max_k(m.n_blocks()) {}
         scheduler_balanced(size_t max) : max_k(max) {}
-        resource_iterator operator()(int k) const {
+
+        virtual resource_iterator operator()(int k) const {
             return traits::balance(k,max_k);
         }
         bool propagate() const {

@@ -117,7 +117,8 @@ namespace alps{
   template <class T1, class T2, std::size_t D, class Allocator>
   multi_array<T2,D,Allocator> operator/(T2 const & scalar, multi_array<T1,D,Allocator> array)
   {
-    std::transform(array.data(), array.data() + array.num_elements(), array.data(), std::bind1st(std::divides<T1>(),T1(scalar)));
+    std::transform(array.data(), array.data() + array.num_elements(), array.data(),
+        [&scalar](const auto& e){ return scalar / e; });
     return array;
   }
 

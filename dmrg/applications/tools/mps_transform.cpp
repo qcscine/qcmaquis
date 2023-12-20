@@ -1,10 +1,11 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
+#include "dmrg/models/MolecularHamiltonians/transform_symmetry.hpp"
 #ifdef USE_AMBIENT
 #include <mpi.h>
 #endif
@@ -13,7 +14,6 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 
-#include <boost/filesystem.hpp>
 
 using std::cerr;
 using std::cout;
@@ -21,7 +21,6 @@ using std::endl;
 
 #include "dmrg/sim/matrix_types.h"
 #include "dmrg/models/model.h"
-#include "dmrg/models/chem/transform_symmetry.hpp"
 
 #if defined(USE_SU2U1)
 typedef SU2U1 grp;
@@ -46,7 +45,7 @@ int main(int argc, char ** argv)
 
         std::string mps_in_file = argv[1];
 
-        if (!boost::filesystem::exists(mps_in_file))
+        if (!std::filesystem::exists(mps_in_file))
             throw std::runtime_error("input MPS " + mps_in_file + " does not exist\n");
         if (*(mps_in_file.rbegin()) == '/')
             mps_in_file.erase(mps_in_file.size()-1, 1);
@@ -79,7 +78,7 @@ int main(int argc, char ** argv)
 
         for (int Sz = -TwoS; Sz <= TwoS; Sz += 2)
         {
-    	    // skip loop to next iteration until we hit the target Sz value 
+    	    // skip loop to next iteration until we hit the target Sz value
 	        if((argc == 3) && (Sz != target_sz))
 	            continue;
 
@@ -91,7 +90,7 @@ int main(int argc, char ** argv)
 
             // the output MPS
             MPS<matrix, mapgrp> mps_out = transform_mps<matrix, grp>()(mps, Nup, Ndown);
-            
+
             std::string mps_out_file = mps_in_file;
             std::size_t pos = mps_out_file.find(".h5");
             if (pos != mps_out_file.size())
@@ -105,16 +104,16 @@ int main(int argc, char ** argv)
 
             save(mps_out_file, mps_out);
 
-            if (boost::filesystem::exists(mps_out_file + "/props.h5"))
-                boost::filesystem::remove(mps_out_file + "/props.h5");
-            boost::filesystem::copy(mps_in_file + "/props.h5", mps_out_file + "/props.h5");
+            if (std::filesystem::exists(mps_out_file + "/props.h5"))
+                std::filesystem::remove(mps_out_file + "/props.h5");
+            std::filesystem::copy(mps_in_file + "/props.h5", mps_out_file + "/props.h5");
 
             storage::archive ar_out(mps_out_file + "/props.h5", "w");
             ar_out["/parameters"] << parms;
         }
 
         myfile.close();
-        
+
     } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;
         return 1;

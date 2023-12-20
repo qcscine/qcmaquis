@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -47,7 +47,7 @@ public:
     {
         // Variable definition
         int nMax = parameters_["Nmax"];
-        int maxCoupling = chem::getIndexDim(chem::Hamiltonian::Vibronic) / 2; // Two indices are required as the electronic state is also included
+        int maxCoupling = chem::getIndexDim(chem::Hamiltonian::Vibronic, chem::HamiltonianTransformation::Conventional) / 2; // Two indices are required as the electronic state is also included
         op_t ident_vib_op, ident_ele_op, create_ele_op, destroy_ele_op, count_ele_op;
         op_t position_vib_op, momentum_vib_op;
         // Definition of the physical dimensions.

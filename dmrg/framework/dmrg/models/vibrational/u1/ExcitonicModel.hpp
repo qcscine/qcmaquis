@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -57,7 +57,7 @@ public:
     {
         // Maximum order of the coupling terms that are supported.
         // For the excitonic Hamiltonian, this will be 
-        maxCoupling = chem::getIndexDim(chem::Hamiltonian::Excitonic);
+        maxCoupling = chem::getIndexDim(chem::Hamiltonian::Excitonic, chem::HamiltonianTransformation::Conventional);
         // Vibronic interaction definition
         J_ = model["vibronic_J_coupling"].as<value_type>();
         epsilon_ = model["vibronic_J_excitation"].as<value_type>();

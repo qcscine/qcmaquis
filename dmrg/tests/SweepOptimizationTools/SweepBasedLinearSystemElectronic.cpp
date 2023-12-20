@@ -1,13 +1,14 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
 #define BOOST_TEST_MODULE SweepBasedLinearSystemElectronic
 
 #include <iostream>
+#include <filesystem>
 #include <boost/test/included/unit_test.hpp>
 #include "dmrg/SweepBasedAlgorithms/SweepBasedLinearSystem.h"
 #include "dmrg/models/generate_mpo.hpp"
@@ -56,7 +57,7 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedLinearSystemSS_Electronic_Benzene, Benzen
   // Does the IPI iteration "by hand"
   int nIPI = 10;
   for (int iSweep = 0; iSweep < nIPI; iSweep++) {
-    SweepBasedLinearSolverSS linearSolver(hfBenzeneMPS, benzeneMPO, parametersBenzene, benzeneModel, benzeneLattice, false);
+     SweepBasedLinearSolverSS linearSolver(hfBenzeneMPS, benzeneMPO, parametersBenzene, benzeneModel, benzeneLattice, false);
     linearSolver.runSweepSimulation();
     energyFromIPI.push_back(linearSolver.template getSpecificResult<double>("Energy"));
   }
@@ -113,10 +114,10 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedLinearSystemTS_Interface_Electronic_Benze
   auto energyExcitedStateIPI = interfaceExcitedStateIPI.energy();
   BOOST_CHECK_CLOSE(energyFromOptimizerES, energyExcitedStateIPI, 1.0E-7);
   // Cleans up stuff
-  boost::filesystem::remove_all("GS.Benzene.chkp.h5");
-  boost::filesystem::remove_all("ES.Benzene.chkp.h5");
-  boost::filesystem::remove_all("GS.IPI.Benzene.chkp.h5");
-  boost::filesystem::remove_all("ES.IPI.Benzene.chkp.h5");
+  std::filesystem::remove_all("GS.Benzene.chkp.h5");
+  std::filesystem::remove_all("ES.Benzene.chkp.h5");
+  std::filesystem::remove_all("GS.IPI.Benzene.chkp.h5");
+  std::filesystem::remove_all("ES.IPI.Benzene.chkp.h5");
 }
 
 

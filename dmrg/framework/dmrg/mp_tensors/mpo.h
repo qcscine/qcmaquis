@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -17,9 +17,9 @@ template<class Matrix, class SymmGroup, typename = void>
 class MPO : public std::vector<MPOTensor<Matrix, SymmGroup> >
 {
 public:
-    typedef MPOTensor<Matrix, SymmGroup> elem_type;
+    using elem_type = MPOTensor<Matrix, SymmGroup>;
 
-    MPO() { }
+    MPO() = default;
 
     MPO(std::size_t L, elem_type elem = elem_type())
     : std::vector<elem_type>(L, elem)
@@ -33,14 +33,18 @@ public:
         calc_charges();
 
         for (int p = 0; p < this->size()-1; ++p) {
-            MPOTensor<Matrix, SymmGroup> b1 = (*this)[p], b2 = (*this)[p+1];
+            MPOTensor<Matrix, SymmGroup> b1 = (*this)[p];
+            MPOTensor<Matrix, SymmGroup> b2 = (*this)[p+1];
 
             block_matrix<Matrix, SymmGroup> left = make_left_matrix(p);
             block_matrix<Matrix, SymmGroup> right = make_right_matrix(p+1);
 
-            block_matrix<Matrix, SymmGroup> M, U, V;
+            block_matrix<Matrix, SymmGroup> M;
+            block_matrix<Matrix, SymmGroup> U;
+            block_matrix<Matrix, SymmGroup> V;
 
-            block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S, Sqrt;
+            block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
+            block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> Sqrt;
             gemm(left, right, M);
             svd_truncate(M, U, V, S, cutoff, 100000, false);
             Sqrt = sqrt(S);
@@ -75,12 +79,12 @@ private:
                 std::set<typename SymmGroup::charge> charge_diffs;
                 for (size_t r = 0; r < (*this)[p-1].row_dim(); ++r) {
                     assert( bond_index_charges[p-1].count(r) > 0 );
-                    if (!(*this)[p-1].has(r,c))
-                        continue;
+                    if (!(*this)[p-1].has(r,c)) { continue; }
                     for (size_t b = 0; b < (*this)[p-1].at(r, c).op().n_blocks(); ++b) {
-                        charge_diffs.insert(SymmGroup::fuse(bond_index_charges[p-1][r],
-                                                            SymmGroup::fuse((*this)[p-1].at(r,c).op().basis().left_charge(b),
-                                                                            -(*this)[p-1].at(r,c).op().basis().right_charge(b))));
+                        charge_diffs.insert(
+                            SymmGroup::fuse(bond_index_charges[p-1][r],
+                            SymmGroup::fuse((*this)[p-1].at(r,c).op().basis().left_charge(b),
+                            -(*this)[p-1].at(r,c).op().basis().right_charge(b))));
 //                        maquis::cout << r << " " << c << std::endl;
 //                        maquis::cout << bond_index_charges[p-1][r] << std::endl;
 //                        maquis::cout << (*this)[p-1](r,c).basis().left_charge(b) << std::endl;
@@ -93,10 +97,11 @@ private:
 #ifndef NDEBUG
                 assert( charge_diffs.size() <= 1 );
 #endif
-                if (charge_diffs.size() == 1)
+                if (charge_diffs.size() == 1) {
                     bond_index_charges[p][c] = *charge_diffs.begin();
-                else
+                } else {
                     bond_index_charges[p][c] = SymmGroup::IdentityCharge; //bond_index_charges[p-1][c];
+                }
             }
         }
 
@@ -105,35 +110,36 @@ private:
         for (size_t p = 0; p <= L; ++p)
         {
             Index<SymmGroup> & index = bond_indices[p];
-            for (typename std::map<std::size_t, typename SymmGroup::charge>::iterator it
-                 = bond_index_charges[p].begin();
-                 it != bond_index_charges[p].end();
-                 ++it)
-                if (index.has(it->second))
-                    index[index.position(it->second)] = std::make_pair(it->second, index.size_of_block(it->second)+1);
-                else
-                    index.insert(std::make_pair(it->second, 1));
+            for (const auto& it : bond_index_charges[p]) {
+                if (index.has(it.second)) {
+                  index[index.position(it.second)] = std::make_pair(
+                      it.second, index.size_of_block(it.second)+1);
+                }
+                else {
+                  index.insert(std::make_pair(it.second, 1));
+                }
+            }
         }
     }
 
     block_matrix<Matrix, SymmGroup> make_left_matrix(std::size_t p)
     {
-        typedef typename SymmGroup::charge charge;
+        using charge = typename SymmGroup::charge;
 
         Index<SymmGroup> phys_i;
-        for (size_t r = 0; r < (*this)[p].row_dim(); ++r)
-            for (size_t c = 0; c < (*this)[p].col_dim(); ++c)
-            {
-                if (!(*this)[p].has(r,c))
-                    continue;
+        for (size_t r = 0; r < (*this)[p].row_dim(); ++r) {
+            for (size_t c = 0; c < (*this)[p].col_dim(); ++c) {
+                if (!(*this)[p].has(r,c)) { continue; }
                 for (size_t cs = 0; cs < (*this)[p].at(r, c).op().basis().size(); ++cs) {
                     //std::pair<charge, size_t> sector = (*this)[p].at(r, c).op.left_basis()[cs];
                     typename DualIndex<SymmGroup>::value_type sector = (*this)[p].at(r, c).op().basis()[cs];
                     //if (! phys_i.has(sector.first))
-                    if (! phys_i.has(sector.lc))
+                    if (! phys_i.has(sector.lc)) {
                         phys_i.insert(std::make_pair(sector.lc, sector.ls));
+                    }
                 }
             }
+        }
 
         Index<SymmGroup> left_i = phys_i * adjoin(phys_i) * bond_indices[p];
         Index<SymmGroup> right_i = bond_indices[p+1];
@@ -145,23 +151,22 @@ private:
         std::map<charge, size_t> visited_c_basis;
         for (size_t c = 0; c < (*this)[p].col_dim(); ++c) {
             int outr = -1;
-            for (size_t r = 0; r < (*this)[p].row_dim(); ++r)
-                for (size_t ls = 0; ls < phys_i.size(); ++ls)
+            for (size_t r = 0; r < (*this)[p].row_dim(); ++r) {
+                for (size_t ls = 0; ls < phys_i.size(); ++ls) {
                     for (size_t rs = 0; rs < phys_i.size(); ++rs) {
                         charge lc = SymmGroup::fuse(bond_index_charges[p][r],
                                                     SymmGroup::fuse(phys_i[ls].first,
                                                                     -phys_i[rs].first));
                         charge rc = bond_index_charges[p+1][c];
 
-                        if (lc != rc)
-                            continue;
+                        if (lc != rc) { continue; }
 
                         outr++;
 
-                        if (! (*this)[p].has(r,c))
+                        if (! (*this)[p].has(r,c)) { continue; }
+                        if (! (*this)[p].at(r,c).op().has_block(phys_i[ls].first, phys_i[rs].first) ) {
                             continue;
-                        if (! (*this)[p].at(r,c).op().has_block(phys_i[ls].first, phys_i[rs].first) )
-                            continue;
+                        }
 
                         //std::size_t cs = (*this)[p].at(r, c).op().left_basis().position(phys_i[ls].first);
                         std::size_t cs = (*this)[p].at(r, c).op().basis().position(phys_i[ls].first, phys_i[rs].first);
@@ -182,6 +187,8 @@ private:
 //                        maquis::cout << " -> ";
 //                        maquis::cout << "(" << lc << "," << outr << ") (" << rc << "," << visited_c_basis[rc] << ")" << std::endl;
                     }
+                }
+            }
             visited_c_basis[bond_index_charges[p+1][c]]++;
         }
 
@@ -193,23 +200,23 @@ private:
 
     block_matrix<Matrix, SymmGroup> make_right_matrix(std::size_t p)
     {
-        typedef typename SymmGroup::charge charge;
+        using charge = typename SymmGroup::charge;
 
         Index<SymmGroup> phys_i;
-        for (size_t r = 0; r < (*this)[p].row_dim(); ++r)
-            for (size_t c = 0; c < (*this)[p].col_dim(); ++c)
-            {
-                if (!(*this)[p].has(r,c))
-                    continue;
+        for (size_t r = 0; r < (*this)[p].row_dim(); ++r) {
+            for (size_t c = 0; c < (*this)[p].col_dim(); ++c) {
+                if (!(*this)[p].has(r,c)) { continue; }
                 for (size_t cs = 0; cs < (*this)[p].at(r, c).op().basis().size(); ++cs) {
                     //std::pair<charge, size_t> sector = (*this)[p].at(r, c).op.left_basis()[cs];
                     typename DualIndex<SymmGroup>::value_type sector = (*this)[p].at(r, c).op().basis()[cs];
                     //if (! phys_i.has(sector.first))
-                    if (! phys_i.has(sector.lc))
+                    if (! phys_i.has(sector.lc)) {
                         //phys_i.insert(sector);
                         phys_i.insert(std::make_pair(sector.lc, sector.ls));
+                    }
                 }
             }
+        }
 
         Index<SymmGroup> left_i = bond_indices[p];
         Index<SymmGroup> right_i = adjoin(phys_i) * phys_i * bond_indices[p+1];
@@ -221,23 +228,22 @@ private:
         std::map<charge, size_t> visited_r_basis;
         for (size_t r = 0; r < (*this)[p].row_dim(); ++r) {
             int outc = -1;
-            for (size_t c = 0; c < (*this)[p].col_dim(); ++c)
-                for (size_t ls = 0; ls < phys_i.size(); ++ls)
+            for (size_t c = 0; c < (*this)[p].col_dim(); ++c) {
+                for (size_t ls = 0; ls < phys_i.size(); ++ls) {
                     for (size_t rs = 0; rs < phys_i.size(); ++rs) {
                         charge lc = bond_index_charges[p][r];
                         charge rc = SymmGroup::fuse(bond_index_charges[p+1][c],
                                                     SymmGroup::fuse(-phys_i[ls].first,
                                                                     phys_i[rs].first));
 
-                        if (lc != rc)
-                            continue;
+                        if (lc != rc) { continue; }
 
                         outc++;
 
-                        if (! (*this)[p].has(r,c))
+                        if (! (*this)[p].has(r,c)) { continue; }
+                        if (! (*this)[p].at(r, c).op().has_block(phys_i[ls].first, phys_i[rs].first) ) {
                             continue;
-                        if (! (*this)[p].at(r, c).op().has_block(phys_i[ls].first, phys_i[rs].first) )
-                            continue;
+                        }
 
                         //std::size_t cs = (*this)[p].at(r, c).op().left_basis().position(phys_i[ls].first);
                         std::size_t cs = (*this)[p].at(r, c).op().basis().position(phys_i[ls].first, phys_i[rs].first);
@@ -258,6 +264,8 @@ private:
 //                        maquis::cout << " -> ";
 //                        maquis::cout << "(" << lc << "," << visited_r_basis[lc] << ") (" << rc << "," << outc << ")" << std::endl;
                     }
+                }
+            }
             visited_r_basis[bond_index_charges[p][r]]++;
         }
 
@@ -271,21 +279,23 @@ private:
                       block_matrix<Matrix, SymmGroup> & right,
                       std::size_t p)
     {
-        typedef typename SymmGroup::charge charge;
+        using charge = typename SymmGroup::charge;
 
         Index<SymmGroup> phys_i;
-        for (size_t r = 0; r < (*this)[p].row_dim(); ++r)
+        for (size_t r = 0; r < (*this)[p].row_dim(); ++r) {
             for (size_t c = 0; c < (*this)[p].col_dim(); ++c)
             {
                 for (size_t cs = 0; cs < (*this)[p].at(r, c).op().basis().size(); ++cs) {
                     //std::pair<charge, size_t> sector = (*this)[p].at(r, c).op.left_basis()[cs];
                     typename DualIndex<SymmGroup>::value_type sector = (*this)[p].at(r, c).op().basis()[cs];
                     //if (! phys_i.has(sector.first))
-                    if (! phys_i.has(sector.lc))
+                    if (! phys_i.has(sector.lc)) {
                         //phys_i.insert(sector);
                         phys_i.insert(std::make_pair(sector.lc, sector.ls));
+                    }
                 }
             }
+        }
 
         assert( left.right_basis() == right.left_basis() );
         bond_indices[p+1] = left.right_basis();
@@ -294,8 +304,9 @@ private:
             bond_index_charges[p+1].clear();
             Index<SymmGroup> left_right_basis_cp = left.right_basis();
             for (typename Index<SymmGroup>::basis_iterator it = left_right_basis_cp.basis_begin();
-                 !it.end(); ++it)
+                 !it.end(); ++it) {
                 bond_index_charges[p+1][count++] = (*it).first;
+            }
         }
 
         (*this)[p] = MPOTensor<Matrix, SymmGroup>((*this)[p].row_dim(),
@@ -304,8 +315,8 @@ private:
         std::map<charge, size_t> visited_c_basis;
         for (size_t c = 0; c < (*this)[p].col_dim(); ++c) {
             int outr = -1;
-            for (size_t r = 0; r < (*this)[p].row_dim(); ++r)
-                for (size_t ls = 0; ls < phys_i.size(); ++ls)
+            for (size_t r = 0; r < (*this)[p].row_dim(); ++r) {
+                for (size_t ls = 0; ls < phys_i.size(); ++ls) {
                     for (size_t rs = 0; rs < phys_i.size(); ++rs)
                     {
                         charge lc = SymmGroup::fuse(bond_index_charges[p][r],
@@ -313,8 +324,7 @@ private:
                                                                     -phys_i[rs].first));
                         charge rc = bond_index_charges[p+1][c];
 
-                        if (lc != rc)
-                            continue;
+                        if (lc != rc) { continue; }
 
                         outr++;
 
@@ -323,9 +333,11 @@ private:
 
                         if (std::abs(val) > 1e-40) {
                             typename operator_selector<Matrix, SymmGroup>::type block;
-                            charge blc = phys_i[ls].first, brc = phys_i[rs].first;
-                            if ( (*this)[p].has(r,c) )
+                            charge blc = phys_i[ls].first;
+                            charge brc = phys_i[rs].first;
+                            if ( (*this)[p].has(r,c) ) {
                                 block = (*this)[p].at(r,c).op();
+                            }
                             block.insert_block(Matrix(1, 1, val), blc, brc);
                             (*this)[p].set(r, c, block);
 
@@ -335,6 +347,8 @@ private:
 //                            maquis::cout << "(" << lc << "," << outr << ") (" << rc << "," << visited_c_basis[rc] << ")" << std::endl;
                         }
                     }
+                }
+            }
             visited_c_basis[bond_index_charges[p+1][c]]++;
         }
 
@@ -344,8 +358,8 @@ private:
         std::map<charge, size_t> visited_r_basis;
         for (size_t r = 0; r < (*this)[p+1].row_dim(); ++r) {
             int outc = -1;
-            for (size_t c = 0; c < (*this)[p+1].col_dim(); ++c)
-                for (size_t ls = 0; ls < phys_i.size(); ++ls)
+            for (size_t c = 0; c < (*this)[p+1].col_dim(); ++c) {
+                for (size_t ls = 0; ls < phys_i.size(); ++ls) {
                     for (size_t rs = 0; rs < phys_i.size(); ++rs)
                     {
                         charge lc = bond_index_charges[p+1][r];
@@ -353,8 +367,7 @@ private:
                                                     SymmGroup::fuse(-phys_i[ls].first,
                                                                     phys_i[rs].first));
 
-                        if (lc != rc)
-                            continue;
+                        if (lc != rc) { continue; }
 
                         outc++;
 
@@ -363,9 +376,11 @@ private:
 
                         if (std::abs(val) > 1e-40) {
                             typename operator_selector<Matrix, SymmGroup>::type block;
-                            charge blc = phys_i[ls].first, brc = phys_i[rs].first;
-                            if ( (*this)[p+1].has(r,c) )
+                            charge blc = phys_i[ls].first;
+                            charge brc = phys_i[rs].first;
+                            if ( (*this)[p+1].has(r,c) ) {
                                 block = (*this)[p+1].at(r,c).op();
+                            }
                             block.insert_block(Matrix(1, 1, val), blc, brc);
                             (*this)[p+1].set(r, c, block);
 
@@ -375,6 +390,8 @@ private:
 //                            maquis::cout << "(" << lc << "," << visited_r_basis[lc] << ") (" << rc << "," << outc << ")" << std::endl;
                         }
                     }
+                }
+            }
             visited_r_basis[bond_index_charges[p+1][r]]++;
         }
     }
@@ -385,9 +402,9 @@ class MPO<Matrix, SymmGroup, symm_traits::enable_if_su2_t<SymmGroup> >
     : public std::vector<MPOTensor<Matrix, SymmGroup> >
 {
 public:
-    typedef MPOTensor<Matrix, SymmGroup> elem_type;
+    using elem_type = MPOTensor<Matrix, SymmGroup>;
 
-    MPO() { }
+    MPO() = default;
 
     MPO(std::size_t L, elem_type elem = elem_type())
     : std::vector<elem_type>(L, elem)

@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -16,11 +16,9 @@
 #include <memory>
 #include <map>
 
-#include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 #include <regex>
 #include <boost/algorithm/string.hpp>
-#include <boost/serialization/version.hpp>
 #include <boost/serialization/split_member.hpp>
 
 #include "dmrg/utils/parameter_proxy.h"
@@ -28,7 +26,7 @@
 namespace parameters {
     class value {
     public:
-        value () : val_(""), empty_(true) { }
+        value () : empty_(true) { }
 
         template <class T>
         value (const T & val)
@@ -49,8 +47,8 @@ class BaseParameters
 {
     public:
 
-        typedef std::map<std::string, std::string> map_t;
-        typedef typename map_t::value_type value_type;
+        using map_t = std::map<std::string, std::string>;
+        using value_type = typename map_t::value_type;
 
         BaseParameters();
         BaseParameters(const BaseParameters & p);
@@ -106,7 +104,7 @@ class BaseParameters
         }
 
         BaseParameters& operator=(const BaseParameters& rhs);
-        BaseParameters& operator=(BaseParameters&& rhs);
+        BaseParameters& operator=(BaseParameters&& rhs) noexcept ;
 
         // for Boost::serialization
         BOOST_SERIALIZATION_SPLIT_MEMBER()

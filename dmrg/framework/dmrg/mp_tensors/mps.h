@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -14,22 +14,25 @@
 
 #include <limits>
 
+// implementation of join functions
+#include "dmrg/mp_tensors/mps_join.h"
+
 template<class Matrix, class SymmGroup>
 struct mps_initializer;
 
 template<class Matrix, class SymmGroup>
 class MPS
 {
-    typedef std::vector<MPSTensor<Matrix, SymmGroup> > data_t;
+    using data_t = std::vector<MPSTensor<Matrix, SymmGroup>>;
 public:
-    typedef std::size_t size_t;
+    using size_t = std::size_t;
 
     // reproducing interface of std::vector
-    typedef typename data_t::size_type size_type;
-    typedef typename data_t::value_type value_type;
-    typedef typename data_t::iterator iterator;
-    typedef typename data_t::const_iterator const_iterator;
-    typedef typename MPSTensor<Matrix, SymmGroup>::scalar_type scalar_type;
+    using size_type = typename data_t::size_type;
+    using value_type = typename data_t::value_type;
+    using iterator = typename data_t::iterator;
+    using const_iterator = typename data_t::const_iterator;
+    using scalar_type = typename MPSTensor<Matrix, SymmGroup>::scalar_type;
 
     MPS();
     MPS(size_t L);
@@ -116,7 +119,7 @@ void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps);
 template<class Matrix, class SymmGroup>
 struct mps_initializer
 {
-    virtual ~mps_initializer() {}
+    virtual ~mps_initializer() = default;
     virtual void operator()(MPS<Matrix, SymmGroup> & mps) = 0;
 };
 
@@ -127,15 +130,17 @@ MPS<Matrix, SymmGroup> join(MPS<Matrix, SymmGroup> const & a,
 {
     assert( a.length() == b.length() );
 
-    MPSTensor<Matrix, SymmGroup> aright=a[a.length()-1], bright=b[a.length()-1];
+    MPSTensor<Matrix, SymmGroup> aright=a[a.length()-1];
+    MPSTensor<Matrix, SymmGroup> bright=b[a.length()-1];
     aright.multiply_by_scalar(alpha);
     bright.multiply_by_scalar(beta);
 
     MPS<Matrix, SymmGroup> ret(a.length());
     ret[0] = join(a[0],b[0],l_boundary_f);
     ret[a.length()-1] = join(aright,bright,r_boundary_f);
-    for (std::size_t p = 1; p < a.length()-1; ++p)
+    for (std::size_t p = 1; p < a.length()-1; ++p) {
         ret[p] = join(a[p], b[p]);
+    }
     return ret;
 }
 
@@ -148,15 +153,17 @@ MPS<Matrix, SymmGroup> join_general(MPS<Matrix, SymmGroup> const & a,
 {
     assert( a.length() == b.length() );
 
-    MPSTensor<Matrix, SymmGroup> aright=a[a.length()-1], bright=b[a.length()-1];
+    MPSTensor<Matrix, SymmGroup> aright=a[a.length()-1];
+    MPSTensor<Matrix, SymmGroup> bright=b[a.length()-1];
     aright.multiply_by_scalar(alpha);
     bright.multiply_by_scalar(beta);
 
     MPS<Matrix, SymmGroup> ret(a.length());
     ret[0] = join(a[0],b[0],l_boundary_f);
     ret[a.length()-1] = join(aright,bright,r_boundary_f);
-    for (std::size_t p = 1; p < a.length()-1; ++p)
+    for (std::size_t p = 1; p < a.length()-1; ++p) {
         ret[p] = join(a[p], b[p]);
+    }
     return ret;
 }
 
@@ -173,7 +180,8 @@ MPS<Matrix, SymmGroup> joinAndTruncate(MPS<Matrix, SymmGroup> & a,
 {
     assert( a.length() == b.length() );
 
-    MPSTensor<Matrix, SymmGroup> aright=a[a.length()-1], bright=b[a.length()-1];
+    MPSTensor<Matrix, SymmGroup> aright=a[a.length()-1];
+    MPSTensor<Matrix, SymmGroup> bright=b[a.length()-1];
     aright.multiply_by_scalar(alpha);
     bright.multiply_by_scalar(beta);
 
@@ -181,12 +189,13 @@ MPS<Matrix, SymmGroup> joinAndTruncate(MPS<Matrix, SymmGroup> & a,
     MPS<Matrix, SymmGroup> ret(nOfSites);
 #pragma omp parallel for
     for (int p = 0; p < nOfSites; ++p) {
-        if (p == 0)
+        if (p == 0) {
             ret[0] = join(a[0], b[0], l_boundary_f);
-        else if (p == nOfSites-1)
+        } else if (p == nOfSites-1) {
             ret[nOfSites-1] = join(aright, bright, r_boundary_f);
-        else
+        } else {
             ret[p] = join(a[p], b[p]);
+        }
     }
     ret = compression::l2r_compress(ret, mMax, 0.);
     return ret;
@@ -201,9 +210,11 @@ make_left_boundary(MPS<Matrix, SymmGroup> const & bra, MPS<Matrix, SymmGroup> co
     Index<SymmGroup> j = bra[0].row_dim();
     Boundary<Matrix, SymmGroup> ret(i, j, 1);
 
-    for(typename Index<SymmGroup>::basis_iterator it1 = i.basis_begin(); !it1.end(); ++it1)
-        for(typename Index<SymmGroup>::basis_iterator it2 = j.basis_begin(); !it2.end(); ++it2)
+    for(typename Index<SymmGroup>::basis_iterator it1 = i.basis_begin(); !it1.end(); ++it1) {
+        for(typename Index<SymmGroup>::basis_iterator it2 = j.basis_begin(); !it2.end(); ++it2) {
             ret[0](*it1, *it2) = 1;
+        }
+    }
 
     return ret;
 }
@@ -218,9 +229,11 @@ make_right_boundary(MPS<Matrix, SymmGroup> const & bra, MPS<Matrix, SymmGroup> c
     Index<SymmGroup> j = bra[L-1].col_dim();
     Boundary<Matrix, SymmGroup> ret(j, i, 1);
 
-    for(typename Index<SymmGroup>::basis_iterator it1 = i.basis_begin(); !it1.end(); ++it1)
-        for(typename Index<SymmGroup>::basis_iterator it2 = j.basis_begin(); !it2.end(); ++it2)
+    for(typename Index<SymmGroup>::basis_iterator it1 = i.basis_begin(); !it1.end(); ++it1) {
+        for(typename Index<SymmGroup>::basis_iterator it2 = j.basis_begin(); !it2.end(); ++it2) {
             ret[0](*it2, *it1) = 1;
+        }
+    }
 
     return ret;
 }

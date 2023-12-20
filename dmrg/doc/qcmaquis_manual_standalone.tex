@@ -265,7 +265,7 @@ Their choice depends, e.g., on the molecule under consideration, the specific Ha
 \end{framed}
 
 \begin{table}
-  \caption{Compulsory \qcm{} keywords to be set by the user.}
+  \caption{Compulsory \qcm{} keywords automatically set by the \qcm{}-\textsc{OpenMolcas} interface.}
   \label{tab:standard_kw_auto}
   \begin{tabular}{cV{11.5cm}}
     \toprule
@@ -414,26 +414,22 @@ Table~\ref{tab:es_kw} describes the keywords to be activated to run excited-stat
 \end{table}
 
 \noindent \textbf{Note}: two other methods for calculating excited states, DMRG[IPI] and DMRG[FEAST], will be presented below.
-\qcm\ currently supports them only for vibrational-structure calculations.
+\textbf{\qcm\ currently supports them only for vibrational-structure calculations}.
 
 \subsection{Keywords for expectation value calculations}
 \label{subsec:prop-qcm}
 
 \qcm\ can (in principle) compute expectation values for any one- or two-particle operator that can be formulated in second quantization.
-Table~\ref{tab:expval} comprises a list of the available property keywords available in \qcm.
-
-The one-particle reduced density matrix as well as the one-particle spin-density matrix are implicitly computed from the expectation values of some of the operators contained in \texttt{MEASURE[ChemEntropy]}.
-
-If a property is available only in 2U1 symmetry, the SU2U1 checkpoint may be transformed into 2U1 group with the \texttt{mps\_transform(\_pg)} tool (see Section~\ref{sec:tools-qcm})
 
 \begin{table}
  \footnotesize
- \label{tab:expval}
  \caption{Expectation value calculations available in the release version of \qcm.}
+ \label{tab:expval}
   \begin{tabular}{cV{8.5cm}}
     \toprule
     Keyword & Description \\
     \midrule
+	\rowcolor{gray!20}
     \texttt{MEASURE[ChemEntropy]} 
 			& All expectation values over the operators required to calculate the mutual
 			  information (as specified in Ref.~\cite{entanglement}) will be computed.
@@ -441,12 +437,14 @@ If a property is available only in 2U1 symmetry, the SU2U1 checkpoint may be tra
 	\texttt{MEASURE[1rdm]} 
 			& Computes the one-particle reduced density matrix, without the additional
 			  correlators contained in the \texttt{ChemEntropy} measurement. \\
+	\rowcolor{gray!20}
 	\texttt{MEASURE[2rdm]}
 			& Computes the two-particle reduced density matrix \\
 	\texttt{MEASURE[3rdm]}
 			& Computes the three-particle reduced density matrix. 
 			  A two-index subblock may be calculated with \texttt{MEASURE[3rdm]="p1:p2@\textit{j,i}"}.
 			  Available only in 2U1(pg) symmetry. \\
+	\rowcolor{gray!20}
 	\texttt{MEASURE[4rdm]}
 			& Computes the four-particle reduced density matrix, respectively.
 			  \texttt{MEASURE[4rdm]="p4:p3:p1:p2@\textit{l,k,i,j}"} allows to compute only a 4-index sub-block of the 4-RDM with the indices \texttt{\textit{i,j,k,l}}.
@@ -455,17 +453,25 @@ If a property is available only in 2U1 symmetry, the SU2U1 checkpoint may be tra
 			& Computes the transition two--particle reduced density matrix between the current 
 			  state and the state specified in the \texttt{\textit{chk}} checkpoint file.
 			  Available only for 2U1(pg) symmetry. \\
+	\rowcolor{gray!20}
 	\texttt{MEASURE[trans3rdm]="\textit{chk}"}
 			& Computes the transition three-particle reduced density matrix between the 
 			  current state and the state specified in the \texttt{\textit{chk}} checkpoint file. Two-index subblocks can be calculated with \texttt{MEASURE[trans3rdm]="\textit{chk};p1:p2@\textit{j,i}"}. 
 			  Available only for 2U1(pg) symmetry. \\
 	\texttt{MEASURE\_LOCAL[\textit{name}]="\textit{op}"}
 			& Computes $\langle \psi | op_i | \psi \rangle, \, i = 1 \ldots L$. \texttt{Nup}, \texttt{Ndown} and \texttt{Nup*Ndown} are meaningful choices for \textit{op}. Available for \texttt{2U1(OG) only.}  (\emph{Note}: \texttt{\textit{name}}\ defines the name under which the expectation values are stored on the \texttt{resultfile}.) \\
+	\rowcolor{gray!20}
 	\texttt{MEASURE\_HALF}\texttt{\_CORRELATIONS[\textit{name}]="\textit{op$_1$:op$_2$}"}
 			& Computes $\langle \psi | op_{1i} op_{2j}| \psi \rangle, \, i = 1 \ldots L, j=i+1 \ldots L$. \texttt{Nup}, \texttt{Ndown}, \texttt{Nup*Ndown}, \texttt{cdag\_up}, \texttt{cdag\_down}, \texttt{c\_up}, \texttt{c\_down}, \texttt{cdag\_up*Ndown}, \texttt{c\_up*Ndown}, \texttt{cdag\_down*Nup}, \texttt{c\_down*Nup}, \texttt{cdag\_up*cdag\_down}, \texttt{c\_up*c\_down}, \texttt{cdag\_up*c\_down}, and \texttt{cdag\_down*c\_up}, as \textit{op$_1$} and \textit{op$_2$} are recognized by the program. Available for \texttt{2U1(PG)} only. (\emph{Note}: \texttt{\textit{name}}\ defines the name under which the expectation values are stored on the \texttt{resultfile}.) \\
 	\bottomrule
   \end{tabular}
 \end{table}
+
+Table~\ref{tab:expval} comprises a list of the available property keywords available in \qcm.
+
+The one-particle reduced density matrix as well as the one-particle spin-density matrix are implicitly computed from the expectation values of some of the operators contained in \texttt{MEASURE[ChemEntropy]}.
+
+If a property is available only in 2U1 symmetry, the SU2U1 checkpoint may be transformed into 2U1 group with the \texttt{mps\_transform(\_pg)} executable, which is compiled when the CMake variable \texttt{BUILD\_MPS\_TRANSFORM} is set to \texttt{ON}.
 
 \clearpage
 
@@ -519,6 +525,145 @@ Listing~\ref{lst:qcm} provides an input example for a ground-state electronic-st
 We assume that an integral file \texttt{FCIDUMP} has been generated with an external software (e.g., \textsl{OpenMolcas}) and placed in the same directory with the input file.
 We indicate the mandatory keywords in red, and the optional ones in blue.
 
+\section{Explicitly-correlated calculations with \qcm{}}
+\label{sec:Transcorrelated}
+
+\qcm\ supports explicitly-correlated electronic-structure calculations based on the transcorrelated DMRG (tcDMRG) method.\cite{Baiardi2020_tcDMRG,Baiardi2022_tcDMRG-Molecules}
+tcDMRG combines DMRG with the transcorrelated approach originally introduced by Boys and Handy.\cite{Boys1969_Transcorrelated}
+tcDMRG relies on the following \textit{ansatz} for the ground-state wave function,
+
+\begin{equation}
+  \vert \Psi \rangle = e^{\mathcal{J}} \vert \Psi_\text{MPS} \rangle \, ,
+  \label{eq:TranscorrelatedAnsatz}
+\end{equation}
+%
+\textit{i.e.} a product of a \emph{fixed} correlation function, whose form depends on the Hamiltonian under analysis, and a matrix product state.
+The correlator $e^{\mathcal{J}}$ is revolved into the Hamiltonian \textit{via} similarity transformation.
+As discussed in Ref.~\citenum{Luo2018_TranscorrelatedFCIQMC}, this yields a non-Hermitian operator (the transcorrelated Hamiltonian) whose right eigenvector is $\vert \Psi_\text{MPS} \rangle$, and whose eigenvalues are the same as for the original Hamiltonian.
+The correlator can be chosen to enforce a given property of the ground-state wave function that is difficult to encode in a MPS.
+In Fermi--Hubbard Hamiltonians, $e^{\mathcal{J}}$ is usually chosen to be the so-called Gutzwiller correlator \cite{Dobrautz2019_tcFCIQMC-FermiHubbard,Baiardi2020_tcDMRG}.
+By penalizing configurations in which two electrons are located on the same site, a Gutzwiller correlator enhances the description of electron-electron correlation effects.
+In molecular systems, choosing $e^{\mathcal{J}}$ to be a Jastrow factor \cite{Guther2021_Transcorrelated-Molecules,Baiardi2022_tcDMRG-Molecules} enables enhancing the wave function accuracy in the short-range limit. \\
+
+The transcorrelated Hamiltonian is not Hermitian and, therefore, its ground-state energy cannot be optimized by straightforwardly applying the variational principle.
+tcDMRG overcomes this problem by performing the optimization with the imaginary-time variant of the tangent space TD-DMRG algorithm,\cite{Haegeman2016_TangentSpace} which is equally stable when applied to Hermitian and non-Hermitian Hamiltonians. 
+In essence, imaginary-time TD-DMRG solves the following differential equation:
+
+\begin{equation}
+  \hbar \frac{\text{d} \vert \Psi_\text{MPS}(\tau) \rangle}{\text{d} \tau}
+	= \mathcal{P}_{MPS(m)} \mathcal{H} \vert \Psi_\text{MPS}(\tau) \rangle
+  \label{eq:ImaginaryTimeTD}
+\end{equation}
+%
+where $\mathcal{P}_{MPS(m)}$ is the so-called tangent-space projector, which ensures that the wave function is represented as a matrix product state with bond dimension $m$ throughout the whole propagation.
+The differential equation defined in Eq.~(\ref{eq:ImaginaryTimeTD}) can be solved with a sweep-based algorithm analogous to the conventional DMRG energy minimization.
+We define as ``tcDMRG'' the optimization of the right-eigenvalue of the transcorrelated Hamiltonian with the imaginary-time TD-DMRG.
+
+\begin{table}
+ \footnotesize
+ \caption{Expectation value calculations available in the release version of \qcm.}
+ \label{tab:transcorrelated}
+  \begin{tabular}{cV{8.5cm}}
+    \toprule
+    Keyword & Description \\
+    \midrule
+    \texttt{transcorrelated\_nsweeps\_TI}
+			& Number of sweeps for the preliminary time-independent DMRG optimization. \\
+    \rowcolor{gray!20}
+	\texttt{transcorrelated\_nsweeps\_TC} 
+			& Number of sweeps for the imaginary-time propagation. \\
+	\texttt{transcorrelated\_3body}
+			& If equal to \texttt{yes} (default value), includes the three-body part in the definition of the 
+			  transcorrelated Hamiltonian. Otherwise, it includes only the two-body part.
+			  \textbf{Note}: The three-body term has been shown to have a significant impact on the
+			  transcorrelated energy. Therefore, this keyword should be used with caution and only for
+			  testing purpose. \\
+	\rowcolor{gray!20}
+	\texttt{transcorrelated\_3body\_max\_coupling}
+		    & Maximum order of many-body coupling that is added for the three-body part of the transcorrelated
+              Hamiltonian. In practice, if this keyword is set to an integer $N$, out of all the three-body 
+			  terms of the transcorrelated Hamiltonian, only the strings of second-quantization operators 
+			  coupling up to $N$ sites in the DMRG lattice is included in the MPO definition. Therefore, $N$=6
+			  corresponds to the complete definition of the transcorrelated Hamiltonian. 
+			  \textbf{Note}: supported only for electronic-structure tcDMRG calculations. \\
+	\bottomrule
+  \end{tabular}
+\end{table}
+
+tcDMRG calculations can be run with \qcm\ through the \texttt{tcDMRG} executable, which is compiled if the \texttt{BUILD\_TRANSCORRELATED\_DMRG} CMake flag is set to \texttt{ON}.
+Note that, since tcDMRG relies on the imaginary-time time-dependent DMRG algorithm, also the \texttt{BUILD\_DMRG\_EVOLVE} CMake flag should be set to \texttt{ON}.
+Note also that tcDMRG is available only for non-spin-adapted electronic-structure calculations, \textit{i.e.} for the \texttt{TwoU1} symmetry group.
+
+We report in Table~\ref{tab:transcorrelated} the parameters that can be tuned in a tcDMRG calculation.
+\qcm\ performs tcDMRG calculations in two steps, as described in Ref.~\citenum{Baiardi2022_tcDMRG-Molecules}.
+First, a conventional DMRG calculation, based on the non-transcorrelated Hamiltonian, is performed.
+This yields the initial guess for the subsequent imaginary-time propagation, based on the transcorrelated Hamiltonian.
+The number of sweeps for the first step is defined by the \texttt{transcorrelated\_nsweeps\_TI} keyword, while the number of sweeps for the second step is defined by the \texttt{transcorrelated\_nsweeps\_TC} keyword (see Table~\ref{tab:transcorrelated} for further details).
+
+In the following, we will describe specific parameters that must be set for running tcDMRG calculations on the two-dimensional Fermi--Hubbard and on the non-relativistic electronic Hamiltonian, respectively.
+
+\subsection{tcDMRG for Fermi--Hubbard Hamiltonians}
+\label{subsec:tcDMRG-FH}
+
+\qcm\ supports tcDMRG calculations on the two-dimensional Fermi--Hubbard Hamiltonian both in real- and in momentum-space representation.\cite{Baiardi2020_tcDMRG}
+Being inherently two-dimensional systems, these Hamiltonians are particularly hard targets for DMRG due to the presence of long-range interactions.
+As discussed in Ref.~\citenum{Baiardi2020_tcDMRG}, transcorrelation can enhance the DMRG accuracy for the two-dimensional Fermi--Hubbard Hamiltonian in the momentum-space representation.
+Conversely, it does not impact the DMRG accuracy for the real-space representation. \\
+In order to run DMRG calculation on the two-dimensional Fermi--Hubbard Hamiltonians, the following keywords must be set:
+
+\begin{itemize}
+  \item \texttt{U\_FermiHubbard}: scaling factor associated with the potential energy term.
+  \item \texttt{t\_FermiHubbard}: scaling factor associated with the hopping term along both the $x$ and the $y$ directions.
+  \item \texttt{tx\_FermiHubbard}: scaling factor associated with the hopping term along the $x$ direction.
+  \item \texttt{ty\_FermiHubbard}: scaling factor associated with the hopping term along the $x$ direction.s
+  \item \texttt{width\_FermiHubbard}: width of the lattice.
+  \item \texttt{height\_FermiHubbard}: height of the lattice.
+\end{itemize}
+
+To activate tcDMRG, the \texttt{transcorrelated\_hamiltonian} keyword should be set to \texttt{yes}.
+Furthermore, the scaling factor for the Gutzwiller correlator can be defined through the \texttt{J\_Transcorrelated} keyword.
+
+\subsection{Transcorrelated electronic-structure calculations}
+\label{subsec:TC-ElectronicStructure}
+
+Following Ref.~\citenum{Baiardi2022_tcDMRG-Molecules}, the electronic-structure transcorrelated Hamiltonian reads:
+
+\begin{equation}
+ \begin{aligned}
+  \mathcal{H}_\text{TC} =& \sum_{\mu \nu} \sum_{s}^{\left\{ \alpha,\beta \right\}}
+        h_{\mu \nu} a_{\mu s}^+ a_{\nu s}
+      + \frac{1}{2} \sum_{\mu \nu \lambda \sigma} \sum_{s s'}^{\left\{ \alpha,\beta \right\}}
+        \left[ ( \mu \nu | \lambda \sigma ) - L_{\mu\nu,\lambda\sigma}^{(1)} - L_{\mu\nu,\lambda\sigma}^{(2)} \right]
+        a_{\mu s}^+ a_{\lambda s'}^+ a_{\sigma s'} a_{\nu s} \\
+    &- \frac{1}{6} \sum_{\mu \nu \lambda \sigma \kappa \tau} \sum_{s s' s''}^{\left\{ \alpha,\beta \right\}}
+       K_{\mu\nu,\lambda\sigma,\kappa\tau} 
+       a_{\mu s}^+ a_{\lambda s'}^+ a_{\kappa s''}^+ a_{\tau s''} a_{\sigma s'} a_{\nu s}
+ \end{aligned}
+ \label{eq:TC_SecondQuantization}
+\end{equation}
+%
+where $L_{\mu\nu,\lambda\sigma}^{(1)}$ and $L_{\mu\nu,\lambda\sigma}^{(2)}$ are two-body explicitly-correlated integrals, while $K_{\mu\nu,\lambda\sigma,\kappa\tau}$ are three-body transcorrelated integrals.
+Eq.~\ref{eq:TC_SecondQuantization} can be compactly rewritten as:
+
+\begin{equation}
+ \begin{aligned}
+  \mathcal{H}_\text{TC} =& \sum_{\mu \nu} \sum_{s}^{\left\{ \alpha,\beta \right\}}
+        h_{\mu \nu} a_{\mu s}^+ a_{\nu s}
+      + \frac{1}{2} \sum_{\mu \nu \lambda \sigma} \sum_{s s'}^{\left\{ \alpha,\beta \right\}}
+        \widetilde{( \mu \nu | \lambda \sigma )} a_{\mu s}^+ a_{\lambda s'}^+ a_{\sigma s'} a_{\nu s} \\
+    &- \frac{1}{6} \sum_{\mu \nu \lambda \sigma \kappa \tau} \sum_{s s' s''}^{\left\{ \alpha,\beta \right\}}
+       K_{\mu\nu,\lambda\sigma,\kappa\tau} 
+       a_{\mu s}^+ a_{\lambda s'}^+ a_{\kappa s''}^+ a_{\tau s''} a_{\sigma s'} a_{\nu s}
+ \end{aligned}
+ \label{eq:TC_SecondQuantization_2}
+\end{equation}
+
+The $h_{\mu \nu}$, $\widetilde{( \mu \nu | \lambda \sigma )}$, and $K_{\mu\nu,\lambda\sigma,\kappa\tau}$ parameters are defined in a modified \texttt{FCIDUMP} where each entry is labeled by six indices, and not by four ones, as is the case for the conventional non-relativistic Hamiltonian.
+Note that the transcorrelated Hamiltonian is non-Hermitean.
+Therefore, only the two-fold symmetry of the integral should be exploited in the definition of the transcorrelated integral file.
+The transcorrelated integral file should be defined in input via the \texttt{transcorrelated\_integral\_file} keyword.
+Note that also the non-transcorrelated integral file should be defined as well via the \texttt{integral\_file} keyword -- this will define the Hamiltonian for the first TI-DMRG calculation step.
+
 \section{\qcm{} vibrational DMRG module}
 \label{sec:vDMRG}
 
@@ -535,7 +680,7 @@ where $Q_i$ are the dimensionless Cartesian-based normal coordinates.
 The time-independent Schr\"odinger equation associated with Eq.~(\ref{eq:VibHam}) can be solved with methods based on the configuration interaction approach, similarly to their electronic-structure counterpart.
 This leads to the vibrational configuration interaction method that, however, becomes impractical for $L$ values larger than 10/20.
 The Hamiltonian defined in Eq.~(\ref{eq:VibHam}) must be encoded in a second-quantized form in order to make it possible to apply DMRG on it.
-Such a form can be obtained based on the harmonic oscillator-based canonical quantization formalism\cite{Hirata2014_NormalOrdered} described in the next section.
+Such a form can be obtained either based on the harmonic oscillator-based canonical quantization formalism\cite{Hirata2014_NormalOrdered} described in the next section.
 %Such a form can be obtained either based on the harmonic oscillator-based canonical quantization formalism\cite{Hirata2014_NormalOrdered} or on the $n$-mode second quantization introduced by Ove Christiansen.\cite{Christiansen2004_nModeQuantization}
 %These two options lead to two different vDMRG formulations, which we will describe in the following sections.
 
@@ -618,8 +763,7 @@ As the expansion reported in Eq.~\ref{eq:CanonicalQuantizationCI} is virtually u
 Such a threshold must be specified in input, as shown in Listing~\ref{lst:canonicalVibInput}.
 
 The integral file \texttt{FCIDUMP\_Vibrational} contain the force constants that define the PES through Eq.~\ref{eq:TaylorExpansion}.
-\qcm\ supports up to sixth-order force constants by default, which must be provided as input in the \texttt{FCIDUMP\_Vibrational} file as illustrated in Listing~\ref{lst:CanonicalFCIDUMP}.
-If higher-order force constants are to be included, the \texttt{DMRG\_ORDERNONE} CMake flag should be set to the corresponding integer $n$ denoting the highest force constant order and the integral files need to provide $n$ integer indices per entry accordingly.
+\qcm\ supports up to sixth-order force constants, that must be provided as input in the \texttt{FCIDUMP\_Vibrational} file as illustrated in Listing~\ref{lst:CanonicalFCIDUMP}
 \vspace{.5cm}
 \begin{lstlisting}[language=qcmaquis,caption={Example of an vDMRG integral file for the potential
 											  expressed in the canonical quantization format.},
@@ -1074,8 +1218,7 @@ First, the \texttt{BUILD\_VIBRONIC} CMake flag should be set to \texttt{ON}.
 Second, the \texttt{U1} group should be added to the list of compiled symmetries, under the \texttt{BUILD\_SYMMETRIES} keyword.
 
 In conclusion, we note that, although in principle one can run time-independent DMRG calculations for optimizing the ground-state of excitonic and vibronic Hamiltonians, these Hamiltonians are mostly applied to study non-equilibrium processes.
-They are, therefore, particularly appealing when combined with the DMRG module for quantum-dynamics simulations.
-% which will be presented below.
+They are, therefore, particularly appealing when combined with the DMRG module for quantum-dynamics simulations, which will be presented below.
 
 \section{QCMaquis pre-Born--Oppenheimer module}
 \label{sec:preBO}
@@ -1400,4 +1543,3 @@ The examples are organized in different folder, one per feature provided by \qcm
 
 \bibliography{qcmaquis_manual}
 
-\end{document}

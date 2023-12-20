@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -19,12 +19,12 @@
 #include "utils/fpcomparison.h"
 #include <boost/test/included/unit_test.hpp>
 
+#ifdef HAVE_TwoU1PG
 /**
  * @brief Validates the linear solver for electronic problems.
  * The test-case is, in this case, Benzene.
  */
 BOOST_FIXTURE_TEST_CASE(Test_LinearSolver_Electronic, BenzeneFixture) {
-#ifdef HAVE_TwoU1PG
   using SimulatorType = SweepBasedLinearSystem<cmatrix, TwoU1PG, storage::disk, SweepOptimizationType::TwoSite>;
   parametersBenzene.set("max_bond_dimension", 100);
   parametersBenzene.set("init_type", "basis_state_generic");
@@ -53,5 +53,4 @@ BOOST_FIXTURE_TEST_CASE(Test_LinearSolver_Electronic, BenzeneFixture) {
                                                                      benzeneModel.total_quantum_numbers(parametersBenzene), 100);
   BOOST_CHECK_SMALL(std::abs(error), 1.0E-10);
 }
-
-#endif // HAVE_TrivialGroup
+#endif // HAVE_TwoU1PG

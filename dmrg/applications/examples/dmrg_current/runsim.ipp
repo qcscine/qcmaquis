@@ -1,14 +1,12 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
 #include <iostream>
 #include <sstream>
-
-#include <boost/shared_ptr.hpp>
 
 #include "dmrg/block_matrix/detail/alps.hpp"
 
@@ -18,6 +16,7 @@
 
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/optimize/ss_optimize.hpp"
+#include "dmrg/utils/DmrgParameters.h"
 
 
 namespace maquis { namespace dmrg {

@@ -61,7 +61,6 @@ public:
   using term_descriptor = ::term_descriptor<value_type>;
   using tag_type = typename TagHandler<Matrix, SymmGroup>::tag_type;
   using pos_t = Lattice::pos_t;
-  using OperatorAndPosition = OperatorAndPosition<pos_t, tag_type>;
   using sc_t = typename SymmGroup::subcharge;
   using PairType = std::pair<pos_t, OperatorType>;
 
@@ -94,7 +93,7 @@ public:
     // Variables declaration
     assert(positions.size() == tags.size());
     int size = positions.size();
-    std::vector<OperatorAndPosition > localOperatorBuffer;
+    std::vector<OperatorAndPosition<pos_t, tag_type> > localOperatorBuffer;
     // Sorts and calculate the sign
     std::vector< PairType > tmpVector;
     tmpVector.reserve(size);
@@ -113,10 +112,10 @@ public:
       if (OperatorTypeUtils::isCreate(opTag)) {
         int initCycle = (OperatorTypeUtils::isAlpha(opTag)) ? pos-1 : pos;
         auto tag = (OperatorTypeUtils::isAlpha(opTag)) ? createUpOp_[lat_.get_prop<sc_t>("type", pos)] : createDownOp_[lat_.get_prop<sc_t>("type", pos)];
-        localOperatorBuffer.push_back(OperatorAndPosition(OperatorType::Normal, tag, pos));
+        localOperatorBuffer.push_back(OperatorAndPosition<pos_t, tag_type>(OperatorType::Normal, tag, pos));
         for (int iFill = initCycle; iFill >= 0; iFill--)
           if (std::find(positions.begin(), positions.end(), iFill) != positions.end())
-            localOperatorBuffer.push_back(OperatorAndPosition(OperatorType::Filling, fillOp_[lat_.get_prop<sc_t>("type", iFill)], iFill));
+            localOperatorBuffer.push_back(OperatorAndPosition<pos_t, tag_type>(OperatorType::Filling, fillOp_[lat_.get_prop<sc_t>("type", iFill)], iFill));
       }
       // -- Annihilation operators --
       else if (OperatorTypeUtils::isDestroy(opTag)) {
@@ -124,12 +123,12 @@ public:
         auto tag = (OperatorTypeUtils::isAlpha(opTag)) ? destroyUpOp_[lat_.get_prop<sc_t>("type", pos)] : destroyDownOp_[lat_.get_prop<sc_t>("type", pos)];
         for (int iFill = 0; iFill <= endCycle; iFill++)
           if (std::find(positions.begin(), positions.end(), iFill) != positions.end())
-            localOperatorBuffer.push_back(OperatorAndPosition(OperatorType::Filling, fillOp_[lat_.get_prop<sc_t>("type", iFill)], iFill));
-        localOperatorBuffer.push_back(OperatorAndPosition(OperatorType::Normal, tag, pos));
+            localOperatorBuffer.push_back(OperatorAndPosition<pos_t, tag_type>(OperatorType::Filling, fillOp_[lat_.get_prop<sc_t>("type", iFill)], iFill));
+        localOperatorBuffer.push_back(OperatorAndPosition<pos_t, tag_type>(OperatorType::Normal, tag, pos));
       }
     }
 
-    std::stable_sort(localOperatorBuffer.begin(), localOperatorBuffer.end(), [](const OperatorAndPosition& a, const OperatorAndPosition& b) {
+    std::stable_sort(localOperatorBuffer.begin(), localOperatorBuffer.end(), [](const OperatorAndPosition<pos_t, tag_type>& a, const OperatorAndPosition<pos_t, tag_type>& b) {
       return a.posType_ < b.posType_;   
     });
 

@@ -96,12 +96,12 @@ public:
         value_type U = parms["U_FermiHubbard"];
         value_type tx, ty;
         if (!parms.is_set("tx_FermiHubbard") && !parms.is_set("tx_FermiHubbard")) {
-            tx = parms["t_FermiHubbard"].template as<value_type>();
-            ty = parms["t_FermiHubbard"].template as<value_type>();
+            tx = parms["t_FermiHubbard"].as<value_type>();
+            ty = parms["t_FermiHubbard"].as<value_type>();
         }
         else if (parms.is_set("tx_FermiHubbard") && parms.is_set("tx_FermiHubbard")) {
-            tx = parms["tx_FermiHubbard"].template as<value_type>();
-            ty = parms["ty_FermiHubbard"].template as<value_type>();
+            tx = parms["tx_FermiHubbard"].as<value_type>();
+            ty = parms["ty_FermiHubbard"].as<value_type>();
         }
         else {
             throw std::runtime_error("Please set *both* tx and ty");

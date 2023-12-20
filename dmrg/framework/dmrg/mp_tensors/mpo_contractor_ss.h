@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -10,6 +10,10 @@
 
 #include "dmrg/optimize/ietl_lanczos_solver.h"
 #include "dmrg/optimize/ietl_jacobi_davidson.h"
+
+#include "dmrg/mp_tensors/mps.h"
+#include "dmrg/mp_tensors/mpo.h"
+#include "dmrg/utils/BaseParameters.h"
 
 #ifdef HAVE_ARPACK
 #include "dmrg/optimize/arpackpp_solver.h"
@@ -31,7 +35,7 @@ then = std::chrono::high_resolution_clock::now(); \
 template<class Matrix, class SymmGroup, class Storage>
 class mpo_contractor_ss
 {
-    typedef contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> contr;
+    using contr = contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>;
 
 public:
     mpo_contractor_ss(MPS<Matrix, SymmGroup> const & mps_,

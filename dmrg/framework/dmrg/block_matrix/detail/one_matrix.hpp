@@ -1,12 +1,17 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
 #ifndef MAQUIS_ONE_MATRIX_HPP
 #define MAQUIS_ONE_MATRIX_HPP
+
+#include <cassert>
+#include <cstddef>
+#include <ostream>
+#include <utility>
 
 namespace maquis {
     namespace dmrg {
@@ -15,14 +20,14 @@ namespace maquis {
     template <typename T>
     class one_matrix {
     public:
-        typedef T                       value_type;
-        typedef T&                      reference;
-        typedef T const&                const_reference;
-        typedef std::size_t             size_type;
-        typedef std::ptrdiff_t          difference_type;  
+        using value_type = T;
+        using reference = T &;
+        using const_reference = const T &;
+        using size_type = std::size_t;
+        using difference_type = std::ptrdiff_t;  
         // TODO: Introduce iterator classes that support *, !=, ++, ...
-        typedef reference               element_iterator;
-        typedef const_reference         const_element_iterator;
+        using element_iterator = reference;
+        using const_element_iterator = const_reference;
 
         explicit one_matrix(size_type rows = 1, size_type cols = 1, T init_value = T()) {
             assert(cols==1 && rows==1);

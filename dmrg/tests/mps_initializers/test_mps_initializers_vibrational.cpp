@@ -8,6 +8,10 @@
 #define BOOST_TEST_MODULE MPS_INITIALIZER_VIBRATIONAL
 
 #ifdef DMRG_VIBRATIONAL
+
+#include <iostream>
+#include <tuple>
+#include <boost/test/included/unit_test.hpp>
 #include "Fixtures/NModeFixture.h"
 #include "Fixtures/WatsonFixture.h"
 #endif
@@ -49,18 +53,18 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_Helper_NU1, NModeFixture)
                                                                                          siteTypes, latticeSize);
   for (int iSite = 0; iSite < outputVector.size(); iSite++) {
     if (iSite == 1) {
-      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite][0])[0], 1);
-      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite][0])[1], 0);
+      BOOST_CHECK_EQUAL(std::get<0>(outputVector[iSite][0])[0], 1);
+      BOOST_CHECK_EQUAL(std::get<0>(outputVector[iSite][0])[1], 0);
     }
     else if (iSite == 13) {
-      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite][0])[0], 0);
-      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite][0])[1], 1);
+      BOOST_CHECK_EQUAL(std::get<0>(outputVector[iSite][0])[0], 0);
+      BOOST_CHECK_EQUAL(std::get<0>(outputVector[iSite][0])[1], 1);
     }
     else {
-      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite][0])[0], 0);
-      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite][0])[1], 0);
+      BOOST_CHECK_EQUAL(std::get<0>(outputVector[iSite][0])[0], 0);
+      BOOST_CHECK_EQUAL(std::get<0>(outputVector[iSite][0])[1], 0);
     }
-    BOOST_CHECK_EQUAL(boost::get<1>(outputVector[iSite][0]), 0);
+    BOOST_CHECK_EQUAL(std::get<1>(outputVector[iSite][0]), 0);
   }
 #endif
 }
@@ -216,3 +220,4 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_Coherent_ExitonicExtended, 
 }
 
 #endif // DMRG_VIBRONIC
+

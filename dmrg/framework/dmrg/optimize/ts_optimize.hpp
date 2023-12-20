@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -13,16 +13,15 @@
 #include "dmrg/mp_tensors/twositetensor.h"
 #include "dmrg/mp_tensors/mpo_ops.h"
 
-#include <boost/tuple/tuple.hpp>
-
+#include "dmrg/models/lattice/lattice.h"
 
 template<class Matrix, class SymmGroup, class Storage>
 class ts_optimize : public optimizer_base<Matrix, SymmGroup, Storage>
 {
 public:
-    typedef typename Matrix::value_type value_type;
+    using value_type = typename Matrix::value_type;
 
-    typedef optimizer_base<Matrix, SymmGroup, Storage> base;
+    using base = optimizer_base<Matrix, SymmGroup, Storage>;
     using base::mpo;
     using base::mps;
     using base::left_;
@@ -34,11 +33,11 @@ public:
     ts_optimize(MPS<Matrix, SymmGroup> & mps_,
                 MPO<Matrix, SymmGroup> const & mpo_,
                 BaseParameters & parms_,
-                boost::function<bool ()> stop_callback_,
+                std::function<bool ()> stop_callback_,
                 const Lattice& lat,
                 int initial_site_ = 0)
-    : base(mps_, mpo_, parms_, stop_callback_, to_site(mps_.length(), initial_site_)), lat_(lat)
-    , initial_site((initial_site_ < 0) ? 0 : initial_site_)
+    : base(mps_, mpo_, parms_, stop_callback_, to_site(mps_.length(), initial_site_)),
+      initial_site((initial_site_ < 0) ? 0 : initial_site_), lat_(lat)
     {
         parallel::guard::serial guard;
         make_ts_cache_mpo(mpo, ts_cache_mpo, mps);
@@ -46,7 +45,7 @@ public:
 
     inline int to_site(const int L, const int i) const
     {
-        if (i < 0) return 0;
+        if (i < 0) { return 0; }
         /// i, or (L-1) - (i - (L-1))
         return (i < L-1) ? i : 2*L - 2 - i;
     }
@@ -183,8 +182,8 @@ public:
             if (!parms.is_set("PreBO_MaxBondDimVector"))
                 Mmax = this->get_Mmax(sweep);
             else {
-                auto m1 = lat_.template get_prop<size_t>("Mmax", {lat_.template get_prop<int>("type", {site1}) });
-                auto m2 = lat_.template get_prop<size_t>("Mmax", {lat_.template get_prop<int>("type", {site2}) });
+                auto m1 = lat_.template get_prop<size_t>("Mmax", lat_.template get_prop<int>("type", site1) );
+                auto m2 = lat_.template get_prop<size_t>("Mmax", lat_.template get_prop<int>("type", site2) );
                 Mmax = (m1>m2) ? m1 : m2;
                 std::cout << "Mmax is set to " << Mmax << std::endl;
             }
@@ -195,9 +194,9 @@ public:
                 // Write back result from optimization
                 BEGIN_TIMING("TRUNC")
                 if (parms["twosite_truncation"] == "svd")
-                    boost::tie(mps[site1], mps[site2], trunc) = tst.split_mps_l2r(Mmax, cutoff);
+                    std::tie(mps[site1], mps[site2], trunc) = tst.split_mps_l2r(Mmax, cutoff);
                 else
-                    boost::tie(mps[site1], mps[site2], trunc) = tst.predict_split_l2r(Mmax, cutoff, alpha, left_[site1], mpo[site1], true);
+                    std::tie(mps[site1], mps[site2], trunc) = tst.predict_split_l2r(Mmax, cutoff, alpha, left_[site1], mpo[site1], true);
                 END_TIMING("TRUNC")
                 tst.clear();
 
@@ -228,9 +227,9 @@ public:
                 // Write back result from optimization
                 BEGIN_TIMING("TRUNC")
                 if (parms["twosite_truncation"] == "svd")
-                    boost::tie(mps[site1], mps[site2], trunc) = tst.split_mps_r2l(Mmax, cutoff);
+                    std::tie(mps[site1], mps[site2], trunc) = tst.split_mps_r2l(Mmax, cutoff);
                 else
-                    boost::tie(mps[site1], mps[site2], trunc) = tst.predict_split_r2l(Mmax, cutoff, alpha, right_[site2+1], mpo[site2], true);
+                    std::tie(mps[site1], mps[site2], trunc) = tst.predict_split_r2l(Mmax, cutoff, alpha, right_[site2+1], mpo[site2], true);
                 END_TIMING("TRUNC")
                 tst.clear();
 

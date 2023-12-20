@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(symmetry_u1_fuse_test){
   value_type q2(2); 
   value_type qres; 
 
-  boost::array<value_type,3> array = { { q0,q1,q2 } };
+  std::array<value_type,3> array = { { q0,q1,q2 } };
 
   qres = U1::fuse<3>(array);
 

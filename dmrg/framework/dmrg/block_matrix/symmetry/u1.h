@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -21,8 +21,8 @@ class U1
 {
 public:
 
-  typedef int charge;
-  typedef int subcharge;
+  using charge = int;
+  using subcharge = int;
 
   static const charge IdentityCharge = 0;
   static const bool finite = false;
@@ -30,7 +30,7 @@ public:
   static charge fuse(charge a, charge b) { return a + b; }
   static charge particleNumber(charge a) { return a; }
 
-  template<int R> static charge fuse(const boost::array<charge, R> &v)
+  template<int R> static charge fuse(const std::array<charge, R> &v)
   {
     charge ret = 0;
     for (int i = 0; i < R; i++)

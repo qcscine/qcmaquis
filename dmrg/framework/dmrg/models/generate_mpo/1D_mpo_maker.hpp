@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -27,15 +27,17 @@ namespace generate_mpo
     {
         // input: list of positions and operators
         // output: list of (position, operator)-pairs, sorted, unique positions with operators multiplied
-        typedef Lattice::pos_t pos_t;
-        typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
-        typedef std::pair<std::vector<op_t>, bool> site_ops_t;
-        typedef std::pair<pos_t, site_ops_t> pos_op_t;
+        using pos_t = Lattice::pos_t;
+        using op_t = typename OPTable<Matrix, SymmGroup>::op_t;
+        using site_ops_t = std::pair<std::vector<op_t>, bool>;
+        using pos_op_t = std::pair<pos_t, site_ops_t>;
 
         std::vector<pos_op_t> pos_ops;
         // arrange position / operators in pairs
-        std::transform(positions.begin(), positions.end()-1, operators.begin(), std::back_inserter(pos_ops),
-        std::make_pair<pos_t const&, site_ops_t const&>);
+        std::transform(
+            positions.begin(), positions.end()-1,
+            operators.begin(), std::back_inserter(pos_ops),
+            std::make_pair<pos_t const&, site_ops_t const&>);
                        // boost::bind(static_cast<pos_op_t(*)(pos_t const&, site_ops_t const&)>
                        // (std::make_pair<pos_t, site_ops_t>), boost::lambda::_1, boost::lambda::_2));
 
@@ -78,13 +80,13 @@ namespace generate_mpo
 
         assert(positions.size() == operators.size());
 
-        typedef Lattice::pos_t pos_t;
-        typedef typename Matrix::value_type value_type;
-        typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
+        using pos_t = Lattice::pos_t;
+        using value_type = typename Matrix::value_type;
+        using tag_type = typename OPTable<Matrix, SymmGroup>::tag_type;
 
-        typedef term_descriptor<value_type> term_descriptor;
+        using term_descriptor = term_descriptor<value_type>;
 
-        typedef std::pair<pos_t, tag_type> pos_op_t;
+        using pos_op_t = std::pair<pos_t, tag_type>;
         std::vector<pos_op_t> pos_ops;
 
         // determine the phase
@@ -116,7 +118,7 @@ namespace generate_mpo
             // while the next operator is still on the same site
             while (range_end < pos_ops.size() && pos_ops[range_end].first == pos_ops[opnr].first) {
                 value_type scale = 1.;
-                boost::tie(product, scale) = tag_handler->get_product_tag(pos_ops[range_end].second, product);
+                std::tie(product, scale) = tag_handler->get_product_tag(pos_ops[range_end].second, product);
                 term.coeff *= scale;
                 range_end++;
             }
@@ -147,10 +149,10 @@ namespace generate_mpo
     {
         // after arrange operators, expand term to the full site-list
 
-        typedef typename SymmGroup::subcharge sc;
-        typedef Lattice::pos_t pos_t;
-        typedef term_descriptor<typename Matrix::value_type> term_descriptor;
-        typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
+        using sc = typename SymmGroup::subcharge;
+        using pos_t = Lattice::pos_t;
+        using term_descriptor = term_descriptor<typename Matrix::value_type>;
+        using tag_type = typename OPTable<Matrix, SymmGroup>::tag_type;
 
         MPO<Matrix, SymmGroup> ret(lat.size());
 
@@ -171,26 +173,26 @@ namespace generate_mpo
                 if (tag_handler->is_fermionic(product) != carry_sign)
                 {
                     typename Matrix::value_type scale;
-                    boost::tie(product, scale) = tag_handler->get_product_tag(fill[lat.get_prop<sc>("type", p)], product);
+                    std::tie(product, scale) = tag_handler->get_product_tag(fill[lat.get_prop<sc>("type", p)], product);
                     term.coeff *= scale;
                 }
 
                 // update the phase
                 if (tag_handler->is_fermionic(product)) carry_sign = !carry_sign;
 
-                prempo.push_back(boost::make_tuple(0,0, product, 1.));
+                prempo.push_back(std::make_tuple(0,0, product, 1.));
                 ret[p] = MPOTensor<Matrix, SymmGroup>(1, 1, prempo, tag_handler->get_operator_table());
             }
 
             else if (carry_sign) // if no
             {
-                prempo.push_back(boost::make_tuple(0,0, fill[lat.get_prop<sc>("type", p)], 1.));
+                prempo.push_back(std::make_tuple(0,0, fill[lat.get_prop<sc>("type", p)], 1.));
                 ret[p] = MPOTensor<Matrix, SymmGroup>(1, 1, prempo, tag_handler->get_operator_table());
             }
 
             else
             {
-                prempo.push_back(boost::make_tuple(0,0, ident[lat.get_prop<sc>("type", p)], 1.));
+                prempo.push_back(std::make_tuple(0,0, ident[lat.get_prop<sc>("type", p)], 1.));
                 ret[p] = MPOTensor<Matrix, SymmGroup>(1, 1, prempo, tag_handler->get_operator_table());
             }
 
@@ -232,7 +234,6 @@ namespace generate_mpo
       tag_type opDestroy = model.get_operator_tag(name, lat.template get_prop<typename SymmGroup::subcharge>("type", pos[0]));
       tag_type ops_[1] = {opDestroy};
       std::vector<tag_type> ops(ops_, ops_+1);
-      term_descriptor<typename Matrix::value_type> term = generate_mpo::arrange_operators(pos, ops, model.operators_table());
       std::vector<tag_type> identities, fillings;
       for (int iType = 0; iType < lat.getMaxType(); iType++) {
         identities.push_back(model.identity_matrix_tag(iType));

@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -15,7 +15,7 @@ namespace measurements {
 
     template <class Matrix, class SymmGroup>
     class entropies : public measurement<Matrix, SymmGroup> {
-        typedef  measurement<Matrix, SymmGroup> base;
+        using base = measurement<Matrix, SymmGroup>;
     public:
         entropies()
         : base("Entropy")
@@ -37,7 +37,7 @@ namespace measurements {
     
     template <class Matrix, class SymmGroup>
     class renyi_entropies : public measurement<Matrix, SymmGroup> {
-        typedef  measurement<Matrix, SymmGroup> base;
+        using base = measurement<Matrix, SymmGroup>;
     public:
         renyi_entropies()
         : base("Renyi2")

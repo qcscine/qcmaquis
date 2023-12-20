@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -80,7 +80,7 @@ parseIntegralVibronic(BaseParameters& parms, const Lattice& lat)
     int L_lattice = lat.size();
     // == Parses orbital data ==
     std::string integral_file = parms["integral_file"];
-    if (!boost::filesystem::exists(integral_file))
+    if (!std::filesystem::exists(integral_file))
         throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
     std::ifstream orb_file;
     orb_file.open(integral_file.c_str());
@@ -143,7 +143,7 @@ inline std::pair<std::vector<chem::index_type<chem::Hamiltonian::Excitonic>>, st
     std::vector<T> matrix_elements;
     std::vector<chem::index_type<chem::Hamiltonian::Excitonic>> indices;
     std::string integral_file = parms["integral_file"];
-    if (!boost::filesystem::exists(integral_file))
+    if (!std::filesystem::exists(integral_file))
         throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
     //
     std::ifstream orb_file;
@@ -157,7 +157,7 @@ inline std::pair<std::vector<chem::index_type<chem::Hamiltonian::Excitonic>>, st
         chem::integral_tuple<T, chem::Hamiltonian::Excitonic> t;
         t.second = *it;
         it++;
-        std::transform(it, it+2, std::back_inserter(tmp), boost::lambda::_1) ;
+        std::copy(it, it+2, std::back_inserter(tmp)) ;
         t.first[0] = tmp[0];
         t.first[1] = tmp[1];
         it += 2;

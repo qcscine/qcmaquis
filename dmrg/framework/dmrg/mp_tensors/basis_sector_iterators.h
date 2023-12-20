@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -11,27 +11,24 @@
 #include "dmrg/block_matrix/indexing.h"
 
 #include <boost/operators.hpp>
-#include <boost/tuple/tuple.hpp>
-#include <boost/tuple/tuple_comparison.hpp>
-
 
 template <class SymmGroup>
 class basis_sector_iterator_
 : public boost::forward_iterator_helper<
                                           basis_sector_iterator_<SymmGroup>
-                                        , std::vector<boost::tuple<typename SymmGroup::charge, std::size_t> >
+                                        , std::vector<std::tuple<typename SymmGroup::charge, std::size_t> >
                                         , std::ptrdiff_t
-                                        , std::vector<boost::tuple<typename SymmGroup::charge, std::size_t> > *
-                                        , std::vector<boost::tuple<typename SymmGroup::charge, std::size_t> > &
+                                        , std::vector<std::tuple<typename SymmGroup::charge, std::size_t> > *
+                                        , std::vector<std::tuple<typename SymmGroup::charge, std::size_t> > &
                                        >
 
 {
-    typedef typename SymmGroup::charge charge;
-    typedef std::size_t size_t;
-    typedef boost::tuple<charge, size_t> local_state;
-    typedef typename std::vector<local_state>::const_iterator states_iterator;
+    using charge = typename SymmGroup::charge;
+    using size_t = std::size_t;
+    using local_state = std::tuple<charge, size_t>;
+    using states_iterator = typename std::vector<local_state>::const_iterator;
 
-    typedef const charge& (*get0_fn_t)(const boost::tuples::cons<charge, boost::tuples::cons<size_t, boost::tuples::null_type> >&);
+    using get0_fn_t = const charge &(*)(const boost::tuples::cons<charge, boost::tuples::cons<size_t, boost::tuples::null_type>> &);
 
 public:
     basis_sector_iterator_()
@@ -45,7 +42,7 @@ public:
     , it(L, 0)
     , state(L)
     {
-        getter_fn = &boost::tuples::get<0, charge, boost::tuples::cons<size_t, boost::tuples::null_type> >;
+        getter_fn = &std::get<0, charge, boost::tuples::cons<size_t, boost::tuples::null_type> >;
     
         for (size_t i=0; i<phys.size(); ++i)
             for (size_t j=0; j<phys[i].second; ++j)
@@ -84,7 +81,9 @@ private:
     charge total_charge() const
     {
         return std::accumulate(state.begin(), state.end(), SymmGroup::IdentityCharge,
-                               boost::bind(static_cast<charge(*)(charge,charge)>(&SymmGroup::fuse), _1,  boost::bind(getter_fn, _2)) );
+            [&](const charge& acc, const local_state& x){
+                return SymmGroup::fuse(acc, getter_fn(x));
+            });
     }
     
     void advance()

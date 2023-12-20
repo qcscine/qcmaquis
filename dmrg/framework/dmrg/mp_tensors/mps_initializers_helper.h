@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -12,7 +12,8 @@
 #include "dmrg/block_matrix/symmetry.h"
 #include "dmrg/utils/BaseParameters.h"
 
-#include <boost/tuple/tuple.hpp>
+
+#include <tuple>
 
 namespace InitializerHelperFunctions {
 
@@ -25,7 +26,7 @@ auto GenerateIndexFromStringNMode(BaseParameters& params, const std::vector<int>
   using NU1 = NU1_template<N>;
   using indexType = Index<NU1>;
   using ChargeType = typename NU1::charge;
-  using stateEntryType = std::vector<boost::tuple<ChargeType, int> >;
+  using stateEntryType = std::vector<std::tuple<ChargeType, int> >;
   using stateType = std::vector<stateEntryType>;
   // Main function body
   auto state = stateType(size, stateEntryType(1));
@@ -48,8 +49,8 @@ auto GenerateIndexFromStringNMode(BaseParameters& params, const std::vector<int>
     auto positionOfSiteInNewLattice = inverseModalsOrder[iLattice];
     auto type = siteType[positionOfSiteInNewLattice];
     if (params["init_type"] == "basis_state_generic_const" || params["init_type"] == "basis_state_generic_default") {
-      boost::tuple<ChargeType, bool> truePair = boost::make_tuple(boost::get<0>(physDim[type].element(0)), 1);
-      boost::tuple<ChargeType, bool> falsePair = boost::make_tuple(boost::get<0>(physDim[type].element(0)), 0);
+      std::tuple<ChargeType, bool> truePair = std::make_tuple(std::get<0>(physDim[type].element(0)), 1);
+      std::tuple<ChargeType, bool> falsePair = std::make_tuple(std::get<0>(physDim[type].element(0)), 0);
       state[positionOfSiteInNewLattice][0] = (counterOfTypes[type] <= inputVec[type]) ? truePair : falsePair;
     }
     else {
@@ -83,7 +84,7 @@ class HelperClassBasisVectorConverter {
 public:
   using ChargeType = typename SymmGroup::charge;
   using indexType = Index<SymmGroup>;
-  using stateType = std::vector<std::vector<boost::tuple<ChargeType, int> > >;
+  using stateType = std::vector<std::vector<std::tuple<ChargeType, int> > >;
   static stateType GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
                                             const std::vector<int>& siteType, int size)
   {
@@ -97,7 +98,7 @@ class HelperClassBasisVectorConverter<TrivialGroup> {
 public:
   // Types definition
   using indexType = Index<TrivialGroup>;
-  using stateEntryType = std::vector<boost::tuple<typename TrivialGroup::charge, int> >;
+  using stateEntryType = std::vector<std::tuple<typename TrivialGroup::charge, int> >;
   using stateType = std::vector<stateEntryType>;
   // General implementation
   static stateType GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
@@ -118,7 +119,7 @@ class HelperClassBasisVectorConverter<U1> {
 public:
   // Types definition
   using indexType = Index<U1>;
-  using stateEntryType = std::vector<boost::tuple<typename U1::charge, int> >;
+  using stateEntryType = std::vector<std::tuple<typename U1::charge, int> >;
   using stateType = std::vector<stateEntryType>;
   // General implementation
   static stateType GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
@@ -145,7 +146,7 @@ class HelperClassBasisVectorConverter<TwoU1PG> {
 public:
   // Types definition
   using indexType = Index<TwoU1PG>;
-  using stateEntryType = std::vector<boost::tuple<typename TwoU1PG::charge, int> >;
+  using stateEntryType = std::vector<std::tuple<typename TwoU1PG::charge, int> >;
   using stateType = std::vector<stateEntryType>;
   // General implementation
   static stateType GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
@@ -185,7 +186,7 @@ class HelperClassBasisVectorConverter<SU2U1PG> {
 public:
   // Types definition
   using indexType = Index<SU2U1PG>;
-  using stateEntryType = std::vector<boost::tuple<typename SU2U1PG::charge, int> >;
+  using stateEntryType = std::vector<std::tuple<typename SU2U1PG::charge, int> >;
   using stateType = std::vector<stateEntryType>;
   // General implementation
   static stateType GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
@@ -230,7 +231,7 @@ class HelperClassBasisVectorConverter<SU2U1> {
 public:
   // Types definition
   using indexType = Index<SU2U1>;
-  using stateEntryType = std::vector<boost::tuple<typename SU2U1::charge, int> >;
+  using stateEntryType = std::vector<std::tuple<typename SU2U1::charge, int> >;
   using stateType = std::vector<stateEntryType>;
   // General implementation
   static stateType GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
@@ -286,7 +287,7 @@ public:
   using NU1 = NU1_template<N>;
   using indexType = Index<NU1>;
   using ChargeType = typename NU1::charge;
-  using stateEntryType = std::vector<boost::tuple<ChargeType, int> >;
+  using stateEntryType = std::vector<std::tuple<ChargeType, int> >;
   using stateType = std::vector<stateEntryType>;
 
   /** @brief Parser for the NU1 symmetry group
@@ -308,7 +309,7 @@ class HelperClassBasisVectorConverter<TwoU1> {
 public:
   // Types definition
   using indexType = Index<TwoU1>;
-  using stateEntryType = std::vector<boost::tuple<typename TwoU1::charge, int> >;
+  using stateEntryType = std::vector<std::tuple<typename TwoU1::charge, int> >;
   using stateType = std::vector<stateEntryType>;
   using ChargeType = typename TwoU1::charge;
   // General implementation

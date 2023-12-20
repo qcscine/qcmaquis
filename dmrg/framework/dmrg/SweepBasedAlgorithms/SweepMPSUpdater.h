@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -44,11 +44,10 @@ public:
   /** @brief Class constructor */
   SweepMPSUpdater(const MPOType& mpo, MPSType& mps, std::shared_ptr<BoundaryPropagatorType> boundaryPropagator,
                   BaseParameters& parms, bool verbose)
-    : mpo_(mpo), mps_(mps), boundaryPropagator_(boundaryPropagator), parms_(parms), verbose_(verbose),
+    : boundaryPropagator_(boundaryPropagator), mpo_(mpo), mps_(mps),
+      parms_(parms), L_(mps_.size()), verbose_(verbose),
       loadedUnitaryFactor_(false)
-  {
-    L_ = mps_.size();
-  }
+  {}
 
   /** @brief Method to perform the truncated SVD the MPS for a given site */
   auto generateUnitaryFactor(int siteLeft, int siteRight, GrowBoundaryModality boundaryModality, const MPSTensorType& inputMPS,
@@ -66,9 +65,11 @@ public:
                                                 boundaryPropagator_->getRightBoundary(siteRight), siteLeft, alpha,
                                                 cutoff, mMax, true, verbose_);
         */
-        boost::tie(unitaryFactor, truncationOutput) = Contractor::predict_new_state_l2r_sweep(mps_[siteLeft], mpo_[siteLeft], boundaryPropagator_->getLeftBoundary(siteLeft),
-                                                                                              boundaryPropagator_->getRightBoundary(siteRight), alpha, cutoff, mMax,
-                                                                                              perturbDM, verbose_);
+        std::tie(unitaryFactor, truncationOutput) = Contractor::predict_new_state_l2r_sweep(
+            mps_[siteLeft], mpo_[siteLeft],
+            boundaryPropagator_->getLeftBoundary(siteLeft),
+            boundaryPropagator_->getRightBoundary(siteRight),
+            alpha, cutoff, mMax, perturbDM, verbose_);
         zeroSiteTensor_ = Contractor::getZeroSiteTensorL2R(mps_[siteLeft+1], mps_[siteLeft], unitaryFactor);
         mps_[siteLeft] = unitaryFactor;
       }
@@ -84,9 +85,11 @@ public:
                                                  boundaryPropagator_->getRightBoundary(siteRight), siteLeft, alpha,
                                                  cutoff, mMax, true, verbose_);
         */
-        boost::tie(unitaryFactor, truncationOutput) = Contractor::predict_new_state_r2l_sweep(mps_[siteLeft], mpo_[siteLeft], boundaryPropagator_->getLeftBoundary(siteLeft),
-                                                                                              boundaryPropagator_->getRightBoundary(siteRight), alpha, cutoff, mMax,
-                                                                                              perturbDM, verbose_);
+        std::tie(unitaryFactor, truncationOutput) = Contractor::predict_new_state_r2l_sweep(
+            mps_[siteLeft], mpo_[siteLeft],
+            boundaryPropagator_->getLeftBoundary(siteLeft),
+            boundaryPropagator_->getRightBoundary(siteRight),
+            alpha, cutoff, mMax, perturbDM, verbose_);
         zeroSiteTensor_ = Contractor::getZeroSiteTensorR2L(mps_[siteLeft-1], mps_[siteLeft], unitaryFactor);
         mps_[siteLeft] = unitaryFactor;
       }
@@ -170,10 +173,10 @@ public:
   /** @brief Class constructor */
   SweepMPSUpdater(const MPOType& mpo, MPSType& mps, std::shared_ptr<BoundaryPropagatorType> boundaryPropagator,
                   BaseParameters& parms, bool verbose)
-    : mpo_(mpo), mps_(mps), boundaryPropagator_(boundaryPropagator), parms_(parms), verbose_(verbose),
+    : boundaryPropagator_(boundaryPropagator), mpo_(mpo), mps_(mps), parms_(parms), L_(mps_.size()), verbose_(verbose),
       loadedUnitaryFactor_(false)
   {
-    L_ = mps_.size();
+    
   }
 
   /** @brief Method to perform the truncated SVD the MPS for a given site */
@@ -189,18 +192,26 @@ public:
     // Actual truncation
     if (boundaryModality == GrowBoundaryModality::LeftToRight) {
       // Write back result from optimization
-      if (parms_["twosite_truncation"] == "svd")
-        boost::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.split_mps_l2r(mMax, cutoff);
-      else
-        boost::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.predict_split_l2r(mMax, cutoff, alpha, boundaryPropagator_->getLeftBoundary(siteLeft),
-                                                                                               mpo_[siteLeft], perturbDM);
+      if (parms_["twosite_truncation"] == "svd") {
+        std::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.split_mps_l2r(mMax, cutoff, verbose_);
+      }
+      else {
+        std::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.predict_split_l2r(
+            mMax, cutoff, alpha,
+            boundaryPropagator_->getLeftBoundary(siteLeft),
+            mpo_[siteLeft], perturbDM);
+      }
     }
     else if (boundaryModality == GrowBoundaryModality::RightToLeft) {
-      if (parms_["twosite_truncation"] == "svd")
-        boost::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.split_mps_r2l(mMax, cutoff);
-      else
-        boost::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.predict_split_r2l(mMax, cutoff, alpha, boundaryPropagator_->getRightBoundary(siteRight),
-                                                                                               mpo_[siteLeft+1], perturbDM);
+      if (parms_["twosite_truncation"] == "svd") {
+        std::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.split_mps_r2l(mMax, cutoff, verbose_);
+      }
+      else {
+        std::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.predict_split_r2l(
+            mMax, cutoff, alpha,
+            boundaryPropagator_->getRightBoundary(siteRight),
+            mpo_[siteLeft+1], perturbDM);
+      }
     }
     loadedUnitaryFactor_= true;
     return truncationOutput;

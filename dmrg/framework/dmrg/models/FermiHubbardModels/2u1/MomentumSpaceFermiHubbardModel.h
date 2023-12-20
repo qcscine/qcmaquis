@@ -156,7 +156,7 @@ public:
             }
         }
         else {
-            order = parms["orbital_order"].template as<std::vector<int> >();
+            order = parms["orbital_order"].as<std::vector<int> >();
             for (pos_t p = 0; p < width*height; ++p) {
                 auto it = std::find(order.begin(), order.end(), p);
                 if (it != order.end())
@@ -589,4 +589,4 @@ private:
     std::vector<int> order, reverseOrder;
 };
 
-#endif // MOMENTUMSPACE_FERMIHUBBARD_MODEL
+#endif

@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -25,14 +25,14 @@ namespace generate_mpo
     template<class Matrix, class SymmGroup>
     class CorrMakerBase {
     public:
-        virtual ~CorrMakerBase() {}
+        virtual ~CorrMakerBase() = default;
         virtual MPO<Matrix, SymmGroup> create_mpo()=0;
         virtual std::string description () const=0;
         virtual vector<vector<Lattice::pos_t> > const& numeric_labels()=0;
 
     protected:
-        typedef tag_detail::tag_type tag_type;
-        typedef boost::tuple<size_t, size_t, tag_type, typename Matrix::value_type> block;
+        using tag_type = tag_detail::tag_type;
+        using block = std::tuple<size_t, size_t, tag_type, typename Matrix::value_type>;
 
         MPOTensor<Matrix, SymmGroup> as_bulk(vector<block> const & ops, std::shared_ptr<OPTable<Matrix, SymmGroup> > tbl)
         {
@@ -52,12 +52,12 @@ namespace generate_mpo
     template<class Matrix, class SymmGroup>
     class CorrMaker : public CorrMakerBase<Matrix, SymmGroup>
     {
-        typedef CorrMakerBase<Matrix, SymmGroup> base;
-        typedef typename base::block block;
-        typedef Lattice::pos_t pos_t;
-        typedef tag_detail::tag_type tag_type;
-        typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
-        typedef boost::tuple<size_t, size_t, string> tag;
+        using base = CorrMakerBase<Matrix, SymmGroup>;
+        using block = typename base::block;
+        using pos_t = Lattice::pos_t;
+        using tag_type = tag_detail::tag_type;
+        using op_t = typename OPTable<Matrix, SymmGroup>::op_t;
+        using tag = std::tuple<size_t, size_t, string>;
 
     public:
         CorrMaker(Lattice const& lat_,
@@ -109,8 +109,9 @@ namespace generate_mpo
         	for (pos_t p = 0; p < prempo.size(); ++p)
             {
                 ss << "Site: " << p << std::endl;
-                for (typename vector<tag>::const_iterator it = tags[p].begin(); it != tags[p].end(); ++it)
-                    ss << "    " << get<0>(*it) << " " << get<1>(*it) << " " << get<2>(*it) << std::endl;
+                for (const auto& it : tags[p]) {
+                    ss << "    " << get<0>(it) << " " << get<1>(it) << " " << get<2>(it) << std::endl;
+                }
             }
         	return ss.str();
         }
@@ -144,11 +145,11 @@ namespace generate_mpo
 				lab = "nontriv";
             	if (!with_sign[p][u1] && op_p.second) {
 					//gemm(fill, op_p.first, op);
-					boost::tie(op, scale) = tag_handler.get_product_tag(fillings[lat.get_prop<int>("type", p)], op_p.first[lat.get_prop<int>("type", p)]);
+					std::tie(op, scale) = tag_handler.get_product_tag(fillings[lat.get_prop<int>("type", p)], op_p.first[lat.get_prop<int>("type", p)]);
 					lab += "*fill";
 				} else if (with_sign[p][u1] && !op_p.second) {
 					//gemm(fill, op_p.first, op);
-					boost::tie(op, scale) = tag_handler.get_product_tag(fillings[lat.get_prop<int>("type", p)], op_p.first[lat.get_prop<int>("type", p)]);
+					std::tie(op, scale) = tag_handler.get_product_tag(fillings[lat.get_prop<int>("type", p)], op_p.first[lat.get_prop<int>("type", p)]);
 					lab += "*fill";
 				} else {
 					op = op_p.first[lat.get_prop<int>("type", p)];
@@ -158,15 +159,15 @@ namespace generate_mpo
 
         	size_t u2 = 0;
             while (used[p].count(u2) > 0) ++u2;
-            prempo[p].push_back( boost::make_tuple(u1, u2, op, scale) );
+            prempo[p].push_back( std::make_tuple(u1, u2, op, scale) );
             used[p].insert(u2);
            	with_sign[p+1][u2] = (op_p.second) ? !with_sign[p][u1] : with_sign[p][u1];
             //            maquis::cout << "Adding a " << lab << " term at " << p << ", " << u1 << " -> " << u2 << std::endl;
             //            maquis::cout << op;
             if (trivial)
-                tags[p].push_back( boost::make_tuple(u1, u2, lab) );
+                tags[p].push_back( std::make_tuple(u1, u2, lab) );
             else
-                tags[p].push_back( boost::make_tuple(u1, u2, lab) );
+                tags[p].push_back( std::make_tuple(u1, u2, lab) );
             return u2;
         }
 
@@ -209,12 +210,12 @@ namespace generate_mpo
     template<class Matrix, class SymmGroup>
     class CorrMakerNN : public CorrMakerBase<Matrix, SymmGroup>
     {
-        typedef CorrMakerBase<Matrix, SymmGroup> base;
-        typedef typename base::block block;
-        typedef tag_detail::tag_type tag_type;
-        typedef Lattice::pos_t pos_t;
-        typedef typename OPTable<Matrix,SymmGroup>::op_t op_t;
-        typedef boost::tuple<size_t, size_t, string> tag;
+        using base = CorrMakerBase<Matrix, SymmGroup>;
+        using block = typename base::block;
+        using tag_type = tag_detail::tag_type;
+        using pos_t = Lattice::pos_t;
+        using op_t = typename OPTable<Matrix, SymmGroup>::op_t;
+        using tag = std::tuple<size_t, size_t, string>;
 
     public:
         CorrMakerNN(Lattice const& lat_,
@@ -270,8 +271,9 @@ namespace generate_mpo
         	for (pos_t p = 0; p < prempo.size(); ++p)
             {
                 ss << "Site: " << p << std::endl;
-                for (typename vector<tag>::const_iterator it = tags[p].begin(); it != tags[p].end(); ++it)
-                    ss << "    " << get<0>(*it) << " " << get<1>(*it) << " " << get<2>(*it) << std::endl;
+                for (const auto & it : tags[p]) {
+                    ss << "    " << get<0>(it) << " " << get<1>(it) << " " << get<2>(it) << std::endl;
+                }
             }
         	return ss.str();
         }
@@ -303,11 +305,11 @@ namespace generate_mpo
 				lab = "nontriv";
             	if (!with_sign[p][u1] && op_p.second) {
 					//gemm(fill, op_p.first, op);
-					boost::tie(op, scale) = tag_handler.get_product_tag(fillings[lat.get_prop<int>("type", p)], op_p.first[lat.get_prop<int>("type", p)]);
+					std::tie(op, scale) = tag_handler.get_product_tag(fillings[lat.get_prop<int>("type", p)], op_p.first[lat.get_prop<int>("type", p)]);
 					lab += "*fill";
 				} else if (with_sign[p][u1] && !op_p.second) {
 					//gemm(fill, op_p.first, op);
-					boost::tie(op, scale) = tag_handler.get_product_tag(fillings[lat.get_prop<int>("type", p)], op_p.first[lat.get_prop<int>("type", p)]);
+					std::tie(op, scale) = tag_handler.get_product_tag(fillings[lat.get_prop<int>("type", p)], op_p.first[lat.get_prop<int>("type", p)]);
 					lab += "*fill";
 				} else {
 					op = op_p.first[lat.get_prop<int>("type", p)];
@@ -316,15 +318,15 @@ namespace generate_mpo
 
         	size_t u2 = 0;
             while (used[p].count(u2) > 0) ++u2;
-            prempo[p].push_back( boost::make_tuple(u1, u2, op, 1.0) );
+            prempo[p].push_back( std::make_tuple(u1, u2, op, 1.0) );
             used[p].insert(u2);
            	with_sign[p+1][u2] = (op_p.second) ? !with_sign[p][u1] : with_sign[p][u1];
             //            maquis::cout << "Adding a " << lab << " term at " << p << ", " << u1 << " -> " << u2 << std::endl;
             //            maquis::cout << op;
             if (trivial)
-                tags[p].push_back( boost::make_tuple(u1, u2, lab) );
+                tags[p].push_back( std::make_tuple(u1, u2, lab) );
             else
-                tags[p].push_back( boost::make_tuple(u1, u2, lab) );
+                tags[p].push_back( std::make_tuple(u1, u2, lab) );
             return u2;
         }
 

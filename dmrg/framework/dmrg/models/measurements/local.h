@@ -1,12 +1,14 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
 #ifndef MEASUREMENTS_LOCAL_H
 #define MEASUREMENTS_LOCAL_H
+
+#include <utility>
 
 #include "dmrg/models/measurement.h"
 #include "dmrg/models/meas_prepare.hpp"
@@ -17,18 +19,18 @@ namespace measurements {
 
     template <class Matrix, class SymmGroup>
     class local : public measurement<Matrix, SymmGroup> {
-        typedef measurement<Matrix, SymmGroup> base;
-        typedef typename base::op_t op_t;
-        typedef generate_mpo::MPOMaker<Matrix, SymmGroup> generator;
-        typedef std::vector<op_t> op_vec;
-        typedef std::vector<std::pair<op_vec, bool> > bond_element;
+        using base = measurement<Matrix, SymmGroup>;
+        using op_t = typename base::op_t;
+        using generator = generate_mpo::MPOMaker<Matrix, SymmGroup>;
+        using op_vec = std::vector<op_t>;
+        using bond_element = std::vector<std::pair<op_vec, bool>>;
     public:
 
-        local(std::string const& name_, const Lattice & lat,
+        local(std::string const& name_, Lattice  lat,
               op_vec const & identities_, op_vec const & fillings_,
               std::vector<bond_element> const& terms)
         : base(name_)
-        , lattice(lat)
+        , lattice(std::move(lat))
         , identities(identities_)
         , fillings(fillings_)
         , is_bond(true)
@@ -37,11 +39,11 @@ namespace measurements {
             this->cast_to_real = all_true(mpo_terms.begin(), mpo_terms.end(), static_cast<bool (*)(bond_element const&)>(&is_hermitian_meas));
         }
 
-        local(std::string const& name_, const Lattice & lat,
+        local(std::string const& name_, Lattice  lat,
               op_vec const & identities_, op_vec const & fillings_,
               op_vec const& op)
         : base(name_)
-        , lattice(lat)
+        , lattice(std::move(lat))
         , identities(identities_)
         , fillings(fillings_)
         , is_bond(false)
@@ -57,7 +59,7 @@ namespace measurements {
             this->labels.clear();
             this->labels_num.clear();
 
-            typedef typename SymmGroup::subcharge subcharge;
+            using subcharge = typename SymmGroup::subcharge;
             if (!rmps || this->is_super_meas || is_bond) {
                 evaluate_with_mpo(mps);
             } else {
@@ -101,43 +103,45 @@ namespace measurements {
 
         void evaluate_with_mpo(MPS<Matrix, SymmGroup> const& mps)
         {
-            typedef typename SymmGroup::subcharge subcharge;
-            typedef std::map<std::string, typename Matrix::value_type> result_type;
+            using subcharge = typename SymmGroup::subcharge;
+            using result_type = std::map<std::string, typename Matrix::value_type>;
             result_type res;
 
             typename MPS<Matrix, SymmGroup>::scalar_type nn;
-            if (this->is_super_meas)
+            if (this->is_super_meas) {
                 nn = dm_trace(mps, this->phys_psi);
-
-            /// collect results from all mpo terms, i.e. all requested combinations of operators.
-            for (typename std::vector<bond_element>::const_iterator it = mpo_terms.begin(); it != mpo_terms.end(); ++it) {
-                typedef std::map<std::string, MPO<Matrix, SymmGroup> > mpo_map;
-                mpo_map mpos = meas_prepare::local<Matrix, SymmGroup>(lattice, identities, fillings, *it);
-
-                /// measure the value at each site / bond
-                for (typename mpo_map::const_iterator mit = mpos.begin(); mit != mpos.end(); ++mit) {
-                    typename result_type::iterator match = res.find(mit->first);
-                    if (match == res.end())
-                        boost::tie(match, boost::tuples::ignore) = res.insert( std::make_pair(mit->first, 0.) );
-
-                    if (!this->is_super_meas) {
-                        match->second += (this->cast_to_real) ? maquis::real(expval(mps, mit->second)) : expval(mps, mit->second);
-                    } else {
-                        MPS<Matrix, SymmGroup> super_mpo = mpo_to_smps(mit->second, this->phys_psi);
-                        // static_cast needed for icpc 12.x
-                        typedef typename MPS<Matrix, SymmGroup>::scalar_type (*overlap_func)(MPS<Matrix, SymmGroup> const &, MPS<Matrix, SymmGroup> const &);
-                        typename MPS<Matrix, SymmGroup>::scalar_type val = ::overlap(super_mpo, mps);
-                        match->second += val/nn;
-                    }
-                }
             }
 
+            /// collect results from all mpo terms, i.e. all requested combinations of operators.
+            for (const auto& it : mpo_terms){
+              using mpo_map = std::map<std::string, MPO<Matrix, SymmGroup>>;
+              mpo_map mpos = meas_prepare::local<Matrix, SymmGroup>(lattice, identities, fillings, it);
+
+              /// measure the value at each site / bond
+              for (const auto& mit : mpos) {
+                typename result_type::iterator match = res.find(mit.first);
+                if (match == res.end()) {
+                  std::tie(match, std::ignore) = res.insert( std::make_pair(mit.first, 0.) );
+                }
+
+                if (!this->is_super_meas) {
+                  match->second += (this->cast_to_real) ? maquis::real(expval(mps, mit.second)) : expval(mps, mit.second);
+                } else {
+                  MPS<Matrix, SymmGroup> super_mpo = mpo_to_smps(mit.second, this->phys_psi);
+                  // static_cast needed for icpc 12.x
+                  using overlap_func = typename MPS<Matrix, SymmGroup>::scalar_type (*)(const MPS<Matrix, SymmGroup> &, const MPS<Matrix, SymmGroup> &);
+                  typename MPS<Matrix, SymmGroup>::scalar_type val = ::overlap(super_mpo, mps);
+                  match->second += val/nn;
+                }
+              }
+
+            }
             /// copy results to base
             this->vector_results.reserve(this->vector_results.size() + res.size());
             this->labels.reserve(this->labels.size() + res.size());
-            for (typename result_type::const_iterator it = res.begin(); it != res.end(); ++it) {
-                this->labels.push_back(it->first);
-                this->vector_results.push_back(it->second);
+            for (const auto& it : res) {
+                this->labels.push_back(it.first);
+                this->vector_results.push_back(it.second);
             }
         }
 

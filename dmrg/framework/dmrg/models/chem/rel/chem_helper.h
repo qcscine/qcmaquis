@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -9,6 +9,7 @@
 #define REL_QC_CHEM_DETAIL_H
 
 #include "dmrg/models/chem/parse_integrals.h"
+#include "dmrg/models/chem/2u1/term_maker.h"
 
 namespace chem {
 namespace detail {
@@ -17,10 +18,10 @@ namespace detail {
     class RelChemHelper
     {
     public:
-        typedef typename M::value_type value_type;
-        typedef ::term_descriptor<value_type> term_descriptor;
-        typedef typename TagHandler<M, S>::tag_type tag_type;
-        typedef Lattice::pos_t pos_t;
+        using value_type = typename M::value_type;
+        using term_descriptor = ::term_descriptor<value_type>;
+        using tag_type = typename TagHandler<M, S>::tag_type;
+        using pos_t = Lattice::pos_t;
         using InputType = std::complex<double>;
 
         RelChemHelper(BaseParameters & parms, Lattice const & lat_,
@@ -28,7 +29,7 @@ namespace detail {
                    std::shared_ptr<TagHandler<M, S> > tag_handler_)
             : lat(lat_), ident(ident_), fill(fill_), tag_handler(tag_handler_)
         {
-			boost::tie(idx_, matrix_elements) = parse_integrals<InputType, S>(parms, lat);
+			std::tie(idx_, matrix_elements) = parse_integrals<InputType, S>(parms, lat);
 
             for (std::size_t m=0; m < matrix_elements.size(); ++m) {
                 IndexTuple pos;

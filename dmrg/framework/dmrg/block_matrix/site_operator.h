@@ -1,19 +1,22 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
 #ifndef SITE_OPERATOR_H
 #define SITE_OPERATOR_H
 
+#include <boost/ptr_container/ptr_vector.hpp>
 #include <sstream>
 #include <algorithm>
 #include <numeric>
 
+#include "dmrg/utils/storage.h"
+#include "utils/traits.hpp"
 #include "dmrg/block_matrix/indexing.h"
-#include "dmrg/block_matrix/symmetry.h"
+#include "dmrg/block_matrix/symmetry/symmetry_traits.h"
 
 
 template<class Matrix, class SymmGroup, class Dummy> class SparseOperator;
@@ -23,16 +26,16 @@ class SiteOperator
 {
     friend class SiteOperator<typename storage::constrained<Matrix>::type, SymmGroup>;
 private:
-    typedef typename SymmGroup::charge charge;
-    typedef typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type spin_basis_type;
+    using charge = typename SymmGroup::charge;
+    using spin_basis_type = typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type;
 public:
-    typedef Matrix matrix_type;
-    typedef typename Matrix::size_type size_type;
-    typedef typename Matrix::value_type value_type;
-    typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
-    typedef typename maquis::traits::real_type<Matrix>::type real_type;
-    typedef typename boost::ptr_vector<Matrix>::iterator block_iterator;
-    typedef typename boost::ptr_vector<Matrix>::const_iterator const_block_iterator;
+    using matrix_type = Matrix;
+    using size_type = typename Matrix::size_type;
+    using value_type = typename Matrix::value_type;
+    using scalar_type = typename maquis::traits::scalar_type<Matrix>::type;
+    using real_type = typename maquis::traits::real_type<Matrix>::type;
+    using block_iterator = typename boost::ptr_vector<Matrix>::iterator;
+    using const_block_iterator = typename boost::ptr_vector<Matrix>::const_iterator;
 
     SiteOperator();
 
@@ -42,10 +45,6 @@ public:
     SiteOperator(DualIndex<SymmGroup> const & basis);
 
     SiteOperator(block_matrix<Matrix, SymmGroup> const&, spin_basis_type const &);
-
-    SiteOperator& operator=(SiteOperator rhs);
-    template<class OtherMatrix>
-    SiteOperator& operator=(const SiteOperator<OtherMatrix, SymmGroup>& rhs);
 
     Index<SymmGroup> left_basis() const;
     Index<SymmGroup> right_basis() const;

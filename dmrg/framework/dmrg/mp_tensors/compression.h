@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -21,7 +21,7 @@ struct compression {
                         block_matrix<Matrix, SymmGroup> const & t, std::size_t p, bool verbose=false)
   {
     block_matrix<Matrix, SymmGroup> u, v;
-    typedef typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type dmt;
+    using dmt = typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type;
     block_matrix<dmt, SymmGroup> s;
     truncation_results trunc = svd_truncate(t, u, v, s, cutoff, Mmax, verbose);
     mps[p].replace_left_paired(u, Lnorm);
@@ -36,7 +36,7 @@ struct compression {
                         block_matrix<Matrix, SymmGroup> const & t, std::size_t p, bool verbose=false)
   {
     block_matrix<Matrix, SymmGroup> u, v;
-    typedef typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type dmt;
+    using dmt = typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type;
     block_matrix<dmt, SymmGroup> s;
     truncation_results trunc = svd_truncate(t, u, v, s, cutoff, Mmax, verbose);
     mps[p+1].replace_right_paired(v, Rnorm);

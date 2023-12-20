@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -52,7 +52,7 @@ public:
     MPS<Matrix, SymmGroup> bra_mps;
     if (bra_ckp != "")
     {
-      if(boost::filesystem::exists(bra_ckp))
+      if(std::filesystem::exists(bra_ckp))
       {
         // Do symmetry check on the bra checkpoint and eventually transform
         // check point group
@@ -238,5 +238,4 @@ private:
 };
 
 } // namespace measurements 
-
 #endif // MEASUREMENTS_TAGGED_NRANKRDM_TWOU1_H

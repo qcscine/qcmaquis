@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 // Substitute header for Boost::UnitTest floating point comparison to avoid warnings
@@ -15,4 +15,5 @@
 #include <boost/test/tools/floating_point_comparison.hpp>
 #endif
 
-#endif
+#endif // FPCOMPARISON_H
+

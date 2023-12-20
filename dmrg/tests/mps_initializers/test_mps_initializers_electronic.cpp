@@ -18,10 +18,11 @@
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/models/generate_mpo.hpp"
-#include "dmrg/models/chem/transform_symmetry.hpp"
+#include "dmrg/models/MolecularHamiltonians/transform_symmetry.hpp"
 
 #include <iostream>
 #include <boost/test/included/unit_test.hpp>
+#include <boost/mpl/list.hpp>
 
 
 typedef boost::mpl::list<

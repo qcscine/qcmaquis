@@ -1,18 +1,19 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
 #ifndef TWOSITETIMEEVOLUTION_H
 #define TWOSITETIMEEVOLUTION_H
 
+#include <chrono>
+
 #include "dmrg/mp_tensors/twositetensor.h"
 #include "dmrg/mp_tensors/mpo_ops.h"
-#include <boost/tuple/tuple.hpp>
 #include "dmrg/evolve/TimeEvolutionSweep.h"
-#include <boost/tuple/tuple.hpp> // Needed for std::tie
+#include <chrono>
 
 /**
  * @brief Class implementing the two-site time-evolution algorithm with a sweep-based Trotter decomposition.
@@ -55,7 +56,7 @@ public:
    * @param initial_site_: site in which the optimization is started.
    */
   TwoSiteTimeEvolution(MPS<Matrix, SymmGroup>& mps, MPO<Matrix, SymmGroup> const & mpo, BaseParameters & parms_,
-                       boost::function<bool ()> stop_callback_, int initial_site_ = 0)
+                       std::function<bool ()> stop_callback_, int initial_site_ = 0)
     : base(mps, mpo, parms_, stop_callback_, to_site(mps.length(), initial_site_))
   {
     parallel::guard::serial guard;
@@ -87,7 +88,7 @@ public:
   {
     // Initialization
     typename MPSTensor<Matrix, SymmGroup>::scalar_type dipole;
-    boost::chrono::high_resolution_clock::time_point sweep_now = boost::chrono::high_resolution_clock::now();
+    std::chrono::high_resolution_clock::time_point sweep_now = std::chrono::high_resolution_clock::now();
     iteration_results_.clear();
     // Definition of the initial site
     int _site = 0, site;
@@ -175,9 +176,9 @@ public:
       // -- Forward sweep --
       if (lr == +1) {
         if (parms_["twosite_truncation"] == "svd")
-          boost::tie(mps_[site1], mps_[site2], trunc) = two_vec.split_mps_l2r(Mmax, cutoff);
+          std::tie(mps_[site1], mps_[site2], trunc) = two_vec.split_mps_l2r(Mmax, cutoff);
         else
-          boost::tie(mps_[site1], mps_[site2], trunc) = two_vec.predict_split_l2r(Mmax, cutoff, alpha, left_[site1], mpo_[site1], true);
+          std::tie(mps_[site1], mps_[site2], trunc) = two_vec.predict_split_l2r(Mmax, cutoff, alpha, left_[site1], mpo_[site1], true);
         mps_[site2] /= ietl::two_norm(mps_[site2]);
         two_vec.clear();
         this->boundary_left_step(mpo_, site1);
@@ -194,9 +195,9 @@ public:
       // -- Backward sweep --
       } else if (lr == -1) {
         if (parms_["twosite_truncation"] == "svd")
-          boost::tie(mps_[site1], mps_[site2], trunc) = two_vec.split_mps_r2l(Mmax, cutoff);
+          std::tie(mps_[site1], mps_[site2], trunc) = two_vec.split_mps_r2l(Mmax, cutoff);
         else
-          boost::tie(mps_[site1], mps_[site2], trunc) = two_vec.predict_split_r2l(Mmax, cutoff, alpha, right_[site2+1], mpo_[site2], true);
+          std::tie(mps_[site1], mps_[site2], trunc) = two_vec.predict_split_r2l(Mmax, cutoff, alpha, right_[site2+1], mpo_[site2], true);
         two_vec.clear();
         mps_[site1] /= ietl::two_norm(mps_[site1]);
         this->boundary_right_step(mpo_, site2);
@@ -217,8 +218,8 @@ public:
       iteration_results_["SmallestEV"]        << trunc.smallest_ev;
       iteration_results_["Dipole"]            << dipole;
       parallel::meminfo();
-      boost::chrono::high_resolution_clock::time_point sweep_then = boost::chrono::high_resolution_clock::now();
-      double elapsed = boost::chrono::duration<double>(sweep_then - sweep_now).count();
+      std::chrono::high_resolution_clock::time_point sweep_then = std::chrono::high_resolution_clock::now();
+      double elapsed = std::chrono::duration<double>(sweep_then - sweep_now).count();
       maquis::cout << "Sweep has been running for " << elapsed << " seconds." << std::endl;
       if (stop_callback())
         throw dmrg::time_limit(sweep, _site+1);

@@ -1,0 +1,840 @@
+  SCINE QCMaquis 
+  Quantum Chemical Density Matrix Renormalization group
+  available from https://scine.ethz.ch/download/qcmaquis
+  based on the ALPS MPS codes from http://alps.comp-phys.org
+  copyright (c) 2015-2018 Laboratory of Physical Chemistry, ETH Zurich
+  copyright (c) 2012-2016 by Sebastian Keller
+  copyright (c) 2016-2021 by Alberto Baiardi, Leon Freitag,
+  Stefan Knecht, Yingjin Ma
+  For details on tcDMRG see the following publications:
+   - A. Baiardi, M. Reiher, J. Chem. Phys. 153, 164115 (2020)
+   - A. Baiardi, M. Lesiuk, M. Reiher, J. Chem. Theory Comput. 18, 4203 (2022)
+This binary contains symmetries: 2u1 2u1pg su2u1 su2u1pg 
+DMRG version 2.2.0-d079a0dde1ac78067a7519de4616c1b3ce837539 (TranscorrelatedHamiltonian) release-3.1.2-gitlab
+Disk storage of boundaries disabled
+Will start again at site -1 in sweep 20
+Loading checkpoint from FH_RealSpace_2x2_2alpha1beta_TCDMRG_TS.checkpoint_state.0.h5
+ Hamiltonian Norm = 9.797958971
+ Non-Hermtian Hamiltonian Norm = 0
+MPO Bond 0: 10/0
+MPO Bond 1: 10/0
+MPO Bond 2: 6/0
+MPO Bond 3: 1/0
+MPS initialization has finished...
+
+ ============================== 
+   STARTING tcDMRG SIMULATION = 
+ ============================== 
+
+ Number of sweeps for the preliminary TI-DMRG step:   5
+ Number of sweeps for the tcDMRG step:  20
+ Energy convergence threshold: -1
+
+
+ == STARTING THE TI-DMRG OPTIMIZATION == 
+
+ Hamiltonian Norm = 9.797958971
+ Non-Hermtian Hamiltonian Norm = 0
+MPO Bond 0: 10/0
+MPO Bond 1: 10/0
+MPO Bond 2: 6/0
+MPO Bond 3: 1/0
+
+ == STARTING THE IMAGINARY-TIME TD-DMRG PROPAGATION  == 
+
+ Hamiltonian Norm = 10.79379223
+ Non-Hermtian Hamiltonian Norm = 4.291973565
+MPO Bond 0: 18/0
+MPO Bond 1: 18/0
+MPO Bond 2: 10/0
+MPO Bond 3: 1/0
+
++------------------------------------------+
+  DETAILS ABOUT SITE-CENTERED TIME EVOLVER
++------------------------------------------+
+
+ - Propagation type: Imaginary-time
+ - Time step: 0.2067068729
+ - Propagation algorithm: yes
+Arnoldi approximation of the propagator
+
+ -------------------
+   SWEEP NUMBER 5
+ -------------------
+ - Noise parameter: 0.0001
+ - Maximum bond dimension: 50
+ - Truncation parameter: 1e-16
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.5504E-11 
++------------+------------+
+ Energy = -6.418502927978203
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4494E-11 
++------------+------------+
+ Energy = -6.418502927978203
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.1235E-11 
++------------+------------+
+ Energy = -6.418502927978202
+
+ MICROITERATION NUMBER = 3  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4495E-11 
++------------+------------+
+ Energy = -6.418502927978202
+
+
+ -------------------
+   SWEEP NUMBER 6
+ -------------------
+ - Noise parameter: 0.0001
+ - Maximum bond dimension: 50
+ - Truncation parameter: 1e-16
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.5505E-11 
++------------+------------+
+ Energy = -6.418502927978203
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4495E-11 
++------------+------------+
+ Energy = -6.418502927978204
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.1236E-11 
++------------+------------+
+ Energy = -6.418502927978204
+
+ MICROITERATION NUMBER = 3  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4496E-11 
++------------+------------+
+ Energy = -6.418502927978203
+
+
+ -------------------
+   SWEEP NUMBER 7
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 50
+ - Truncation parameter: 1e-16
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.5505E-11 
++------------+------------+
+ Energy = -6.418502927978203
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4495E-11 
++------------+------------+
+ Energy = -6.418502927978205
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.1236E-11 
++------------+------------+
+ Energy = -6.418502927978206
+
+ MICROITERATION NUMBER = 3  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4496E-11 
++------------+------------+
+ Energy = -6.418502927978203
+
+
+ -------------------
+   SWEEP NUMBER 8
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 50
+ - Truncation parameter: 1e-16
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.5506E-11 
++------------+------------+
+ Energy = -6.418502927978205
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4497E-11 
++------------+------------+
+ Energy = -6.418502927978206
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.1239E-11 
++------------+------------+
+ Energy = -6.418502927978208
+
+ MICROITERATION NUMBER = 3  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4498E-11 
++------------+------------+
+ Energy = -6.418502927978206
+
+
+ -------------------
+   SWEEP NUMBER 9
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 50
+ - Truncation parameter: 1e-16
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.5505E-11 
++------------+------------+
+ Energy = -6.418502927978208
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4498E-11 
++------------+------------+
+ Energy = -6.418502927978207
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.1241E-11 
++------------+------------+
+ Energy = -6.418502927978206
+
+ MICROITERATION NUMBER = 3  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4499E-11 
++------------+------------+
+ Energy = -6.418502927978206
+
+
+ -------------------
+   SWEEP NUMBER 10
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 50
+ - Truncation parameter: 1e-16
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.5506E-11 
++------------+------------+
+ Energy = -6.418502927978207
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4500E-11 
++------------+------------+
+ Energy = -6.418502927978206
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.1241E-11 
++------------+------------+
+ Energy = -6.418502927978208
+
+ MICROITERATION NUMBER = 3  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4500E-11 
++------------+------------+
+ Energy = -6.418502927978207
+
+
+ -------------------
+   SWEEP NUMBER 11
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 50
+ - Truncation parameter: 1e-16
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.5506E-11 
++------------+------------+
+ Energy = -6.418502927978209
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4501E-11 
++------------+------------+
+ Energy = -6.418502927978207
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.1243E-11 
++------------+------------+
+ Energy = -6.418502927978208
+
+ MICROITERATION NUMBER = 3  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4501E-11 
++------------+------------+
+ Energy = -6.418502927978207
+
+
+ -------------------
+   SWEEP NUMBER 12
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 50
+ - Truncation parameter: 1e-16
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.5507E-11 
++------------+------------+
+ Energy = -6.418502927978207
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4502E-11 
++------------+------------+
+ Energy = -6.418502927978208
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.1243E-11 
++------------+------------+
+ Energy = -6.418502927978212
+
+ MICROITERATION NUMBER = 3  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4501E-11 
++------------+------------+
+ Energy = -6.418502927978208
+
+
+ -------------------
+   SWEEP NUMBER 13
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 50
+ - Truncation parameter: 1e-16
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.5507E-11 
++------------+------------+
+ Energy = -6.418502927978211
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4502E-11 
++------------+------------+
+ Energy = -6.418502927978209
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.1244E-11 
++------------+------------+
+ Energy = -6.418502927978212
+
+ MICROITERATION NUMBER = 3  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4501E-11 
++------------+------------+
+ Energy = -6.418502927978209
+
+
+ -------------------
+   SWEEP NUMBER 14
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 50
+ - Truncation parameter: 1e-16
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.5506E-11 
++------------+------------+
+ Energy = -6.418502927978211
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4502E-11 
++------------+------------+
+ Energy = -6.418502927978208
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.1246E-11 
++------------+------------+
+ Energy = -6.418502927978212
+
+ MICROITERATION NUMBER = 3  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4501E-11 
++------------+------------+
+ Energy = -6.41850292797821
+
+
+ -------------------
+   SWEEP NUMBER 15
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 50
+ - Truncation parameter: 1e-16
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.5505E-11 
++------------+------------+
+ Energy = -6.418502927978213
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4501E-11 
++------------+------------+
+ Energy = -6.418502927978211
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.1246E-11 
++------------+------------+
+ Energy = -6.418502927978214
+
+ MICROITERATION NUMBER = 3  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4501E-11 
++------------+------------+
+ Energy = -6.418502927978212
+
+
+ -------------------
+   SWEEP NUMBER 16
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 50
+ - Truncation parameter: 1e-16
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.5504E-11 
++------------+------------+
+ Energy = -6.418502927978214
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4501E-11 
++------------+------------+
+ Energy = -6.418502927978213
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.1247E-11 
++------------+------------+
+ Energy = -6.418502927978214
+
+ MICROITERATION NUMBER = 3  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4501E-11 
++------------+------------+
+ Energy = -6.418502927978212
+
+
+ -------------------
+   SWEEP NUMBER 17
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 50
+ - Truncation parameter: 1e-16
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.5503E-11 
++------------+------------+
+ Energy = -6.418502927978214
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4501E-11 
++------------+------------+
+ Energy = -6.418502927978213
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.1248E-11 
++------------+------------+
+ Energy = -6.418502927978213
+
+ MICROITERATION NUMBER = 3  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4502E-11 
++------------+------------+
+ Energy = -6.418502927978214
+
+
+ -------------------
+   SWEEP NUMBER 18
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 50
+ - Truncation parameter: 1e-16
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.5503E-11 
++------------+------------+
+ Energy = -6.418502927978214
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4502E-11 
++------------+------------+
+ Energy = -6.418502927978214
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.1249E-11 
++------------+------------+
+ Energy = -6.418502927978215
+
+ MICROITERATION NUMBER = 3  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4502E-11 
++------------+------------+
+ Energy = -6.418502927978214
+
+
+ -------------------
+   SWEEP NUMBER 19
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 50
+ - Truncation parameter: 1e-16
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.5502E-11 
++------------+------------+
+ Energy = -6.418502927978214
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4501E-11 
++------------+------------+
+ Energy = -6.418502927978214
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.1248E-11 
++------------+------------+
+ Energy = -6.418502927978219
+
+ MICROITERATION NUMBER = 3  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4501E-11 
++------------+------------+
+ Energy = -6.418502927978214
+
+Task took 2.735238 seconds.

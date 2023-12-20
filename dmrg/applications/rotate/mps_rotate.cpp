@@ -19,8 +19,8 @@
 #include "dmrg/utils/DmrgParameters.h"
 
 #include "dmrg/models/generate_mpo.hpp"
-#include "dmrg/models/chem/transform_symmetry.hpp"
-#include "dmrg/models/chem/2u1/chem_helper.h"
+#include "dmrg/models/MolecularHamiltonian/transform_symmetry.hpp"
+#include "dmrg/models/MolecularHamiltonian/2u1/chem_helper.h"
 
 // #include "../tools/ci_encode.hpp"
 // #include "utils.hpp"

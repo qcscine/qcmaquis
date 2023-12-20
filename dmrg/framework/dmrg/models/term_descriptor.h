@@ -1,13 +1,15 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
 #ifndef MODELS_TERM_DESCRIPTOR_H
 #define MODELS_TERM_DESCRIPTOR_H
 
+#include <algorithm>
+#include <iostream>
 #include <utility>
 #include <vector>
 
@@ -48,6 +50,15 @@ public:
     /** @brief Class constructor */
     term_descriptor() : base(), coeff(1.), is_fermionic(false) { }
     
+    /** @brief Class constructor providing as input the vector of terms */
+    term_descriptor(const base& vector, T coeff_, bool isFermionic) 
+      : base(vector), coeff(coeff_), is_fermionic(isFermionic) {}
+
+    /** @brief Gets the underlying vector */
+    base getBase() const {
+        return base(this->begin(), this->end());
+    }
+    
     /** @brief Getter for the position */
     pos_type position(size_type i) const { return this->operator[](i).first; }
 
@@ -61,14 +72,18 @@ public:
     /** @brief Comparison operator */
     bool operator< (term_descriptor const & rhs) const
     {
-        if (this->size() == 0 && rhs.size() == 0)
+        if (this->size() == 0 && rhs.size() == 0) {
             return false;
-        if (this->size() == 0)
+        }
+        if (this->size() == 0) {
             return true;
-        if (rhs.size()   == 0)
+        }
+        if (rhs.size()   == 0) {
             return false;
-        if (this->position(0) == rhs.position(0))
+        }
+        if (this->position(0) == rhs.position(0)) {
             return this->size() > rhs.size();
+        }
         return this->position(0) < rhs.position(0);
     }
 
@@ -85,8 +100,9 @@ std::ostream & operator<< (std::ostream & os, term_descriptor<T> const& term)
 {
     os << "coeff: " << term.coeff << std::endl;
     os << "operators:";
-    for (int i=0; i<term.size(); ++i)
+    for (int i=0; i<term.size(); ++i) {
         os << " {"  << term.position(i) << "," << term.operator_tag(i) << "}";
+    }
     os << std::endl;
     return os;
 }

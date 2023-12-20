@@ -1,21 +1,21 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
 #ifndef UTILS_DMRG_RANDOM_HPP
 #define UTILS_DMRG_RANDOM_HPP
 
-#include <boost/random.hpp>
+#include <random>
 
 struct dmrg_random {
-    typedef double value_type;
-    typedef boost::mt19937 engine_t;
-    typedef boost::uniform_real<value_type> uniform_dist_t;
-    typedef boost::normal_distribution<value_type> normal_dist_t;
-    typedef boost::poisson_distribution<value_type> poisson_dist_t;
+    using value_type = double;
+    using engine_t = std::mt19937;
+    using uniform_dist_t = std::uniform_real_distribution<>;
+    using normal_dist_t = std::normal_distribution<>;
+    using poisson_dist_t = std::poisson_distribution<value_type>;
     
     static engine_t engine;
 

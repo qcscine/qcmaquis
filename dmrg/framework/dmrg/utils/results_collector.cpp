@@ -1,11 +1,10 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
-#include <map>
 #include "results_collector.h"
 #include "dmrg/utils/storage.h"
 #include <boost/preprocessor/seq/for_each.hpp>
@@ -14,11 +13,11 @@
 class results_collector::collector_impl_base
 {
 public:
-    virtual ~collector_impl_base() {}
-    virtual void collect(boost::any const &) = 0;
+    virtual ~collector_impl_base() = default;
+    virtual void collect(std::any const &) = 0;
     virtual void save(alps::hdf5::archive & ar) const = 0;
     virtual void load(alps::hdf5::archive & ar) = 0;
-    virtual const std::vector<boost::any>& get() const = 0;
+    virtual const std::vector<std::any>& get() const = 0;
     // TODO: fixed storage type because templated virtual function are not allowed
 };
 
@@ -26,23 +25,23 @@ template<class T>
 class results_collector::collector_impl : public results_collector::collector_impl_base
 {
 public:
-    void collect(boost::any const & val)
+    void collect(std::any const & val) override
     {
         vals.push_back(val);
     }
 
-    void save(alps::hdf5::archive & ar) const
+    void save(alps::hdf5::archive & ar) const override
     {
         std::vector<T> allvalues;
         if (ar.is_data("mean/value"))
             ar["mean/value"] >> allvalues;
         allvalues.reserve(allvalues.size()+vals.size());
         for(auto&& val : vals)
-            allvalues.push_back(boost::any_cast<T>(val));
+            allvalues.push_back(std::any_cast<T>(val));
         ar["mean/value"] << allvalues;
     }
 
-    void load(alps::hdf5::archive & ar)
+    void load(alps::hdf5::archive & ar) override
     {
         // overwrite the current vector
         vals.clear();
@@ -56,10 +55,10 @@ public:
     }
 
     // TODO: Copying is inefficient!
-    const std::vector<boost::any>& get() const { return vals; };
+    const std::vector<std::any>& get() const override { return vals; };
 
 private:
-    std::vector<boost::any> vals;
+    std::vector<std::any> vals;
 };
 
 // results_collector::collector_proxy implementation
@@ -85,7 +84,7 @@ void results_collector::collector_proxy::operator>>(T const& val)
         collector.reset(new results_collector::collector_impl<T>());
 }
 
-const std::vector<boost::any>& results_collector::collector_proxy::get() const
+const std::vector<std::any>& results_collector::collector_proxy::get() const
 {
     return collector->get();
 }
@@ -96,9 +95,9 @@ void results_collector::clear()
     collection.clear();
 }
 
-results_collector::collector_proxy results_collector::operator[] (std::string name)
+results_collector::collector_proxy results_collector::operator[](const std::string& name)
 {
-    return results_collector::collector_proxy(collection[name]);
+    return {collection[name]};
 }
 
 template <class Archive>

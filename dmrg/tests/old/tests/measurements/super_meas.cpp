@@ -51,13 +51,11 @@ using std::endl;
 
 #include <boost/math/special_functions/factorials.hpp>
 #include <boost/iterator/zip_iterator.hpp>
-#include <boost/tuple/tuple.hpp>
-#include <boost/tuple/tuple_comparison.hpp>
 
 typedef alps::numeric::matrix<double> matrix;
 typedef TrivialGroup SymmGroup;
 typedef SymmGroup::charge charge;
-typedef boost::tuple<charge, size_t> local_state;
+typedef std::tuple<charge, size_t> local_state;
 
 
 std::vector<double> measure_local(MPS<matrix, SymmGroup> const& mps,
@@ -204,13 +202,13 @@ BOOST_AUTO_TEST_CASE( density_join_init )
 
     {
         std::vector<local_state> state(L);
-        state[0] = boost::make_tuple(C, 0);
-        state[1] = boost::make_tuple(C, 0);
-        state[2] = boost::make_tuple(C, 4);
-        state[3] = boost::make_tuple(C, 4);
-        state[4] = boost::make_tuple(C, 4);
-        state[5] = boost::make_tuple(C, 0);
-        state[6] = boost::make_tuple(C, 0);
+        state[0] = std::make_tuple(C, 0);
+        state[1] = std::make_tuple(C, 0);
+        state[2] = std::make_tuple(C, 4);
+        state[3] = std::make_tuple(C, 4);
+        state[4] = std::make_tuple(C, 4);
+        state[5] = std::make_tuple(C, 0);
+        state[6] = std::make_tuple(C, 0);
 
         MPS<matrix,SymmGroup> tmp = state_mps<matrix>(state, std::vector<Index<SymmGroup> >(1,phys_rho), std::vector<int>(L,0));
         mps = join(tmp, mps);

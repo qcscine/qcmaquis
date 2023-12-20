@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -13,14 +13,19 @@
 #include <ietl/traits.h>
 #include <ietl/fmatrix.h>
 #include <ietl/ietl2lapack.h> 
+#include <ietl/interface/ublas.h>
+#include <ietl/vectorspace.h>
+
+#include <dmrg/utils/parallel.hpp>
+#include <dmrg/utils/storage.h>
  
 #include <ietl/cg.h>
 #include <ietl/gmres.h>
 
+
+#include <chrono>
 #include <complex>
 #include <vector>
-
-#include <boost/function.hpp>
 
 namespace ietl
 {
@@ -30,9 +35,9 @@ namespace ietl
     class jcd_left_preconditioner
     {
     public:
-        typedef typename vectorspace_traits<VS>::vector_type vector_type;
-        typedef typename vectorspace_traits<VS>::scalar_type scalar_type;
-        typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
+        using vector_type = typename vectorspace_traits<VS>::vector_type;
+        using scalar_type = typename vectorspace_traits<VS>::scalar_type;
+        using magnitude_type = typename ietl::number_traits<scalar_type>::magnitude_type;
         
         jcd_left_preconditioner(const MATRIX& matrix, const VS& vec, const int& max_iter);
         void operator()(const vector_type& u, const magnitude_type& theta, const vector_type& r, vector_type& t, const magnitude_type& rel_tol);
@@ -52,9 +57,9 @@ namespace ietl
     class jcd_simple_solver
     {
     public:
-        typedef typename vectorspace_traits<VS>::vector_type vector_type;
-        typedef typename vectorspace_traits<VS>::scalar_type scalar_type;
-        typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
+        using vector_type = typename vectorspace_traits<VS>::vector_type;
+        using scalar_type = typename vectorspace_traits<VS>::scalar_type;
+        using magnitude_type = typename ietl::number_traits<scalar_type>::magnitude_type;
         
         jcd_simple_solver(const MATRIX& matrix, const VS& vec);
         void operator()(const vector_type& u, const magnitude_type& theta, const vector_type& r, vector_type& t, const magnitude_type& rel_tol);
@@ -69,9 +74,9 @@ namespace ietl
     class jcd_solver_operator
     {
     public:
-        typedef typename vectorspace_traits<VS>::vector_type vector_type;
-        typedef typename vectorspace_traits<VS>::scalar_type scalar_type;
-        typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
+        using vector_type = typename vectorspace_traits<VS>::vector_type;
+        using scalar_type = typename vectorspace_traits<VS>::scalar_type;
+        using magnitude_type = typename ietl::number_traits<scalar_type>::magnitude_type;
         
         jcd_solver_operator(const vector_type& u,
             const magnitude_type& theta,
@@ -100,9 +105,9 @@ namespace ietl
     class jcd_gmres_solver
     {
     public:
-        typedef typename vectorspace_traits<VS>::vector_type vector_type;
-        typedef typename vectorspace_traits<VS>::scalar_type scalar_type;
-        typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
+        using vector_type = typename vectorspace_traits<VS>::vector_type;
+        using scalar_type = typename vectorspace_traits<VS>::scalar_type;
+        using magnitude_type = typename ietl::number_traits<scalar_type>::magnitude_type;
         
         jcd_gmres_solver(Matrix const & matrix, VS const & vec,
             std::size_t max_iter = 5, bool verbose = false)
@@ -141,9 +146,9 @@ namespace ietl
     class jcd_solver
     {
     public:
-        typedef typename vectorspace_traits<VS>::vector_type vector_type;
-        typedef typename vectorspace_traits<VS>::scalar_type scalar_type;
-        typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
+        using vector_type = typename vectorspace_traits<VS>::vector_type;
+        using scalar_type = typename vectorspace_traits<VS>::scalar_type;
+        using magnitude_type = typename ietl::number_traits<scalar_type>::magnitude_type;
         
         template<class Solver>
         jcd_solver(Matrix const & matrix,
@@ -177,7 +182,7 @@ namespace ietl
     private:
         Matrix const & matrix_;
         VS vecspace_;
-        boost::function<vector_type(jcd_solver_operator<Matrix, VS, vector_type> const &, vector_type const &, vector_type const &, double)> solv_;
+        std::function<vector_type(jcd_solver_operator<Matrix, VS, vector_type> const &, vector_type const &, vector_type const &, double)> solv_;
         std::size_t n_, max_iter_;
         bool verbose_;
     };
@@ -186,9 +191,9 @@ namespace ietl
     class jacobi_davidson
     {
     public:
-        typedef typename vectorspace_traits<VS>::vector_type vector_type;
-        typedef typename vectorspace_traits<VS>::scalar_type scalar_type;
-        typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
+        using vector_type = typename vectorspace_traits<VS>::vector_type;
+        using scalar_type = typename vectorspace_traits<VS>::scalar_type;
+        using magnitude_type = typename ietl::number_traits<scalar_type>::magnitude_type;
         
         
         jacobi_davidson(const MATRIX& matrix, 
@@ -347,10 +352,7 @@ namespace ietl
     }
     
     template <class MATRIX, class VS>
-    jacobi_davidson<MATRIX, VS>::~jacobi_davidson()
-    {
-        
-    }
+    jacobi_davidson<MATRIX, VS>::~jacobi_davidson() = default;
     
 //    template<class Vector>
 //    Vector orthogonalize(Vector input, std::vector<Vector> const & against)
@@ -365,16 +367,21 @@ namespace ietl
                                                       SOLVER& solver,
                                                       ITER& iter)
     {
+        auto start = std::chrono::high_resolution_clock::now();
+
         std::vector<scalar_type> s(iter.max_iterations());
         std::vector<vector_type> V(iter.max_iterations());
         std::vector<vector_type> VA(iter.max_iterations());
         M.resize(iter.max_iterations(), iter.max_iterations());
-        magnitude_type theta, tau, rel_tol;
+        magnitude_type theta;
+        magnitude_type tau;
+        magnitude_type rel_tol;
         magnitude_type kappa = 0.25;
         atol_ = iter.absolute_tolerance();
         
         // Start with t=v_o, starting guess
-        ietl::generate(V[0],gen); const_cast<GEN&>(gen).clear();
+        ietl::generate(V[0],gen);
+        const_cast<GEN&>(gen).clear();
         ietl::project(V[0], vecspace_);
         
         // Start iteration
@@ -383,11 +390,14 @@ namespace ietl
 
             // Modified Gram-Schmidt Orthogonalization with Refinement
             tau = ietl::two_norm(t);
-            for(int i = 1; i <= iter.iterations(); i++)
+            for(int i = 1; i <= iter.iterations(); i++) {
                 t -= ietl::dot(V[i-1],t)*V[i-1];
-            if(ietl::two_norm(t) < kappa * tau)
-                for(int i = 1; i <= iter.iterations(); i++)
+            }
+            if(ietl::two_norm(t) < kappa * tau) {
+                for(int i = 1; i <= iter.iterations(); i++) {
                     t -= ietl::dot(V[i-1],t) * V[i-1];
+                }
+            }
             
             // Project out orthogonal subspace
             ietl::project(t,vecspace_);
@@ -398,8 +408,9 @@ namespace ietl
             
             // for i=1, ..., iter
             //   M_{i,m} = v_i ^\star v_m ^A
-            for(int i = 1; i <= iter.iterations()+1; i++)
+            for(int i = 1; i <= iter.iterations()+1; i++) {
                 M(i-1,iter.iterations()) = ietl::dot(V[i-1], VA[iter.iterations()]);
+            }
             
             // compute the largest eigenpair (\theta, s) of M (|s|_2 = 1)
             get_extremal_eigenvalue(theta,s,iter.iterations()+1);
@@ -412,8 +423,9 @@ namespace ietl
             std::vector<vector_type>().swap(u_parts);
             #else
             vector_type u = V[0] * s[0];
-            for(int j = 1; j <= iter.iterations(); ++j)
+            for(int j = 1; j <= iter.iterations(); ++j) {
                 u += V[j] * s[j];
+            }
             #endif
 
             // u^A = V^A s
@@ -425,8 +437,9 @@ namespace ietl
             std::vector<vector_type>().swap(uA_parts);
             #else
             vector_type uA = VA[0] * s[0];
-            for(int j = 1; j <= iter.iterations(); ++j)
+            for(int j = 1; j <= iter.iterations(); ++j) {
                 uA += VA[j] * s[j];
+            }
             #endif
 
             ietl::project(uA,vecspace_);
@@ -437,7 +450,12 @@ namespace ietl
             // if (|r|_2 < \epsilon) stop
             ++iter;
             // accept lambda=theta and x=u
-            if(iter.finished(ietl::two_norm(r),theta)) return std::make_pair(theta, u);
+            if(iter.finished(ietl::two_norm(r),theta)) {
+                auto stop = std::chrono::high_resolution_clock::now();
+                std::chrono::duration<double, std::milli> duration = stop - start;
+                // maquis::cout << " [Eigen decomp took " << duration.count() << " ms]\n";
+                return std::make_pair(theta, u);
+            }
             
             // solve (approximately) a t orthogonal to u from
             //   (I-uu^\star)(A-\theta I)(I- uu^\star)t = -r

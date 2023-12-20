@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -25,6 +25,7 @@
 #include <boost/mpl/push_front.hpp>
 #include <iostream>
 
+#ifdef HAVE_TrivialGroup
 /**
  * @brief Tests the linear solver for a trivial case.
  *
@@ -39,7 +40,6 @@
  * should, therefore, converge in a single iteration.
  */
 BOOST_FIXTURE_TEST_CASE(Test_LinearSolver_Trivial, WatsonFixture) {
-#ifdef HAVE_TrivialGroup
   // Types declaration
   using BoundaryType = Boundary<typename storage::constrained<matrix>::type, TrivialGroup>;
   using contr = contraction::Engine<matrix, typename storage::constrained<matrix>::type, TrivialGroup>;
@@ -93,8 +93,8 @@ BOOST_FIXTURE_TEST_CASE(Test_LinearSolver_Trivial, WatsonFixture) {
   auto linearSolverEigen = LinSolver(siteProblem, mpsHF[0], rhs, zShift, parametersEthyleneWatsonHarmonic, precond, true);
   auto resultEigen = linearSolverEigen.res();
   BOOST_CHECK_CLOSE(1./ietl::two_norm(std::get<2>(resultEigen)), referenceHarmonicEnergy, 1.0E-8);
-#endif // HAVE_TrivialGroup
 }
+#endif // HAVE_TrivialGroup
 
 #ifdef HAVE_TrivialGroup
 
@@ -176,5 +176,4 @@ BOOST_FIXTURE_TEST_CASE(Test_LinearSolver_Trivial_Complex, WatsonFixture) {
     }
   }
 }
-
 #endif // HAVE_TrivialGroup

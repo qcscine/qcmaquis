@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -16,6 +16,7 @@
 #include "dmrg/models/lattice/lattice.h"
 #include <alps/parser/xmlstream.h>
 
+#include <utility>
 #include <vector>
 #include <string>
 #include <sstream>
@@ -32,14 +33,14 @@
 template<class Matrix, class SymmGroup>
 class measurement {
 public:
-    typedef typename Matrix::value_type value_type;
-    typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
+    using value_type = typename Matrix::value_type;
+    using op_t = typename OPTable<Matrix, SymmGroup>::op_t;
 
-    measurement(std::string const& n="")
-    : cast_to_real(true), is_super_meas(false), name_(n), eigenstate(0)
+    measurement(std::string  n="")
+    : cast_to_real(true), is_super_meas(false), name_(std::move(n)), eigenstate(0)
     {}
 
-    virtual ~measurement() { }
+    virtual ~measurement() = default;
 
     virtual void evaluate(MPS<Matrix, SymmGroup> const&, boost::optional<reduced_mps<Matrix, SymmGroup> const&> = boost::none) =0;
     template <class Archive>
@@ -170,8 +171,10 @@ std::ostream& operator<<(std::ostream& os, measurement<Matrix, SymmGroup> const&
 template<class BlockMatrix>
 bool is_hermitian_meas(std::vector<BlockMatrix> const & ops)
 {
-    return all_true(ops.begin(), ops.end(),
-                    boost::bind(static_cast<bool (*)(BlockMatrix const&)>(&is_hermitian), _1));
+    return all_true(
+        ops.begin(), ops.end(),
+        [&](const BlockMatrix& matrix){ return is_hermitian(matrix); }
+    );
     return true;
 }
 

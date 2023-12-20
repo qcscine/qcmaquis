@@ -113,22 +113,22 @@ template<typename T, typename A> void initialize(std::vector<T, A> & v) {
 template<typename A> void initialize(std::vector<bool, A> & v) {
     v = creator<std::vector<bool, A> >::random();
 }
-template<typename T, std::size_t N> void initialize(boost::array<T, N> & v) {
-    for (typename boost::array<T, N>::iterator it = v.begin(); it != v.end(); ++it)
+template<typename T, std::size_t N> void initialize(std::array<T, N> & v) {
+    for (typename std::array<T, N>::iterator it = v.begin(); it != v.end(); ++it)
         initialize(*it);
 }
 template<
     int N, typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9
-> void initialize_tuple_value(boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> & v, boost::false_type) {
-    using boost::get;
+> void initialize_tuple_value(std::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> & v, boost::false_type) {
+    using std::get;
     initialize(get<N>(v));
 }
 template<
     int N, typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9
-> void initialize_tuple_value(boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> & v, boost::true_type) {}
+> void initialize_tuple_value(std::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> & v, boost::true_type) {}
 template<
     typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9
-> void initialize(boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> & v) {
+> void initialize(std::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> & v) {
     initialize_tuple_value<0, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T0, boost::tuples::null_type>::type());
     initialize_tuple_value<1, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T1, boost::tuples::null_type>::type());
     initialize_tuple_value<2, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T2, boost::tuples::null_type>::type());
