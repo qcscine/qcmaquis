@@ -50,6 +50,7 @@ typename OPTable<Matrix, SymmGroup>::tag_type TagHandler<Matrix, SymmGroup>::
 register_op(const op_t & op_, tag_detail::operator_kind kind)
 {
     sign_table.push_back(kind);
+    std::cout << total_size() << std::endl;
     tag_type ret = operator_table->register_op(op_);
     hermitian.push_back(ret);
     assert(sign_table.size() == operator_table->size());

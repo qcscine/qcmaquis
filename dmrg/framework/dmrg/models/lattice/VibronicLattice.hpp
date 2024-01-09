@@ -45,7 +45,7 @@ public:
             throw std::runtime_error("Excitonic model currently supports only 1 electronic state");
         nParticles = parameters["vibronic_num_molecules"].as<int>();
     }
-    else if (parameters["MODEL"] == "excitonicextended") {
+    else if (parameters["MODEL"] == "excitonicextended" || parameters["MODEL"] == "excitonicnmode") {
         if (nElecStates != 1)
             throw std::runtime_error("Extended excitonic model currently supports only 1 electronic state");
         nParticles = parameters["vibronic_num_molecules"].as<int>();
@@ -64,7 +64,7 @@ public:
       }
     }
 
-    if(parameters["MODEL"] == "excitonicextended"){
+    if(parameters["MODEL"] == "excitonicextended" || parameters["MODEL"] == "excitonicnmode"){
       int nConnecting = parameters["vibronic_num_connectingmodes"].as<int>();
       if (((nModes+nElecStates)*nParticles-nConnecting) != L){
         throw std::runtime_error("Incoherence in lattice size for this vibronic lattice"); 
@@ -79,7 +79,7 @@ public:
     // The site type is used to distinguish between electronic and vibrational degrees
     // of freedom. Note that we don't distinguish between different "electronic particles"
     // since it
-    if(parameters["MODEL"] == "excitonicextended"){
+    if(parameters["MODEL"] == "excitonicextended" || parameters["MODEL"] == "excitonicnmode"){
       int nConnecting = parameters["vibronic_num_connectingmodes"].as<int>();
       if (eleFirst){
         throw std::runtime_error("only intertwined sorting possible for this model");

@@ -5,7 +5,7 @@
 #include "dmrg/models/vibrational/VibronicIntegralParser.hpp"
 
 template<class Matrix>
-class VibronicNModePaired : public model_impl<Matrix, U1>
+class ExcitonicNmode : public model_impl<Matrix, U1>
 {
 public:
     //Types definition
@@ -26,13 +26,13 @@ public:
     * @param parameters container with the DMRG parameters
     */
 
-    VibronicNModePaired(const Lattice& lat_, BaseParameters & model_)
-            : lat(lat_), model(model_), L_(model["L"]), tag_handler(new table_type()), n_ele_states_(model["vibronic_num_elestates"]), 
+    ExcitonicNmode(const Lattice& lat_, BaseParameters & model_)
+            : lat(lat_), model(model_), L_(model["L"]), /*tag_handler(new table_type()),*/ n_ele_states_(model["vibronic_num_elestates"]), 
             n_vib_states_(model["vibronic_num_vibmodes"]), n_particles_(model["vibronic_num_molecules"]), phys_indexes(0), J_(0.),
-            epsilon_(1.), only_nn_(false) 
+            epsilon_(1.), only_nn_(false)
     {
         // Constructor
-        //tag_handler = std::make_shared<TagHandler<Matrix, U1>>();
+        tag_handler = std::make_shared<TagHandler<Matrix, U1>>();
         only_nn_ = true; // currently hardcoded
         J_ = model["vibronic_J_coupling"].as<value_type>();
         epsilon_ = model["vibronic_J_excitation"].as<value_type>();
@@ -60,6 +60,10 @@ public:
         phys_indexes[0].insert(std::make_pair(0, 1));
         phys_indexes[0].insert(std::make_pair(1, 1));
 
+        std::cout << "PRINTING PHYSICAL INDICES" << std::endl;
+        for (const auto& iEl: phys_indexes)
+            std::cout << "phys index is " << iEl << std::endl;
+
         // Handle electronic operators
         ident_ele_op.insert_block(Matrix(1, 1, 1), 0, 0);
         ident_ele_op.insert_block(Matrix(1, 1, 1), 1, 1);
@@ -76,30 +80,35 @@ public:
 
         // Register electronic operators
         ident_ele = tag_handler->register_op(ident_ele_op, tag_detail::bosonic);
+        std::cout << "registered electronic identity with tag " << ident_ele << std::endl;
         create_ele = tag_handler->register_op(create_ele_op, tag_detail::bosonic);
+        std::cout << "registered electronic creator with tag " << create_ele << std::endl;
         destroy_ele = tag_handler->register_op(destroy_ele_op, tag_detail::bosonic);
+        std::cout << "registered electronic destroyer with tag " << destroy_ele << std::endl;
         count_ele = tag_handler->register_op(count_ele_op, tag_detail::bosonic);
+        std::cout << "registered electronic count op with tag " << count_ele << std::endl;
         count_ele_gs = tag_handler-> register_op(count_ele_op_gs, tag_detail::bosonic);
+        std::cout << "registered electronic ground state count op with tag " << count_ele_gs << std::endl;
 
-        // Handle vibratinoal operators
+        // Handle vibrational operators
         std::set<int> nModalsUnique(nMaxVec.begin(), nMaxVec.end());
-        std::vector<int> nModalsUniqueVec(nModalsUnique.begin(), nModalsUnique.end());
         //TODO: SiteTypes?
         std::vector<op_t> ident_op, count_op, destroy_op, create_op, paired_op;
         //If modal bases have different number of modals
         for (const auto& nModals_idx: nModalsUnique) {
-            int overallDimension = nMaxVec[nModals_idx];
+            int overallDimension = nModals_idx;
+            std::cout << "Matrix dimension is " << overallDimension << std::endl;
             Matrix mident(overallDimension, overallDimension, 0.), mcount(overallDimension, overallDimension, 0.);
             std::vector <Matrix> mpairedVec;
-            mident(0, 0) = 1.;
-            for (int n = 1; n < overallDimension; n++) {
-                for (int m = 1; m < overallDimension; m++){
+            for (int n = 0; n < overallDimension; n++) {
+                for (int m = 0; m < overallDimension; m++){
                     Matrix mpaired(overallDimension, overallDimension, 0.);
                     mpaired(n,m) = 1; 
+                    std::cout << "created a paired operator with the entry 1 in row index " << n << " and column index " << m << std::endl;
                     mpairedVec.push_back(mpaired);
-            }
+                }
                 mident(n, n) = 1.;
-                mcount(n, n) = value_type(n); //same count operator as in Watson Model
+                if (n != 0) mcount(n, n) = value_type(n); //same count operator as in Watson Model
             }
             //local operators
             std::vector <op_t> paired_op_locVec;
@@ -121,48 +130,70 @@ public:
         }
         // Creates the final tags and update the table
         ident = modelHelper<Matrix, U1>::register_all_types(ident_op, tag_detail::bosonic, tag_handler);
+        for(const auto &iEl : ident)
+            std::cout << "registered a vib identity with tag " << iEl << std::endl;
         count = modelHelper<Matrix, U1>::register_all_types(count_op, tag_detail::bosonic, tag_handler);
+        for(const auto &iEl : count)
+            std::cout << "registered a vib count op with tag " << iEl << std::endl;
         paired = modelHelper<Matrix, U1>::register_all_types(paired_op, tag_detail::bosonic, tag_handler);
+        for(const auto &iEl : paired)
+            std::cout << "registered a vib paired op with tag " << iEl << std::endl;
     }
 
     void create_terms() override {
         std::cout << "Parsing integral file" << std::endl;
-        auto hamiltonianTerms = Vibrational::detail::parseIntegralNmodeVibronic<value_type>(model, lat);
+        auto hamiltonianTerms = Vibrational::detail::parseIntegralExcitonicNmode<value_type>(model, lat);
         auto hamiltonianSize = hamiltonianTerms.second.size();
-        std::vector<int> nMaxVecMolecule;
-        if(nMaxVec.size() != 1){
-            for(int i = 0; i < n_particles_; i++){
-                for(int j = 0; j < n_vib_states_; j++){
-                    nMaxVecMolecule.push_back(nMaxVec[i*n_vib_states_ + j]);
-                }
-            }
-        }
         for (int i_body = 0; i_body < n_particles_; i_body++) { //loop over monomers
+            std::cout << "iteration of " << i_body << "th monomer" << std::endl;
             int flag = 0;
             std::vector<int> vec_jnk(2);
             std::vector<int> vec_jnk_next(2);
             vec_jnk_next[0] = i_body+1;
             vec_jnk[0] = i_body;
             for (int idx = 0; idx < hamiltonianTerms.first.size(); idx++){ //loop over rows of integral file
-                int ele_state = hamiltonianTerms.first[idx][hamiltonianTerms.first.size()-1];
-                int connecting = hamiltonianTerms.first[idx][hamiltonianTerms.first.size()-2];
+                std::cout << "iteration of " << idx << "th row of integral file" << std::endl;
+                int connecting = -1;
+                int ele_state = -1;
+                if(model["vibronic_max_coupling_nmode"].as<int>() != 3){
+                    auto it = std::find(hamiltonianTerms.first[idx].begin(), hamiltonianTerms.first[idx].end(), -1);
+                    if (it != hamiltonianTerms.first[idx].end()) {
+                    // Calculate the index by subtracting begin() iterator from the found iterator
+                        int maxIndex = std::distance(hamiltonianTerms.first[idx].begin(), it);
+                        ele_state = hamiltonianTerms.first[idx][maxIndex-1];
+                        std::cout << "ele_state is " << ele_state << std::endl;
+                        connecting = hamiltonianTerms.first[idx][maxIndex-2];
+                        std::cout << "connecting variable is " << connecting << std::endl;
+                    } else {
+                        throw std::runtime_error("Problem with returned operator array from integral parser");
+                    }
+                }
+                else {
+                    ele_state = hamiltonianTerms.first[idx][hamiltonianTerms.first.size()-1];
+                    std::cout << "ele_state is " << ele_state << std::endl;
+                    connecting = hamiltonianTerms.first[idx][hamiltonianTerms.first.size()-2];
+                    std::cout << "connecting variable is " << connecting << std::endl;
+                }
+                if (connecting == -1 || ele_state == -1) throw std::runtime_error("Error reading variable <<connecting>> and/or <<ele_state>>");
+                auto matrixElement = static_cast<value_type>(hamiltonianTerms.second[idx]);
                 if(i_body == n_particles_-1 && connecting) break;
                 std::vector<tag_type> operators;
                 std::vector<pos_t> positions;
                 std::vector<int> modes;
                 std::vector<int> modals;
-                for(int i = 0; i < hamiltonianTerms.first[idx].size()-2; i++){ //loop over coupled modes and modals in a single integral line
-                    if (i % 2 == 0) modes.push_back(hamiltonianTerms.first[idx][i]-1); //-1 so that mode index starts at zero
+                for(int i = 0; i < hamiltonianTerms.first[idx].size(); i++){ //loop over coupled modes and modals in a single integral line
+                    if (hamiltonianTerms.first[idx][i] == -1 || hamiltonianTerms.first[idx][i+2] == -1) break;
+                    else if (i % 2 == 0) modes.push_back(hamiltonianTerms.first[idx][i]-1); //-1 so that mode index starts at zero
                     else modals.push_back(hamiltonianTerms.first[idx][i]);
                 }
-                for(int i = 0; i < hamiltonianTerms.first[idx].size()-2; i+=2){
+                for(int i = 0; i < modes.size(); i+=2){
                     vec_jnk[1] = modes[i];
-                    int localDimension = nMaxVecMolecule[modes[i]];
+                    int localDimension = nMaxVec[i_body*n_vib_states_+modes[i]];
                     int modalToCreate = modals[i];
                     int modalToDestroy = modals[i+1];
                     // Calculating the index of the given operator in the "paired" vector
                     // Iterate through the set
-                    int sumSquaredSmaller;
+                    int sumSquaredSmaller = 1;
                     std::set<int> nModalsUnique(nMaxVec.begin(), nMaxVec.end());
                     for (const auto& element : nModalsUnique) {
                         // Check if the element is smaller than the given integer
@@ -174,31 +205,49 @@ public:
                     int indexOp = (sumSquaredSmaller-1) + modalToCreate*(localDimension) + modalToDestroy;
                     operators.push_back(paired[indexOp]); //define ops
                     positions.push_back(lat.get_prop<int>("vibindex", vec_jnk)); //define pos
+                    std::cout << "pushed back paired operator with tag " << operators[0] << " at position " << positions[0] << std::endl; 
                 }
                 // Add electronic contribution
                 // Add the count operator for the specific excited states.
                 if (ele_state == 1) { //if electronic excited state potential
+                    std::cout << "detected electronic excited state" << std::endl;
                     vec_jnk[1] = 0;
                     positions.push_back(lat.get_prop<int>("eleindex", vec_jnk));
                     operators.push_back(count_ele);
+                    std::cout << "created |1><1| term" << std::endl;
                     //BEGIN NEW
                     if( (i_body < n_particles_-1) && connecting == 1){
                         //create |1><1||0><0| term
                         vec_jnk_next[1] = 0;
                         positions.push_back(lat.get_prop<int>("eleindex", vec_jnk_next));
                         operators.push_back(count_ele_gs);
-                        modelHelper<Matrix, U1>::add_term(positions, operators, J_, tag_handler, this->terms_, true);
+                        modelHelper<Matrix, U1>::add_term(positions, operators, matrixElement, tag_handler, this->terms_, true);
+                        for(const auto& iEl : positions)
+                            std::cout << "added term for position " << iEl << std::endl;
+                        for(const auto& iEl : operators)
+                            std::cout << "with operator " << iEl << std::endl;
+                        std::cout << "created |1><1||0><0| term" << std::endl;
                         //create |1><1||1><1| term
                         operators.pop_back();
                         operators.push_back(count_ele);
-                        modelHelper<Matrix, U1>::add_term(positions, operators, J_, tag_handler, this->terms_, true);
+                        modelHelper<Matrix, U1>::add_term(positions, operators, matrixElement, tag_handler, this->terms_, true);
+                        for(const auto& iEl : positions)
+                            std::cout << "added term for position " << iEl << std::endl;
+                        for(const auto& iEl : operators)
+                            std::cout << "with operator " << iEl << std::endl;
+                        std::cout << "created |1><1||1><1| term" << std::endl;
                         //create |0><0||1><1| term
                         operators.pop_back(); //remove count_ele of next site
                         operators.pop_back(); //remove count_ele of current site
                         operators.push_back(count_ele_gs);
                         operators.push_back(count_ele);
-                        modelHelper<Matrix, U1>::add_term(positions, operators, J_, tag_handler, this->terms_, true);
+                        modelHelper<Matrix, U1>::add_term(positions, operators, matrixElement, tag_handler, this->terms_, true);
+                        for(const auto& iEl : positions)
+                            std::cout << "added term for position " << iEl << std::endl;
+                        for(const auto& iEl : operators)
+                            std::cout << "with operator " << iEl << std::endl;
                         flag = 1;
+                        std::cout << "created |0><0||1><1| term" << std::endl;
                     }
                     
 
@@ -207,18 +256,28 @@ public:
                     vec_jnk[1] = 0;
                     positions.push_back(lat.get_prop<int>("eleindex", vec_jnk));
                     operators.push_back(count_ele_gs);
+                    std::cout << "detected electronic ground state" << std::endl;
                     
                     if( (i_body < n_particles_-1) && connecting == 1){ 
                         vec_jnk_next[1] = 0;
                         positions.push_back(lat.get_prop<int>("eleindex", vec_jnk_next));
                         operators.push_back(count_ele_gs);
-                        modelHelper<Matrix, U1>::add_term(positions, operators, J_, tag_handler, this->terms_, true);
-                        flag = 1; 
+                        modelHelper<Matrix, U1>::add_term(positions, operators, matrixElement, tag_handler, this->terms_, true);
+                        for(const auto& iEl : positions)
+                            std::cout << "added term for position " << iEl << std::endl;
+                        for(const auto& iEl : operators)
+                            std::cout << "with operator " << iEl << std::endl;
+                        flag = 1;
+                        std::cout << "mark for neighbouring excited vibration" << std::endl; 
                     }
                 }
                 // Builds the term of the Hamiltonian
                 if( !(i_body == n_particles_-1 && connecting == 1) && flag == 0 ){ 
-                    modelHelper<Matrix, U1>::add_term(positions, operators, J_, tag_handler, this->terms_, true);
+                    modelHelper<Matrix, U1>::add_term(positions, operators, matrixElement, tag_handler, this->terms_, true);
+                    for(const auto& iEl : positions)
+                            std::cout << "added term for position " << iEl << std::endl;
+                    for(const auto& iEl : operators)
+                            std::cout << "with operator " << iEl << std::endl;
                 }
                 flag = 0;
             }
@@ -238,9 +297,14 @@ public:
                     operators.push_back(create_ele);
                     operators.push_back(destroy_ele);
                     modelHelper<Matrix, U1>::add_term(positions, operators, J_, tag_handler, this->terms_);
+                    for(const auto& iEl : positions)
+                            std::cout << "added term for position " << iEl << std::endl;
+                    for(const auto& iEl : operators)
+                            std::cout << "with operator " << iEl << std::endl;
                 }
             }
         }
+        std::cout << "added J coupling" << std::endl;
     }
 
     void update(BaseParameters const& p)

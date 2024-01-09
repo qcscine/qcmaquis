@@ -99,7 +99,7 @@ public:
             Matrix mident(overallDimension, overallDimension, 0.), mcount(overallDimension, overallDimension, 0.);
             std::vector <Matrix> mpairedVec;
             mident(0, 0) = 1.;
-            for (int n = 0; n < overallDimension; n++) { //change this
+            for (int n = 0; n < overallDimension; n++) { 
                 for (int m = 0; m < overallDimension; m++){
                     Matrix mpaired(overallDimension, overallDimension, 0.);
                     mpaired(n,m) = 1;

@@ -12,7 +12,7 @@ template <class Matrix, class SymmGroup>
 typename OPTable<Matrix, SymmGroup>::tag_type
 OPTable<Matrix, SymmGroup>::register_op(op_t const & op_)
 {
-    tag_type ret = this->size();
+   tag_type ret = this->size();
     this->push_back(op_);
     return ret;
 }

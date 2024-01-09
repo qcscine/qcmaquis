@@ -202,8 +202,8 @@ inline std::pair< std::vector<std::vector<int>>, std::vector<T> >
 
 
 template<class T>
-inline std::pair<std::vector<std::vector<int>>, std::vector<T>>
-    parseIntegralNmodeVibronic(BaseParameters& parms, const Lattice& lat)
+inline std::pair<std::vector<chem::index_type<chem::Hamiltonian::VibrationalNMode>>, std::vector<T> >
+    parseIntegralExcitonicNmode(BaseParameters& parms, const Lattice& lat)
 {
     typedef Lattice::pos_t pos_t;
     using InputType = double;
@@ -246,7 +246,7 @@ inline std::pair<std::vector<std::vector<int>>, std::vector<T>>
             // loop over all 2nd quant. operators in vector.
             for (const auto &sq_op_str : line_splitted) {
                 std::vector<std::string> temp;
-                boost::split(temp, sq_op_str, boost::is_any_of("-"));
+                boost::split(temp, sq_op_str, boost::is_any_of("-\t ")); //splits string whenever a hyphen, tab or space is encountered 
                 indices_str.insert(indices_str.end(), std::make_move_iterator(temp.begin()),
                                     std::make_move_iterator(temp.end()));
             }

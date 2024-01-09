@@ -273,6 +273,10 @@ public:
             }
             MPOTensor_detail::Hermitian h_(LeftHerm, RightHerm, LeftPhase, RightPhase);
             // Construction of the MPO tensor
+            std::cout << "left spins of MPO site " << p << " : " << std::endl;
+            for(int i = 0; i < left_spins.size(); i++) std::cout << left_spins[i] << std::endl;
+            std::cout << "right spins of MPO site " << p << " : " << std::endl;
+            for(int i = 0; i < right_spins.size(); i++) std::cout << right_spins[i] << std::endl;
             if (p == 0)
                 mpo.push_back( MPOTensor<Matrix, SymmGroup>(1, rcd.second, pre_tensor,
                                  tag_handler->get_operator_table(), h_, left_spins, right_spins));

@@ -107,6 +107,8 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
                 if (mpo2.has(it.index(), b3))
                     summands.insert(it.index());
             // Evaluates the sum over b2 and returns the (b1, b3) element of the MPOTensor 
+            std::cout << "mpo1 row : " << b1 << std::endl;
+            std::cout << "mpo2 column : " << b3 << std::endl;
             auto coupled_ops = ts_ops_detail::mpo_couple(summands, b1, b3, phys_i1, phys_i2, mpo1, mpo2);
             for (auto it = coupled_ops.begin(); it != coupled_ops.end(); ++it) {
                 tag_type new_tag = kron_handler.get_kronecker_table()->register_op(it->second);
@@ -141,9 +143,10 @@ void make_ts_cache_mpo(MPO<MPOMatrix, SymmGroup> const & mpo_orig,
     auto L_ts = mpo_orig.length() - 1;
     mpo_out.resize(L_ts);
     // Generates the two-site MPOs
-    omp_for(size_t p, parallel::range<size_t>(0,L_ts), {
+    for(size_t p = 0; p < L_ts; p++){
+        maquis::cout << "fusing MPO site " << p << " with MPO site " << p+1 << std::endl;
         mpo_out[p] = make_twosite_mpo<MPOMatrix, MPSMatrix>(mpo_orig[p], mpo_orig[p+1], mps[p].site_dim(), mps[p+1].site_dim());
-    });
+    }
     // Calculates the overall number of tags
     std::size_t ntags=0;
     for (int p=0; p<mpo_out.length(); ++p)

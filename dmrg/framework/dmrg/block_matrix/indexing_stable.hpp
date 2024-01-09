@@ -370,6 +370,12 @@ public:
     size_t size(charge a, charge b, Fusion f) const
     {
         charge pc = f(a, b);
+        std::cout << "charge a : " << a << std::endl;
+        std::cout << "count charge a : " << size_.count(a) << std::endl;
+        std::cout << "charge b : " << b << std::endl;
+        std::cout << "count charge b : " << size_.count(b) << std::endl;
+        std::cout << "product charge : " << pc << std::endl;
+        std::cout << "count product charge : " << size_.count(pc) << std::endl;
         assert(size_.count(pc) > 0);
         return size_[pc];
     }

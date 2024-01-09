@@ -62,9 +62,9 @@ public:
         phys_indexes[0].insert(std::make_pair(1, 1));
         #ifndef NDEBUG
         std::cout << "PRINTING PHYSICAL INDEX" << std::endl;
-        #endif 
         for (const auto& iEl: phys_indexes)
             std::cout << iEl << std::endl;
+        #endif
         // Registering the electronic operators
         ident_ele_op.insert_block(Matrix(1, 1, 1), 0, 0);
         ident_ele_op.insert_block(Matrix(1, 1, 1), 1, 1);
@@ -343,7 +343,7 @@ public:
         if (model.is_set("MEASURE[Population]")) {
             for (std::size_t idx = 0; idx < n_particles_; idx++) {
                 std::string name = "PopulationState"+std::to_string(idx);
-                // Generates vectors for the position operators
+                // Generates vectors for the positions
                 std::vector<pos_t> pos_internal(0);
                 std::vector<std::vector<pos_t> > pos_local(0);
                 pos_internal.push_back((n_vib_states_+n_ele_states_)*idx); 

@@ -40,9 +40,10 @@ struct coded_model_factory<Matrix, U1> {
 #else
             throw std::runtime_error("Don't know this model!");
 #endif
-        else if (parms["MODEL"] == std::string("vibronicnmode"))
+        }
+        else if (parms["MODEL"] == std::string("excitonicnmode")){
 #ifdef DMRG_VIBRONIC
-            return impl_ptr( new VibronicNModePaired<Matrix>(lattice, parms));
+            return impl_ptr( new ExcitonicNmode<Matrix>(lattice, parms));
 #else
             throw std::runtime_error("Don't know this model!");
 #endif

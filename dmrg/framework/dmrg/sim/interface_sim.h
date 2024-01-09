@@ -21,6 +21,7 @@
 #include "dmrg/utils/results_collector.h"
 #include "dmrg/MetaSweepSimulations/FEASTLauncher.h"
 #include "dmrg/SweepBasedAlgorithms/SweepSimulationFactory.h"
+#include <sys/time.h>
 
 // The sim class for interface-based DMRG runs and measurements
 template <class Matrix, class SymmGroup>
@@ -151,7 +152,7 @@ public:
       }
     }
   }
-
+  
   /**
    * @brief Generic ALS-based optimization.
    * This routine solve a problem (that can be either a propagation, the solution of the linear system, or
@@ -176,6 +177,9 @@ public:
     energies_.push_back(firstEnergy);
     maquis::cout << "Initial energy is: " << std::setprecision(15) << firstEnergy << std::endl;
     // Run the sweep-based simulation.
+    //start timer here
+    timeval now, then;
+    gettimeofday(&now, NULL);
     try {
       for (int sweep=init_sweep; sweep < nSweeps; ++sweep) {
         factory_->runSingleSweep(sweep);
@@ -209,6 +213,10 @@ public:
       dumpParametersAndIterResults(e.sweep());
       dumpEnergy(e.sweep());
     }
+    //end timer here
+    gettimeofday(&then, NULL);
+    double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
+    maquis::cout << "Sweep took " << elapsed << " seconds." << std::endl;
   }
 
   /** @brief Runs a propagation calculation */

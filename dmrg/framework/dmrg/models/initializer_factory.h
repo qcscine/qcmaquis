@@ -49,6 +49,7 @@ model_impl<Matrix,SymmGroup>::initializer(Lattice const& lat, BaseParameters & p
     std::vector<int> site_types(lat.size(), 0);
     for (int p = 0; p < lat.size(); ++p) {
         site_types[p] = lat.get_prop<int>("type", p);
+        std::cout << "site type of lattice site " << p << " is " << site_types[p] << std::endl;
         max_site_type = std::max(site_types[p], max_site_type);
     }
 

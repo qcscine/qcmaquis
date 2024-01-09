@@ -159,6 +159,7 @@ private:
         add_option("vibronic_num_excitons", "Number of excitons", value(1));
         add_option("vibronic_num_connectingmodes", "Number of vibrational modes connecting two monomers", value(0));
         add_option("vibronic_max_coupling", "Maximum power of operators in the Hamiltonian", value(2));
+        add_option("vibronic_max_coupling_nmode", "Maximum many body coupling of vibrational modes", value(1));
 
         // TD-related parameters
         add_option("propagator_accuracy", "Accuracy of the iterative approximation of the time-evolution operator", value(1.0E-10));
