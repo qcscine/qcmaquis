@@ -6,6 +6,11 @@
  */
 
 #include <memory>
+#include "dmrg/evolve/TimeEvolvers/RKEvolver.h"
+#include "utils/io.hpp"
+#include <ostream>
+#include <stdexcept>
+#include <string>
 
 #include "dmrg/evolve/TimeEvolvers/TimeEvolver.h"
 
@@ -61,27 +66,27 @@ TimeEvolver<Matrix, SymmGroup, ParameterType>::TimeEvolver(ParameterType& parms)
   maquis::cout << "+------------------------------------------+" << std::endl;
   maquis::cout << "  DETAILS ABOUT SITE-CENTERED TIME EVOLVER" << std::endl;
   maquis::cout << "+------------------------------------------+" << std::endl;
-  maquis::cout << std::endl;
   maquis::cout << " - Propagation type: ";
   maquis::cout << ((is_imag_) ? "Imaginary-time" : "Real-time");
   maquis::cout << std::endl;
   maquis::cout << " - Time step: " << time_step_ << std::endl;
   maquis::cout << " - Propagation algorithm: ";
+  bool verbose = parms["verbose"];
   // Checks if it has a TD part
   if (parms.is_set("TD_perturbation")) {
     has_td_part_ = true;
     std::string intAlgo = parms["TD_integration_algorithm"];
     if (intAlgo == "RungeKutta") {
       time_evolution_algorithm_ = std::make_unique< RKEvolver<Matrix, SymmGroup> >(time_step_, has_td_part_, is_imag_);
-      maquis::cout << "Fourth-order Runge Kutta";
+      maquis::cout << "Fourth-order Runge Kutta\n";
     }
     else if (intAlgo == "EMR2") {
-      time_evolution_algorithm_ = std::make_unique< LanczosEMR >(time_step_, has_td_part_, is_imag_, accuracy_, max_iterations_);
-      maquis::cout << "Exponential midpoint rule-based Lanczos";
+      time_evolution_algorithm_ = std::make_unique< LanczosEMR >(time_step_, has_td_part_, is_imag_, accuracy_, max_iterations_, verbose);
+      maquis::cout << "Exponential midpoint rule-based Lanczos\n";
     }
     else if (intAlgo == "CF4") {
-      time_evolution_algorithm_ = std::make_unique< LanczosFourthOrder>(time_step_, has_td_part_, is_imag_, accuracy_, max_iterations_);
-      maquis::cout << "Fouth-order Lanczos";
+      time_evolution_algorithm_ = std::make_unique< LanczosFourthOrder>(time_step_, has_td_part_, is_imag_, accuracy_, max_iterations_, verbose);
+      maquis::cout << "Fouth-order Lanczos\n";
     }
     else {
       throw std::runtime_error("TD integration algorithm not recognized");
@@ -89,12 +94,12 @@ TimeEvolver<Matrix, SymmGroup, ParameterType>::TimeEvolver(ParameterType& parms)
   }
   else {
     if (parms["transcorrelated_hamiltonian"] == "yes") {
-      time_evolution_algorithm_ = std::make_unique< ArnoldiEvolverType >(time_step_, has_td_part_, is_imag_, accuracy_, max_iterations_);
-      maquis::cout << "Arnoldi approximation of the propagator";
+      time_evolution_algorithm_ = std::make_unique< ArnoldiEvolverType >(time_step_, has_td_part_, is_imag_, accuracy_, max_iterations_, verbose);
+      maquis::cout << "Arnoldi approximation of the propagator\n";
     }
     else {
-      time_evolution_algorithm_ = std::make_unique< LanczosTI >(time_step_, has_td_part_, is_imag_, accuracy_, max_iterations_);
-      maquis::cout << "Lanczos approximation of the propagator";
+      time_evolution_algorithm_ = std::make_unique< LanczosTI >(time_step_, has_td_part_, is_imag_, accuracy_, max_iterations_, verbose);
+      maquis::cout << "Lanczos approximation of the propagator\n";
     }
   }
 };

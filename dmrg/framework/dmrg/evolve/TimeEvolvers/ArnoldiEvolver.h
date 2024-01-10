@@ -29,6 +29,16 @@
 #ifndef MAQUIS_DMRG_ARNOLDIEVOLVER_H
 #define MAQUIS_DMRG_ARNOLDIEVOLVER_H
 
+#include "alps/numeric/matrix/matrix.hpp"
+#include "dmrg/block_matrix/block_matrix.h"
+#include "dmrg/mp_tensors/mpstensor.h"
+#include "dmrg/mp_tensors/siteproblem.h"
+#include "dmrg/mp_tensors/zerositeproblem.h"
+#include <complex>
+#include <cstddef>
+#include <iostream>
+#include <ostream>
+#include <type_traits>
 #ifdef DMRG_TD
 
 #include <vector>
@@ -51,10 +61,11 @@ class ArnoldiEvolver : public TimeEvolutionAlgorithm<Matrix, SymmGroup> {
   using base::is_imag_;
   using base::time_step_;
   using base::apply_hamiltonian;
+  using base::verbose_;
 public:
   /* Class constructor */
-  ArnoldiEvolver(time_type time_step, bool has_td, bool is_imag, double threshold, std::size_t max_iter) 
-    : base(time_step, has_td, is_imag), threshold_(threshold), max_iter_(max_iter) {}
+  ArnoldiEvolver(time_type time_step, bool has_td, bool is_imag, double threshold, std::size_t max_iter, bool verbose=false) 
+    : base(time_step, has_td, is_imag, verbose), threshold_(threshold), max_iter_(max_iter) {}
 
   /* Time evolution method */
   void evolve(SiteProblem<Matrix, SymmGroup> const& site_problem, MPSTensor<Matrix, SymmGroup>& matrix,

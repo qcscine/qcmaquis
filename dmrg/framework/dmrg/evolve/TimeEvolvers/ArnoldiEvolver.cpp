@@ -27,6 +27,10 @@
  *****************************************************************************/
 
 #include "ArnoldiEvolver.h"
+#include "alps/numeric/matrix/matrix.hpp"
+#include <complex>
+#include <cstddef>
+#include <vector>
 
 template<class Matrix, class SymmGroup>
 template<class SiteProblem, class MatrixType>
@@ -48,7 +52,9 @@ void ArnoldiEvolver<Matrix, SymmGroup>::evolve_kernel(const SiteProblem& site_pr
   matrix_type matrix_representation(max_iter_, max_iter_, 0.);
   vector_type result_vector(1);
   // First step of the Arnoldi iteration
-  print_header();
+  if (verbose_) {
+    print_header();
+  }
   lanczos_space.reserve(max_iter_);
   lanczos_space.push_back(matrix/ietl::two_norm(matrix));
   // ==  MAIN LOOP ==
@@ -73,9 +79,13 @@ void ArnoldiEvolver<Matrix, SymmGroup>::evolve_kernel(const SiteProblem& site_pr
       error = std::norm(result_vector[local_dim-1])*norm_local;
     // Temporary representation of the matrix
     local_dim++;
-    print_data(local_dim-1, error);
+    if (verbose_) {
+      print_data(local_dim-1, error);
+    }
     if (norm_local < 1.0E-20 || error < threshold_ || idx == max_iter_-1) {
-      print_line();
+      if (verbose_) {
+        print_line();
+      }
       break;
     }
     else {

@@ -34,8 +34,8 @@ class TimeEvolutionAlgorithm {
    * @param has_td_part Whether the MPO has a time-dependent part (NYI).
    * @param is_imag true if the propagation is an imaginary-time propagation.
    */
-  explicit TimeEvolutionAlgorithm(time_type time_step, bool has_td_part, bool is_imag)
-    : time_step_(time_step), has_td_part_(has_td_part), is_imag_(is_imag) {};
+  explicit TimeEvolutionAlgorithm(time_type time_step, bool has_td_part, bool is_imag, bool verbose=false)
+    : time_step_(time_step), has_td_part_(has_td_part), is_imag_(is_imag), verbose_(verbose) {};
   
   /** Virtual destructor */
   virtual ~TimeEvolutionAlgorithm() = default;
@@ -53,7 +53,7 @@ class TimeEvolutionAlgorithm {
   };
  protected:
   /** Class members */
-  bool has_td_part_, is_imag_;
+  bool has_td_part_, is_imag_, verbose_;
   time_type time_step_;
 };
 

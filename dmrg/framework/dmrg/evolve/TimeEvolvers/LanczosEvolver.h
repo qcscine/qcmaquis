@@ -8,6 +8,18 @@
 #ifndef MAQUIS_DMRG_LANCZOSEVOLVER_H
 #define MAQUIS_DMRG_LANCZOSEVOLVER_H
 
+#include "alps/numeric/matrix/matrix.hpp"
+#include "dmrg/block_matrix/block_matrix.h"
+#include "dmrg/mp_tensors/mpstensor.h"
+#include "dmrg/mp_tensors/siteproblem.h"
+#include "dmrg/mp_tensors/zerositeproblem.h"
+#include <array>
+#include <complex>
+#include <cstddef>
+#include <iostream>
+#include <ostream>
+#include <type_traits>
+#include <utility>
 #ifdef DMRG_TD
 
 #include <vector>
@@ -75,21 +87,22 @@ class LanczosEvolver : public TimeEvolutionAlgorithm<Matrix, SymmGroup> {
   using base::is_imag_;
   using base::time_step_;
   using base::apply_hamiltonian;
+  using base::verbose_;
 
  public:
 
   /* Class constructor */
-  LanczosEvolver(time_type time_step, bool has_td, bool is_imag, double threshold, std::size_t max_iter) 
-    : base(time_step, has_td, is_imag), threshold_(threshold), max_iter_(max_iter) {}
+  LanczosEvolver(time_type time_step, bool has_td, bool is_imag, double threshold, std::size_t max_iter, bool verbose=false) 
+    : base(time_step, has_td, is_imag, verbose), threshold_(threshold), max_iter_(max_iter) {}
 
   /* Time evolution method */
   void evolve(SiteProblem<Matrix, SymmGroup> const& site_problem, MPSTensor<Matrix, SymmGroup>& matrix,
-              bool is_forward, time_type time_current, time_type time_step) const override final {
+              bool is_forward, time_type time_current, time_type time_step) const final {
     evolve_kernel(site_problem, matrix, is_forward, time_current, time_step);
   }
 
   void evolve(ZeroSiteProblem<Matrix, SymmGroup> const& site_problem, block_matrix<Matrix, SymmGroup>& matrix,
-              bool is_forward, time_type time_current, time_type time_step) const override final {
+              bool is_forward, time_type time_current, time_type time_step) const final {
     evolve_kernel(site_problem, matrix, is_forward, time_current, time_step);
   }
 

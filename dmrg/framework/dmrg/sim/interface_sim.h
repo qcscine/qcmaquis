@@ -9,18 +9,38 @@
 #define INTERFACE_SIM_H
 
 #include <cmath>
+#include <exception>
+#include <iomanip>
 #include <iterator>
 #include <iostream>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <vector>
 #include <sys/stat.h>
 
+#include "dmrg/SweepBasedAlgorithms/SweepOptimizationTypeTrait.h"
+#include "dmrg/models/measurements.h"
+#include "dmrg/models/model.h"
+#include "dmrg/mp_tensors/mpo.h"
+#include "dmrg/mp_tensors/mps.h"
+#include "dmrg/sim/abstract_sim.h"
 #include "dmrg/sim/sim.h"
 #include "dmrg/evolve/TimeEvolutionSweep.h"
 #include "dmrg/mp_tensors/mpo_times_mps.hpp"
 #include "dmrg/models/MolecularHamiltonians/measure_transform.hpp"
+#include "dmrg/utils/BaseParameters.h"
+#include "dmrg/utils/DmrgParameters.h"
+#include "dmrg/utils/archive.h"
+#include "dmrg/utils/checks.h"
+#include "dmrg/utils/storage.h"
+#include "dmrg/utils/time_limit_exception.h"
 #include "integral_interface.h"
 #include "dmrg/utils/results_collector.h"
 #include "dmrg/MetaSweepSimulations/FEASTLauncher.h"
 #include "dmrg/SweepBasedAlgorithms/SweepSimulationFactory.h"
+#include "utils/io.hpp"
+#include "utils/traits.hpp"
 
 // The sim class for interface-based DMRG runs and measurements
 template <class Matrix, class SymmGroup>
@@ -209,9 +229,6 @@ public:
         if (!(simulationType=="evolve" && parms["imaginary_time"] == "no")) {
           converged = checkEnergyConvergence(energyThreshold);
         }
-        if (converged) { 
-          maquis::cout << "ALS CONVERGED -- SWEEPING PROCEDURE TERMINATED" << std::endl;
-        }
         last_sweep_ = sweep;
         /// write checkpoint
         bool stopped = stop_callback() || converged;
@@ -219,6 +236,11 @@ public:
           checkpoint_simulation(mps, sweep, -1);
         }
         if (stopped) {
+          if (converged) {
+            maquis::cout << "-- ALS CONVERGED --" << std::endl;
+          } else if (sweep+1 == nSweeps) {
+            maquis::cout << "-- ALS TERMINATED -- MAXIMUM ITERATIONS " << nSweeps << " REACHED!" << std::endl;
+          }
           break;
         }
       }
@@ -253,14 +275,12 @@ public:
     maquis::cout << " ============================== " << std::endl;
     maquis::cout << "   STARTING tcDMRG SIMULATION = " << std::endl;
     maquis::cout << " ============================== " << std::endl;
-    maquis::cout << std::endl;
-    maquis::cout << " Number of sweeps for the preliminary TI-DMRG step:   " << nSweepsTI << std::endl;
-    maquis::cout << " Number of sweeps for the tcDMRG step:  " << nSweepsTC << std::endl;
-    maquis::cout << " Energy convergence threshold: " << energyThreshold << std::endl;
+    maquis::cout << " Preliminary TI-DMRG Sweeps: " << nSweepsTI << std::endl;
+    maquis::cout << " tcDMRG Sweeps: " << nSweepsTC << std::endl;
+    maquis::cout << " Energy Convergence Threshold: " << energyThreshold << std::endl;
     maquis::cout << std::endl;
     // Preliminary TI calculation
     if (nSweepsTI > 0) {
-      maquis::cout << std::endl;
       maquis::cout << " == STARTING THE TI-DMRG OPTIMIZATION == " << std::endl;
       maquis::cout << std::endl;
       auto conventionalParameterContainer = parms;

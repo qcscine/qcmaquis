@@ -6,6 +6,10 @@
  */
 
 #include "dmrg/evolve/TimeEvolvers/LanczosEvolver.h"
+#include "alps/numeric/matrix/matrix.hpp"
+#include <complex>
+#include <cstddef>
+#include <vector>
 
 template<class Matrix, class SymmGroup, TimeStepDistributor TimeStepDistributorClass>
 template<class SiteProblem, class MatrixType>
@@ -20,7 +24,8 @@ void LanczosEvolver<Matrix, SymmGroup, TimeStepDistributorClass>::evolve_kernel(
   // Initialization.
   MatrixType buffer_vector;
   typename MatrixType::real_type norm_local;
-  typename MatrixType::scalar_type alpha, beta;
+  typename MatrixType::scalar_type alpha;
+  typename MatrixType::scalar_type beta;
   typename std::vector<MatrixType> lanczos_space;
   
   // -- Outer loop --
@@ -33,7 +38,9 @@ void LanczosEvolver<Matrix, SymmGroup, TimeStepDistributorClass>::evolve_kernel(
     lanczos_space.resize(0);
     lanczos_space.reserve(max_iter_);
     // First step of the Lanczos iteration
-    print_header();
+    if (verbose_) {
+      print_header();
+    }
     lanczos_space.push_back(matrix);
     buffer_vector = applyOperator(lanczos_space[0], site_problem, iExp, time_current);
     alpha = ietl::dot(matrix, buffer_vector);
@@ -63,9 +70,13 @@ void LanczosEvolver<Matrix, SymmGroup, TimeStepDistributorClass>::evolve_kernel(
         error = std::norm(result_vector[local_dim-1])*norm_local;
       // Temporary representation of the matrix
       local_dim++;
-      print_data(local_dim-1, error);
+      if (verbose_) {
+        print_data(local_dim-1, error);
+      }
       if (norm_local < 1.0E-20 || error < threshold_) {
-        print_line();
+        if (verbose_) {
+          print_line();
+        }
         break;
       } else {
         // Update of the vector space
@@ -88,8 +99,11 @@ void LanczosEvolver<Matrix, SymmGroup, TimeStepDistributorClass>::evolve_kernel(
           matrix_representation(idx, idx-1) = norm_local;
         //}
       }
-      if (idx == max_iter_-1)
-        print_line();
+      if (idx == max_iter_-1) {
+        if (verbose_) {
+          print_line();
+        }
+      }
     }
   }
 };
