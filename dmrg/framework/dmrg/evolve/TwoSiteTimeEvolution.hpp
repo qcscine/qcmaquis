@@ -10,10 +10,23 @@
 
 #include <chrono>
 
+#include "dmrg/block_matrix/block_matrix_algorithms.h"
+#include "dmrg/mp_tensors/mpo.h"
+#include "dmrg/mp_tensors/mps.h"
+#include "dmrg/mp_tensors/mpstensor.h"
+#include "dmrg/mp_tensors/siteproblem.h"
 #include "dmrg/mp_tensors/twositetensor.h"
-#include "dmrg/mp_tensors/mpo_ops.h"
 #include "dmrg/evolve/TimeEvolutionSweep.h"
+#include "dmrg/utils/BaseParameters.h"
+#include "dmrg/utils/parallel/guard.hpp"
+#include "dmrg/utils/parallel/utils.hpp"
+#include "dmrg/utils/time_limit_exception.h"
+#include "utils/io.hpp"
 #include <chrono>
+#include <functional>
+#include <iostream>
+#include <ostream>
+#include <utility>
 
 /**
  * @brief Class implementing the two-site time-evolution algorithm with a sweep-based Trotter decomposition.
@@ -27,8 +40,8 @@ class TwoSiteTimeEvolution : public TimeEvolutionSweep<Matrix, SymmGroup, Storag
 {
 public:
   // Types definition
-  typedef typename Matrix::value_type value_type;
-  typedef TimeEvolutionSweep<Matrix, SymmGroup, Storage> base;
+  using value_type = typename Matrix::value_type;
+  using base = TimeEvolutionSweep<Matrix, SymmGroup, Storage>;
   using base::do_backpropagation_;
   using base::energy;
   using base::initial_site;
@@ -72,10 +85,12 @@ public:
    */
   inline int to_site(const int L, const int i) const
   {
-    if (i < 0)
+    if (i < 0) {
       return 0;
-    else
+
+    } else {
       return (i < L-1) ? i : 2*L - 2 - i;
+    }
   }
 
   /**
@@ -86,12 +101,14 @@ public:
    */
   void evolve_sweep(int sweep)
   {
+    bool verbose = parms_["verbose"];
     // Initialization
     typename MPSTensor<Matrix, SymmGroup>::scalar_type dipole;
     std::chrono::high_resolution_clock::time_point sweep_now = std::chrono::high_resolution_clock::now();
     iteration_results_.clear();
     // Definition of the initial site
-    int _site = 0, site;
+    int _site = 0;
+    int site;
     if (initial_site != -1) {
       _site = initial_site;
       site = to_site(L_, _site);
@@ -106,7 +123,9 @@ public:
     }
     // ==  MAIN LOOP - SWEEP OPTIMIZATION ==
     for (; _site < 2*L_-2; ++_site) {
-      int lr, site1, site2;
+      int lr;
+      int site1;
+      int site2;
       site = to_site(L_, _site);
       if (_site < L_-1) {
         lr = 1;
@@ -125,11 +144,13 @@ public:
         Storage::fetch(right_[site2+1]);
       }
       if (lr == +1) {
-        if (site2+2 < right_.size())
+        if (site2+2 < right_.size()) {
           Storage::prefetch(right_[site2+2]);
+        }
       } else {
-        if (site1 > 0)
+        if (site1 > 0) {
           Storage::prefetch(left_[site1-1]);
+        }
       }
      	// Create TwoSite objects.
       MPSTensor<Matrix, SymmGroup> twin_mps;
@@ -140,8 +161,9 @@ public:
       // == MAIN PART: performs the sweep ==
       std::pair< typename MPSTensor<Matrix, SymmGroup>::magnitude_type, MPSTensor<Matrix, SymmGroup> > res;
       time_evolver_->evolve(sp, twin_mps, true, false);
-      if (site1 == 0)
+      if (site1 == 0) {
         energy = ietl::get_energy(sp, twin_mps);
+      }
       res = std::make_pair(energy, twin_mps);
       two_vec << twin_mps;
       // +---------------------+
@@ -150,8 +172,9 @@ public:
       twin_mps.clear();
       {
         maquis::cout.precision(15);
-        if (site1 == 0)
+        if (site1 == 0 && verbose) {
           maquis::cout << " Energy = " << res.first + mpo_.getCoreEnergy() << std::endl;
+        }
         iteration_results_["Energy"] << res.first + mpo_.getCoreEnergy();
       }
       auto prec = maquis::cout.precision();
@@ -160,13 +183,15 @@ public:
       //  Setting up parameters for truncation
       // +------------------------------------+
       double alpha;
-      int ngs = parms_["ngrowsweeps"], nms = parms_["nmainsweeps"];
-      if (sweep < ngs)
+      int ngs = parms_["ngrowsweeps"];
+      int nms = parms_["nmainsweeps"];
+      if (sweep < ngs) {
         alpha = parms_["alpha_initial"];
-      else if (sweep < ngs + nms)
+      } else if (sweep < ngs + nms) {
         alpha = parms_["alpha_main"];
-      else
+      } else {
         alpha = parms_["alpha_final"];
+      }
       auto cutoff = this->get_cutoff(sweep);
       auto Mmax = this->get_Mmax(sweep);
       truncation_results trunc;
@@ -175,10 +200,11 @@ public:
       // +--------------------------------------+
       // -- Forward sweep --
       if (lr == +1) {
-        if (parms_["twosite_truncation"] == "svd")
+        if (parms_["twosite_truncation"] == "svd") {
           std::tie(mps_[site1], mps_[site2], trunc) = two_vec.split_mps_l2r(Mmax, cutoff);
-        else
+        } else {
           std::tie(mps_[site1], mps_[site2], trunc) = two_vec.predict_split_l2r(Mmax, cutoff, alpha, left_[site1], mpo_[site1], true);
+        }
         mps_[site2] /= ietl::two_norm(mps_[site2]);
         two_vec.clear();
         this->boundary_left_step(mpo_, site1);
@@ -190,14 +216,16 @@ public:
         } else {
           time_evolver_->add_to_current_time(time_step_);
         }
-        if (site1 != L_-2)
+        if (site1 != L_-2) {
           Storage::drop(right_[site2+1]);
+        }
       // -- Backward sweep --
       } else if (lr == -1) {
-        if (parms_["twosite_truncation"] == "svd")
+        if (parms_["twosite_truncation"] == "svd") {
           std::tie(mps_[site1], mps_[site2], trunc) = two_vec.split_mps_r2l(Mmax, cutoff);
-        else
+        } else {
           std::tie(mps_[site1], mps_[site2], trunc) = two_vec.predict_split_r2l(Mmax, cutoff, alpha, right_[site2+1], mpo_[site2], true);
+        }
         two_vec.clear();
         mps_[site1] /= ietl::two_norm(mps_[site1]);
         this->boundary_right_step(mpo_, site2);
@@ -209,8 +237,9 @@ public:
         } else {
           time_evolver_->add_to_current_time(time_step_);
         }
-        if(site1 != 0)
+        if(site1 != 0) {
           Storage::drop(left_[site1]);
+        }
       }
       iteration_results_["BondDimension"]     << trunc.bond_dimension;
       iteration_results_["TruncatedWeight"]   << trunc.truncated_weight;
@@ -221,8 +250,9 @@ public:
       std::chrono::high_resolution_clock::time_point sweep_then = std::chrono::high_resolution_clock::now();
       double elapsed = std::chrono::duration<double>(sweep_then - sweep_now).count();
       maquis::cout << "Sweep has been running for " << elapsed << " seconds." << std::endl;
-      if (stop_callback())
+      if (stop_callback()) {
         throw dmrg::time_limit(sweep, _site+1);
+      }
     }
     performFinalOperations();
   }

@@ -64,8 +64,7 @@ TimeEvolver<Matrix, SymmGroup, ParameterType>::TimeEvolver(ParameterType& parms)
 
   maquis::cout << std::endl;
   maquis::cout << "+------------------------------------------+" << std::endl;
-  maquis::cout << "  DETAILS ABOUT SITE-CENTERED TIME EVOLVER" << std::endl;
-  maquis::cout << "+------------------------------------------+" << std::endl;
+  maquis::cout << " Time Evolution" << std::endl;
   maquis::cout << " - Propagation type: ";
   maquis::cout << ((is_imag_) ? "Imaginary-time" : "Real-time");
   maquis::cout << std::endl;
@@ -102,6 +101,7 @@ TimeEvolver<Matrix, SymmGroup, ParameterType>::TimeEvolver(ParameterType& parms)
       maquis::cout << "Lanczos approximation of the propagator\n";
     }
   }
+  maquis::cout << "+------------------------------------------+" << std::endl;
 };
 
 template<class Matrix, class SymmGroup, class ParameterType>

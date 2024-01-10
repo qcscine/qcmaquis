@@ -8,19 +8,34 @@
 #ifndef GENERIC_SWEEPS_SIMULATION_H
 #define GENERIC_SWEEPS_SIMULATION_H
 
+#include <any>
 #include <chrono>
+#include <cmath>
+#include <complex>
+#include <cstddef>
+#include <iomanip>
+#include <ios>
+#include <memory>
+#include <ostream>
+#include <stdexcept>
+#include <string>
 #include <utility>
+#include <vector>
 
+#include "dmrg/SweepBasedAlgorithms/BoundaryPropagator.h"
+#include "dmrg/block_matrix/block_matrix_algorithms.h"
 #include "dmrg/models/lattice/lattice.h"
 #include "dmrg/models/model.h"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
+#include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/utils/results_collector.h"
 #include "SweepMPSContainer.h"
 #include "SweepMPOContainer.h"
 #include "SweepMPSUpdater.h"
 #include "SweepOptimizationTypeTrait.h"
+#include "utils/io.hpp"
 
 /**
  * @brief Class representing a generic sweep-based simulation.
@@ -194,17 +209,33 @@ public:
     return std::any_cast<CastType>(iterationResults_[resultName].get()[0]);
   }
 
+  /** @brief Prints final energy and difference in energy between final
+   *         and first microiteration */
   void printSweepEnergy() {
     if (!iterationResults_.has("Energy")) {
       throw std::runtime_error("Trying to access non-existing 'Energy' result");
     }
-    std::any energy_any = iterationResults_["Energy"].get().back();
-    if (energy_any.type() == typeid(double)) {
-      auto energy = std::any_cast<double>(energy_any);
-      maquis::cout << "  SWEEP ENERGY = " << std::setprecision(16) << energy << '\n';
-    } else if (energy_any.type() == typeid(std::complex<double>)) {
-      auto energy = std::any_cast<std::complex<double>>(energy_any);
-      maquis::cout << "  SWEEP ENERGY (Complex Valued) = " << std::setprecision(16) << std::real(energy) << " + i " << std::imag(energy) << '\n';
+    std::vector<std::any> energy_vec = iterationResults_["Energy"].get();
+    if (energy_vec.back().type() == typeid(double)) {
+      auto energy = std::any_cast<double>(energy_vec.back());
+      maquis::cout << " SWEEP ENERGY = " << std::setprecision(16) << energy << " ";
+      if (energy_vec.size() > 1) {
+        auto energy_prev = std::any_cast<double>(energy_vec.front());
+        maquis::cout << std::scientific << std::setprecision(3);
+        maquis::cout << "  (Delta E = " << energy - energy_prev << ")  ";
+        maquis::cout << std::defaultfloat;
+      }
+    } else if (energy_vec.back().type() == typeid(std::complex<double>)) {
+      auto energy = std::any_cast<std::complex<double>>(energy_vec.back());
+      maquis::cout << " SWEEP ENERGY (Complex Valued) = " << std::setprecision(16) << std::real(energy) << " + i " << std::imag(energy) << " ";
+      if (energy_vec.size() > 1) {
+        auto energy_prev = std::any_cast<std::complex<double>>(energy_vec.front());
+        double real_diff = std::real(energy) - std::real(energy_prev);
+        double imag_diff = std::imag(energy) - std::imag(energy_prev);
+        maquis::cout << std::scientific << std::setprecision(3);
+        maquis::cout << "  (Delta E = " << real_diff << " + i " << imag_diff << ")  ";
+        maquis::cout << std::defaultfloat;
+      }
     }
   }
 
@@ -338,7 +369,8 @@ protected:
 
   /** @brief Prints info that are sweep-specific */
   void printSweepSpecificInfo(int iSweep) const {
-    maquis::cout << "SWEEP " << iSweep << "; Noise: " << this->getAlpha(iSweep)
+    maquis::cout << std::defaultfloat;
+    maquis::cout << "SWEEP " << iSweep + 1 << "; Noise: " << this->getAlpha(iSweep)
                  << "; Max Bond Dim: " << this->get_Mmax(iSweep) 
                  << "; Truncation: " << this->get_cutoff(iSweep) << '\n';
   }

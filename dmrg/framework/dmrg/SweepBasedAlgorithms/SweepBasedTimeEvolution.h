@@ -98,6 +98,7 @@ public:
 
   /** @brief Propagation of the MPS for a given site */
   MPSTensorType solveLocalProblem()  final {
+    bool verbose = parms_["verbose"];
     MPSTensorType mpsToPropagate = mpsContainer_.getMPSTensor(siteLeft_);
     timeEvolver_->evolve(*(siteProblem_.get()), mpsToPropagate, true, isTerminal());
     // Note that the energy is calculated only once per sweep -- it will (or should) anyways be conserved,
@@ -105,7 +106,9 @@ public:
     if (siteLeft_ == 0 || isImaginaryTime_) {
       auto energy = ietl::get_energy(*(siteProblem_.get()), mpsToPropagate) + maquis::real(mpoContainer_.getMPO().getCoreEnergy());
       resultOfLocalSiteProblem_.first = energy;
-      maquis::cout << std::setprecision(10) << " Energy = " << std::setprecision(16) << resultOfLocalSiteProblem_.first << std::endl;
+      if (verbose) {
+        maquis::cout << " Energy = " << std::setprecision(16) << resultOfLocalSiteProblem_.first << std::endl;
+      }
       //normalize the mps
       mpsToPropagate.divide_by_scalar(mpsToPropagate.scalar_norm());
       #ifndef NDEBUG
