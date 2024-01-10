@@ -56,6 +56,7 @@ public:
     mps_.normalize_right();
     nSweeps_ = parms_["nsweeps"];
     boundaryPropagator_ = std::make_shared<BoundaryPropagatorType>(mps_, mpoContainer_.getMPO());
+    
     mpsUpdater_ = std::make_unique<SweepMPSUpdaterType>(mpoContainer_.getMPO(), mps_, boundaryPropagator_, parms_, verbose_);
   }
 
@@ -175,8 +176,7 @@ public:
     auto stop_sweep = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> duriation_sweep = stop_sweep - start_sweep;
     this->finalizeSweep();
-    // double energy = this->getSpecificResult<double>("Energy");
-    // maquis::cout << "  Final Energy = " << std::setprecision(16) << energy << '\n';
+    printSweepEnergy();
     maquis::cout << "[Sweep " << iSweep << " took "
       << std::setprecision(2) << duriation_sweep.count() << std::setprecision(6)
       << " s]\n\n";
@@ -192,6 +192,20 @@ public:
       throw std::runtime_error("Trying to access non-existing simulation result");
     }
     return std::any_cast<CastType>(iterationResults_[resultName].get()[0]);
+  }
+
+  void printSweepEnergy() {
+    if (!iterationResults_.has("Energy")) {
+      throw std::runtime_error("Trying to access non-existing 'Energy' result");
+    }
+    std::any energy_any = iterationResults_["Energy"].get().back();
+    if (energy_any.type() == typeid(double)) {
+      auto energy = std::any_cast<double>(energy_any);
+      maquis::cout << "  SWEEP ENERGY = " << std::setprecision(16) << energy << '\n';
+    } else if (energy_any.type() == typeid(std::complex<double>)) {
+      auto energy = std::any_cast<std::complex<double>>(energy_any);
+      maquis::cout << "  SWEEP ENERGY (Complex Valued) = " << std::setprecision(16) << std::real(energy) << " + i " << std::imag(energy) << '\n';
+    }
   }
 
 protected:
