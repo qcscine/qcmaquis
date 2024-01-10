@@ -8,7 +8,12 @@
 #ifndef SWEEP_BASED_TIME_EVOLUTION_H
 #define SWEEP_BASED_TIME_EVOLUTION_H
 
+#include <iomanip>
+#include <memory>
+#include <string>
+#include <utility>
 #include "GenericSweepSimulation.h"
+#include "dmrg/SweepBasedAlgorithms/SweepOptimizationTypeTrait.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
 #include "dmrg/evolve/TimeEvolvers/TimeEvolver.h"
 #include "dmrg/models/lattice/lattice.h"
@@ -17,6 +22,7 @@
 #include "dmrg/utils/time_limit_exception.h"
 #include "dmrg/utils/checks.h"
 #include "BoundaryPropagator.h"
+#include "utils/io.hpp"
 
 #ifdef DMRG_TD
 
@@ -54,41 +60,44 @@ public:
   /** @brief Class constructor */
   SweepBasedTimeEvolution(MPSType& mps, const MPOType& mpo, BaseParameters& parms, const ModelType& model,
                           const Lattice& lattice, bool verbose)
-    : Base(mps, mpo, parms, model, lattice, verbose, std::string("Time Evolution")), perturbMPS_(false), doBackpropagation_(true),
-      isImaginaryTime_(false)
+    : Base(mps, mpo, parms, model, lattice, verbose, std::string("Time Evolution")), timeEvolver_(std::make_shared<TimeEvolverType>(parms_)), perturbMPS_(false), doBackpropagation_(true),
+      isImaginaryTime_(false), timeStep_(timeEvolver_->get_time())
   {
     // Generate classes needed for propagation
-    timeEvolver_ = std::make_shared<TimeEvolverType>(parms_);
-    timeStep_ = timeEvolver_->get_time();
-    if (parms_["TD_backpropagation"] == "no")
+    
+    if (parms_["TD_backpropagation"] == "no") {
       doBackpropagation_ = false;
-    if (parms_["TD_noise"] == "yes")
+    }
+    if (parms_["TD_noise"] == "yes") {
       perturbMPS_ = true;
-    if (parms_["imaginary_time"] == "yes")
+    }
+    if (parms_["imaginary_time"] == "yes") {
       isImaginaryTime_ = true;
+    }
     // == TODO Move this in the [GenericSweepBasedSimulation] part ==
     // perturber_ = std::make_shared< PerturberType >(left_, right_, mpo_, parms_);
   }
 
   /** @brief Method called at the beginning of each sweep */
-  void prepareSweep() override final {
+  void prepareSweep()  final {
     iterationResults_.clear();
   }
 
   /** @brief Method called before each microiteration */
-  void prepareMicroiteration() override final {
+  void prepareMicroiteration()  final {
     siteProblem_ = std::make_unique<SiteProblemType>(boundaryPropagator_->getLeftBoundary(siteLeft_), boundaryPropagator_->getRightBoundary(siteRight_),
                                                      mpoContainer_.getMPOTensor(siteLeft_));
   }
 
   /** @brief General method for performing the back-propagation step (specialized later) */
-  void performBackPropagation(GrowBoundaryModality boundaryGrowthModality) override final {
-    if (doBackpropagation_)
+  void performBackPropagation(GrowBoundaryModality boundaryGrowthModality)  final {
+    if (doBackpropagation_) {
       mpsUpdater_->performBackPropagation(boundaryGrowthModality, siteLeft_, siteRight_, timeEvolver_);
+    }
   }
 
   /** @brief Propagation of the MPS for a given site */
-  MPSTensorType solveLocalProblem() override final {
+  MPSTensorType solveLocalProblem()  final {
     MPSTensorType mpsToPropagate = mpsContainer_.getMPSTensor(siteLeft_);
     timeEvolver_->evolve(*(siteProblem_.get()), mpsToPropagate, true, isTerminal());
     // Note that the energy is calculated only once per sweep -- it will (or should) anyways be conserved,
@@ -115,7 +124,7 @@ public:
   }
 
   /** @brief Operations to be executed at the end of a microiteration */
-  void finalizeMicroIteration(const truncation_results& trunc) override final {
+  void finalizeMicroIteration(const truncation_results& trunc)  final {
     iterationResults_["BondDimension"]   << trunc.bond_dimension;
     iterationResults_["TruncatedWeight"] << trunc.truncated_weight;
     iterationResults_["SmallestEV"]      << trunc.smallest_ev;
@@ -126,15 +135,15 @@ public:
   }
 
   /** @brief Operations to be executed at the end of the sweep */
-  void finalizeSweep() override final { }
+  void finalizeSweep()  final { }
 
   /** @brief Whether to normalize the MPS at the end of a half-sweep */
-  bool normalizeAtEnd() override final {
+  bool normalizeAtEnd()  final {
     return true;
   }
 
   /** @brief Whether to appy the noise-based perturbation */
-  bool activatePerturbation() override final {
+  bool activatePerturbation()  final {
     return perturbMPS_;
   }
 
