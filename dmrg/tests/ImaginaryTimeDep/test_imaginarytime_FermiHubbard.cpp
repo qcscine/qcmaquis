@@ -62,7 +62,7 @@ BOOST_FIXTURE_TEST_CASE(TestImaginaryTimevsTIFermiHubbard_RealSpace2x2, Transcor
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("propagator_maxiter", 10);
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("imaginary_time", "yes");
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("TD_backpropagation", "no");
-  parameters2x2_RealSpace_U4_2Alpha1Beta.set("simulation_type", "TD");
+  parameters2x2_RealSpace_U4_2Alpha1Beta.set("simulation_type", "time_dep");
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("COMPLEX", 1);
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("time_units", "fs");
   maquis::DMRGInterface<std::complex<double>> interfaceTD(parameters2x2_RealSpace_U4_2Alpha1Beta);
@@ -85,7 +85,7 @@ BOOST_FIXTURE_TEST_CASE(TestImaginaryTimevsTIFermiHubbard_RealSpace2x2, Transcor
  */
 BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_RealSpace2x2_Transcorrelated_J0, TranscorrelatedFixture)
 {
-#if defined(HAVE_TwoU1) and defined(DMRG_TC)
+#if defined(HAVE_TwoU1) and defined(DMRG_TRANSCORRELATED)
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("nsweeps", 10);
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("max_bond_dimension", 10);
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("propagator_maxiter", 10);
@@ -105,10 +105,10 @@ BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_RealSpace2x2_Transcorrelat
   interfaceTC.runTranscorrelated();
   auto energyTC = std::real(interfaceTC.energy());
   BOOST_CHECK_CLOSE(energyTD, energyTC, 1.0E-8);
-#endif // HAVE_TwoU1 and DMRG_TC
+#endif // HAVE_TwoU1 and DMRG_TRANSCORRELATED
 }
 
-#if defined(HAVE_TwoU1) and defined(DMRG_TC)
+#if defined(HAVE_TwoU1) and defined(DMRG_TRANSCORRELATED)
 
 /**
  * @brief Checks consistency of calculations with +/- the same correlation parameter.
@@ -347,4 +347,4 @@ BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_RealSpace2x2_Transcorrelat
   }
 }
 
-#endif // HAVE_TwoU1 and DMRG_TC
+#endif // HAVE_TwoU1 and DMRG_TRANSCORRELATED

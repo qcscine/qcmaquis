@@ -144,7 +144,7 @@ class ParametersWrapper:
         "propagator_maxiter" = 10
         "imaginary_time" = "yes"
         "TD_backpropagation" = "no"
-        "simulation_type" = "TD"
+        "simulation_type" = "time_dep"
         "COMPLEX" = True
         "time_units" = "fs"
         """
@@ -152,13 +152,13 @@ class ParametersWrapper:
         # self.set("propagator_maxiter", 10)
         # self.set("imaginary_time", "yes")
         # self.set("TD_backpropagation", "no")
-        # self.set("simulation_type", "TD")
+        # self.set("simulation_type", "time_dep")
         # self.set("propagator_accuracy", 1.0E-10)
         # self.set("symmetry", "2u1")
         # self.set("COMPLEX", True)
         # self.set("time_units", "fs")
 
-        self.set("simulation_type", "TD")
+        self.set("simulation_type", "time_dep")
         self.set("transcorrelated_hamiltonian", "yes")
         # self.set("transcorrelated_hamiltonian", True)
         self.set("propagator_accuracy", 1.0E-10)

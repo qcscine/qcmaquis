@@ -265,7 +265,7 @@ public:
    */
   void runTranscorrelated()
   {
-  #ifdef DMRG_TC
+  #ifdef DMRG_TRANSCORRELATED
     // Extracts the relevant parameters
     int nSweepsTI = parms["transcorrelated_nsweeps_TI"];
     int nSweepsTC = parms["transcorrelated_nsweeps_TC"];
@@ -304,7 +304,7 @@ public:
     }
   #else
     throw std::runtime_error("Activate the [BUILD_TRANSCORRELATED_DMRG] Cmake flag before running a tcDMRG calculation.");
-  #endif // DMRG_TC
+  #endif // DMRG_TRANSCORRELATED
   }
 
   /** @brief Runs a propagation calculation */

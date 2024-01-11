@@ -713,7 +713,7 @@ struct PreBOTestTimeEvolverFixture
           iParam.get().set("time_step", 100.);
           iParam.get().set("imaginary_time", "yes");
           iParam.get().set("TD_backpropagation", "no");
-          iParam.get().set("simulation_type", "TD");
+          iParam.get().set("simulation_type", "time_dep");
           iParam.get().set("COMPLEX", 1);
         }
     }

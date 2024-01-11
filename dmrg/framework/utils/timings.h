@@ -17,7 +17,7 @@ class Timer
 public:
     Timer(std::string  name_) : name(std::move(name_)) {}
 
-    ~Timer() { maquis::cout << name << " took " << val << " [s], nCounter : " << nCounter << std::endl; }
+    ~Timer() { maquis::cout << name << " took " << val << " [s]\n"; }
 
     Timer & operator+=(double t) {
         val += t;

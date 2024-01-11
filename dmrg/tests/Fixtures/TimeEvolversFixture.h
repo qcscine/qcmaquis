@@ -1055,7 +1055,7 @@ struct TestTimeEvolverFixture
         parametersH2FourOrbitals.set("time_step", 1.);
         parametersH2FourOrbitals.set("imaginary_time", "no");
         parametersH2FourOrbitals.set("TD_backpropagation", "yes");
-        parametersH2FourOrbitals.set("simulation_type", "TD");
+        parametersH2FourOrbitals.set("simulation_type", "time_dep");
         parametersH2FourOrbitals.set("COMPLEX", 1);
         // SU2-specific parameters
         parametersH2FourOrbitals.set("nelec", 2);
@@ -1080,7 +1080,7 @@ struct TestTimeEvolverFixture
         parametersH2FourOrbitalsImaginary.set("time_step", 100.);
         parametersH2FourOrbitalsImaginary.set("imaginary_time", "yes");
         parametersH2FourOrbitalsImaginary.set("TD_backpropagation", "no");
-        parametersH2FourOrbitalsImaginary.set("simulation_type", "TD");
+        parametersH2FourOrbitalsImaginary.set("simulation_type", "time_dep");
         parametersH2FourOrbitalsImaginary.set("COMPLEX", 1);
         parametersH2FourOrbitalsImaginary.set("nelec", 2);
         parametersH2FourOrbitalsImaginary.set("spin", 0);
@@ -1113,7 +1113,7 @@ struct TestTimeEvolverFixture
         parametersRelativistic.set("time_step", 10.);
         parametersRelativistic.set("imaginary_time", "yes");
         parametersRelativistic.set("TD_backpropagation", "no");
-        parametersRelativistic.set("simulation_type", "TD");
+        parametersRelativistic.set("simulation_type", "time_dep");
         parametersRelativistic.set("COMPLEX", 1);
         maquis::prepare_relativistic(parametersRelativistic);
 #endif
