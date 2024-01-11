@@ -23,4 +23,7 @@ add_subdirectory(tools)
 set(DMRG_APP_LIBRARIES maquis_dmrg dmrg_models dmrg_utils ${DMRG_LIBRARIES})
 add_executable(qcmaquis qcmaquis.cpp)
 target_link_libraries(qcmaquis ${DMRG_APP_LIBRARIES})
-install(TARGETS qcmaquis RUNTIME DESTINATION bin COMPONENT applications)
+add_custom_command(
+  TARGET qcmaquis 
+  POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:qcmaquis> ${CMAKE_BINARY_DIR})
