@@ -3,6 +3,7 @@
 // +-----------------------------------------------------------+
 
 // -- General parameters --
+simulation_type          = "feast"
 L                        = 4
 max_bond_dimension       = 100
 nsweeps                  = 40

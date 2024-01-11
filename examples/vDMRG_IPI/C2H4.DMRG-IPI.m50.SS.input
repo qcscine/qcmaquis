@@ -1,3 +1,4 @@
+simulation_type                  = "inverse_power_iteration"
 ngrowsweeps                      = 1
 nmainsweeps                      = 1
 max_bond_dimension               = 50

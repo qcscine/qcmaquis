@@ -3,6 +3,7 @@
 // +----------------------------------------------------------------+
 
 // -- General parameters --
+simulation_type             = "transcorrelation"
 transcorrelated_nsweep_TI   = 10
 transcorrelated_nsweep_TC   = 10
 L                           = 4

@@ -1,3 +1,4 @@
+simulation_type                  = "feast"
 nsweeps                          = 20
 ngrowsweeps                      = 5
 nmainsweeps                      = 5

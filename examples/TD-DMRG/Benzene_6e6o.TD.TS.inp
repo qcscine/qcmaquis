@@ -36,7 +36,7 @@ conv_thresh              = -1
 integral_cutoff          = 1e-300
 
 // -- Time-dependent simulation --
-simulation_type          = TD
+simulation_type          = time_dep
 propagator_accuracy      = 1.0E-10
 propagator_maxiter       = 10
 time_step                = 1

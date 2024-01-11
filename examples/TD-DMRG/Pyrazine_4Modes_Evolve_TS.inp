@@ -3,6 +3,7 @@
 // ==========================================
 
 // -- Generic DMRG parameters --
+simulation_type                 = "time_dep"
 nsweeps                         = 20
 ngrowsweeps                     = 100
 nmainsweeps                     = 10

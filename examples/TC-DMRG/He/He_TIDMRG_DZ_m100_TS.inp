@@ -1,33 +1,33 @@
 // +===========================================================+
-//  EXAMPLE: TI-DMRG CALCULATION ON BE WITH A DOUBLE-ZETA BASIS
+//  EXAMPLE: TI-DMRG CALCULATION ON HE WITH A DOUBLE-ZETA BASIS
 // +===========================================================+
 
 // -- General parameters --
+simulation_type               = "transcorrelation"
 L                             = 14
 max_bond_dimension            = 100
-nsweeps                       = 20
+nsweeps                       = 40
 ngrowsweeps                   = 3
 nmainsweeps                   = 3
 irrep                         = 0
-nelec                         = 4
+nelec                         = 2
 spin                          = 0
 symmetry                      = '2u1'
-u1_total_charge1              = 2
-u1_total_charge2              = 2
+u1_total_charge1              = 1
+u1_total_charge2              = 1
 LATTICE                       = "orbitals"
 CONSERVED_QUANTUMNUMBERS      = "Nup,Ndown"
 MODEL                         = "quantum_chemistry"
-integral_file                 = "FCIDUMP_be_dz_conventional"
+integral_file                 = "FCIDUMP_he_tz"
 integral_cutoff               = 0.
 optimization                  = twosite
 conv_thresh                   = 1.0E-10
 
 // -- SVD truncation --
 truncation_initial            = 1e-20
-truncation_final              = 1e-16
+truncation_final              = 1e-20
 
 // -- Initialization and storage information --
-init_type                     = "hf"
-hf_occ                        = "4,4,1,1,1,1,1,1,1,1,1,1,1,1"
-chkpfile                      = 'Be_TIDMRG_DZ_m100_TS.checkpoint_state.0.h5'
-resultfile                    = 'Be_TIDMRG_DZ_m100_TS.results_state.0.h5'
+init_type                     = "const"
+chkpfile                      = 'He_TIDMRG_DZ_m100_TS.checkpoint_state.0.h5'
+resultfile                    = 'He_TIDMRG_DZ_m100_TS.results_state.0.h5'
