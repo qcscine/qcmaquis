@@ -187,7 +187,7 @@ void rel_qc_model<SymmGroup>::create_terms()
 
         // V_ijil & V_ijkj
         // This case doesn't exist for the relativistic model!
-        else if ( i==k && i!=j && i!=l || j==l && j!=i && j!=k ) {
+        else if ((i==k && i!=j && i!=l) or (j==l && j!=i && j!=k)) {
             used_elements[m] += 1;
         }
 

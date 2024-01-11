@@ -70,7 +70,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_Watson_Ethylene_IntegralContainer, WatsonFixt
     auto integrals = Vibrational::detail::WatsonIntegralParser<double>(parametersEthyleneWatsonHarmonic, lattice, WatsonCoordinateType::CartesianNormalModes,
                                                                        6, 6, 6);
     BOOST_CHECK_EQUAL(integrals.size(), 24);
-    for (const auto iElements: integrals) {
+    for (const auto& iElements: integrals) {
         for (int iSite = 2; iSite < 6; iSite++)
             BOOST_CHECK_EQUAL(iElements.first[iSite], 0);
     }

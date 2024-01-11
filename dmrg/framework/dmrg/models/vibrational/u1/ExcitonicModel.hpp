@@ -165,7 +165,7 @@ public:
         std::vector<int> vec_jnk(2);
         for (int i1_body = 0; i1_body < n_particles_; i1_body++) {
             for (int i2_body = 0; i2_body < n_particles_; i2_body++) {
-                if (only_nn_ && (i1_body-i2_body == 1 || i2_body-i1_body == 1) || !only_nn_ && i1_body!=i2_body) {
+                if ((only_nn_ && (i1_body-i2_body == 1 || i2_body-i1_body == 1)) || (!only_nn_ && i1_body!=i2_body)) {
                     std::vector<tag_type> operators;
                     std::vector<pos_t> positions;
                     vec_jnk[0] = i1_body;

@@ -387,8 +387,8 @@ protected:
 
   /** @brief Checks whether the current microiteration is associated with a terminal site */
   inline bool isTerminal() const {
-    return indexOfMicroIteration_ == 0 || SweepTraitClass::changeDirectionNextMicroiteration(L_, indexOfMicroIteration_)
-                                          && SweepTraitClass::getSweepDirection(L_, indexOfMicroIteration_) == SweepDirectionType::Forward;
+    return indexOfMicroIteration_ == 0 || (SweepTraitClass::changeDirectionNextMicroiteration(L_, indexOfMicroIteration_)
+                                          && SweepTraitClass::getSweepDirection(L_, indexOfMicroIteration_) == SweepDirectionType::Forward);
   }
 
 protected:

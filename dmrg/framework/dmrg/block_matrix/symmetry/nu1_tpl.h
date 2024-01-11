@@ -8,10 +8,14 @@
 #ifndef SYMMETRY_NU1_TEMPLATE_H
 #define SYMMETRY_NU1_TEMPLATE_H
 
+#include <boost/container_hash/hash.hpp>
 #include <cassert>
+#include <cstddef>
 #include <iostream>
+#include <stdexcept>
+#include <string>
+#include <utility>
 #include <vector>
-#include <list>
 #include <numeric>
 #include <array>
 
@@ -47,13 +51,20 @@ public:
     }
     NU1Charge(std::vector<S> const & rhs) : NU1Charge(0)
     {
-        assert(rhs.size() <= N);
-        std::copy(rhs.begin(), rhs.end(), this->begin());
+        if (rhs.size() <= N) {
+          std::copy(rhs.begin(), rhs.end(), this->begin());
+        } else {
+          throw std::runtime_error("NU1Charge: vector size exceeds dimension");
+        }
     }
     NU1Charge(std::vector<unsigned int> const & temp) : NU1Charge(0)
     {
-        std::vector<int> rhs(temp.begin(), temp.end());
-        std::copy(rhs.begin(), rhs.end(), this->begin());
+        if (temp.size() <= N) {
+          std::vector<int> rhs(temp.begin(), temp.end());
+          std::copy(rhs.begin(), rhs.end(), this->begin());
+        } else {
+          throw std::runtime_error("NU1Charge: vector size exceeds dimension");
+        }
     }
 
     NU1Charge(std::array<S, N> const & rhs)
