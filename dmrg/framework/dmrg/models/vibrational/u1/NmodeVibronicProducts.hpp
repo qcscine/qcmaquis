@@ -196,7 +196,7 @@ public:
                 }
                 for(int i = 0; i < modes.size(); i+=2){
                     vec_jnk[1] = modes[i];
-                    int localDimension = nMaxVec[i_body*n_vib_states_+modes[i]];
+                    int localDimension = nMaxVec[i_body*n_vib_states_+modes[i]]-1;
                     int modalToCreate = modals[i];
                     int modalToDestroy = modals[i+1];
                     positions.push_back(lat.get_prop<int>("vibindex", vec_jnk));
@@ -204,7 +204,8 @@ public:
                     int sum = 0;
                     std::set<int> nModalsUnique(nMaxVec.begin(), nMaxVec.end());
                     for(const auto& iEl : nModalsUnique){
-                        if(iEl < localDimension) sum += iEl;
+                        compareDimension = iEl -1;
+                        if(compareDimension < localDimension) sum += compareDimension;
                     }
                     operators.push_back(create[sum + modalToCreate]);
                     operators.push_back(destroy[sum + modalToDestroy]);
