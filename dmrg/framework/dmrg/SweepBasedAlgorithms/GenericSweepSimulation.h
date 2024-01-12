@@ -340,7 +340,7 @@ protected:
   int get_Mmax(int sweep) const {
     std::size_t Mmax;
     if (parms_.is_set("sweep_bond_dimensions")) {
-      std::vector<std::size_t> ssizes = parms_.template get<std::vector<std::size_t> >("sweep_bond_dimensions");
+      auto ssizes = parms_.template get<std::vector<std::size_t> >("sweep_bond_dimensions");
       if (sweep >= ssizes.size()) {
         Mmax = *ssizes.rbegin();
       } else {
@@ -360,9 +360,11 @@ protected:
 
   /** @brief Prints generic information about the */
   void printGenericInfo() const {
+    auto conv_thresh = parms_.get<double>("conv_thresh");
     maquis::cout << "+--------------------------------------------------+\n"
                  << " " << SweepTraitClass::getSimulationTypeName() 
                  << " " << simulationName_ << '\n'
+                 << " - Convergence Threshold: " << conv_thresh << '\n'
                  << " - Max Sweeps: " << nSweeps_ << '\n'
                  << "+--------------------------------------------------+\n";
   }
