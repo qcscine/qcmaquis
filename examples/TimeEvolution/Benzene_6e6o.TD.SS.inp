@@ -11,14 +11,11 @@ nelec                    = 6
 spin                     = 0
 symmetry                 = 'su2u1pg'
 LATTICE                  = "orbitals"
-CONSERVED_QUANTUMNUMBERS = "Nup,Ndown"
 MODEL                    = "quantum_chemistry"
 integral_file            = "FCIDUMP_Benzene_631Gs_CAS6-6"
-lattice_library          = "coded"
-model_library            = "coded"
 optimization             = singlesite
 use_compressed           = 0
-conv_thresh              = 0.100000E-40
+conv_thresh              = 1e-16
 
 // -- SVD truncation --
 truncation_initial       = 1e-50
@@ -32,7 +29,6 @@ resultfile               = 'Benzene_6e6o.TD.SS.results_state.0.h5'
 // -- Jacobi-Davidson parameters --
 ietl_jcd_maxiter         = 10
 ietl_jcd_tol             = 1e-8
-conv_thresh              = -1
 integral_cutoff          = 1e-300
 
 // -- Time-dependent simulation --

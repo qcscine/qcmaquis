@@ -22,8 +22,6 @@ init_coeffs                      = "0.8,0.2"
 init_basis_state                = '1,0,0,0,0,0|0,1,0,0,0,0'
 
 // -- Vibronic Hamiltonian defininition --
-model_library                   = coded
-lattice_library                 = coded
 LATTICE                         = "vibronic lattice"
 MODEL                           = vibronic
 vibronic_num_elestates          = 2

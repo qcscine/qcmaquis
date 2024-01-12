@@ -12,15 +12,10 @@ spin                     = 0
 symmetry                 = '2u1pg'
 u1_total_charge1         = 1
 u1_total_charge2         = 1
-LATTICE                  = "orbitals"
-CONSERVED_QUANTUMNUMBERS = "Nup,Ndown"
 MODEL                    = "quantum_chemistry"
 integral_file            = "FCIDUMP_H2_TD"
-lattice_library          = "coded"
-model_library            = "coded"
 optimization             = singlesite
-use_compressed           = 0
-conv_thresh              = 0.100000E-40
+conv_thresh              = 1e-16
 
 // -- SVD truncation --
 truncation_initial       = 1e-50
@@ -40,7 +35,6 @@ orbital_order            = '1,2,3,4'
 // -- Jacobi-Davidson parameters --
 ietl_jcd_maxiter         = 10
 ietl_jcd_tol             = 1e-8
-conv_thresh              = -1
 integral_cutoff          = 1e-300
 
 // -- Time-dependent simulation --
