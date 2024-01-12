@@ -289,7 +289,7 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
     } // matrix_elements for
 
     ta.commit_terms(this->terms_);
-    maquis::cout << "The hamiltonian will contain " << this->terms_.size() << " terms\n";
+    maquis::cout << "\nThe hamiltonian will contain " << this->terms_.size() << " terms\n";
 }
 
 #endif

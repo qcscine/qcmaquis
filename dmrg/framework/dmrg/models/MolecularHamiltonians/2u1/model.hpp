@@ -395,7 +395,7 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
         }
     }
     */
-    maquis::cout << "The hamiltonian will contain " << this->terms_.size() << " terms" << std::endl;
+    maquis::cout << "\nThe hamiltonian will contain " << this->terms_.size() << " terms" << std::endl;
 }
 
 /** @brief Adds an operator to the underyling operator map */

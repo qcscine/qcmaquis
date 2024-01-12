@@ -361,7 +361,7 @@ protected:
   /** @brief Prints generic information about the */
   void printGenericInfo() const {
     auto conv_thresh = parms_.get<double>("conv_thresh");
-    maquis::cout << "+--------------------------------------------------+\n"
+    maquis::cout << "\n+--------------------------------------------------+\n"
                  << " " << SweepTraitClass::getSimulationTypeName() 
                  << " " << simulationName_ << '\n'
                  << " - Convergence Threshold: " << conv_thresh << '\n'

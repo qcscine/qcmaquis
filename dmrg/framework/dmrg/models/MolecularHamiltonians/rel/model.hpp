@@ -227,7 +227,7 @@ void rel_qc_model<SymmGroup>::create_terms()
     assert( it_0 == used_elements.end() );
 
     term_assistant.commit_terms(this->terms_);
-    maquis::cout << "The hamiltonian will contain " << this->terms_.size() << " terms\n";
+    maquis::cout << "\nThe hamiltonian will contain " << this->terms_.size() << " terms\n";
 }
 
 #endif
