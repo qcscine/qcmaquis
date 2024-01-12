@@ -112,7 +112,8 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters& parms_)
     // Load MPS from checkpoint
     loadMPSAndParams(chkpfile, hasSU2, has2U1, hasPG);
   }
-  sim_detail::print_important_parameters<SymmGroup>(parms);
+  // TODO(Kalman): This currently does not work for PreBO and Vibrational
+  // sim_detail::print_important_parameters<SymmGroup>(parms);
 
   // Initialise Wigner cache for SU2
   if (hasSU2) {
