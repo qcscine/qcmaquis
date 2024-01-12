@@ -189,8 +189,7 @@ void sim<Matrix, SymmGroup>::loadParams(
     const bool hasPG
 ) const {
   std::vector<std::string> parms_toload{
-      "L", "site_types", "orbital_order", "symmetry"
-  };
+      "L", "site_types", "orbital_order", "symmetry"};
   if (hasSU2) {
     parms_toload.emplace_back("nelec");
     parms_toload.emplace_back("spin");

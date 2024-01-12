@@ -34,53 +34,48 @@
 namespace chem {
 namespace detail {
 
-template<class SymmGroup, int NumberOfElements=4>
-class IndexTuple
-{
-public:
+template <class SymmGroup, int NumberOfElements = 4>
+class IndexTuple {
+ public:
   using ArrayType = std::array<int, NumberOfElements>;
   using InitializerType = std::initializer_list<int>;
 
   /** @brief Default class constructor - initialize every element to 0 */
-  IndexTuple() {
-    std::fill(tmpStorage.begin(), tmpStorage.end(), 0);
-  }
+  IndexTuple() { std::fill(tmpStorage.begin(), tmpStorage.end(), 0); }
 
   /** @brief Class constructor taking a series of indices as input */
   IndexTuple(InitializerType inputArray) {
     int idx = 0;
-    for (const auto& iElement: inputArray) {
+    for (const auto& iElement : inputArray) {
       tmpStorage[idx] = iElement;
       idx++;
     }
   }
 
   /** @brief Constructor from an array */
-  IndexTuple(const ArrayType& inputArray) {
-    tmpStorage = inputArray;
-  }
+  IndexTuple(const ArrayType& inputArray) { tmpStorage = inputArray; }
 
   /** @brief Combination of two IndexTuple objects */
-  template<int NumberOfInputElements>
-  IndexTuple(const IndexTuple<SymmGroup, NumberOfInputElements>& firstTuple,
-             const IndexTuple<SymmGroup, NumberOfInputElements>& secondTuple)
-  {
-    static_assert(2*NumberOfInputElements == NumberOfElements, "Combination of tuple does not match");
-    for (int i = 0; i < NumberOfInputElements; i++) { 
-      tmpStorage[i] = firstTuple[i]; 
-      tmpStorage[i+4] = secondTuple[i]; 
+  template <int NumberOfInputElements>
+  IndexTuple(
+      const IndexTuple<SymmGroup, NumberOfInputElements>& firstTuple,
+      const IndexTuple<SymmGroup, NumberOfInputElements>& secondTuple
+  ) {
+    static_assert(
+        2 * NumberOfInputElements == NumberOfElements,
+        "Combination of tuple does not match"
+    );
+    for (int i = 0; i < NumberOfInputElements; i++) {
+      tmpStorage[i] = firstTuple[i];
+      tmpStorage[i + 4] = secondTuple[i];
     }
   }
 
   /** @brief Square bracket operator calls the underlying array function */
-  const int& operator[](int i) const {
-    return tmpStorage[i];
-  }
+  const int& operator[](int i) const { return tmpStorage[i]; }
 
   /** @brief Non-const overload */
-  int& operator[](int i) {
-    return tmpStorage[i];
-  }
+  int& operator[](int i) { return tmpStorage[i]; }
 
   /** In-place alignment */
   void align(bool isHermitian) {
@@ -108,25 +103,26 @@ public:
   int sign() const {
     int inv_count = 0;
     for (int c1 = 0; c1 < NumberOfElements - 1; c1++)
-        for (int c2 = c1+1; c2 < NumberOfElements; c2++)
-            if (tmpStorage[c1] > tmpStorage[c2])
-              inv_count++;
+      for (int c2 = c1 + 1; c2 < NumberOfElements; c2++)
+        if (tmpStorage[c1] > tmpStorage[c2]) inv_count++;
     return 1 - 2 * (inv_count % 2);
   }
 
-private:
+ private:
   ArrayType tmpStorage;
-  static constexpr bool doAlignment = maquis::detail::AlignTraitClass<SymmGroup>::doRealign;
+  static constexpr bool doAlignment =
+      maquis::detail::AlignTraitClass<SymmGroup>::doRealign;
 };
 
-template<class SymmGroup, int NumberOfElements>
-bool operator<(const IndexTuple<SymmGroup, NumberOfElements>& c1,
-               const IndexTuple<SymmGroup, NumberOfElements>& c2)
-{
-    return c1.data() < c2.data();
+template <class SymmGroup, int NumberOfElements>
+bool operator<(
+    const IndexTuple<SymmGroup, NumberOfElements>& c1,
+    const IndexTuple<SymmGroup, NumberOfElements>& c2
+) {
+  return c1.data() < c2.data();
 }
 
-} // namespace detail
-} // namespace chem
+}  // namespace detail
+}  // namespace chem
 
 #endif

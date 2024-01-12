@@ -48,15 +48,16 @@ using std::endl;
 #include "ci_encode.hpp"
 #include "sampling.hpp"
 
-/** @brief Calculator that manages the calculation of the overlap between an MPS and an ONV */
-template<class Matrix, class SymmGroup>
+/** @brief Calculator that manages the calculation of the overlap between an MPS
+ * and an ONV */
+template <class Matrix, class SymmGroup>
 class MPSCICalculator {
-public:
+ public:
   // Types definition
   typedef int pos_t;
   using MPSType = MPS<Matrix, SymmGroup>;
   using ChargeType = typename SymmGroup::subcharge;
-  using DeterminantType = std::vector< std::vector<typename SymmGroup::charge> >;
+  using DeterminantType = std::vector<std::vector<typename SymmGroup::charge> >;
 
   /** @brief class constructor */
   MPSCICalculator(std::string mpsFileName) {
@@ -64,37 +65,39 @@ public:
     load(mpsFileName, mps);
     // Loads the corresponding parameters
     L = mps.length();
-    auto Nup = mps[L-1].col_dim()[0].first[0];
-    auto Ndown = mps[L-1].col_dim()[0].first[1];
+    auto Nup = mps[L - 1].col_dim()[0].first[0];
+    auto Ndown = mps[L - 1].col_dim()[0].first[1];
     DmrgParameters parms;
     parms.set("site_types", chem::detail::infer_site_types(mps));
     // Extract physical basis for every site from MPS
     std::vector<ChargeType> irreps = parms["site_types"];
-    phys_dims = chem::detail::make_2u1_site_basis<Matrix, SymmGroup>(L, Nup, Ndown, parms["site_types"]);
-    for (pos_t q = 0; q < L; ++q)
-        per_site.push_back(phys_dims[irreps[q]]);
+    phys_dims = chem::detail::make_2u1_site_basis<Matrix, SymmGroup>(
+        L, Nup, Ndown, parms["site_types"]
+    );
+    for (pos_t q = 0; q < L; ++q) per_site.push_back(phys_dims[irreps[q]]);
   }
 
-  /** 
-   * @brief Calculates the overlap  with a bunch of input determinants 
+  /**
+   * @brief Calculates the overlap  with a bunch of input determinants
    * @param determinantName: file containing the list of determinants
    * @return Sum of squared values of CI coefficients.
    */
   double calculateOverlap(std::string determinantName) const {
     // Loads the determinants
-    auto determinants = parse_config<Matrix, SymmGroup>(determinantName, per_site);
+    auto determinants =
+        parse_config<Matrix, SymmGroup>(determinantName, per_site);
     // printout the determinants
     for (pos_t q = 0; q < determinants.size(); ++q) {
-      for (pos_t p = 0; p < L; ++p)
-        std::cout << determinants[q][p];
+      for (pos_t p = 0; p < L; ++p) std::cout << determinants[q][p];
       std::cout << std::endl;
     }
     // Set initial counter
     int i = 1;
     double completeness = 0.;
-    for (const auto& it: determinants) {
+    for (const auto& it : determinants) {
       auto coefficient = extract_coefficient(mps, it);
-      maquis::cout << "CI coefficient of det " << i << " : " << coefficient << std::endl;
+      maquis::cout << "CI coefficient of det " << i << " : " << coefficient
+                   << std::endl;
       i++;
       completeness += std::norm(coefficient);
     }
@@ -102,7 +105,7 @@ public:
     return completeness;
   }
 
-private:
+ private:
   MPSType mps;
   std::vector<Index<SymmGroup> > per_site;
   std::vector<Index<SymmGroup> > phys_dims;

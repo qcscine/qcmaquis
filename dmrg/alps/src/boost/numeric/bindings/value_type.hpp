@@ -15,13 +15,13 @@ namespace boost {
 namespace numeric {
 namespace bindings {
 
-template< typename T >
+template <typename T>
 struct value_type {
-    typedef typename detail::property_at< T, tag::value_type >::type type;
+  typedef typename detail::property_at<T, tag::value_type>::type type;
 };
 
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

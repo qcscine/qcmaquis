@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher
+ * Group. See LICENSE.txt for details.
  */
 
 #ifndef ENGINE_COMMON_H

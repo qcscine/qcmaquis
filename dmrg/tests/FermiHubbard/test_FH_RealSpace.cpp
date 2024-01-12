@@ -30,54 +30,52 @@
 #include "utils/fpcomparison.h"
 #include "utils/io.hpp"
 #include <iostream>
-#include "maquis_dmrg.h" // Needed for the interface
+#include "maquis_dmrg.h"  // Needed for the interface
 
 /**
  * @brief Test on the energy of a 2x2 real-space Fermi-Hubbard model
- * Reference energy taken from "Symmetry in auxiliary-field quantum Monte 
+ * Reference energy taken from "Symmetry in auxiliary-field quantum Monte
  * Carlo calculations", PRB, 2013
  */
-BOOST_AUTO_TEST_CASE( Test_FermiHubbardRealSpace_2x2_2Alpha1Beta )
-{
+BOOST_AUTO_TEST_CASE(Test_FermiHubbardRealSpace_2x2_2Alpha1Beta) {
 #ifdef HAVE_TwoU1
-    DmrgParameters p;
-    p.set("L", 4);
-    p.set("width_FermiHubbard", 2);
-    p.set("height_FermiHubbard", 2);
-    p.set("nsweeps", 10);
-    p.set("max_bond_dimension", 10);
-    p.set("u1_total_charge1", 2);
-    p.set("u1_total_charge2", 1);
-    p.set("symmetry", "2u1");
-    p.set("MODEL", "fermi_hubbard_real");
-    p.set("site_types", "0,0,0,0");
-    p.set("U_FermiHubbard", 4.);
-    maquis::DMRGInterface<double> interface(p);
-    interface.optimize();
-    BOOST_CHECK_CLOSE(interface.energy(), -1.6046*4, 1.0e-2);
-#endif // HAVE_TwoU1
+  DmrgParameters p;
+  p.set("L", 4);
+  p.set("width_FermiHubbard", 2);
+  p.set("height_FermiHubbard", 2);
+  p.set("nsweeps", 10);
+  p.set("max_bond_dimension", 10);
+  p.set("u1_total_charge1", 2);
+  p.set("u1_total_charge2", 1);
+  p.set("symmetry", "2u1");
+  p.set("MODEL", "fermi_hubbard_real");
+  p.set("site_types", "0,0,0,0");
+  p.set("U_FermiHubbard", 4.);
+  maquis::DMRGInterface<double> interface(p);
+  interface.optimize();
+  BOOST_CHECK_CLOSE(interface.energy(), -1.6046 * 4, 1.0e-2);
+#endif  // HAVE_TwoU1
 }
 
 #ifdef HAVE_TwoU1
 
 /** @brief Test on the energy of a 3x3 real-space Fermi-Hubbard model */
-BOOST_AUTO_TEST_CASE( Test_FermiHubbardRealSpace_3x3_4Alpha4Beta )
-{
-    DmrgParameters p;
-    p.set("L", 9);
-    p.set("width_FermiHubbard", 3);
-    p.set("height_FermiHubbard", 3);
-    p.set("nsweeps", 10);
-    p.set("max_bond_dimension", 300);
-    p.set("u1_total_charge1", 4);
-    p.set("u1_total_charge2", 4);
-    p.set("symmetry", "2u1");
-    p.set("MODEL", "fermi_hubbard_real");
-    p.set("site_types", "0,0,0,0,0,0,0,0,0");
-    p.set("U_FermiHubbard", 8.);
-    maquis::DMRGInterface<double> interface(p);
-    interface.optimize();
-    BOOST_CHECK_CLOSE(interface.energy(), -0.8094*9, 1.0e-2);
+BOOST_AUTO_TEST_CASE(Test_FermiHubbardRealSpace_3x3_4Alpha4Beta) {
+  DmrgParameters p;
+  p.set("L", 9);
+  p.set("width_FermiHubbard", 3);
+  p.set("height_FermiHubbard", 3);
+  p.set("nsweeps", 10);
+  p.set("max_bond_dimension", 300);
+  p.set("u1_total_charge1", 4);
+  p.set("u1_total_charge2", 4);
+  p.set("symmetry", "2u1");
+  p.set("MODEL", "fermi_hubbard_real");
+  p.set("site_types", "0,0,0,0,0,0,0,0,0");
+  p.set("U_FermiHubbard", 8.);
+  maquis::DMRGInterface<double> interface(p);
+  interface.optimize();
+  BOOST_CHECK_CLOSE(interface.energy(), -0.8094 * 9, 1.0e-2);
 }
 
-#endif // HAVE_TwoU1
+#endif  // HAVE_TwoU1

@@ -480,9 +480,8 @@ parms["nsweeps"]) checkpoint_simulation(mps, sweep, -1); if (stopped) break;
       BaseParameters parms_meas;
       parms_meas = parms.twou1_measurements();
       if (!parms_meas.empty()) {
-        measure_transform<Matrix, SymmGroup>()(
-            rfile(), "/spectrum/results", base::lat, mps, parms_meas
-        );
+        measure_transform<Matrix, SymmGroup>(
+        )(rfile(), "/spectrum/results", base::lat, mps, parms_meas);
       }
     } else {
       throw std::runtime_error(

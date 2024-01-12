@@ -62,12 +62,16 @@ namespace detail {
 // * CBLAS backend, and
 // * float value-type.
 //
-template< typename Order, typename UpLo >
-inline void syr2( const Order order, const UpLo uplo, const int n,
-        const float alpha, const float* x, const int incx, const float* y,
-        const int incy, float* a, const int lda ) {
-    cblas_ssyr2( cblas_option< Order >::value, cblas_option< UpLo >::value, n,
-            alpha, x, incx, y, incy, a, lda );
+template <typename Order, typename UpLo>
+inline void syr2(
+    const Order order, const UpLo uplo, const int n, const float alpha,
+    const float* x, const int incx, const float* y, const int incy, float* a,
+    const int lda
+) {
+  cblas_ssyr2(
+      cblas_option<Order>::value, cblas_option<UpLo>::value, n, alpha, x, incx,
+      y, incy, a, lda
+  );
 }
 
 //
@@ -75,12 +79,16 @@ inline void syr2( const Order order, const UpLo uplo, const int n,
 // * CBLAS backend, and
 // * double value-type.
 //
-template< typename Order, typename UpLo >
-inline void syr2( const Order order, const UpLo uplo, const int n,
-        const double alpha, const double* x, const int incx, const double* y,
-        const int incy, double* a, const int lda ) {
-    cblas_dsyr2( cblas_option< Order >::value, cblas_option< UpLo >::value, n,
-            alpha, x, incx, y, incy, a, lda );
+template <typename Order, typename UpLo>
+inline void syr2(
+    const Order order, const UpLo uplo, const int n, const double alpha,
+    const double* x, const int incx, const double* y, const int incy, double* a,
+    const int lda
+) {
+  cblas_dsyr2(
+      cblas_option<Order>::value, cblas_option<UpLo>::value, n, alpha, x, incx,
+      y, incy, a, lda
+  );
 }
 
 #elif defined BOOST_NUMERIC_BINDINGS_BLAS_CUBLAS
@@ -89,13 +97,14 @@ inline void syr2( const Order order, const UpLo uplo, const int n,
 // * CUBLAS backend, and
 // * float value-type.
 //
-template< typename Order, typename UpLo >
-inline void syr2( const Order order, const UpLo uplo, const int n,
-        const float alpha, const float* x, const int incx, const float* y,
-        const int incy, float* a, const int lda ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    cublasSsyr2( blas_option< UpLo >::value, n, alpha, x, incx, y, incy, a,
-            lda );
+template <typename Order, typename UpLo>
+inline void syr2(
+    const Order order, const UpLo uplo, const int n, const float alpha,
+    const float* x, const int incx, const float* y, const int incy, float* a,
+    const int lda
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  cublasSsyr2(blas_option<UpLo>::value, n, alpha, x, incx, y, incy, a, lda);
 }
 
 //
@@ -103,12 +112,14 @@ inline void syr2( const Order order, const UpLo uplo, const int n,
 // * CUBLAS backend, and
 // * double value-type.
 //
-template< typename Order, typename UpLo >
-inline void syr2( const Order order, const UpLo uplo, const int n,
-        const double alpha, const double* x, const int incx, const double* y,
-        const int incy, double* a, const int lda ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    // NOT FOUND();
+template <typename Order, typename UpLo>
+inline void syr2(
+    const Order order, const UpLo uplo, const int n, const double alpha,
+    const double* x, const int incx, const double* y, const int incy, double* a,
+    const int lda
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  // NOT FOUND();
 }
 
 #else
@@ -117,14 +128,16 @@ inline void syr2( const Order order, const UpLo uplo, const int n,
 // * netlib-compatible BLAS backend (the default), and
 // * float value-type.
 //
-template< typename Order, typename UpLo >
-inline void syr2( const Order order, const UpLo uplo, const fortran_int_t n,
-        const float alpha, const float* x, const fortran_int_t incx,
-        const float* y, const fortran_int_t incy, float* a,
-        const fortran_int_t lda ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    BLAS_SSYR2( &blas_option< UpLo >::value, &n, &alpha, x, &incx, y, &incy,
-            a, &lda );
+template <typename Order, typename UpLo>
+inline void syr2(
+    const Order order, const UpLo uplo, const fortran_int_t n,
+    const float alpha, const float* x, const fortran_int_t incx, const float* y,
+    const fortran_int_t incy, float* a, const fortran_int_t lda
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  BLAS_SSYR2(
+      &blas_option<UpLo>::value, &n, &alpha, x, &incx, y, &incy, a, &lda
+  );
 }
 
 //
@@ -132,64 +145,75 @@ inline void syr2( const Order order, const UpLo uplo, const fortran_int_t n,
 // * netlib-compatible BLAS backend (the default), and
 // * double value-type.
 //
-template< typename Order, typename UpLo >
-inline void syr2( const Order order, const UpLo uplo, const fortran_int_t n,
-        const double alpha, const double* x, const fortran_int_t incx,
-        const double* y, const fortran_int_t incy, double* a,
-        const fortran_int_t lda ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    BLAS_DSYR2( &blas_option< UpLo >::value, &n, &alpha, x, &incx, y, &incy,
-            a, &lda );
+template <typename Order, typename UpLo>
+inline void syr2(
+    const Order order, const UpLo uplo, const fortran_int_t n,
+    const double alpha, const double* x, const fortran_int_t incx,
+    const double* y, const fortran_int_t incy, double* a,
+    const fortran_int_t lda
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  BLAS_DSYR2(
+      &blas_option<UpLo>::value, &n, &alpha, x, &incx, y, &incy, a, &lda
+  );
 }
 
 #endif
 
-} // namespace detail
+}  // namespace detail
 
 //
 // Value-type based template class. Use this class if you need a type
 // for dispatching to syr2.
 //
-template< typename Value >
+template <typename Value>
 struct syr2_impl {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
+  typedef void result_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
-    typedef void result_type;
-
-    //
-    // Static member function that
-    // * Deduces the required arguments for dispatching to BLAS, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename VectorX, typename VectorY, typename MatrixA >
-    static result_type invoke( const real_type alpha, const VectorX& x,
-            const VectorY& y, MatrixA& a ) {
-        namespace bindings = ::boost::numeric::bindings;
-        typedef typename result_of::data_order< MatrixA >::type order;
-        typedef typename result_of::uplo_tag< MatrixA >::type uplo;
-        BOOST_STATIC_ASSERT( (is_same< typename remove_const<
-                typename bindings::value_type< VectorX >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                VectorY >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (is_same< typename remove_const<
-                typename bindings::value_type< VectorX >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                MatrixA >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< MatrixA >::value) );
-        BOOST_ASSERT( bindings::size_minor(a) == 1 ||
-                bindings::stride_minor(a) == 1 );
-        detail::syr2( order(), uplo(), bindings::size_column(a), alpha,
-                bindings::begin_value(x), bindings::stride(x),
-                bindings::begin_value(y), bindings::stride(y),
-                bindings::begin_value(a), bindings::stride_major(a) );
-    }
+  //
+  // Static member function that
+  // * Deduces the required arguments for dispatching to BLAS, and
+  // * Asserts that most arguments make sense.
+  //
+  template <typename VectorX, typename VectorY, typename MatrixA>
+  static result_type invoke(
+      const real_type alpha, const VectorX& x, const VectorY& y, MatrixA& a
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    typedef typename result_of::data_order<MatrixA>::type order;
+    typedef typename result_of::uplo_tag<MatrixA>::type uplo;
+    BOOST_STATIC_ASSERT(
+        (is_same<
+            typename remove_const<
+                typename bindings::value_type<VectorX>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<VectorY>::type>::type>::value)
+    );
+    BOOST_STATIC_ASSERT(
+        (is_same<
+            typename remove_const<
+                typename bindings::value_type<VectorX>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<MatrixA>::type>::type>::value)
+    );
+    BOOST_STATIC_ASSERT((bindings::is_mutable<MatrixA>::value));
+    BOOST_ASSERT(
+        bindings::size_minor(a) == 1 || bindings::stride_minor(a) == 1
+    );
+    detail::syr2(
+        order(), uplo(), bindings::size_column(a), alpha,
+        bindings::begin_value(x), bindings::stride(x), bindings::begin_value(y),
+        bindings::stride(y), bindings::begin_value(a), bindings::stride_major(a)
+    );
+  }
 };
 
 //
 // Functions for direct use. These functions are overloaded for temporaries,
 // so that wrapped types can still be passed and used for write-access. Calls
-// to these functions are passed to the syr2_impl classes. In the 
+// to these functions are passed to the syr2_impl classes. In the
 // documentation, the const-overloads are collapsed to avoid a large number of
 // prototypes which are very similar.
 //
@@ -197,19 +221,22 @@ struct syr2_impl {
 //
 // Overloaded function for syr2. Its overload differs for
 //
-template< typename VectorX, typename VectorY, typename MatrixA >
-inline typename syr2_impl< typename bindings::value_type<
-        VectorX >::type >::result_type
-syr2( const typename remove_imaginary< typename bindings::value_type<
-        VectorX >::type >::type alpha, const VectorX& x, const VectorY& y,
-        MatrixA& a ) {
-    syr2_impl< typename bindings::value_type<
-            VectorX >::type >::invoke( alpha, x, y, a );
+template <typename VectorX, typename VectorY, typename MatrixA>
+inline typename syr2_impl<
+    typename bindings::value_type<VectorX>::type>::result_type
+syr2(
+    const typename remove_imaginary<
+        typename bindings::value_type<VectorX>::type>::type alpha,
+    const VectorX& x, const VectorY& y, MatrixA& a
+) {
+  syr2_impl<typename bindings::value_type<VectorX>::type>::invoke(
+      alpha, x, y, a
+  );
 }
 
-} // namespace blas
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace blas
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

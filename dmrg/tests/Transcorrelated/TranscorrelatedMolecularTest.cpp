@@ -38,36 +38,49 @@
 #include "Fixtures/TranscorrelatedFixture.h"
 
 /**
- * @brief Checks consistency between conventional and transcorrelated implementations.
+ * @brief Checks consistency between conventional and transcorrelated
+ * implementations.
  *
- * The check is done by giving as input to the transcorrelated Hamiltonian constructor,
- * a conventional Hamiltonian. Note that the FCIDUMP will be different because tcDMRG
- * does not assume eightfold symmetry, but only twofold. So, also the MPO will be different
- * and, as a consequence, it is not trivial that the two calculations give the same energy.
+ * The check is done by giving as input to the transcorrelated Hamiltonian
+ * constructor, a conventional Hamiltonian. Note that the FCIDUMP will be
+ * different because tcDMRG does not assume eightfold symmetry, but only
+ * twofold. So, also the MPO will be different and, as a consequence, it is not
+ * trivial that the two calculations give the same energy.
  */
-BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusConventional, TranscorrelatedFixture)
-{
+BOOST_FIXTURE_TEST_CASE(
+    TestTCMolecular_H2_VersusConventional, TranscorrelatedFixture
+) {
 #if defined(HAVE_TwoU1) and defined(DMRG_TD)
   parametersH2Conventional_ConventionalFormat.set("nsweeps", 10);
   parametersH2Conventional_ConventionalFormat.set("max_bond_dimension", 100);
-  maquis::DMRGInterface<double> interfaceConventional(parametersH2Conventional_ConventionalFormat);
+  maquis::DMRGInterface<double> interfaceConventional(
+      parametersH2Conventional_ConventionalFormat
+  );
   interfaceConventional.optimize();
   auto energy1 = interfaceConventional.energy();
   //
-  parametersH2Conventional_TranscorrelatedFormat.set("transcorrelated_nsweeps_TI", 5);
-  parametersH2Conventional_TranscorrelatedFormat.set("transcorrelated_nsweeps_TD", 5);
+  parametersH2Conventional_TranscorrelatedFormat.set(
+      "transcorrelated_nsweeps_TI", 5
+  );
+  parametersH2Conventional_TranscorrelatedFormat.set(
+      "transcorrelated_nsweeps_TD", 5
+  );
   parametersH2Conventional_TranscorrelatedFormat.set("max_bond_dimension", 100);
   parametersH2Conventional_TranscorrelatedFormat.set("time_step", 10.);
   parametersH2Conventional_TranscorrelatedFormat.set("propagator_maxiter", 10);
-  parametersH2Conventional_TranscorrelatedFormat.set("TD_backpropagation", "no");
+  parametersH2Conventional_TranscorrelatedFormat.set(
+      "TD_backpropagation", "no"
+  );
   parametersH2Conventional_TranscorrelatedFormat.set("time_units", "fs");
-  maquis::DMRGInterface<double> interfaceTranscorrelated(parametersH2Conventional_TranscorrelatedFormat);
+  maquis::DMRGInterface<double> interfaceTranscorrelated(
+      parametersH2Conventional_TranscorrelatedFormat
+  );
   interfaceTranscorrelated.runTranscorrelated();
   auto energy2 = interfaceConventional.energy();
   // The reference energy was generated with the UCISD module of PySCF
   BOOST_CHECK_CLOSE(energy1, -1.102429823850713, 1.0E-3);
   BOOST_CHECK_CLOSE(energy1, energy2, 1.0E-8);
-#endif // HAVE_TwoU1 and DMRG_TD
+#endif  // HAVE_TwoU1 and DMRG_TD
 }
 
 #if defined(HAVE_TwoU1) and defined(DMRG_TD)
@@ -77,20 +90,30 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusConventional, TranscorrelatedFi
  * Here we take a conventional Hamiltonian, we encode it in the transcorrelated
  * format, and check that the energy is coherent with that of a "poor-man"
  * implementation of CISD.
- * Note that we do the check for both the conventional and the transcorrelated format.
+ * Note that we do the check for both the conventional and the transcorrelated
+ * format.
  */
-BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusFullCI, TranscorrelatedFixture)
-{
+BOOST_FIXTURE_TEST_CASE(
+    TestTCMolecular_H2_VersusFullCI, TranscorrelatedFixture
+) {
   int iCont = 0;
-  parametersH2Conventional_TranscorrelatedFormat.set("transcorrelated_nsweeps_TI", 5);
-  parametersH2Conventional_TranscorrelatedFormat.set("transcorrelated_nsweeps_TD", 5);
+  parametersH2Conventional_TranscorrelatedFormat.set(
+      "transcorrelated_nsweeps_TI", 5
+  );
+  parametersH2Conventional_TranscorrelatedFormat.set(
+      "transcorrelated_nsweeps_TD", 5
+  );
   parametersH2Conventional_TranscorrelatedFormat.set("max_bond_dimension", 100);
   parametersH2Conventional_TranscorrelatedFormat.set("time_step", 10.);
   parametersH2Conventional_TranscorrelatedFormat.set("propagator_maxiter", 10);
-  parametersH2Conventional_TranscorrelatedFormat.set("TD_backpropagation", "no");
+  parametersH2Conventional_TranscorrelatedFormat.set(
+      "TD_backpropagation", "no"
+  );
   parametersH2Conventional_TranscorrelatedFormat.set("time_units", "fs");
   // Does conventional TI and transcorrelated.
-  for (auto& iParameter: std::vector<DmrgParameters>{parametersH2Conventional_ConventionalFormat, parametersH2Conventional_TranscorrelatedFormat}) {
+  for (auto& iParameter : std::vector<DmrgParameters>{
+           parametersH2Conventional_ConventionalFormat,
+           parametersH2Conventional_TranscorrelatedFormat}) {
     iParameter.set("nsweeps", 10);
     iParameter.set("max_bond_dimension", 100);
     maquis::DMRGInterface<double> interface(iParameter);
@@ -101,35 +124,47 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusFullCI, TranscorrelatedFixture)
     auto energyDMRG = interface.energy();
     // Hand-made Full-CI
     if (iCont == 1) {
-      // Setting this keyword to "yes" enables constructing the MPO with the transcorrelated code
-      parametersH2Conventional_TranscorrelatedFormat.set("transcorrelated_hamiltonian", "yes");
-      std::string integralFileName = parametersH2Conventional_TranscorrelatedFormat["transcorrelated_integral_file"];
-      parametersH2Conventional_TranscorrelatedFormat.set("integral_file", integralFileName);
+      // Setting this keyword to "yes" enables constructing the MPO with the
+      // transcorrelated code
+      parametersH2Conventional_TranscorrelatedFormat.set(
+          "transcorrelated_hamiltonian", "yes"
+      );
+      std::string integralFileName =
+          parametersH2Conventional_TranscorrelatedFormat
+              ["transcorrelated_integral_file"];
+      parametersH2Conventional_TranscorrelatedFormat.set(
+          "integral_file", integralFileName
+      );
     }
     auto lattice = Lattice(iParameter);
     auto model = Model<matrix, TwoU1>(lattice, iParameter);
     auto mpo = make_mpo(lattice, model);
     std::vector<MPS<matrix, TwoU1>> vectorOfMPS;
-    for (const auto& iString: fullCIDeterminantsH2) {
+    for (const auto& iString : fullCIDeterminantsH2) {
       iParameter.set("init_type", "hf");
       iParameter.set("hf_occ", iString);
-      vectorOfMPS.push_back(MPS<matrix, TwoU1>(lattice.size(), *(model.initializer(lattice, iParameter))));
+      vectorOfMPS.push_back(MPS<matrix, TwoU1>(
+          lattice.size(), *(model.initializer(lattice, iParameter))
+      ));
     }
     matrix hamiltonianMatrix(vectorOfMPS.size(), vectorOfMPS.size(), 0.0);
     matrix eigenVectors(vectorOfMPS.size(), vectorOfMPS.size(), 0.0);
     alps::numeric::vector<double> eigenValues(vectorOfMPS.size(), 0.0);
     for (int iRow = 0; iRow < vectorOfMPS.size(); iRow++)
       for (int iCol = 0; iCol < vectorOfMPS.size(); iCol++)
-        hamiltonianMatrix(iRow, iCol) = expval(vectorOfMPS[iRow], vectorOfMPS[iCol], mpo)/std::sqrt(norm(vectorOfMPS[iRow])*norm(vectorOfMPS[iCol]));
+        hamiltonianMatrix(iRow, iCol) =
+            expval(vectorOfMPS[iRow], vectorOfMPS[iCol], mpo) /
+            std::sqrt(norm(vectorOfMPS[iRow]) * norm(vectorOfMPS[iCol]));
     alps::numeric::syev(hamiltonianMatrix, eigenVectors, eigenValues);
-    BOOST_CHECK_CLOSE(eigenValues[vectorOfMPS.size()-1], energyDMRG, 1.0E-8);
+    BOOST_CHECK_CLOSE(eigenValues[vectorOfMPS.size() - 1], energyDMRG, 1.0E-8);
     iCont += 1;
   }
 }
 
 /** @brief Same as above, but for the transcorrelated Hamiltonian */
-BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusFullCI_Transcorrelated, TranscorrelatedFixture)
-{
+BOOST_FIXTURE_TEST_CASE(
+    TestTCMolecular_H2_VersusFullCI_Transcorrelated, TranscorrelatedFixture
+) {
   parametersH2Transcorrelated.set("transcorrelated_nsweeps_TI", 10);
   parametersH2Transcorrelated.set("transcorrelated_nsweeps_TC", 30);
   parametersH2Transcorrelated.set("max_bond_dimension", 100);
@@ -149,26 +184,32 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusFullCI_Transcorrelated, Transco
   auto model = Model<matrix, TwoU1>(lattice, parametersH2Transcorrelated);
   auto mpo = make_mpo(lattice, model);
   std::vector<MPS<matrix, TwoU1>> vectorOfMPS;
-  for (const auto& iString: fullCIDeterminantsH2) {
+  for (const auto& iString : fullCIDeterminantsH2) {
     parametersH2Transcorrelated.set("init_type", "hf");
     parametersH2Transcorrelated.set("hf_occ", iString);
-    vectorOfMPS.push_back(MPS<matrix, TwoU1>(lattice.size(), *(model.initializer(lattice, parametersH2Transcorrelated))));
+    vectorOfMPS.push_back(MPS<matrix, TwoU1>(
+        lattice.size(),
+        *(model.initializer(lattice, parametersH2Transcorrelated))
+    ));
   }
   cmatrix hamiltonianMatrix(vectorOfMPS.size(), vectorOfMPS.size(), 0.0);
-  alps::numeric::vector<std::complex<double>> eigenValues(vectorOfMPS.size(), 0.0);
+  alps::numeric::vector<std::complex<double>> eigenValues(
+      vectorOfMPS.size(), 0.0
+  );
   for (int iRow = 0; iRow < vectorOfMPS.size(); iRow++)
     for (int iCol = 0; iCol < vectorOfMPS.size(); iCol++)
-      hamiltonianMatrix(iRow, iCol) = expval(vectorOfMPS[iRow], vectorOfMPS[iCol], mpo)/std::sqrt(norm(vectorOfMPS[iRow])*norm(vectorOfMPS[iCol]));
+      hamiltonianMatrix(iRow, iCol) =
+          expval(vectorOfMPS[iRow], vectorOfMPS[iCol], mpo) /
+          std::sqrt(norm(vectorOfMPS[iRow]) * norm(vectorOfMPS[iCol]));
   alps::numeric::geev(hamiltonianMatrix, eigenValues);
-  // Checks that the eigenvalues are real (this comes from the fact that the matrix is obtained
-  // as similarity transformation of a real-valued matrix)
+  // Checks that the eigenvalues are real (this comes from the fact that the
+  // matrix is obtained as similarity transformation of a real-valued matrix)
   double minimumEnergy = std::real(eigenValues[0]);
   for (int iElement = 0; iElement < vectorOfMPS.size(); iElement++) {
     BOOST_CHECK_SMALL(std::imag(eigenValues[iElement]), 1.0E-8);
     if (iElement != 0) {
       auto realEnergy = std::real(eigenValues[iElement]);
-      if (realEnergy < minimumEnergy)
-        minimumEnergy = realEnergy;
+      if (realEnergy < minimumEnergy) minimumEnergy = realEnergy;
     }
   }
   BOOST_CHECK_CLOSE(minimumEnergy, energyDMRG, 1.0E-8);
@@ -179,8 +220,7 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusFullCI_Transcorrelated, Transco
  * The reference energy has been generated in this case with the Owl CC
  * code by Max Moerchen.
  */
-BOOST_FIXTURE_TEST_CASE(TestTCMolecular_Be_VersusCC, TranscorrelatedFixture)
-{
+BOOST_FIXTURE_TEST_CASE(TestTCMolecular_Be_VersusCC, TranscorrelatedFixture) {
   parametersBeTranscorrelatedTwoBody.set("propagator_accuracy", 1.0E-10);
   parametersBeTranscorrelatedTwoBody.set("propagator_maxiter", 10);
   parametersBeTranscorrelatedTwoBody.set("hamiltonian_units", "Hartree");
@@ -191,8 +231,12 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_Be_VersusCC, TranscorrelatedFixture)
   parametersBeTranscorrelatedTwoBody.set("chkpfile", "Be.tcDMRG.checkpoint.h5");
   parametersBeTranscorrelatedTwoBody.set("transcorrelated_nsweeps_TI", 0);
   parametersBeTranscorrelatedTwoBody.set("transcorrelated_nsweeps_TC", 10);
-  parametersBeTranscorrelatedTwoBody.set("integral_file", "IntegralFile_Be_Conventional");
-  parametersBeTranscorrelatedTwoBody.set("transcorrelated_integral_file", "IntegralFile_Be_Transcorrelated_TwoBody");
+  parametersBeTranscorrelatedTwoBody.set(
+      "integral_file", "IntegralFile_Be_Conventional"
+  );
+  parametersBeTranscorrelatedTwoBody.set(
+      "transcorrelated_integral_file", "IntegralFile_Be_Transcorrelated_TwoBody"
+  );
   maquis::DMRGInterface<double> interface(parametersBeTranscorrelatedTwoBody);
   interface.runTranscorrelated();
   parametersBeTranscorrelatedTwoBody.set("transcorrelated_nsweeps_TC", 50);
@@ -206,42 +250,52 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_Be_VersusCC, TranscorrelatedFixture)
   boost::filesystem::remove_all("Be.tcDMRG.checkpoint.h5");
   auto energyDMRG = maquis::real(interface3.energy());
   auto refEnergy = -14.6505807967243;
-  BOOST_CHECK_SMALL(std::abs(energyDMRG-refEnergy), 1.0E-10);
+  BOOST_CHECK_SMALL(std::abs(energyDMRG - refEnergy), 1.0E-10);
 }
 
 /** @brief Checks quantum format for Hermitian Hamiltonians */
-BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_QuantumFormat, H2Fixture)
-{
+BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_QuantumFormat, H2Fixture) {
   // Types definition
   using ModelType = Model<matrix, TwoU1>;
   using MPSType = MPS<matrix, TwoU1>;
   // Generates the conventional MPO
   auto lattice = Lattice(parametersH2QuantumFormatTranscorrelated);
-  auto conventionalModel = ModelType(lattice, parametersH2QuantumFormatTranscorrelated);
+  auto conventionalModel =
+      ModelType(lattice, parametersH2QuantumFormatTranscorrelated);
   auto conventionalMpo = make_mpo(lattice, conventionalModel);
   parametersH2QuantumFormatTranscorrelated.set("init_type", "default");
   // Generates the MPS
-  auto mps = MPSType(lattice.size(), *(conventionalModel.initializer(lattice, parametersH2QuantumFormatTranscorrelated)));
+  auto mps = MPSType(
+      lattice.size(), *(conventionalModel.initializer(
+                          lattice, parametersH2QuantumFormatTranscorrelated
+                      ))
+  );
   // Generates the transcorrelatedMPO
-  auto transcorrelatedParametersContainer = parametersH2QuantumFormatTranscorrelated;
+  auto transcorrelatedParametersContainer =
+      parametersH2QuantumFormatTranscorrelated;
   transcorrelatedParametersContainer.set("transcorrelated_hamiltonian", "yes");
   transcorrelatedParametersContainer.set("imaginary_time", "yes");
-  auto transcorrelatedModel = ModelType(lattice, transcorrelatedParametersContainer);
+  auto transcorrelatedModel =
+      ModelType(lattice, transcorrelatedParametersContainer);
   auto transcorrelatedMpo = make_mpo(lattice, transcorrelatedModel);
   // Compares the energy calculated based on the two Hamiltonians
   auto energyConventional = expval(mps, conventionalMpo);
   auto energyQuantum = expval(mps, transcorrelatedMpo);
   BOOST_CHECK_CLOSE(energyConventional, energyQuantum, 1.0E-13);
   // Now also tries conventional Hamiltonian in quantum format
-  auto conventionalModelQuantumFormat = ModelType(lattice, parametersH2QuantumFormat);
-  auto conventionalMPOQuantumFormat = make_mpo(lattice, conventionalModelQuantumFormat);
-  auto energyConventionalQuantumFormat = expval(mps, conventionalMPOQuantumFormat);
+  auto conventionalModelQuantumFormat =
+      ModelType(lattice, parametersH2QuantumFormat);
+  auto conventionalMPOQuantumFormat =
+      make_mpo(lattice, conventionalModelQuantumFormat);
+  auto energyConventionalQuantumFormat =
+      expval(mps, conventionalMPOQuantumFormat);
   BOOST_CHECK_CLOSE(energyConventionalQuantumFormat, energyQuantum, 1.0E-13);
 }
 
 /** @brief Checks quantum format for non-Hermitian Hamiltonians */
-BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_QuantumFormat_NonHermitian, TranscorrelatedFixture)
-{
+BOOST_FIXTURE_TEST_CASE(
+    TestTCMolecular_H2_QuantumFormat_NonHermitian, TranscorrelatedFixture
+) {
   // Types definition
   using ModelType = Model<matrix, TwoU1>;
   using MPSType = MPS<matrix, TwoU1>;
@@ -250,18 +304,23 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_QuantumFormat_NonHermitian, Transcorr
   parametersH2Transcorrelated.set("hf_occ", "4,1,1,1,1,1,1,1,1,1");
   auto lattice = Lattice(parametersH2Transcorrelated);
   auto modelForMPS = ModelType(lattice, parametersH2Transcorrelated);
-  auto randomMps = MPSType(lattice.size(), *(modelForMPS.initializer(lattice, parametersH2Transcorrelated)));
+  auto randomMps = MPSType(
+      lattice.size(),
+      *(modelForMPS.initializer(lattice, parametersH2Transcorrelated))
+  );
   // Generates the transcorrelatedMPO with the conventional format
   auto transcorrelatedParametersContainer = parametersH2Transcorrelated;
   transcorrelatedParametersContainer.set("transcorrelated_hamiltonian", "yes");
   transcorrelatedParametersContainer.set("imaginary_time", "yes");
-  auto transcorrelatedModel = ModelType(lattice, transcorrelatedParametersContainer);
+  auto transcorrelatedModel =
+      ModelType(lattice, transcorrelatedParametersContainer);
   auto transcorrelatedMpo = make_mpo(lattice, transcorrelatedModel);
   // Generates the transcorrelatedMPO in the quantum format
   transcorrelatedParametersContainer = parametersH2TranscorrelatedQuantumFormat;
   transcorrelatedParametersContainer.set("transcorrelated_hamiltonian", "yes");
   transcorrelatedParametersContainer.set("imaginary_time", "yes");
-  auto transcorrelatedModelQF = ModelType(lattice, transcorrelatedParametersContainer);
+  auto transcorrelatedModelQF =
+      ModelType(lattice, transcorrelatedParametersContainer);
   auto transcorrelatedMpoQF = make_mpo(lattice, transcorrelatedModelQF);
   // Checks coherence in the energy
   auto energyConventionalFormat = expval(randomMps, transcorrelatedMpo);
@@ -269,4 +328,4 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_QuantumFormat_NonHermitian, Transcorr
   BOOST_CHECK_CLOSE(energyConventionalFormat, energyQuantumFormat, 1.0E-13);
 }
 
-#endif // HAVE_TwoU1 and DMRG_TD
+#endif  // HAVE_TwoU1 and DMRG_TD

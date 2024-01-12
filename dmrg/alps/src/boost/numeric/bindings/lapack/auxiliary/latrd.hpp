@@ -52,14 +52,15 @@ namespace detail {
 // * netlib-compatible LAPACK backend (the default), and
 // * float value-type.
 //
-template< typename UpLo >
-inline std::ptrdiff_t latrd( const UpLo, const fortran_int_t n,
-        const fortran_int_t nb, float* a, const fortran_int_t lda, float* e,
-        float* tau, float* w, const fortran_int_t ldw ) {
-    fortran_int_t info(0);
-    LAPACK_SLATRD( &lapack_option< UpLo >::value, &n, &nb, a, &lda, e, tau, w,
-            &ldw );
-    return info;
+template <typename UpLo>
+inline std::ptrdiff_t latrd(
+    const UpLo, const fortran_int_t n, const fortran_int_t nb, float* a,
+    const fortran_int_t lda, float* e, float* tau, float* w,
+    const fortran_int_t ldw
+) {
+  fortran_int_t info(0);
+  LAPACK_SLATRD(&lapack_option<UpLo>::value, &n, &nb, a, &lda, e, tau, w, &ldw);
+  return info;
 }
 
 //
@@ -67,14 +68,15 @@ inline std::ptrdiff_t latrd( const UpLo, const fortran_int_t n,
 // * netlib-compatible LAPACK backend (the default), and
 // * double value-type.
 //
-template< typename UpLo >
-inline std::ptrdiff_t latrd( const UpLo, const fortran_int_t n,
-        const fortran_int_t nb, double* a, const fortran_int_t lda, double* e,
-        double* tau, double* w, const fortran_int_t ldw ) {
-    fortran_int_t info(0);
-    LAPACK_DLATRD( &lapack_option< UpLo >::value, &n, &nb, a, &lda, e, tau, w,
-            &ldw );
-    return info;
+template <typename UpLo>
+inline std::ptrdiff_t latrd(
+    const UpLo, const fortran_int_t n, const fortran_int_t nb, double* a,
+    const fortran_int_t lda, double* e, double* tau, double* w,
+    const fortran_int_t ldw
+) {
+  fortran_int_t info(0);
+  LAPACK_DLATRD(&lapack_option<UpLo>::value, &n, &nb, a, &lda, e, tau, w, &ldw);
+  return info;
 }
 
 //
@@ -82,15 +84,15 @@ inline std::ptrdiff_t latrd( const UpLo, const fortran_int_t n,
 // * netlib-compatible LAPACK backend (the default), and
 // * complex<float> value-type.
 //
-template< typename UpLo >
-inline std::ptrdiff_t latrd( const UpLo, const fortran_int_t n,
-        const fortran_int_t nb, std::complex<float>* a,
-        const fortran_int_t lda, float* e, std::complex<float>* tau,
-        std::complex<float>* w, const fortran_int_t ldw ) {
-    fortran_int_t info(0);
-    LAPACK_CLATRD( &lapack_option< UpLo >::value, &n, &nb, a, &lda, e, tau, w,
-            &ldw );
-    return info;
+template <typename UpLo>
+inline std::ptrdiff_t latrd(
+    const UpLo, const fortran_int_t n, const fortran_int_t nb,
+    std::complex<float>* a, const fortran_int_t lda, float* e,
+    std::complex<float>* tau, std::complex<float>* w, const fortran_int_t ldw
+) {
+  fortran_int_t info(0);
+  LAPACK_CLATRD(&lapack_option<UpLo>::value, &n, &nb, a, &lda, e, tau, w, &ldw);
+  return info;
 }
 
 //
@@ -98,136 +100,164 @@ inline std::ptrdiff_t latrd( const UpLo, const fortran_int_t n,
 // * netlib-compatible LAPACK backend (the default), and
 // * complex<double> value-type.
 //
-template< typename UpLo >
-inline std::ptrdiff_t latrd( const UpLo, const fortran_int_t n,
-        const fortran_int_t nb, std::complex<double>* a,
-        const fortran_int_t lda, double* e, std::complex<double>* tau,
-        std::complex<double>* w, const fortran_int_t ldw ) {
-    fortran_int_t info(0);
-    LAPACK_ZLATRD( &lapack_option< UpLo >::value, &n, &nb, a, &lda, e, tau, w,
-            &ldw );
-    return info;
+template <typename UpLo>
+inline std::ptrdiff_t latrd(
+    const UpLo, const fortran_int_t n, const fortran_int_t nb,
+    std::complex<double>* a, const fortran_int_t lda, double* e,
+    std::complex<double>* tau, std::complex<double>* w, const fortran_int_t ldw
+) {
+  fortran_int_t info(0);
+  LAPACK_ZLATRD(&lapack_option<UpLo>::value, &n, &nb, a, &lda, e, tau, w, &ldw);
+  return info;
 }
 
-} // namespace detail
+}  // namespace detail
 
 //
 // Value-type based template class. Use this class if you need a type
 // for dispatching to latrd.
 //
-template< typename Value, typename Enable = void >
+template <typename Value, typename Enable = void>
 struct latrd_impl {};
 
 //
 // This implementation is enabled if Value is a real type.
 //
-template< typename Value >
-struct latrd_impl< Value, typename boost::enable_if< is_real< Value > >::type > {
+template <typename Value>
+struct latrd_impl<Value, typename boost::enable_if<is_real<Value> >::type> {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
-
-    //
-    // Static member function, that
-    // * Deduces the required arguments for dispatching to LAPACK, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename MatrixA, typename VectorE, typename VectorTAU,
-            typename MatrixW >
-    static std::ptrdiff_t invoke( const fortran_int_t nb, MatrixA& a,
-            VectorE& e, VectorTAU& tau, MatrixW& w ) {
-        namespace bindings = ::boost::numeric::bindings;
-        typedef typename result_of::uplo_tag< MatrixA >::type uplo;
-        BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixA >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixW >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
-                typename bindings::value_type< MatrixA >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                VectorE >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
-                typename bindings::value_type< MatrixA >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                VectorTAU >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
-                typename bindings::value_type< MatrixA >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                MatrixW >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< MatrixA >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorE >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorTAU >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< MatrixW >::value) );
-        BOOST_ASSERT( bindings::size_minor(a) == 1 ||
-                bindings::stride_minor(a) == 1 );
-        BOOST_ASSERT( bindings::size_minor(w) == 1 ||
-                bindings::stride_minor(w) == 1 );
-        BOOST_ASSERT( bindings::stride_major(a) >= std::max< std::ptrdiff_t >(1,
-                bindings::size_column(a)) );
-        BOOST_ASSERT( bindings::stride_major(w) >= std::max< std::ptrdiff_t >(1,
-                bindings::size_column(a)) );
-        return detail::latrd( uplo(), bindings::size_column(a), nb,
-                bindings::begin_value(a), bindings::stride_major(a),
-                bindings::begin_value(e), bindings::begin_value(tau),
-                bindings::begin_value(w), bindings::stride_major(w) );
-    }
-
+  //
+  // Static member function, that
+  // * Deduces the required arguments for dispatching to LAPACK, and
+  // * Asserts that most arguments make sense.
+  //
+  template <
+      typename MatrixA, typename VectorE, typename VectorTAU, typename MatrixW>
+  static std::ptrdiff_t invoke(
+      const fortran_int_t nb, MatrixA& a, VectorE& e, VectorTAU& tau, MatrixW& w
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    typedef typename result_of::uplo_tag<MatrixA>::type uplo;
+    BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixA>::value));
+    BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixW>::value));
+    BOOST_STATIC_ASSERT(
+        (boost::is_same<
+            typename remove_const<
+                typename bindings::value_type<MatrixA>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<VectorE>::type>::type>::value)
+    );
+    BOOST_STATIC_ASSERT(
+        (boost::is_same<
+            typename remove_const<
+                typename bindings::value_type<MatrixA>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<VectorTAU>::type>::type>::value)
+    );
+    BOOST_STATIC_ASSERT(
+        (boost::is_same<
+            typename remove_const<
+                typename bindings::value_type<MatrixA>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<MatrixW>::type>::type>::value)
+    );
+    BOOST_STATIC_ASSERT((bindings::is_mutable<MatrixA>::value));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorE>::value));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorTAU>::value));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<MatrixW>::value));
+    BOOST_ASSERT(
+        bindings::size_minor(a) == 1 || bindings::stride_minor(a) == 1
+    );
+    BOOST_ASSERT(
+        bindings::size_minor(w) == 1 || bindings::stride_minor(w) == 1
+    );
+    BOOST_ASSERT(
+        bindings::stride_major(a) >=
+        std::max<std::ptrdiff_t>(1, bindings::size_column(a))
+    );
+    BOOST_ASSERT(
+        bindings::stride_major(w) >=
+        std::max<std::ptrdiff_t>(1, bindings::size_column(a))
+    );
+    return detail::latrd(
+        uplo(), bindings::size_column(a), nb, bindings::begin_value(a),
+        bindings::stride_major(a), bindings::begin_value(e),
+        bindings::begin_value(tau), bindings::begin_value(w),
+        bindings::stride_major(w)
+    );
+  }
 };
 
 //
 // This implementation is enabled if Value is a complex type.
 //
-template< typename Value >
-struct latrd_impl< Value, typename boost::enable_if< is_complex< Value > >::type > {
+template <typename Value>
+struct latrd_impl<Value, typename boost::enable_if<is_complex<Value> >::type> {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
-
-    //
-    // Static member function, that
-    // * Deduces the required arguments for dispatching to LAPACK, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename MatrixA, typename VectorE, typename VectorTAU,
-            typename MatrixW >
-    static std::ptrdiff_t invoke( const fortran_int_t nb, MatrixA& a,
-            VectorE& e, VectorTAU& tau, MatrixW& w ) {
-        namespace bindings = ::boost::numeric::bindings;
-        typedef typename result_of::uplo_tag< MatrixA >::type uplo;
-        BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixA >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixW >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
-                typename bindings::value_type< MatrixA >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                VectorTAU >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
-                typename bindings::value_type< MatrixA >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                MatrixW >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< MatrixA >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorE >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorTAU >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< MatrixW >::value) );
-        BOOST_ASSERT( bindings::size_minor(a) == 1 ||
-                bindings::stride_minor(a) == 1 );
-        BOOST_ASSERT( bindings::size_minor(w) == 1 ||
-                bindings::stride_minor(w) == 1 );
-        BOOST_ASSERT( bindings::stride_major(a) >= std::max< std::ptrdiff_t >(1,
-                bindings::size_column(a)) );
-        BOOST_ASSERT( bindings::stride_major(w) >= std::max< std::ptrdiff_t >(1,
-                bindings::size_column(a)) );
-        return detail::latrd( uplo(), bindings::size_column(a), nb,
-                bindings::begin_value(a), bindings::stride_major(a),
-                bindings::begin_value(e), bindings::begin_value(tau),
-                bindings::begin_value(w), bindings::stride_major(w) );
-    }
-
+  //
+  // Static member function, that
+  // * Deduces the required arguments for dispatching to LAPACK, and
+  // * Asserts that most arguments make sense.
+  //
+  template <
+      typename MatrixA, typename VectorE, typename VectorTAU, typename MatrixW>
+  static std::ptrdiff_t invoke(
+      const fortran_int_t nb, MatrixA& a, VectorE& e, VectorTAU& tau, MatrixW& w
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    typedef typename result_of::uplo_tag<MatrixA>::type uplo;
+    BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixA>::value));
+    BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixW>::value));
+    BOOST_STATIC_ASSERT(
+        (boost::is_same<
+            typename remove_const<
+                typename bindings::value_type<MatrixA>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<VectorTAU>::type>::type>::value)
+    );
+    BOOST_STATIC_ASSERT(
+        (boost::is_same<
+            typename remove_const<
+                typename bindings::value_type<MatrixA>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<MatrixW>::type>::type>::value)
+    );
+    BOOST_STATIC_ASSERT((bindings::is_mutable<MatrixA>::value));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorE>::value));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorTAU>::value));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<MatrixW>::value));
+    BOOST_ASSERT(
+        bindings::size_minor(a) == 1 || bindings::stride_minor(a) == 1
+    );
+    BOOST_ASSERT(
+        bindings::size_minor(w) == 1 || bindings::stride_minor(w) == 1
+    );
+    BOOST_ASSERT(
+        bindings::stride_major(a) >=
+        std::max<std::ptrdiff_t>(1, bindings::size_column(a))
+    );
+    BOOST_ASSERT(
+        bindings::stride_major(w) >=
+        std::max<std::ptrdiff_t>(1, bindings::size_column(a))
+    );
+    return detail::latrd(
+        uplo(), bindings::size_column(a), nb, bindings::begin_value(a),
+        bindings::stride_major(a), bindings::begin_value(e),
+        bindings::begin_value(tau), bindings::begin_value(w),
+        bindings::stride_major(w)
+    );
+  }
 };
-
 
 //
 // Functions for direct use. These functions are overloaded for temporaries,
 // so that wrapped types can still be passed and used for write-access. In
 // addition, if applicable, they are overloaded for user-defined workspaces.
-// Calls to these functions are passed to the latrd_impl classes. In the 
+// Calls to these functions are passed to the latrd_impl classes. In the
 // documentation, most overloads are collapsed to avoid a large number of
 // prototypes which are very similar.
 //
@@ -235,17 +265,19 @@ struct latrd_impl< Value, typename boost::enable_if< is_complex< Value > >::type
 //
 // Overloaded function for latrd. Its overload differs for
 //
-template< typename MatrixA, typename VectorE, typename VectorTAU,
-        typename MatrixW >
-inline std::ptrdiff_t latrd( const fortran_int_t nb, MatrixA& a,
-        VectorE& e, VectorTAU& tau, MatrixW& w ) {
-    return latrd_impl< typename bindings::value_type<
-            MatrixA >::type >::invoke( nb, a, e, tau, w );
+template <
+    typename MatrixA, typename VectorE, typename VectorTAU, typename MatrixW>
+inline std::ptrdiff_t latrd(
+    const fortran_int_t nb, MatrixA& a, VectorE& e, VectorTAU& tau, MatrixW& w
+) {
+  return latrd_impl<typename bindings::value_type<MatrixA>::type>::invoke(
+      nb, a, e, tau, w
+  );
 }
 
-} // namespace lapack
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace lapack
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

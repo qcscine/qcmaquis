@@ -16,17 +16,16 @@ namespace boost {
 namespace numeric {
 namespace bindings {
 
-template< typename T, typename Enable = void >
-struct has_linear_array: mpl::false_ {};
+template <typename T, typename Enable = void>
+struct has_linear_array : mpl::false_ {};
 
-template< typename T >
+template <typename T>
 struct has_linear_array<
-        T,
-        typename boost::enable_if< detail::is_adaptable<T> >::type >:
-    detail::is_same_at< T, tag::data_structure, tag::linear_array > {};
+    T, typename boost::enable_if<detail::is_adaptable<T> >::type>
+    : detail::is_same_at<T, tag::data_structure, tag::linear_array> {};
 
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

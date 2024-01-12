@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #ifndef SYMMETRY_SU2U1_H
@@ -15,87 +15,78 @@
 // ---
 // reusing TwoU1 charges
 
-template<class S = int>
-class SU2U1_template
-{
-public:
-    using subcharge = S;
-    using charge = NU1Charge<2, S>;
-    using charge_v = std::vector<charge>;
+template <class S = int>
+class SU2U1_template {
+ public:
+  using subcharge = S;
+  using charge = NU1Charge<2, S>;
+  using charge_v = std::vector<charge>;
 
-    static const charge IdentityCharge;
-    static const bool finite = false;
+  static const charge IdentityCharge;
+  static const bool finite = false;
 
-    static subcharge particleNumber(charge rhs) { return rhs[0]; }
+  static subcharge particleNumber(charge rhs) { return rhs[0]; }
 
-    static subcharge & spin(charge & rhs) { return rhs[1]; }
-    static subcharge const & spin(charge const & rhs) { return rhs[1]; }
+  static subcharge& spin(charge& rhs) { return rhs[1]; }
+  static subcharge const& spin(charge const& rhs) { return rhs[1]; }
 
-    static charge fuse(charge a, charge b)
-    {
-        return a+b;
+  static charge fuse(charge a, charge b) { return a + b; }
+
+  template <int R>
+  static charge fuse(std::array<charge, R> const& v) {
+    charge ret = v[0];
+    for (int i = 1; i < R; ++i) {
+      ret = fuse(ret, v[i]);
     }
-
-    template<int R> static charge fuse(std::array<charge, R> const & v)
-    {
-        charge ret = v[0];
-        for (int i = 1; i < R; ++i) {
-            ret = fuse(ret, v[i]);
-        }
-        return ret;
-    }
+    return ret;
+  }
 };
 
-template<class S> const typename SU2U1_template<S>::charge SU2U1_template<S>::IdentityCharge = typename SU2U1_template<S>::charge();
+template <class S>
+const typename SU2U1_template<S>::charge SU2U1_template<S>::IdentityCharge =
+    typename SU2U1_template<S>::charge();
 
 using SU2U1 = SU2U1_template<>;
-
 
 // SU2 x U1 x PG Symmetry
 // ---
 // reusing TwoU1PG charges
 
-template<class S = int>
-class SU2U1PG_template
-{
-public:
-    using subcharge = S;
-    using charge = NU1ChargePG<2, S>;
-    using charge_v = std::vector<charge>;
+template <class S = int>
+class SU2U1PG_template {
+ public:
+  using subcharge = S;
+  using charge = NU1ChargePG<2, S>;
+  using charge_v = std::vector<charge>;
 
-    static const charge IdentityCharge;
-    static const bool finite = false;
+  static const charge IdentityCharge;
+  static const bool finite = false;
 
-    static subcharge particleNumber(charge rhs) { return rhs[0]; }
+  static subcharge particleNumber(charge rhs) { return rhs[0]; }
 
-    static subcharge & spin(charge & rhs) { return rhs[1]; }
-    static subcharge const & spin(charge const & rhs) { return rhs[1]; }
+  static subcharge& spin(charge& rhs) { return rhs[1]; }
+  static subcharge const& spin(charge const& rhs) { return rhs[1]; }
 
-    static subcharge & irrep(charge & rhs) { return rhs[2]; }
-    static subcharge const & irrep(charge const & rhs) { return rhs[2]; }
+  static subcharge& irrep(charge& rhs) { return rhs[2]; }
+  static subcharge const& irrep(charge const& rhs) { return rhs[2]; }
 
-    static charge fuse(charge a, charge b)
-    {
-        return a+b;
+  static charge fuse(charge a, charge b) { return a + b; }
+
+  static subcharge adjoin(subcharge I) { return I; }
+
+  template <int R>
+  static charge fuse(std::array<charge, R> const& v) {
+    charge ret = v[0];
+    for (int i = 1; i < R; ++i) {
+      ret = fuse(ret, v[i]);
     }
-
-    static subcharge adjoin(subcharge I)
-    {
-        return I;
-    }
-
-
-    template<int R> static charge fuse(std::array<charge, R> const & v)
-    {
-        charge ret = v[0];
-        for (int i = 1; i < R; ++i) {
-            ret = fuse(ret, v[i]);
-        }
-        return ret;
-    }
+    return ret;
+  }
 };
 
-template<class S> const typename SU2U1PG_template<S>::charge SU2U1PG_template<S>::IdentityCharge = typename SU2U1PG_template<S>::charge();
+template <class S>
+const typename SU2U1PG_template<S>::charge SU2U1PG_template<S>::IdentityCharge =
+    typename SU2U1PG_template<S>::charge();
 
 using SU2U1PG = SU2U1PG_template<>;
 

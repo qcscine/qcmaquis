@@ -57,7 +57,6 @@
 #include "parser_detail.h"
 #include "utils/io.hpp"
 
-
 namespace chem::detail {
 
 /**
@@ -295,7 +294,6 @@ parse_integrals(
   return std::make_pair(idx_, matrix_elements);
 }
 
-} // namespace chem::detail
-
+}  // namespace chem::detail
 
 #endif  // QC_CHEM_PARSE_INTEGRALS_H

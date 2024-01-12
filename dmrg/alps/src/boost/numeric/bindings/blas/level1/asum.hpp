@@ -60,8 +60,8 @@ namespace detail {
 // * CBLAS backend, and
 // * float value-type.
 //
-inline float asum( const int n, const float* x, const int incx ) {
-    return cblas_sasum( n, x, incx );
+inline float asum(const int n, const float* x, const int incx) {
+  return cblas_sasum(n, x, incx);
 }
 
 //
@@ -69,8 +69,8 @@ inline float asum( const int n, const float* x, const int incx ) {
 // * CBLAS backend, and
 // * double value-type.
 //
-inline double asum( const int n, const double* x, const int incx ) {
-    return cblas_dasum( n, x, incx );
+inline double asum(const int n, const double* x, const int incx) {
+  return cblas_dasum(n, x, incx);
 }
 
 //
@@ -78,9 +78,8 @@ inline double asum( const int n, const double* x, const int incx ) {
 // * CBLAS backend, and
 // * complex<float> value-type.
 //
-inline float asum( const int n, const std::complex<float>* x,
-        const int incx ) {
-    return cblas_scasum( n, x, incx );
+inline float asum(const int n, const std::complex<float>* x, const int incx) {
+  return cblas_scasum(n, x, incx);
 }
 
 //
@@ -88,9 +87,8 @@ inline float asum( const int n, const std::complex<float>* x,
 // * CBLAS backend, and
 // * complex<double> value-type.
 //
-inline double asum( const int n, const std::complex<double>* x,
-        const int incx ) {
-    return cblas_dzasum( n, x, incx );
+inline double asum(const int n, const std::complex<double>* x, const int incx) {
+  return cblas_dzasum(n, x, incx);
 }
 
 #elif defined BOOST_NUMERIC_BINDINGS_BLAS_CUBLAS
@@ -99,8 +97,8 @@ inline double asum( const int n, const std::complex<double>* x,
 // * CUBLAS backend, and
 // * float value-type.
 //
-inline float asum( const int n, const float* x, const int incx ) {
-    return cublasSasum( n, x, incx );
+inline float asum(const int n, const float* x, const int incx) {
+  return cublasSasum(n, x, incx);
 }
 
 //
@@ -108,8 +106,8 @@ inline float asum( const int n, const float* x, const int incx ) {
 // * CUBLAS backend, and
 // * double value-type.
 //
-inline double asum( const int n, const double* x, const int incx ) {
-    return cublasDasum( n, x, incx );
+inline double asum(const int n, const double* x, const int incx) {
+  return cublasDasum(n, x, incx);
 }
 
 //
@@ -117,9 +115,8 @@ inline double asum( const int n, const double* x, const int incx ) {
 // * CUBLAS backend, and
 // * complex<float> value-type.
 //
-inline float asum( const int n, const std::complex<float>* x,
-        const int incx ) {
-    return cublasScasum( n, x, incx );
+inline float asum(const int n, const std::complex<float>* x, const int incx) {
+  return cublasScasum(n, x, incx);
 }
 
 //
@@ -127,9 +124,8 @@ inline float asum( const int n, const std::complex<float>* x,
 // * CUBLAS backend, and
 // * complex<double> value-type.
 //
-inline double asum( const int n, const std::complex<double>* x,
-        const int incx ) {
-    return // NOT FOUND();
+inline double asum(const int n, const std::complex<double>* x, const int incx) {
+  return  // NOT FOUND();
 }
 
 #else
@@ -138,9 +134,10 @@ inline double asum( const int n, const std::complex<double>* x,
 // * netlib-compatible BLAS backend (the default), and
 // * float value-type.
 //
-inline float asum( const fortran_int_t n, const float* x,
-        const fortran_int_t incx ) {
-    return BLAS_SASUM( &n, x, &incx );
+inline float asum(
+    const fortran_int_t n, const float* x, const fortran_int_t incx
+) {
+  return BLAS_SASUM(&n, x, &incx);
 }
 
 //
@@ -148,9 +145,10 @@ inline float asum( const fortran_int_t n, const float* x,
 // * netlib-compatible BLAS backend (the default), and
 // * double value-type.
 //
-inline double asum( const fortran_int_t n, const double* x,
-        const fortran_int_t incx ) {
-    return BLAS_DASUM( &n, x, &incx );
+inline double asum(
+    const fortran_int_t n, const double* x, const fortran_int_t incx
+) {
+  return BLAS_DASUM(&n, x, &incx);
 }
 
 //
@@ -158,9 +156,11 @@ inline double asum( const fortran_int_t n, const double* x,
 // * netlib-compatible BLAS backend (the default), and
 // * complex<float> value-type.
 //
-inline float asum( const fortran_int_t n, const std::complex<float>* x,
-        const fortran_int_t incx ) {
-    return BLAS_SCASUM( &n, x, &incx );
+inline float asum(
+    const fortran_int_t n, const std::complex<float>* x,
+    const fortran_int_t incx
+) {
+  return BLAS_SCASUM(&n, x, &incx);
 }
 
 //
@@ -168,43 +168,45 @@ inline float asum( const fortran_int_t n, const std::complex<float>* x,
 // * netlib-compatible BLAS backend (the default), and
 // * complex<double> value-type.
 //
-inline double asum( const fortran_int_t n, const std::complex<double>* x,
-        const fortran_int_t incx ) {
-    return BLAS_DZASUM( &n, x, &incx );
+inline double asum(
+    const fortran_int_t n, const std::complex<double>* x,
+    const fortran_int_t incx
+) {
+  return BLAS_DZASUM(&n, x, &incx);
 }
 
 #endif
 
-} // namespace detail
+}  // namespace detail
 
 //
 // Value-type based template class. Use this class if you need a type
 // for dispatching to asum.
 //
-template< typename Value >
+template <typename Value>
 struct asum_impl {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
+  typedef real_type result_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
-    typedef real_type result_type;
-
-    //
-    // Static member function that
-    // * Deduces the required arguments for dispatching to BLAS, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename VectorX >
-    static result_type invoke( const VectorX& x ) {
-        namespace bindings = ::boost::numeric::bindings;
-        return detail::asum( bindings::size(x),
-                bindings::begin_value(x), bindings::stride(x) );
-    }
+  //
+  // Static member function that
+  // * Deduces the required arguments for dispatching to BLAS, and
+  // * Asserts that most arguments make sense.
+  //
+  template <typename VectorX>
+  static result_type invoke(const VectorX& x) {
+    namespace bindings = ::boost::numeric::bindings;
+    return detail::asum(
+        bindings::size(x), bindings::begin_value(x), bindings::stride(x)
+    );
+  }
 };
 
 //
 // Functions for direct use. These functions are overloaded for temporaries,
 // so that wrapped types can still be passed and used for write-access. Calls
-// to these functions are passed to the asum_impl classes. In the 
+// to these functions are passed to the asum_impl classes. In the
 // documentation, the const-overloads are collapsed to avoid a large number of
 // prototypes which are very similar.
 //
@@ -212,17 +214,16 @@ struct asum_impl {
 //
 // Overloaded function for asum. Its overload differs for
 //
-template< typename VectorX >
-inline typename asum_impl< typename bindings::value_type<
-        VectorX >::type >::result_type
-asum( const VectorX& x ) {
-    return asum_impl< typename bindings::value_type<
-            VectorX >::type >::invoke( x );
+template <typename VectorX>
+inline typename asum_impl<
+    typename bindings::value_type<VectorX>::type>::result_type
+asum(const VectorX& x) {
+  return asum_impl<typename bindings::value_type<VectorX>::type>::invoke(x);
 }
 
-} // namespace blas
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace blas
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

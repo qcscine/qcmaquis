@@ -36,12 +36,14 @@ typedef TwoU1 grp;
 typedef TwoU1PG grp;
 #endif
 
-int main(int argc, char ** argv)
-{
+int main(int argc, char** argv) {
   // Info regarding the code usage
   if (argc != 3) {
-    maquis::cout << "Usage: ./mps_apply_Gutzwiller <mps.h5> <JValue>" << std::endl;
-    maquis::cout << "Applies the Gutzwiller correlator onto the MPS wave function " << std::endl; 
+    maquis::cout << "Usage: ./mps_apply_Gutzwiller <mps.h5> <JValue>"
+                 << std::endl;
+    maquis::cout
+        << "Applies the Gutzwiller correlator onto the MPS wave function "
+        << std::endl;
     maquis::cout << "See J. Chem. Phys. 153, 164115 (2020)" << std::endl;
     exit(1);
   }
@@ -50,8 +52,7 @@ int main(int argc, char ** argv)
   std::ifstream param_file(argv[1]);
   if (!param_file) {
     maquis::cerr << "Could not open the mps." << std::endl;
-  }
-  else {
+  } else {
     auto jValue = std::stod(argv[2]);
     GutzwillerCalculator<cmatrix, grp> calculator(argv[1], jValue);
     calculator.applyCorrelator();
@@ -59,8 +60,7 @@ int main(int argc, char ** argv)
     // Save the data to an output file
     std::string outputFileName = argv[1];
     auto pos = outputFileName.find(".h5");
-    if (pos != outputFileName.size())
-        outputFileName.erase(pos, 3);
+    if (pos != outputFileName.size()) outputFileName.erase(pos, 3);
     outputFileName += ".Gutzwiller.h5";
     save(outputFileName, mpsApplied);
   }

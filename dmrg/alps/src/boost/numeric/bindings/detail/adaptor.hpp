@@ -21,29 +21,29 @@ namespace numeric {
 namespace bindings {
 namespace detail {
 
-template< typename T, typename Id, typename Enable = void >
+template <typename T, typename Id, typename Enable = void>
 struct adaptor {
-    typedef mpl::map<
-        mpl::pair< tag::value_type, void >
-    > property_map;
+  typedef mpl::map<mpl::pair<tag::value_type, void> > property_map;
 };
 
-template< typename T >
-struct is_adaptable: is_numeric< typename mpl::at<
-        typename adaptor< typename boost::remove_const<T>::type, T >::property_map,
-        tag::value_type >::type > {};
+template <typename T>
+struct is_adaptable
+    : is_numeric<typename mpl::at<
+          typename adaptor<
+              typename boost::remove_const<T>::type, T>::property_map,
+          tag::value_type>::type> {};
 
-template< typename T, typename Enable = void >
+template <typename T, typename Enable = void>
 struct adaptor_access {};
 
-template< typename T >
-struct adaptor_access< T, typename boost::enable_if< is_adaptable<T> >::type >:
-    adaptor< typename boost::remove_const<T>::type, T > {};
+template <typename T>
+struct adaptor_access<T, typename boost::enable_if<is_adaptable<T> >::type>
+    : adaptor<typename boost::remove_const<T>::type, T> {};
 
-} // namespace detail
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace detail
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #include <boost/numeric/bindings/detail/pod.hpp>
 #include <boost/numeric/bindings/detail/property_map.hpp>

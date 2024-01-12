@@ -16,28 +16,24 @@ namespace numeric {
 namespace bindings {
 namespace detail {
 
-template< typename Derived >
+template <typename Derived>
 struct adaptable_type {
+  inline Derived& derived() { return *static_cast<Derived*>(this); }
 
-    inline
-    Derived& derived() {
-        return *static_cast<Derived*>(this);
-    }
-
-    inline
-    Derived const& derived() const {
-        return *static_cast<Derived const*>(this);
-    }
-
+  inline Derived const& derived() const {
+    return *static_cast<Derived const*>(this);
+  }
 };
 
-} // namespace detail
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace detail
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
-template< typename T >
-std::ostream& operator<<( std::ostream& os,
-    boost::numeric::bindings::detail::adaptable_type<T> const& object );
+template <typename T>
+std::ostream& operator<<(
+    std::ostream& os,
+    boost::numeric::bindings::detail::adaptable_type<T> const& object
+);
 
 #endif

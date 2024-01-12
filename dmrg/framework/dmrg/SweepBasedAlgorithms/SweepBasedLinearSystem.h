@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #ifndef SWEEP_BASED_LINEAR_SYSTEM_H
@@ -22,15 +22,18 @@
 #include "OverlapPropagator.h"
 #include "SweepOptimizationTypeTrait.h"
 
-template<class Matrix, class SymmGroup, class Storage, SweepOptimizationType SweepType>
-class SweepBasedLinearSystem : public GenericSweepSimulation<Matrix, SymmGroup, Storage, SweepType> {
-public:
+template <
+    class Matrix, class SymmGroup, class Storage,
+    SweepOptimizationType SweepType>
+class SweepBasedLinearSystem
+    : public GenericSweepSimulation<Matrix, SymmGroup, Storage, SweepType> {
+ public:
   using Base = GenericSweepSimulation<Matrix, SymmGroup, Storage, SweepType>;
   using OverlapPropagatorType = OverlapPropagator<Matrix, SymmGroup, Storage>;
   using SweepTraitClass = SweepOptimizationTypeTrait<SweepType>;
   using SiteProblemType = SiteProblem<Matrix, SymmGroup>;
   using LinearSolverType = LinSolver<Matrix, SymmGroup>;
-  using ModelType =  typename Base::ModelType;
+  using ModelType = typename Base::ModelType;
   using MPSType = typename Base::MPSType;
   using MPOType = typename Base::MPOType;
   using MPSTensorType = MPSTensor<Matrix, SymmGroup>;
@@ -40,30 +43,37 @@ public:
   using Base::boundaryPropagator_;
   using Base::indexOfMicroIteration_;
   using Base::iterationResults_;
-  using Base::lattice_;
   using Base::L_;
+  using Base::lattice_;
   using Base::model_;
+  using Base::mpoContainer_;
   using Base::mps_;
   using Base::mpsContainer_;
-  using Base::mpoContainer_;
   using Base::parms_;
   using Base::siteLeft_;
   using Base::siteRight_;
   using Base::verbose_;
 
   /** @brief Class constructor */
-  SweepBasedLinearSystem(MPSType& mps, const MPOType& mpo, BaseParameters& parms, const ModelType& model,
-                         const Lattice& lattice, bool verbose)
-    : Base(mps, mpo, parms, model, lattice, verbose, std::string("Linear system solver")),
-      rhsMps_(mps), isPrecond_(false), shiftParameter_(0.), 
-      overlapPropagator_(std::make_unique<OverlapPropagatorType>(mps_, rhsMps_))
-  {
-    /* // Folded simulation --> To be reactivated when implementing the folded operator
-    if (parms["pI_folded"] == "yes") {
-        maquis::cout << " Activating folded treatment " << std::endl;
-        isSquared = true;
+  SweepBasedLinearSystem(
+      MPSType& mps, const MPOType& mpo, BaseParameters& parms,
+      const ModelType& model, const Lattice& lattice, bool verbose
+  )
+      : Base(
+            mps, mpo, parms, model, lattice, verbose,
+            std::string("Linear system solver")
+        ),
+        rhsMps_(mps),
+        isPrecond_(false),
+        shiftParameter_(0.),
+        overlapPropagator_(
+            std::make_unique<OverlapPropagatorType>(mps_, rhsMps_)
+        ) {
+    /* // Folded simulation --> To be reactivated when implementing the folded
+    operator if (parms["pI_folded"] == "yes") { maquis::cout << " Activating
+    folded treatment " << std::endl; isSquared = true;
     } */
-    
+
     /* To be reactivated when implementing the folded operator
     if (isSquared) {
       leftSquared_.resize(mpo.length()+1);
@@ -71,38 +81,41 @@ public:
       leftCross_.resize(mpo.length()+1);
       rightCross_.resize(mpo.length()+1);
     } */
-    if (parms_["linsystem_noise"] == "yes")
-      perturbMPS_ = true;
-    // Note that we subtract the core energy to the shift parameter (the SiteProblem object
-    // does not include that contribution)
+    if (parms_["linsystem_noise"] == "yes") perturbMPS_ = true;
+    // Note that we subtract the core energy to the shift parameter (the
+    // SiteProblem object does not include that contribution)
     if (parms_.is_set("ipi_shift")) {
-      shiftParameter_ = parms["ipi_shift"].as<ValueType>()-mpoContainer_.getMPO().getCoreEnergy();
-    if (parms_["linsystem_precond"] == "diagonal")
-      isPrecond_ = true;
+      shiftParameter_ = parms["ipi_shift"].as<ValueType>() -
+                        mpoContainer_.getMPO().getCoreEnergy();
+      if (parms_["linsystem_precond"] == "diagonal") isPrecond_ = true;
     }
     calculateExactError_ = (parms_["linsystem_exact_error"] == "yes");
   }
 
   /** @brief Setter for the shift */
-  void setShift(ValueType newShift) {
-    shiftParameter_ = newShift;
-  }
+  void setShift(ValueType newShift) { shiftParameter_ = newShift; }
 
   /** @brief Method called at the beginning of each sweep */
-  void prepareSweep() final {
-    iterationResults_.clear();
-  }
+  void prepareSweep() final { iterationResults_.clear(); }
 
   /** @brief Method called before each microiteration */
   void prepareMicroiteration() final {
-    siteProblem_ = std::make_unique<SiteProblemType>(boundaryPropagator_->getLeftBoundary(siteLeft_), boundaryPropagator_->getRightBoundary(siteRight_),
-                                                     mpoContainer_.getMPOTensor(siteLeft_));
-    rhs_ = overlapPropagator_->template getOrthogonalVector<SweepType>(siteLeft_, siteRight_);
+    siteProblem_ = std::make_unique<SiteProblemType>(
+        boundaryPropagator_->getLeftBoundary(siteLeft_),
+        boundaryPropagator_->getRightBoundary(siteRight_),
+        mpoContainer_.getMPOTensor(siteLeft_)
+    );
+    rhs_ = overlapPropagator_->template getOrthogonalVector<SweepType>(
+        siteLeft_, siteRight_
+    );
     if (isPrecond_) {
-      preconditioner_ = std::make_unique<BlockMatrixType>(contraction::diagonal_hamiltonian(boundaryPropagator_->getLeftBoundary(siteLeft_),
-                                                                                            boundaryPropagator_->getRightBoundary(siteRight_),
-                                                                                            mpoContainer_.getMPOTensor(siteLeft_),
-                                                                                            mpsContainer_.getMPSTensor(siteLeft_)));
+      preconditioner_ =
+          std::make_unique<BlockMatrixType>(contraction::diagonal_hamiltonian(
+              boundaryPropagator_->getLeftBoundary(siteLeft_),
+              boundaryPropagator_->getRightBoundary(siteRight_),
+              mpoContainer_.getMPOTensor(siteLeft_),
+              mpsContainer_.getMPSTensor(siteLeft_)
+          ));
     }
   }
 
@@ -110,7 +123,10 @@ public:
   MPSTensorType solveLocalProblem() final {
     auto coreEnergy = maquis::real(mpoContainer_.getMPO().getCoreEnergy());
     auto& mpsToOptimize = mpsContainer_.getMPSTensor(siteLeft_);
-    LinearSolverType ls(siteProblem_, mpsToOptimize, rhs_, shiftParameter_, parms_, preconditioner_, verbose_, coreEnergy);
+    LinearSolverType ls(
+        siteProblem_, mpsToOptimize, rhs_, shiftParameter_, parms_,
+        preconditioner_, verbose_, coreEnergy
+    );
     auto resultOfLocalSiteProblem = ls.res();
     auto energyInclCore = std::get<0>(resultOfLocalSiteProblem) + coreEnergy;
     iterationResults_["Energy"] << energyInclCore;
@@ -121,37 +137,42 @@ public:
 
   /** @brief Propagates the orthogonal vector */
   void propagateOtherTensors() final {
-    auto sweepType = SweepTraitClass::getSweepDirection(L_, indexOfMicroIteration_);
+    auto sweepType =
+        SweepTraitClass::getSweepDirection(L_, indexOfMicroIteration_);
     // Boundary propagation
     if (sweepType == SweepDirectionType::Forward &&
-        !SweepTraitClass::changeDirectionNextMicroiteration(L_, indexOfMicroIteration_)) {
-      rhsMps_.move_normalization_l2r(siteLeft_, siteLeft_+1);
+        !SweepTraitClass::changeDirectionNextMicroiteration(
+            L_, indexOfMicroIteration_
+        )) {
+      rhsMps_.move_normalization_l2r(siteLeft_, siteLeft_ + 1);
       if (overlapPropagator_) {
-        overlapPropagator_->updateLeftOverlapBoundaries(siteLeft_+1);
+        overlapPropagator_->updateLeftOverlapBoundaries(siteLeft_ + 1);
       }
-    }
-    else {
+    } else {
       auto mpsCopy = rhsMps_;
-      rhsMps_.move_normalization_r2l(siteRight_-1, siteRight_-2);
+      rhsMps_.move_normalization_r2l(siteRight_ - 1, siteRight_ - 2);
       if (overlapPropagator_) {
-        overlapPropagator_->updateRightOverlapBoundaries(siteRight_-1);
+        overlapPropagator_->updateRightOverlapBoundaries(siteRight_ - 1);
       }
     }
   }
 
   /** @brief Operations to be executed at the end of a microiteration */
   void finalizeMicroIteration(const truncation_results& trunc) final {
-    iterationResults_["BondDimension"]   << trunc.bond_dimension;
+    iterationResults_["BondDimension"] << trunc.bond_dimension;
     iterationResults_["TruncatedWeight"] << trunc.truncated_weight;
-    iterationResults_["SmallestEV"]      << trunc.smallest_ev;
+    iterationResults_["SmallestEV"] << trunc.smallest_ev;
   }
 
   /** @brief Operations to be executed at the end of the sweep */
   void finalizeSweep() final {
     if (calculateExactError_) {
       int mMax = parms_["max_bond_dimension"];
-      auto error = LinSystemTraitClass<Matrix, SymmGroup>::calculateError(mpsContainer_.getMPS(), rhsMps_, mpoContainer_.getMPO(), shiftParameter_,
-                                                                          model_, lattice_, model_.total_quantum_numbers(parms_), mMax);
+      auto error = LinSystemTraitClass<Matrix, SymmGroup>::calculateError(
+          mpsContainer_.getMPS(), rhsMps_, mpoContainer_.getMPO(),
+          shiftParameter_, model_, lattice_,
+          model_.total_quantum_numbers(parms_), mMax
+      );
       if (verbose_) {
         maquis::cout << std::scientific << std::setprecision(16);
         maquis::cout << " Exact error = " << error << std::endl;
@@ -164,49 +185,62 @@ public:
   void printSummary() const {
     // Prints header
     maquis::cout << std::endl;
-    maquis::cout << " == SUMMARY OF THE SWEEP-BASED SOLUTION OF THE LINEAR SYSTEM == " << std::endl;
+    maquis::cout
+        << " == SUMMARY OF THE SWEEP-BASED SOLUTION OF THE LINEAR SYSTEM == "
+        << std::endl;
     maquis::cout << std::endl;
-    maquis::cout << " +----------------+------------------+------------------+" << std::endl;
-    maquis::cout << "   Microiteration |      Energy      |       Error       " << std::endl;
-    maquis::cout << " +----------------+------------------+------------------+" << std::endl;
+    maquis::cout << " +----------------+------------------+------------------+"
+                 << std::endl;
+    maquis::cout << "   Microiteration |      Energy      |       Error       "
+                 << std::endl;
+    maquis::cout << " +----------------+------------------+------------------+"
+                 << std::endl;
     for (int iIter = 0; iIter < energyPerMicroIter_.size(); iIter++) {
-      maquis::cout << std::setw(17) << std::right << iIter
-                   << std::setw(19) << std::setprecision(10) << std::scientific << std::right << energyPerMicroIter_[iIter]
-                   << std::setw(19) << std::setprecision(10) << std::scientific << std::right << errorPerMicroIter_[iIter] << std::endl;
-      if ((iIter+1)%(SweepTraitClass::getNumberOfMicroiterations(L_)) == 0) {
-        maquis::cout << " +----------------+------------------+------------------+" << std::endl;
+      maquis::cout << std::setw(17) << std::right << iIter << std::setw(19)
+                   << std::setprecision(10) << std::scientific << std::right
+                   << energyPerMicroIter_[iIter] << std::setw(19)
+                   << std::setprecision(10) << std::scientific << std::right
+                   << errorPerMicroIter_[iIter] << std::endl;
+      if ((iIter + 1) % (SweepTraitClass::getNumberOfMicroiterations(L_)) ==
+          0) {
+        maquis::cout
+            << " +----------------+------------------+------------------+"
+            << std::endl;
       }
     }
     maquis::cout << std::endl;
   }
 
   /** @brief Whether to normalize the MPS at the end of a half-sweep */
-  bool normalizeAtEnd() final {
-    return false;
-  }
+  bool normalizeAtEnd() final { return false; }
 
   /** @brief Gets the system rhs */
-  auto getRhs() const {
-    return rhsMps_;
-  }
+  auto getRhs() const { return rhsMps_; }
 
   /** @brief Whether to appy the noise-based perturbation */
-  bool activatePerturbation() override final {
-    return perturbMPS_;
-  }
+  bool activatePerturbation() override final { return perturbMPS_; }
 
-private:
+ private:
   // Class members
-  MPSType rhsMps_;                                                // RHS for the solution of the linear system.
-  std::shared_ptr<BlockMatrixType> preconditioner_;               // If needed, stores the preconditioner.
-  bool isPrecond_;                                                // If true, activates the preconditioning.
-  bool calculateExactError_;                                      // If true, calculates the exact error associated to the solution of the linear system.
-  bool perturbMPS_;                                               // If true, adds noise to the MPS during the solution of the linear system
-  ValueType shiftParameter_;                                      // Shift parameter for the linear system
-  MPSTensorType rhs_;                                             // RHS of the local linear system (updated at each microiteration).
-  std::unique_ptr<OverlapPropagatorType> overlapPropagator_;      // Object needed to store the partial MPS/MPS contraction
-  std::shared_ptr<SiteProblemType> siteProblem_;                  // Site problem associated with the solution of the linear system.
-  std::vector<double> energyPerMicroIter_, errorPerMicroIter_;    // Backup of results along the propagation.
+  MPSType rhsMps_;  // RHS for the solution of the linear system.
+  std::shared_ptr<BlockMatrixType>
+      preconditioner_;        // If needed, stores the preconditioner.
+  bool isPrecond_;            // If true, activates the preconditioning.
+  bool calculateExactError_;  // If true, calculates the exact error associated
+                              // to the solution of the linear system.
+  bool perturbMPS_;  // If true, adds noise to the MPS during the solution of
+                     // the linear system
+  ValueType shiftParameter_;  // Shift parameter for the linear system
+  MPSTensorType
+      rhs_;  // RHS of the local linear system (updated at each microiteration).
+  std::unique_ptr<OverlapPropagatorType>
+      overlapPropagator_;  // Object needed to store the partial MPS/MPS
+                           // contraction
+  std::shared_ptr<SiteProblemType>
+      siteProblem_;  // Site problem associated with the solution of the linear
+                     // system.
+  std::vector<double> energyPerMicroIter_,
+      errorPerMicroIter_;  // Backup of results along the propagation.
 };
 
-#endif // SWEEP_BASED_LINEAR_SYSTEM_H
+#endif  // SWEEP_BASED_LINEAR_SYSTEM_H

@@ -17,13 +17,13 @@ namespace bindings {
 namespace lapack {
 namespace detail {
 
-template< typename Tag >
-struct clapack_option: blas::detail::cblas_option< Tag > {};
+template <typename Tag>
+struct clapack_option : blas::detail::cblas_option<Tag> {};
 
-} // namespace detail
-} // namespace blas
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace detail
+}  // namespace lapack
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

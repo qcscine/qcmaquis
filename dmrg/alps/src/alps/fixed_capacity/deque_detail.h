@@ -1,29 +1,29 @@
 /*****************************************************************************
-*
-* ALPS Project: Algorithms and Libraries for Physics Simulations
-*
-* ALPS Libraries
-*
-* Copyright (C) 2002-2003 by Synge Todo <wistaria@comp-phys.org>
-*
-* This software is part of the ALPS libraries, published under the ALPS
-* Library License; you can use, redistribute it and/or modify it under
-* the terms of the license, either version 1 or (at your option) any later
-* version.
-* 
-* You should have received a copy of the ALPS Library License along with
-* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
-* available from http://alps.comp-phys.org/.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-* FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
-* SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
-* FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
-* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
-* DEALINGS IN THE SOFTWARE.
-*
-*****************************************************************************/
+ *
+ * ALPS Project: Algorithms and Libraries for Physics Simulations
+ *
+ * ALPS Libraries
+ *
+ * Copyright (C) 2002-2003 by Synge Todo <wistaria@comp-phys.org>
+ *
+ * This software is part of the ALPS libraries, published under the ALPS
+ * Library License; you can use, redistribute it and/or modify it under
+ * the terms of the license, either version 1 or (at your option) any later
+ * version.
+ *
+ * You should have received a copy of the ALPS Library License along with
+ * the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+ * available from http://alps.comp-phys.org/.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
+ *****************************************************************************/
 
 /* $Id: deque_detail.h 691 2004-03-16 15:12:31Z wistaria $ */
 
@@ -37,11 +37,12 @@
 
 namespace alps {
 
-template<class T, std::size_t N, class C>
-template<class InputIterator>
+template <class T, std::size_t N, class C>
+template <class InputIterator>
 void fixed_capacity_deque<T, N, C>::insert_dispatch(
-  typename fixed_capacity_deque<T, N, C>::iterator pos, InputIterator first,
-  InputIterator last, std::random_access_iterator_tag) {
+    typename fixed_capacity_deque<T, N, C>::iterator pos, InputIterator first,
+    InputIterator last, std::random_access_iterator_tag
+) {
   // for random access iterator
   const size_type n = last - first;
   T* const p = &(*pos);
@@ -53,7 +54,7 @@ void fixed_capacity_deque<T, N, C>::insert_dispatch(
       if (last_ + n > top()) {
         if (p + n > top()) {
           std::uninitialized_copy(p, last_, p + n - M);
-          
+
           std::copy(first, first + (last_ - p), p);
           first += last_ - p;
           std::uninitialized_copy(first, first + (top() - last_), last_);
@@ -63,7 +64,7 @@ void fixed_capacity_deque<T, N, C>::insert_dispatch(
           if (p + n > last_) {
             std::uninitialized_copy(top() - n, last_, base());
             std::uninitialized_copy(p, top() - n, p + n);
-            
+
             std::copy(first, first + (last_ - p), p);
             first += last_ - p;
             std::uninitialized_copy(first, last, last_);
@@ -71,21 +72,21 @@ void fixed_capacity_deque<T, N, C>::insert_dispatch(
             std::uninitialized_copy(top() - n, last_, base());
             std::uninitialized_copy(last_ - n, top() - n, last_);
             std::copy_backward(p, last_ - n, last_);
-            
+
             std::copy(first, last, p);
           }
         }
       } else {
         if (p + n > last_) {
           std::uninitialized_copy(p, last_, p + n);
-          
+
           std::copy(first, first + (last_ - p), p);
           first += last_ - p;
           std::uninitialized_copy(first, last, last_);
         } else {
           std::uninitialized_copy(last_ - n, last_, last_);
           std::copy_backward(p, last_ - n, last_);
-          
+
           std::copy(first, last, p);
         }
       }
@@ -94,7 +95,7 @@ void fixed_capacity_deque<T, N, C>::insert_dispatch(
         if (p + n - M > last_) {
           std::uninitialized_copy(base(), last_, base() + n);
           std::uninitialized_copy(p, top(), p + n - M);
-          
+
           std::copy(first, first + (top() - p), p);
           first += top() - p;
           std::copy(first, first + (last_ - base()), base());
@@ -105,7 +106,7 @@ void fixed_capacity_deque<T, N, C>::insert_dispatch(
             std::uninitialized_copy(base(), last_, base() + n);
             std::uninitialized_copy(last_ + M - n, top(), last_);
             std::copy(p, last_ + M - n, p + n - M);
-            
+
             std::copy(first, first + (top() - p), p);
             first += top() - p;
             std::copy(first, last, base());
@@ -114,7 +115,7 @@ void fixed_capacity_deque<T, N, C>::insert_dispatch(
             std::uninitialized_copy(last_ + M - n, top(), last_);
             std::copy(top() - n, last_ + M - n, base());
             std::copy_backward(p, top() - n, top());
-            
+
             std::copy(first, last, p);
           }
         }
@@ -123,7 +124,7 @@ void fixed_capacity_deque<T, N, C>::insert_dispatch(
           std::uninitialized_copy(last_ - n, last_, last_);
           std::copy_backward(base(), last_ - n, last_);
           std::copy(p, top(), p + n - M);
-          
+
           std::copy(first, first + (top() - p), p);
           first += top() - p;
           std::copy(first, last, base());
@@ -132,7 +133,7 @@ void fixed_capacity_deque<T, N, C>::insert_dispatch(
           std::copy_backward(base(), last_ - n, last_);
           std::copy(top() - n, top(), base());
           std::copy_backward(p, top() - n, top());
-          
+
           std::copy(first, last, p);
         }
       }
@@ -145,7 +146,7 @@ void fixed_capacity_deque<T, N, C>::insert_dispatch(
       if (first_ - n < base()) {
         if (p - n < base()) {
           std::uninitialized_copy(first_, p, first_ - n + M);
-          
+
           std::uninitialized_copy(first, first + (base() - p + n), p - n + M);
           first += base() - p + n;
           std::uninitialized_copy(first, first + (first_ - base()), base());
@@ -155,7 +156,7 @@ void fixed_capacity_deque<T, N, C>::insert_dispatch(
           if (p - n < first_) {
             std::uninitialized_copy(first_, base() + n, first_ - n + M);
             std::uninitialized_copy(base() + n, p, base());
-            
+
             std::uninitialized_copy(first, first + (first_ - p + n), p - n);
             first += (first_ - p + n);
             std::copy(first, last, first_);
@@ -163,21 +164,21 @@ void fixed_capacity_deque<T, N, C>::insert_dispatch(
             std::uninitialized_copy(first_, base() + n, first_ - n + M);
             std::uninitialized_copy(base() + n, first_ + n, base());
             std::copy(first_ + n, p, first_);
-            
+
             std::copy(first, last, p - n);
           }
         }
       } else {
         if (p - n < first_) {
           std::uninitialized_copy(first_, p, first_ - n);
-          
+
           std::uninitialized_copy(first, first + (first_ - p + n), p - n);
           first += (first_ - p + n);
           std::copy(first, last, first_);
         } else {
           std::uninitialized_copy(first_, first_ + n, first_ - n);
           std::copy(first_ + n, p, first_);
-          
+
           std::copy(first, last, p - n);
         }
       }
@@ -186,9 +187,10 @@ void fixed_capacity_deque<T, N, C>::insert_dispatch(
         if (p - n + M < first_) {
           std::uninitialized_copy(first_, top(), first_ - n);
           std::uninitialized_copy(base(), p, top() - n);
-          
-          std::uninitialized_copy(first, first + (first_ - p + n - M),
-                                  p - n + M);
+
+          std::uninitialized_copy(
+              first, first + (first_ - p + n - M), p - n + M
+          );
           first += (first_ - p + n - M);
           std::copy(first, first + (top() - first_), first_);
           first += (top() - first_);
@@ -198,7 +200,7 @@ void fixed_capacity_deque<T, N, C>::insert_dispatch(
             std::uninitialized_copy(first_, top(), first_ - n);
             std::uninitialized_copy(base(), first_ + n - M, top() - n);
             std::copy(first_ + n - M, p, first_);
-            
+
             std::copy(first, first + (base() - p + n), p - n + M);
             first += (base() - p + n);
             std::copy(first, last, base());
@@ -207,7 +209,7 @@ void fixed_capacity_deque<T, N, C>::insert_dispatch(
             std::uninitialized_copy(base(), first_ + n - M, top() - n);
             std::copy(first_ + n - M, base() + n, first_);
             std::copy(base() + n, p, base());
-            
+
             std::copy(first, last, p - n);
           }
         }
@@ -216,7 +218,7 @@ void fixed_capacity_deque<T, N, C>::insert_dispatch(
           std::uninitialized_copy(first_, first_ + n, first_ - n);
           std::copy(first_ + n, top(), first_);
           std::copy(base(), p, top() - n);
-          
+
           std::copy(first, first + (base() - p + n), p - n + M);
           first += (base() - p + n);
           std::copy(first, last, base());
@@ -225,7 +227,7 @@ void fixed_capacity_deque<T, N, C>::insert_dispatch(
           std::copy(first_ + n, top(), first_);
           std::copy(base(), base() + n, top() - n);
           std::copy(base() + n, p, base());
-          
+
           std::copy(first, last, p - n);
         }
       }
@@ -235,10 +237,12 @@ void fixed_capacity_deque<T, N, C>::insert_dispatch(
   }
 }
 
-template<class T, std::size_t N, class C>
+template <class T, std::size_t N, class C>
 typename fixed_capacity_deque<T, N, C>::iterator
 fixed_capacity_deque<T, N, C>::insert_n(
-  typename fixed_capacity_deque<T, N, C>::iterator pos, size_type n, const T& x) {
+    typename fixed_capacity_deque<T, N, C>::iterator pos, size_type n,
+    const T& x
+) {
   T* const p = &(*pos);
   checker::capacity_check(size() + n);
   checker::pointer_check(base(), first_, last_, p);
@@ -248,7 +252,7 @@ fixed_capacity_deque<T, N, C>::insert_n(
       if (last_ + n > top()) {
         if (p + n > top()) {
           std::uninitialized_copy(p, last_, p + n - M);
-          
+
           std::fill(p, last_, x);
           std::uninitialized_fill(last_, top(), x);
           std::uninitialized_fill(base(), p + n - M, x);
@@ -256,27 +260,27 @@ fixed_capacity_deque<T, N, C>::insert_n(
           if (p + n > last_) {
             std::uninitialized_copy(top() - n, last_, base());
             std::uninitialized_copy(p, top() - n, p + n);
-            
+
             std::fill(p, last_, x);
             std::uninitialized_fill(last_, p + n, x);
           } else {
             std::uninitialized_copy(top() - n, last_, base());
             std::uninitialized_copy(last_ - n, top() - n, last_);
             std::copy_backward(p, last_ - n, last_);
-            
+
             std::fill(p, p + n, x);
           }
         }
       } else {
         if (p + n > last_) {
           std::uninitialized_copy(p, last_, p + n);
-          
+
           std::fill(p, last_, x);
           std::uninitialized_fill(last_, p + n, x);
         } else {
           std::uninitialized_copy(last_ - n, last_, last_);
           std::copy_backward(p, last_ - n, last_);
-          
+
           std::fill(p, p + n, x);
         }
       }
@@ -285,7 +289,7 @@ fixed_capacity_deque<T, N, C>::insert_n(
         if (p + n - M > last_) {
           std::uninitialized_copy(base(), last_, base() + n);
           std::uninitialized_copy(p, top(), p + n - M);
-          
+
           std::fill(p, top(), x);
           std::fill(base(), last_, x);
           std::uninitialized_fill(last_, p + n - M, x);
@@ -294,7 +298,7 @@ fixed_capacity_deque<T, N, C>::insert_n(
             std::uninitialized_copy(base(), last_, base() + n);
             std::uninitialized_copy(last_ + M - n, top(), last_);
             std::copy(p, last_ + M - n, p + n - M);
-            
+
             std::fill(p, top(), x);
             std::fill(base(), p + n - M, x);
           } else {
@@ -302,7 +306,7 @@ fixed_capacity_deque<T, N, C>::insert_n(
             std::uninitialized_copy(last_ + M - n, top(), last_);
             std::copy(top() - n, last_ + M - n, base());
             std::copy_backward(p, top() - n, top());
-            
+
             std::fill(p, p + n, x);
           }
         }
@@ -311,7 +315,7 @@ fixed_capacity_deque<T, N, C>::insert_n(
           std::uninitialized_copy(last_ - n, last_, last_);
           std::copy_backward(base(), last_ - n, last_);
           std::copy(p, top(), p + n - M);
-          
+
           std::fill(p, top(), x);
           std::fill(base(), p + n - M, x);
         } else {
@@ -319,7 +323,7 @@ fixed_capacity_deque<T, N, C>::insert_n(
           std::copy_backward(base(), last_ - n, last_);
           std::copy(top() - n, top(), base());
           std::copy_backward(p, top() - n, top());
-          
+
           std::fill(p, p + n, x);
         }
       }
@@ -333,7 +337,7 @@ fixed_capacity_deque<T, N, C>::insert_n(
       if (first_ - n < base()) {
         if (p - n < base()) {
           std::uninitialized_copy(first_, p, first_ - n + M);
-          
+
           std::uninitialized_fill(p - n + M, top(), x);
           std::uninitialized_fill(base(), first_, x);
           std::fill(first_, p, x);
@@ -341,27 +345,27 @@ fixed_capacity_deque<T, N, C>::insert_n(
           if (p - n < first_) {
             std::uninitialized_copy(first_, base() + n, first_ - n + M);
             std::uninitialized_copy(base() + n, p, base());
-            
+
             std::uninitialized_fill(p - n, first_, x);
             std::fill(first_, p, x);
           } else {
             std::uninitialized_copy(first_, base() + n, first_ - n + M);
             std::uninitialized_copy(base() + n, first_ + n, base());
             std::copy(first_ + n, p, first_);
-            
+
             std::fill(p - n, p, x);
           }
         }
       } else {
         if (p - n < first_) {
           std::uninitialized_copy(first_, p, first_ - n);
-          
+
           std::uninitialized_fill(p - n, first_, x);
           std::fill(first_, p, x);
         } else {
           std::uninitialized_copy(first_, first_ + n, first_ - n);
           std::copy(first_ + n, p, first_);
-          
+
           std::fill(p - n, p, x);
         }
       }
@@ -370,7 +374,7 @@ fixed_capacity_deque<T, N, C>::insert_n(
         if (p - n + M < first_) {
           std::uninitialized_copy(first_, top(), first_ - n);
           std::uninitialized_copy(base(), p, top() - n);
-          
+
           std::uninitialized_fill(p - n + M, first_, x);
           std::fill(first_, top(), x);
           std::fill(base(), p, x);
@@ -379,7 +383,7 @@ fixed_capacity_deque<T, N, C>::insert_n(
             std::uninitialized_copy(first_, top(), first_ - n);
             std::uninitialized_copy(base(), first_ + n - M, top() - n);
             std::copy(first_ + n - M, p, first_);
-            
+
             std::fill(p - n + M, top(), x);
             std::fill(base(), p, x);
           } else {
@@ -387,7 +391,7 @@ fixed_capacity_deque<T, N, C>::insert_n(
             std::uninitialized_copy(base(), first_ + n - M, top() - n);
             std::copy(first_ + n - M, base() + n, first_);
             std::copy(base() + n, p, base());
-            
+
             std::fill(p - n, p, x);
           }
         }
@@ -396,7 +400,7 @@ fixed_capacity_deque<T, N, C>::insert_n(
           std::uninitialized_copy(first_, first_ + n, first_ - n);
           std::copy(first_ + n, top(), first_);
           std::copy(base(), p, top() - n);
-          
+
           std::fill(p - n + M, top(), x);
           std::fill(base(), p, x);
         } else {
@@ -404,7 +408,7 @@ fixed_capacity_deque<T, N, C>::insert_n(
           std::copy(first_ + n, top(), first_);
           std::copy(base(), base() + n, top() - n);
           std::copy(base() + n, p, base());
-          
+
           std::fill(p - n, p, x);
         }
       }
@@ -415,10 +419,11 @@ fixed_capacity_deque<T, N, C>::insert_n(
   }
 }
 
-template<class T, std::size_t N, class C>
+template <class T, std::size_t N, class C>
 typename fixed_capacity_deque<T, N, C>::iterator
 fixed_capacity_deque<T, N, C>::erase_n(
-  typename fixed_capacity_deque<T, N, C>::iterator pos, size_type n) {
+    typename fixed_capacity_deque<T, N, C>::iterator pos, size_type n
+) {
   T* const p = &(*pos);
   checker::pointer_check(base(), first_, last_, p);
   checker::pointer_check(base(), first_, last_, &(*(pos + n)));
@@ -491,6 +496,6 @@ fixed_capacity_deque<T, N, C>::erase_n(
   }
 }
 
-} // namespace alps
+}  // namespace alps
 
-#endif // ALPS_FIXED_CAPACITY_DEQUE_DETAIL_H
+#endif  // ALPS_FIXED_CAPACITY_DEQUE_DETAIL_H

@@ -14,4 +14,3 @@
 #include <boost/numeric/bindings/blas/level3.hpp>
 
 #endif
-

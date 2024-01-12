@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #ifndef TIME_EVOLVER_H
@@ -24,22 +24,24 @@
 #include "ArnoldiEvolver.h"
 
 /** @brief Wrapper class for time-evolution methods */
-template<class Matrix, class SymmGroup, class ParameterType>
+template <class Matrix, class SymmGroup, class ParameterType>
 class TimeEvolver {
  public:
-
   /* Types definition */
   using dim_type = std::size_t;
   using scalar_type = typename MPSTensor<Matrix, SymmGroup>::scalar_type;
   using time_evolution_algorithm = TimeEvolutionAlgorithm<Matrix, SymmGroup>;
   using time_type = double;
   using ArnoldiEvolverType = ArnoldiEvolver<Matrix, SymmGroup>;
-  using LanczosTI = LanczosEvolver<Matrix, SymmGroup, TimeStepDistributor::Standard>;
-  using LanczosEMR = LanczosEvolver<Matrix, SymmGroup, TimeStepDistributor::ExponentialMidpoint>;
-  using LanczosFourthOrder = LanczosEvolver<Matrix, SymmGroup, TimeStepDistributor::FourthOrderMagnus>;
+  using LanczosTI =
+      LanczosEvolver<Matrix, SymmGroup, TimeStepDistributor::Standard>;
+  using LanczosEMR = LanczosEvolver<
+      Matrix, SymmGroup, TimeStepDistributor::ExponentialMidpoint>;
+  using LanczosFourthOrder =
+      LanczosEvolver<Matrix, SymmGroup, TimeStepDistributor::FourthOrderMagnus>;
 
   /* Class constructors */
-  //TimeEvolver();
+  // TimeEvolver();
   explicit TimeEvolver(ParameterType& parms);
   /* Getters */
   bool isImag() const { return is_imag_; };
@@ -48,8 +50,11 @@ class TimeEvolver {
   void add_to_current_time(time_type time_step);
 
   /* Time-evolution methods */
-  template<class SiteProblem, class MatrixType>
-  void evolve(SiteProblem const& site_problem, MatrixType& matrix, bool is_forward, bool isTerminal) const;
+  template <class SiteProblem, class MatrixType>
+  void evolve(
+      SiteProblem const& site_problem, MatrixType& matrix, bool is_forward,
+      bool isTerminal
+  ) const;
   void print_header(bool verbose, const std::string& algo_string) const;
 
  private:
@@ -62,6 +67,6 @@ class TimeEvolver {
 
 #include "TimeEvolver.cpp"
 
-#endif // DMRG_TD
+#endif  // DMRG_TD
 
 #endif

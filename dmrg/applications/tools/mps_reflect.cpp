@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #ifdef USE_AMBIENT
@@ -39,22 +39,20 @@ typedef TrivialGroup grp;
 typedef U1 grp;
 #endif
 
-
-int main(int argc, char ** argv)
-{
-    try {
-        if (argc != 3) {
-            std::cout << "Usage: " << argv[0] << " <in.chkp> <out.chkp>" << std::endl;
-            return 1;
-        }
-        MPS<matrix, grp> mps_in;
-        load(argv[1], mps_in);
-        
-        MPS<matrix, grp> mps_out = reflect(mps_in);
-        save(argv[2], mps_out);
-        
-    } catch (std::exception& e) {
-        std::cerr << "Error:" << std::endl << e.what() << std::endl;
-        return 1;
+int main(int argc, char** argv) {
+  try {
+    if (argc != 3) {
+      std::cout << "Usage: " << argv[0] << " <in.chkp> <out.chkp>" << std::endl;
+      return 1;
     }
+    MPS<matrix, grp> mps_in;
+    load(argv[1], mps_in);
+
+    MPS<matrix, grp> mps_out = reflect(mps_in);
+    save(argv[2], mps_out);
+
+  } catch (std::exception& e) {
+    std::cerr << "Error:" << std::endl << e.what() << std::endl;
+    return 1;
+  }
 }

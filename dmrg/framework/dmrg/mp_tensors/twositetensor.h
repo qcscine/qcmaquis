@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #ifndef TWOSITETENSOR_H
@@ -18,86 +18,106 @@
 #include <iostream>
 #include <algorithm>
 
-enum TwoSiteStorageLayout {TSRightPaired, TSLeftPaired, TSBothPaired};
+enum TwoSiteStorageLayout { TSRightPaired, TSLeftPaired, TSBothPaired };
 
-template<class Matrix, class SymmGroup>
-class TwoSiteTensor
-{
-public:
-    using size_type = std::size_t;
-    using index_id = typename MultiIndex<SymmGroup>::index_id;
-    using set_id = typename MultiIndex<SymmGroup>::set_id;
-    
-    TwoSiteTensor(MPSTensor<Matrix, SymmGroup> const & mps1,
-                  MPSTensor<Matrix, SymmGroup> const & mps2);
+template <class Matrix, class SymmGroup>
+class TwoSiteTensor {
+ public:
+  using size_type = std::size_t;
+  using index_id = typename MultiIndex<SymmGroup>::index_id;
+  using set_id = typename MultiIndex<SymmGroup>::set_id;
 
-    TwoSiteTensor(MPSTensor<Matrix, SymmGroup> const & twin_mps);
+  TwoSiteTensor(
+      MPSTensor<Matrix, SymmGroup> const& mps1,
+      MPSTensor<Matrix, SymmGroup> const& mps2
+  );
 
-    Index<SymmGroup> const & site_dim() const;
-    Index<SymmGroup> const & row_dim() const;
-    Index<SymmGroup> const & col_dim() const;
-    Index<SymmGroup> const & local_site_dim(short) const;
-    
-    block_matrix<Matrix, SymmGroup> & data();
-    block_matrix<Matrix, SymmGroup> const & data() const;
-    
-    template<class Matrix_, class SymmGroup_>
-    friend std::ostream& operator<<(std::ostream&, TwoSiteTensor<Matrix_, SymmGroup_> const &);
+  TwoSiteTensor(MPSTensor<Matrix, SymmGroup> const& twin_mps);
 
-    TwoSiteTensor<Matrix, SymmGroup> & operator << ( MPSTensor<Matrix, SymmGroup> const & rhs);
-    
-    void make_left_paired() const;
-    void make_both_paired() const;
-    void make_right_paired() const;
-    
-    MPSTensor<Matrix, SymmGroup> make_mps() const;
-    
-    std::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
-    split_mps_l2r(std::size_t Mmax, double cutoff, bool verbose=false) const;
-    
-    std::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
-    split_mps_r2l(std::size_t Mmax, double cutoff, bool verbose=false) const;
-    
-    std::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
-    predict_split_l2r(std::size_t Mmax, double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& left,
-                      MPOTensor<Matrix, SymmGroup> const& mpo, bool activatePerturbation);
-    std::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
-    predict_split_r2l(std::size_t Mmax, double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& right,
-                      MPOTensor<Matrix, SymmGroup> const& mpo, bool activatePerturbation);
-    
-    void clear();
-    void swap_with(TwoSiteTensor & b);
+  Index<SymmGroup> const& site_dim() const;
+  Index<SymmGroup> const& row_dim() const;
+  Index<SymmGroup> const& col_dim() const;
+  Index<SymmGroup> const& local_site_dim(short) const;
 
-    friend void swap(TwoSiteTensor & a, TwoSiteTensor & b)
-    {
-        a.swap_with(b);
-    }
-   
-    template<class Archive> void load(Archive & ar);
-    template<class Archive> void save(Archive & ar) const;
-    
-private:
-    template <bool SU2> class type_helper { };
+  block_matrix<Matrix, SymmGroup>& data();
+  block_matrix<Matrix, SymmGroup> const& data() const;
 
-    template <bool SU2>
-    MPSTensor<Matrix, SymmGroup> make_mps_(type_helper<SU2>) const;
+  template <class Matrix_, class SymmGroup_>
+  friend std::ostream&
+  operator<<(std::ostream&, TwoSiteTensor<Matrix_, SymmGroup_> const&);
 
-    MPSTensor<Matrix, SymmGroup> make_mps_(type_helper<true>) const;
+  TwoSiteTensor<Matrix, SymmGroup>& operator<<(
+      MPSTensor<Matrix, SymmGroup> const& rhs
+  );
 
-    template <bool SU2>
-    TwoSiteTensor<Matrix, SymmGroup> & operator_shift(MPSTensor<Matrix, SymmGroup> const & rhs, type_helper<SU2>);
+  void make_left_paired() const;
+  void make_both_paired() const;
+  void make_right_paired() const;
 
-    TwoSiteTensor<Matrix, SymmGroup> & operator_shift(MPSTensor<Matrix, SymmGroup> const & rhs, type_helper<true>);
+  MPSTensor<Matrix, SymmGroup> make_mps() const;
 
-    MultiIndex<SymmGroup> midx;
-    set_id left_paired;
-    set_id right_paired;
-    set_id both_paired;
+  std::tuple<
+      MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>,
+      truncation_results>
+  split_mps_l2r(std::size_t Mmax, double cutoff, bool verbose = false) const;
 
-    Index<SymmGroup> phys_i, phys_i_left, phys_i_right, left_i, right_i;
-    mutable block_matrix<Matrix, SymmGroup> data_;
-    mutable TwoSiteStorageLayout cur_storage;
-    Indicator cur_normalization;
+  std::tuple<
+      MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>,
+      truncation_results>
+  split_mps_r2l(std::size_t Mmax, double cutoff, bool verbose = false) const;
+
+  std::tuple<
+      MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>,
+      truncation_results>
+  predict_split_l2r(
+      std::size_t Mmax, double cutoff, double alpha,
+      Boundary<Matrix, SymmGroup> const& left,
+      MPOTensor<Matrix, SymmGroup> const& mpo, bool activatePerturbation
+  );
+  std::tuple<
+      MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>,
+      truncation_results>
+  predict_split_r2l(
+      std::size_t Mmax, double cutoff, double alpha,
+      Boundary<Matrix, SymmGroup> const& right,
+      MPOTensor<Matrix, SymmGroup> const& mpo, bool activatePerturbation
+  );
+
+  void clear();
+  void swap_with(TwoSiteTensor& b);
+
+  friend void swap(TwoSiteTensor& a, TwoSiteTensor& b) { a.swap_with(b); }
+
+  template <class Archive>
+  void load(Archive& ar);
+  template <class Archive>
+  void save(Archive& ar) const;
+
+ private:
+  template <bool SU2>
+  class type_helper {};
+
+  template <bool SU2>
+  MPSTensor<Matrix, SymmGroup> make_mps_(type_helper<SU2>) const;
+
+  MPSTensor<Matrix, SymmGroup> make_mps_(type_helper<true>) const;
+
+  template <bool SU2>
+  TwoSiteTensor<Matrix, SymmGroup>&
+  operator_shift(MPSTensor<Matrix, SymmGroup> const& rhs, type_helper<SU2>);
+
+  TwoSiteTensor<Matrix, SymmGroup>&
+  operator_shift(MPSTensor<Matrix, SymmGroup> const& rhs, type_helper<true>);
+
+  MultiIndex<SymmGroup> midx;
+  set_id left_paired;
+  set_id right_paired;
+  set_id both_paired;
+
+  Index<SymmGroup> phys_i, phys_i_left, phys_i_right, left_i, right_i;
+  mutable block_matrix<Matrix, SymmGroup> data_;
+  mutable TwoSiteStorageLayout cur_storage;
+  Indicator cur_normalization;
 };
 
 #include "twositetensor.hpp"

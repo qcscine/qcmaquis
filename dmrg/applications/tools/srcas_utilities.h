@@ -5,22 +5,22 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2014-2014 by Yingjin Ma <yingjin.ma@phys.chem.ethz.ch>
  *               2017 by Alberto Baiardi <alberto.baiardi@sns.it>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -35,37 +35,39 @@
 #include <memory>
 #include <boost/random.hpp>
 
-template <typename ScalarType> // real or complex
+template <typename ScalarType>  // real or complex
 class SRCAS {
-    using InterfaceType = maquis::DMRGInterface<ScalarType>;
-    public:
-        SRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceType> interface);      
-        void run();
-        void printSRCASSettings();
-        void printResults();
+  using InterfaceType = maquis::DMRGInterface<ScalarType>;
 
-        std::vector<int> getCurrentQueen();
-        std::map<std::vector<int>, ScalarType> getDetTable();
-        double getCompleteness();
+ public:
+  SRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceType> interface);
+  void run();
+  void printSRCASSettings();
+  void printResults();
 
-    private:
-        void quicksort(std::string dets[], ScalarType b[], int left, int right);
-        std::vector<int> generateNewDet();
+  std::vector<int> getCurrentQueen();
+  std::map<std::vector<int>, ScalarType> getDetTable();
+  double getCompleteness();
 
-        boost::mt19937 generator_;
-        boost::uniform_real<> uniformDist_;
-        boost::variate_generator<boost::mt19937&, boost::uniform_real<double> > uniformRandomNumber_;
+ private:
+  void quicksort(std::string dets[], ScalarType b[], int left, int right);
+  std::vector<int> generateNewDet();
 
-        DmrgParameters& parms_;
-        std::shared_ptr<InterfaceType> interface_;
+  boost::mt19937 generator_;
+  boost::uniform_real<> uniformDist_;
+  boost::variate_generator<boost::mt19937&, boost::uniform_real<double> >
+      uniformRandomNumber_;
 
-        std::string startingDet_, maxDetStr_, detTmpStr_;
-        std::vector<int> detQueen_, detTmp_, detSpace_;
-        int numModes_;
-        double completeness_;
+  DmrgParameters& parms_;
+  std::shared_ptr<InterfaceType> interface_;
 
-        std::map<std::vector<int>, ScalarType> hashTable_;
-        typename std::map<std::vector<int>, ScalarType>::iterator iter_;
+  std::string startingDet_, maxDetStr_, detTmpStr_;
+  std::vector<int> detQueen_, detTmp_, detSpace_;
+  int numModes_;
+  double completeness_;
+
+  std::map<std::vector<int>, ScalarType> hashTable_;
+  typename std::map<std::vector<int>, ScalarType>::iterator iter_;
 };
 
 #endif

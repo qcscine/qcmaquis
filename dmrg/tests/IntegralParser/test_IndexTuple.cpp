@@ -30,8 +30,7 @@
 #include "dmrg/models/MolecularHamiltonians/IndexTuple.hpp"
 #include "dmrg/block_matrix/symmetry.h"
 
-BOOST_AUTO_TEST_CASE( Test_IndexTuple_Constructor_TwoU1 )
-{
+BOOST_AUTO_TEST_CASE(Test_IndexTuple_Constructor_TwoU1) {
 #ifdef HAVE_TwoU1
   typename chem::detail::IndexTuple<TwoU1, 4> index1({3, 2, 1, 1});
   BOOST_CHECK_EQUAL(index1.data().size(), 4);
@@ -40,18 +39,15 @@ BOOST_AUTO_TEST_CASE( Test_IndexTuple_Constructor_TwoU1 )
 
 #ifdef HAVE_TwoU1
 
-BOOST_AUTO_TEST_CASE( Test_IndexTuple_Zero_Constructor_TwoU1 )
-{
+BOOST_AUTO_TEST_CASE(Test_IndexTuple_Zero_Constructor_TwoU1) {
   typename chem::detail::IndexTuple<TwoU1, 4> index1;
   BOOST_CHECK_EQUAL(index1.data().size(), 4);
-  for (int i = 0; i < 4; i++)
-    BOOST_CHECK_EQUAL(index1[i], 0);
+  for (int i = 0; i < 4; i++) BOOST_CHECK_EQUAL(index1[i], 0);
 }
 
 #endif
 
-BOOST_AUTO_TEST_CASE( Test_IndexTuple_Constructor_SU2U1 )
-{
+BOOST_AUTO_TEST_CASE(Test_IndexTuple_Constructor_SU2U1) {
 #ifdef HAVE_SU2U1
   typename chem::detail::IndexTuple<SU2U1, 4> index1({3, 2, 1, 1});
   BOOST_CHECK_EQUAL(index1.data().size(), 4);
@@ -60,17 +56,14 @@ BOOST_AUTO_TEST_CASE( Test_IndexTuple_Constructor_SU2U1 )
 
 #ifdef HAVE_TwoU1
 
-BOOST_AUTO_TEST_CASE( Test_IndexTuple_Merge )
-{
+BOOST_AUTO_TEST_CASE(Test_IndexTuple_Merge) {
   typename chem::detail::IndexTuple<TwoU1, 4> index1({1, 2, 3, 4});
   typename chem::detail::IndexTuple<TwoU1, 4> index2({5, 6, 7, 8});
   typename chem::detail::IndexTuple<TwoU1, 8> indexMerged(index1, index2);
-  for (int i = 0; i < 8; i++)
-    BOOST_CHECK_EQUAL(indexMerged[i], i+1);
+  for (int i = 0; i < 8; i++) BOOST_CHECK_EQUAL(indexMerged[i], i + 1);
 }
 
-BOOST_AUTO_TEST_CASE( Test_IndexTuple_FourElement_Align )
-{
+BOOST_AUTO_TEST_CASE(Test_IndexTuple_FourElement_Align) {
   using TupleType = chem::detail::IndexTuple<TwoU1, 4>;
   TupleType indexUnsorted(std::array<int, 4>{3, 4, 8, 2});
   indexUnsorted.align(true);
@@ -80,8 +73,7 @@ BOOST_AUTO_TEST_CASE( Test_IndexTuple_FourElement_Align )
   BOOST_CHECK_EQUAL(indexUnsorted[3], 3);
 }
 
-BOOST_AUTO_TEST_CASE( Test_IndexTuple_SixElement_Align_1 )
-{
+BOOST_AUTO_TEST_CASE(Test_IndexTuple_SixElement_Align_1) {
   using TupleType = chem::detail::IndexTuple<TwoU1, 6>;
   TupleType indexUnsorted(std::array<int, 6>{3, 1, 4, 5, 6, 2});
   indexUnsorted.align(true);
@@ -93,8 +85,7 @@ BOOST_AUTO_TEST_CASE( Test_IndexTuple_SixElement_Align_1 )
   BOOST_CHECK_EQUAL(indexUnsorted[5], 1);
 }
 
-BOOST_AUTO_TEST_CASE( Test_IndexTuple_SixElement_Align_2 )
-{
+BOOST_AUTO_TEST_CASE(Test_IndexTuple_SixElement_Align_2) {
   using TupleType = chem::detail::IndexTuple<TwoU1, 6>;
   TupleType indexUnsorted(std::array<int, 6>{3, 1, 2, 3, 3, 3});
   indexUnsorted.align(true);
@@ -106,4 +97,4 @@ BOOST_AUTO_TEST_CASE( Test_IndexTuple_SixElement_Align_2 )
   BOOST_CHECK_EQUAL(indexUnsorted[5], 1);
 }
 
-#endif // HAVE_TwoU1
+#endif  // HAVE_TwoU1
