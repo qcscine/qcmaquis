@@ -37,3 +37,5 @@ orbital_order            = '1,2,3,4'
 ietl_jcd_maxiter         = 10
 ietl_jcd_tol             = 1e-8
 integral_cutoff          = 1e-300
+
+verbose = 1

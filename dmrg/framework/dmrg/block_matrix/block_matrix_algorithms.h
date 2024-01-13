@@ -10,7 +10,16 @@
 
 #include "BlockMatrixAlgorithmsHelper.h"
 
+#include "dmrg/block_matrix/dual_index.h"
+#include "dmrg/block_matrix/indexing_stable.hpp"
+#include "dmrg/utils/parallel/guard.hpp"
+#include "dmrg/utils/parallel/loops.hpp"
+#include "dmrg/utils/parallel/range.hpp"
+#include "dmrg/utils/parallel/scheduler/balanced.hpp"
+#include "dmrg/utils/parallel/scheduler/nop.hpp"
+#include "dmrg/utils/parallel/scheduler/size_indexed.hpp"
 #include "dmrg/utils/utils.hpp"
+#include "utils/io.hpp"
 #include "utils/timings.h"
 #include "utils/traits.hpp"
 #include "utils/bindings.hpp"
@@ -21,6 +30,12 @@
 #include "dmrg/block_matrix/multi_index.h"
 
 #include <boost/utility.hpp>
+#include <cassert>
+#include <cmath>
+#include <cstddef>
+#include <cstdlib>
+#include <ostream>
+#include <vector>
 
 #include "dmrg/utils/parallel.hpp"
 
@@ -375,9 +390,8 @@ truncation_results svd_truncate(
 
   std::size_t bond_dimension = S.basis().sum_of_left_sizes();
   if (verbose) {
-    maquis::cout << "Bond dimension before truncation: "
-                 << old_basis.sum_of_sizes() << std::endl;
-    maquis::cout << "Bond dimension after truncation: " << bond_dimension
+    maquis::cout << "\n           SVD Bond Dim Truncation: "
+                 << old_basis.sum_of_sizes() << " -> " << bond_dimension
                  << std::endl;
   }
 
@@ -514,9 +528,8 @@ truncation_results heev_truncate(
 
   std::size_t bond_dimension = evals.basis().sum_of_left_sizes();
   if (verbose) {
-    maquis::cout << " Bond dimension before truncation: "
-                 << old_basis.sum_of_sizes() << std::endl;
-    maquis::cout << " Bond dimension after truncation: " << bond_dimension
+    maquis::cout << "\n           SVD Bond Dim Truncation: "
+                 << old_basis.sum_of_sizes() << " -> " << bond_dimension
                  << std::endl;
   }
 

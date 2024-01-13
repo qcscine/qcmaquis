@@ -222,8 +222,8 @@ class GenericSweepSimulation {
           stop - start
       );
       if (verbose_) {
-        maquis::cout << "[Time: " << std::setprecision(2) << duration.count()
-                     << std::setprecision(6) << " s]\n";
+        maquis::cout << "           [Time: " << std::setprecision(2)
+                     << duration.count() << std::defaultfloat << " s]\n";
       }
     }
     // At the end, just stores to file the final right boundary (if needed, one
@@ -234,7 +234,7 @@ class GenericSweepSimulation {
     std::chrono::duration<double> duriation_sweep = stop_sweep - start_sweep;
     this->finalizeSweep();
     printSweepEnergy();
-    maquis::cout << "[Sweep " << iSweep << " took " << std::setprecision(2)
+    maquis::cout << "[Sweep " << iSweep + 1 << " took " << std::setprecision(2)
                  << duriation_sweep.count() << std::setprecision(6)
                  << " s]\n\n";
   }

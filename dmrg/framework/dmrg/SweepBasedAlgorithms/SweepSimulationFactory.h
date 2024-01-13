@@ -9,9 +9,12 @@
 #define SWEEP_SIMULATION_FACTORY
 
 #include <memory>
+#include <stdexcept>
+#include <string>
 #include "GenericSweepSimulation.h"
 #include "SweepBasedEnergyMinimization.h"
 #include "SweepBasedLinearSystem.h"
+#include "dmrg/SweepBasedAlgorithms/SweepOptimizationTypeTrait.h"
 #ifdef DMRG_TD
 #include "SweepBasedTimeEvolution.h"
 #endif  // DMRG_TD

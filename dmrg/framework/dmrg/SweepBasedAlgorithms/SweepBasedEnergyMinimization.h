@@ -8,7 +8,17 @@
 #ifndef SWEEP_BASED_ENERGY_MINIMIZATION_H
 #define SWEEP_BASED_ENERGY_MINIMIZATION_H
 
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <iomanip>
+#include <memory>
+#include <ostream>
+#include <stdexcept>
+#include <string>
+#include <utility>
+#include <vector>
 #include "GenericSweepSimulation.h"
+#include "dmrg/SweepBasedAlgorithms/SweepOptimizationTypeTrait.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
 #include "dmrg/optimize/ietl_jacobi_davidson.h"
 #include "dmrg/models/lattice/lattice.h"
@@ -18,6 +28,7 @@
 #include "dmrg/utils/checks.h"
 #include "BoundaryPropagator.h"
 #include "OverlapPropagator.h"
+#include "utils/io.hpp"
 
 template <
     class Matrix, class SymmGroup, class Storage,
