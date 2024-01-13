@@ -3,7 +3,7 @@
 // +----------------------------------------------------------------------+
 
 // -- General parameters --
-simulation_type             = "transcorrelation"
+simulation_type             = "transcorrelated"
 nsweeps                     = 20
 L                           = 4
 max_bond_dimension          = 100

@@ -1,4 +1,5 @@
-simulation_type                  = "inverse_power_iteration"
+// ipi stands for Inverse Power Iteraiton
+simulation_type                  = "ipi"
 ngrowsweeps                      = 1
 nmainsweeps                      = 1
 max_bond_dimension               = 50

@@ -110,7 +110,7 @@ struct VibronicFixture {
     parametersVibronicThiopheneDimer.set("max_bond_dimension", 20);
     parametersVibronicThiopheneDimer.set("init_type", "basis_state_generic");
     parametersVibronicThiopheneDimer.set("init_basis_state", "1,0,0,0");
-    parametersVibronicThiopheneDimer.set("simulation_type", "time_dep");
+    parametersVibronicThiopheneDimer.set("simulation_type", "evolve");
     parametersVibronicThiopheneDimer.set("propagator_accuracy", 1.0E-10);
     parametersVibronicThiopheneDimer.set("propagator_maxiter", 10);
     parametersVibronicThiopheneDimer.set("time_step", 1);
@@ -135,7 +135,7 @@ struct VibronicFixture {
     parametersTestNmax.set("vibronic_num_excitons", 1);
     parametersTestNmax.set("vibronic_num_connectingmodes", 1);
     parametersTestNmax.set("L", 8);
-    parametersTestNmax.set("simulation_type", "time_dep");
+    parametersTestNmax.set("simulation_type", "evolve");
     parametersTestNmax.set("propagator_accuracy", 1.0E-10);
     parametersTestNmax.set("propagator_maxiter", 10);
     parametersTestNmax.set("time_step", 1);

@@ -66,7 +66,7 @@ BOOST_FIXTURE_TEST_CASE(
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("propagator_maxiter", 10);
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("imaginary_time", "yes");
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("TD_backpropagation", "no");
-  parameters2x2_RealSpace_U4_2Alpha1Beta.set("simulation_type", "time_dep");
+  parameters2x2_RealSpace_U4_2Alpha1Beta.set("simulation_type", "evolve");
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("COMPLEX", 1);
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("time_units", "fs");
   maquis::DMRGInterface<std::complex<double>> interfaceTD(

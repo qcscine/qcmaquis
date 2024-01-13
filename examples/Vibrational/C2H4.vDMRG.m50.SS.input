@@ -1,4 +1,4 @@
-simulation_type                  = "optimization"
+simulation_type                  = "optimize"
 nsweeps                          = 20
 ngrowsweeps                      = 5
 nmainsweeps                      = 5

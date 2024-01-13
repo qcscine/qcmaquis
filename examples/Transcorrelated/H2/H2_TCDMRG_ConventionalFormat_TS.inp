@@ -1,5 +1,5 @@
 // -- General parameters --
-simulation_type               = "transcorrelation"
+simulation_type               = "transcorrelated"
 L                             = 10
 max_bond_dimension            = 100
 ngrowsweeps                   = 3

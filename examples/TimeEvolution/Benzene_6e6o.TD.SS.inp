@@ -32,7 +32,7 @@ ietl_jcd_tol             = 1e-8
 integral_cutoff          = 1e-300
 
 // -- Time-dependent simulation --
-simulation_type          = time_dep
+simulation_type          = evolve
 propagator_accuracy      = 1.0E-10
 propagator_maxiter       = 10
 time_step                = 1

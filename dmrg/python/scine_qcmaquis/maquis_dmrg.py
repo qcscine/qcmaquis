@@ -562,7 +562,7 @@ if __name__ == "__main__":
     this_dmrg._parameters.set("max_bond_dimension", 1000)
     this_dmrg._parameters.set("integral_file", "/home/max/Programs/coupled_wick_scf/scripts/test/cc-pvdz/trans/0.0/He_cc-pvdz.FCIDUMP")
     this_dmrg._parameters.set("optimization", "singlesite")
-    this_dmrg._parameters.set("simulation_type", "time_dep")
+    this_dmrg._parameters.set("simulation_type", "evolve")
     this_dmrg._parameters.set("propagator_accuracy", 1.0E-10)
     this_dmrg._parameters.set("propagator_maxiter", 10)
     this_dmrg._parameters.set("time_step", "0.2")

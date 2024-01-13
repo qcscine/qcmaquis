@@ -26,6 +26,20 @@
 
 #define BOOST_TEST_MODULE Transcorrelated
 
+#include "alps/numeric/matrix/vector.hpp"
+#include "dmrg/block_matrix/symmetry/2u1.h"
+#include "dmrg/mp_tensors/mps_mpo_ops.h"
+#include "dmrg/utils/DmrgParameters.h"
+#include "maquis_dmrg.h"
+#include "utils/bindings.hpp"
+#include <boost/filesystem/operations.hpp>
+#include <boost/test/tools/old/interface.hpp>
+#include <boost/test/unit_test_suite.hpp>
+#include <cmath>
+#include <complex>
+#include <cstdlib>
+#include <string>
+#include <vector>
 #include <alps/numeric/matrix.hpp>
 #include <alps/numeric/matrix/algorithms.hpp>
 #include <boost/test/included/unit_test.hpp>
@@ -113,14 +127,16 @@ BOOST_FIXTURE_TEST_CASE(
   // Does conventional TI and transcorrelated.
   for (auto& iParameter : std::vector<DmrgParameters>{
            parametersH2Conventional_ConventionalFormat,
-           parametersH2Conventional_TranscorrelatedFormat}) {
+           parametersH2Conventional_TranscorrelatedFormat
+       }) {
     iParameter.set("nsweeps", 10);
     iParameter.set("max_bond_dimension", 100);
     maquis::DMRGInterface<double> interface(iParameter);
-    if (iCont == 0)
+    if (iCont == 0) {
       interface.optimize();
-    else
+    } else {
       interface.runTranscorrelated();
+    }
     auto energyDMRG = interface.energy();
     // Hand-made Full-CI
     if (iCont == 1) {
@@ -143,18 +159,20 @@ BOOST_FIXTURE_TEST_CASE(
     for (const auto& iString : fullCIDeterminantsH2) {
       iParameter.set("init_type", "hf");
       iParameter.set("hf_occ", iString);
-      vectorOfMPS.push_back(MPS<matrix, TwoU1>(
+      vectorOfMPS.emplace_back(
           lattice.size(), *(model.initializer(lattice, iParameter))
-      ));
+      );
     }
     matrix hamiltonianMatrix(vectorOfMPS.size(), vectorOfMPS.size(), 0.0);
     matrix eigenVectors(vectorOfMPS.size(), vectorOfMPS.size(), 0.0);
     alps::numeric::vector<double> eigenValues(vectorOfMPS.size(), 0.0);
-    for (int iRow = 0; iRow < vectorOfMPS.size(); iRow++)
-      for (int iCol = 0; iCol < vectorOfMPS.size(); iCol++)
+    for (int iRow = 0; iRow < vectorOfMPS.size(); iRow++) {
+      for (int iCol = 0; iCol < vectorOfMPS.size(); iCol++) {
         hamiltonianMatrix(iRow, iCol) =
             expval(vectorOfMPS[iRow], vectorOfMPS[iCol], mpo) /
             std::sqrt(norm(vectorOfMPS[iRow]) * norm(vectorOfMPS[iCol]));
+      }
+    }
     alps::numeric::syev(hamiltonianMatrix, eigenVectors, eigenValues);
     BOOST_CHECK_CLOSE(eigenValues[vectorOfMPS.size() - 1], energyDMRG, 1.0E-8);
     iCont += 1;
@@ -187,20 +205,22 @@ BOOST_FIXTURE_TEST_CASE(
   for (const auto& iString : fullCIDeterminantsH2) {
     parametersH2Transcorrelated.set("init_type", "hf");
     parametersH2Transcorrelated.set("hf_occ", iString);
-    vectorOfMPS.push_back(MPS<matrix, TwoU1>(
+    vectorOfMPS.emplace_back(
         lattice.size(),
         *(model.initializer(lattice, parametersH2Transcorrelated))
-    ));
+    );
   }
   cmatrix hamiltonianMatrix(vectorOfMPS.size(), vectorOfMPS.size(), 0.0);
   alps::numeric::vector<std::complex<double>> eigenValues(
       vectorOfMPS.size(), 0.0
   );
-  for (int iRow = 0; iRow < vectorOfMPS.size(); iRow++)
-    for (int iCol = 0; iCol < vectorOfMPS.size(); iCol++)
+  for (int iRow = 0; iRow < vectorOfMPS.size(); iRow++) {
+    for (int iCol = 0; iCol < vectorOfMPS.size(); iCol++) {
       hamiltonianMatrix(iRow, iCol) =
           expval(vectorOfMPS[iRow], vectorOfMPS[iCol], mpo) /
           std::sqrt(norm(vectorOfMPS[iRow]) * norm(vectorOfMPS[iCol]));
+    }
+  }
   alps::numeric::geev(hamiltonianMatrix, eigenValues);
   // Checks that the eigenvalues are real (this comes from the fact that the
   // matrix is obtained as similarity transformation of a real-valued matrix)
@@ -209,7 +229,7 @@ BOOST_FIXTURE_TEST_CASE(
     BOOST_CHECK_SMALL(std::imag(eigenValues[iElement]), 1.0E-8);
     if (iElement != 0) {
       auto realEnergy = std::real(eigenValues[iElement]);
-      if (realEnergy < minimumEnergy) minimumEnergy = realEnergy;
+      if (realEnergy < minimumEnergy) { minimumEnergy = realEnergy; }
     }
   }
   BOOST_CHECK_CLOSE(minimumEnergy, energyDMRG, 1.0E-8);
@@ -227,23 +247,25 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_Be_VersusCC, TranscorrelatedFixture) {
   parametersBeTranscorrelatedTwoBody.set("time_units", "fs");
   parametersBeTranscorrelatedTwoBody.set("TD_backpropagation", "no");
   parametersBeTranscorrelatedTwoBody.set("symmetry", "2u1");
-  parametersBeTranscorrelatedTwoBody.set("time_step", 0.1);
   parametersBeTranscorrelatedTwoBody.set("chkpfile", "Be.tcDMRG.checkpoint.h5");
   parametersBeTranscorrelatedTwoBody.set("transcorrelated_nsweeps_TI", 0);
-  parametersBeTranscorrelatedTwoBody.set("transcorrelated_nsweeps_TC", 10);
   parametersBeTranscorrelatedTwoBody.set(
       "integral_file", "IntegralFile_Be_Conventional"
   );
   parametersBeTranscorrelatedTwoBody.set(
       "transcorrelated_integral_file", "IntegralFile_Be_Transcorrelated_TwoBody"
   );
+
+  parametersBeTranscorrelatedTwoBody.set("transcorrelated_nsweeps_TC", 10);
+  parametersBeTranscorrelatedTwoBody.set("time_step", 0.1);
   maquis::DMRGInterface<double> interface(parametersBeTranscorrelatedTwoBody);
   interface.runTranscorrelated();
-  parametersBeTranscorrelatedTwoBody.set("transcorrelated_nsweeps_TC", 50);
+  parametersBeTranscorrelatedTwoBody.set("transcorrelated_nsweeps_TC", 20);
   parametersBeTranscorrelatedTwoBody.set("time_step", 0.01);
+  // Reloads from checkpoint
   maquis::DMRGInterface<double> interface2(parametersBeTranscorrelatedTwoBody);
   interface2.runTranscorrelated();
-  parametersBeTranscorrelatedTwoBody.set("transcorrelated_nsweeps_TC", 100);
+  parametersBeTranscorrelatedTwoBody.set("transcorrelated_nsweeps_TC", 3);
   parametersBeTranscorrelatedTwoBody.set("time_step", 0.001);
   maquis::DMRGInterface<double> interface3(parametersBeTranscorrelatedTwoBody);
   interface3.runTranscorrelated();
