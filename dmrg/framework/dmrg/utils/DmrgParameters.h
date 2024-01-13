@@ -31,9 +31,8 @@ class DmrgParameters : public BaseParameters {
     // General settings
     add_option(
         "simulation_type",
-        "Simulation type can be optimization, measure, "
-        "inverse_power_iteration, "
-        "time_dep, feast, transcorrelated"
+        "Simulation type can be optimize, evolve,"
+        "ipi," "feast, transcorrelated"
     );
     add_option("verbose", "Verbosity level of the DMRG calculation", value(0));
     add_option(

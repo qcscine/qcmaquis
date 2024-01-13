@@ -1,6 +1,7 @@
 #ifndef MAQUIS_TIMINGS_H
 #define MAQUIS_TIMINGS_H
 
+#include <iomanip>
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -16,7 +17,10 @@ class Timer {
  public:
   Timer(std::string name_) : name(std::move(name_)) {}
 
-  ~Timer() { maquis::cout << name << " took " << val << " [s]\n"; }
+  ~Timer() {
+    maquis::cout << name << " took " << std::setprecision(2) << val
+                 << std::defaultfloat << " [s]\n";
+  }
 
   Timer& operator+=(double t) {
     val += t;

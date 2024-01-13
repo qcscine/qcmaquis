@@ -50,6 +50,18 @@ DMRGInterface<ScalarType, HamiltonianType>::DMRGInterface(DmrgParameters& parms_
       ))){};
 
 template <typename ScalarType, Hamiltonian HamiltonianType>
+void DMRGInterface<ScalarType, HamiltonianType>::run(const std::string& sim_type
+) {
+  try {
+    impl_->sim->run(sim_type);
+  } catch (std::exception& e) {
+    maquis::cerr << "Exception thrown!" << std::endl;
+    maquis::cerr << e.what() << std::endl;
+    exit(1);
+  }
+}
+
+template <typename ScalarType, Hamiltonian HamiltonianType>
 void DMRGInterface<ScalarType, HamiltonianType>::optimize() {
   try {
     impl_->sim->run("optimize");

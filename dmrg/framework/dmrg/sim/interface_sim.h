@@ -41,6 +41,7 @@
 #include "dmrg/utils/time_limit_exception.h"
 #include "integral_interface.h"
 #include "utils/io.hpp"
+#include "utils/timings.h"
 #include "utils/traits.hpp"
 
 // The sim class for interface-based DMRG runs and measurements
@@ -87,6 +88,8 @@ class interface_sim : public sim<Matrix, SymmGroup>,
 
   /** @brief Runs a DMRG-based optimization */
   void run(const std::string& simulationType) override {
+    Timer timer(simulationType);
+    timer.begin();
     if (simulationType == "optimize") {
       this->runAlternatingLeastSquares(
           "optimize", parms["nsweeps"].template as<int>(),
@@ -110,6 +113,7 @@ class interface_sim : public sim<Matrix, SymmGroup>,
     } else if (simulationType == "transcorrelated") {
       this->runTranscorrelated();
     }
+    timer.end();
   }
 
   /** @brief Runs a FEAST simulation */
@@ -697,7 +701,7 @@ parms["nsweeps"]) checkpoint_simulation(mps, sweep, -1); if (stopped) break;
 
   /** @brief Get the overlap of the MPS with another MPS, which is loaded from a
    * chkp file */
-  virtual typename Matrix::value_type get_overlap(
+   typename Matrix::value_type get_overlap(
       const std::string& aux_filename
   ) override {
     maquis::checks::symmetry_check(parms, aux_filename);

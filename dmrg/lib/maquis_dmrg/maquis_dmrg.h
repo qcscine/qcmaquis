@@ -45,6 +45,9 @@ class DMRGInterface {
   /** @brief Class destructor */
   ~DMRGInterface();
 
+  /** @brief Generic function which dispatches to interface_sim object */
+  void run(const std::string& sim_type);
+
   /** @brief Run a DMRG optimization */
   void optimize();
 

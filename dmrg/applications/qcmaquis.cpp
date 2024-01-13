@@ -8,17 +8,59 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 
+#include <algorithm>
 #include <complex>
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include "dmrg/utils/DmrgOptions.h"
 #include "maquis_dmrg.h"
 #include "utils/data_collector.hpp"
 #include "utils/timings.h"
 
-int main(int argc, char **argv) {
+// @brief Checks that request simulation has been enabled at compile time
+void checkEnabledSimulationType(const std::string& sim_type) {
+#ifndef DMRG_TD
+  if (sim_type == "evolve") {
+    std::cerr << "Time-dependent DMRG not available. Please recompile "
+                 "with -DBUILD_DMRG_EVOLVE=ON\n";
+    exit(1);
+  }
+#endif
+#ifndef DMRG_FEAST
+  if (sim_type == "feast") {
+    std::cerr << "FEAST not available. Please recompile with "
+                 "-DBUILD_DMRG_FEAST=ON\n";
+    exit(1);
+  }
+#endif
+#ifndef DMRG_TRANSCORRELATED
+  if (sim_type == "transcorrelation") {
+    std::cerr << "Transcorrelated DMRG not available. Please recompile "
+                 "with -DBUILD_TRANSCORRELATED_DMRG=ON\n";
+    exit(1);
+  }
+#endif
+}
+
+// @brief Checks that the requested simulation type is valid
+void checkSimulationType(const std::string& sim_type) {
+  std::vector<std::string> valid_types = {
+      "optimize", "evolve", "ipi", "feast", "transcorrelation"
+  };
+  if (std::find(valid_types.begin(), valid_types.end(), sim_type) ==
+      valid_types.end()) {
+    std::cerr << "Unknown simulation type: \"" << sim_type
+              << "\". Valid options are: optimize, evolve, ipi, feast, "
+                 "transcorrelation\n";
+    exit(1);
+  }
+  checkEnabledSimulationType(sim_type);
+}
+
+int main(int argc, char** argv) {
   std::cout << "  SCINE QCMaquis \n"
             << "  Quantum Chemical Density Matrix Renormalization group\n"
             << "  available from https://scine.ethz.ch/download/qcmaquis\n"
@@ -37,76 +79,26 @@ int main(int argc, char **argv) {
   if (opt.valid) {
     if (opt.parms.is_set("simulation_type")) {
       std::string sim_type = opt.parms["simulation_type"];
+      checkSimulationType(sim_type);
+
       DCOLLECTOR_SET_SIZE(gemm_collector, opt.parms["max_bond_dimension"] + 1)
       DCOLLECTOR_SET_SIZE(svd_collector, opt.parms["max_bond_dimension"] + 1)
-      Timer sim(sim_type);
-      sim.begin();
-      if (sim_type == "optimization") {
-        // Here we must explicitly distinguish all cases.
-        if (!opt.parms["COMPLEX"]) {
-          maquis::DMRGInterface<double> interface(opt.parms);
-          interface.optimize();
-        } else {
-          maquis::DMRGInterface<std::complex<double>> interface(opt.parms);
-          interface.optimize();
-        }
-      } else if (sim_type == "measure") {
-        if (!opt.parms["COMPLEX"]) {
-          maquis::DMRGInterface<double> interface(opt.parms);
-          interface.run_measure();
-        } else {
-          maquis::DMRGInterface<std::complex<double>> interface(opt.parms);
-          interface.run_measure();
-        }
-      } else if (sim_type == "inverse_power_iteration") {
-        if (!opt.parms["COMPLEX"]) {
-          maquis::DMRGInterface<double> interface(opt.parms);
-          interface.runInversePowerIteration();
-        } else {
-          maquis::DMRGInterface<std::complex<double>> interface(opt.parms);
-          interface.runInversePowerIteration();
-        }
-      } else if (sim_type == "time_dep") {
-#ifdef DMRG_TD
-        maquis::DMRGInterface<std::complex<double>> interface(opt.parms);
-        interface.evolve();
-#else
-        std::cerr << "Time-dependent DMRG not available. Please recompile "
-                     "with -DBUILD_DMRG_EVOLVE=ON\n";
-        exit(1);
-#endif
-      } else if (sim_type == "feast") {
-#ifdef DMRG_FEAST
-        maquis::DMRGInterface<std::complex<double>> interface(opt.parms);
-        interface.runFEAST();
-#else
-        std::cerr << "FEAST not available. Please recompile with "
-                     "-DBUILD_DMRG_FEAST=ON\n";
-        exit(1);
-#endif
-      } else if (sim_type == "transcorrelation") {
-#ifdef DMRG_TRANSCORRELATED
+
+      Timer sim_timer(
+          "\n*********************************************************\nQCMAQUIS " + sim_type +
+          " simulation"
+      );
+      sim_timer.begin();
+
+      if (!opt.parms["COMPLEX"]) {
         maquis::DMRGInterface<double> interface(opt.parms);
-        interface.runTranscorrelated();
-#else
-        std::cerr << "Transcorrelated DMRG not available. Please recompile "
-                     "with -DBUILD_TRANSCORRELATED_DMRG=ON\n";
-        exit(1);
-#endif
+        interface.run(sim_type);
       } else {
-        std::cerr << "Unknown simulation type: " << sim_type
-                  << ". Valid options are: optimization, measure, "
-                     "inverse-power-iteration, evolve, feast\n";
-        exit(1);
+        maquis::DMRGInterface<std::complex<double>> interface(opt.parms);
+        interface.run(sim_type);
       }
-      sim.end();
-      DCOLLECTOR_SAVE_TO_FILE(gemm_collector, "collectors.h5", "/results")
-      DCOLLECTOR_SAVE_TO_FILE(svd_collector, "collectors.h5", "/results")
-    } else {
-      std::cerr << "Simulation type not set. Valid options are: optimization, "
-                   "measure, "
-                   "inverse-power-iteration, evolve, feast\n";
-      exit(1);
+
+      sim_timer.end();
     }
   }
 }
