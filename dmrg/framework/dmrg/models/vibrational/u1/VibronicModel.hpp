@@ -158,9 +158,10 @@ class VibronicModel : public model_impl<Matrix, U1> {
             operators.push_back(positionPowers[numberOfOccurrences]);
         }
       }
+      bool verbose = parameters["verbose"] > 0;
       modelHelper<Matrix, U1>::add_term(
           positions, operators, hamiltonianTerms.second[iSize], tag_handler,
-          this->terms_, true
+          this->terms_, verbose
       );
     }
   }

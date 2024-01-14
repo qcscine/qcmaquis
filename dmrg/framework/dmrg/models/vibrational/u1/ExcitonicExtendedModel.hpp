@@ -265,6 +265,7 @@ class HolsteinbHubbardExcitonicExtendedHamiltonian
 #endif
           }
         }
+        bool verbose = model["verbose"] > 0;
         // Add electronic contribution
         // Add the count operator for the specific excited states.
         if (ele_state == 1) {  // if electronic excited state potential
@@ -279,14 +280,14 @@ class HolsteinbHubbardExcitonicExtendedHamiltonian
             operators.push_back(count_ele_gs);
             modelHelper<Matrix, U1>::add_term(
                 positions, operators, scalingFactor, tag_handler, this->terms_,
-                true
+                verbose
             );
             // create |1><1||1><1| term
             operators.pop_back();
             operators.push_back(count_ele);
             modelHelper<Matrix, U1>::add_term(
                 positions, operators, scalingFactor, tag_handler, this->terms_,
-                true
+                verbose
             );
             // create |0><0||1><1| term
             operators.pop_back();  // remove count_ele of next site
@@ -295,7 +296,7 @@ class HolsteinbHubbardExcitonicExtendedHamiltonian
             operators.push_back(count_ele);
             modelHelper<Matrix, U1>::add_term(
                 positions, operators, scalingFactor, tag_handler, this->terms_,
-                true
+                verbose
             );
             flag = 1;
           }
@@ -311,7 +312,7 @@ class HolsteinbHubbardExcitonicExtendedHamiltonian
             operators.push_back(count_ele_gs);
             modelHelper<Matrix, U1>::add_term(
                 positions, operators, scalingFactor, tag_handler, this->terms_,
-                true
+                verbose
             );
             flag = 1;
           }
@@ -320,7 +321,7 @@ class HolsteinbHubbardExcitonicExtendedHamiltonian
         if (!(i_body == n_particles_ - 1 && connecting == 1) && flag == 0) {
           modelHelper<Matrix, U1>::add_term(
               positions, operators, scalingFactor, tag_handler, this->terms_,
-              true
+              verbose
           );
 #ifndef NDEBUG
           maquis::cout << "created term for monomer " << i_body

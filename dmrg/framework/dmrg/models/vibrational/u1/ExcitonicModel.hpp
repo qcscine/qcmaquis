@@ -178,10 +178,11 @@ class HolsteinHubbardExcitonicHamiltonian : public model_impl<Matrix, U1> {
           positions.push_back(lat.get_prop<int>("eleindex", vec_jnk));
           operators.push_back(ident_ele);
         }
+        bool verbose = model["verbose"];
         // Builds the term of the Hamiltonian
         modelHelper<Matrix, U1>::add_term(
             positions, operators, hamiltonianTerms.second[idx], tag_handler,
-            this->terms_, true
+            this->terms_, verbose
         );
       }
     }

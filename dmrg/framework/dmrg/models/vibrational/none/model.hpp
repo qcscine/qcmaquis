@@ -216,10 +216,11 @@ class WatsonHamiltonian : public model_impl<Matrix, TrivialGroup> {
           operators.size() == positions.size() &&
           positions.size() <= maxInputManyBodyCoupling_
       );
+      bool verbose = parameters_["verbose"] > 0;
       // Final addition of the terms
       auto coefficient = static_cast<value_type>(iTerms.second);
       modelHelper<Matrix, TrivialGroup>::add_term(
-          positions, operators, coefficient, tag_handler_, this->terms_, true
+          positions, operators, coefficient, tag_handler_, this->terms_, verbose
       );
     }
   }

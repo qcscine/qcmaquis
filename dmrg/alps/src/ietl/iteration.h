@@ -41,13 +41,14 @@ template <class T>
 class basic_iteration {
  public:
   basic_iteration(unsigned int max_iter, T reltol = 0., T abstol = 0.)
-      : error(0), i(0), max_iter_(max_iter), rtol_(reltol), atol_(abstol) {}
+      : error(0), i(0), max_iter_(max_iter), rtol_(reltol), atol_(abstol), is_converged(false) {}
   bool finished(T r, T lambda) {
-    if (converged(r, lambda))
+    if (converged(r, lambda)) {
+      is_converged = true;
       return true;
-    else if (i < max_iter_)
+    } else if (i < max_iter_) {
       return false;
-    else {
+    } else {
       fail(1, "maximum number of iterations exceeded");
       return true;
     }
@@ -58,6 +59,8 @@ class basic_iteration {
         r <= rtol_ * std::abs(lambda) || r < atol_
     );  // relative or absolute tolerance.
   }
+
+  bool has_converged() const { return is_converged; }
 
   inline void operator++() { ++i; }
   inline bool first() { return i == 0; }
@@ -79,6 +82,7 @@ class basic_iteration {
   T rtol_;
   T atol_;
   std::string err_msg;
+  bool is_converged;
 };
 
 template <class T, class Derived>
@@ -89,11 +93,11 @@ class basic_lanczos_iteration {
 
   template <class Tmatrix>
   bool finished(const Tmatrix& tmatrix) {
-    if (static_cast<const Derived&>(*this).converged(tmatrix))
+    if (static_cast<const Derived&>(*this).converged(tmatrix)) {
       return true;
-    else if (i < max_iter_)
+    } else if (i < max_iter_) {
       return false;
-    else {
+    } else {
       fail(1, "maximum number of iterations exceeded");
       return true;
     }
@@ -124,8 +128,8 @@ class basic_lanczos_iteration {
 
 template <class T>
 class lanczos_iteration_nlowest
-    : public basic_lanczos_iteration<T, lanczos_iteration_nlowest<T> > {
-  typedef basic_lanczos_iteration<T, lanczos_iteration_nlowest<T> > super_type;
+    : public basic_lanczos_iteration<T, lanczos_iteration_nlowest<T>> {
+  using super_type = basic_lanczos_iteration<T, lanczos_iteration_nlowest<T>>;
 
  public:
   lanczos_iteration_nlowest(
@@ -133,7 +137,7 @@ class lanczos_iteration_nlowest
       T r = 100. * std::numeric_limits<T>::epsilon(),
       T a = 100. * std::numeric_limits<T>::epsilon()
   )
-      : basic_lanczos_iteration<T, lanczos_iteration_nlowest<T> >(
+      : basic_lanczos_iteration<T, lanczos_iteration_nlowest<T>>(
             max_iter, r, a
         ),
         n_(n) {}
@@ -143,15 +147,17 @@ class lanczos_iteration_nlowest
     if (super_type::iterations() > 1) {
       const std::vector<T>& errs = tmatrix.errors();
       const std::vector<T>& vals = tmatrix.eigenvalues();
-      if (vals.size() < n_)
+      if (vals.size() < n_) {
         return false;
-      else {
-        for (unsigned int i = 0; i < n_; i++)
+      } else {
+        for (unsigned int i = 0; i < n_; i++) {
           if (errs[i] > std::max(
                             super_type::absolute_tolerance(),
                             super_type::relative_tolerance() * std::abs(vals[i])
-                        ))
+                        )) {
             return false;
+          }
+        }
         return true;
       }
     }
@@ -164,8 +170,8 @@ class lanczos_iteration_nlowest
 
 template <class T>
 class lanczos_nlowest_better
-    : public basic_lanczos_iteration<T, lanczos_nlowest_better<T> > {
-  typedef basic_lanczos_iteration<T, lanczos_nlowest_better<T> > super_type;
+    : public basic_lanczos_iteration<T, lanczos_nlowest_better<T>> {
+  using super_type = basic_lanczos_iteration<T, lanczos_nlowest_better<T>>;
 
  public:
   lanczos_nlowest_better(
@@ -174,7 +180,7 @@ class lanczos_nlowest_better
       T a = 100. * std::numeric_limits<T>::epsilon(),
       unsigned int check_each = 50
   )
-      : basic_lanczos_iteration<T, lanczos_nlowest_better<T> >(max_iter, r, a),
+      : basic_lanczos_iteration<T, lanczos_nlowest_better<T>>(max_iter, r, a),
         n_(n),
         ce_(check_each) {}
 
@@ -183,15 +189,16 @@ class lanczos_nlowest_better
     if (super_type::iterations() > 1 && super_type::iterations() % ce_ == 0) {
       const std::vector<T>& errs = tmatrix.errors();
       const std::vector<T>& vals = tmatrix.eigenvalues();
-      if (vals.size() < n_)
+      if (vals.size() < n_) {
         return false;
-      else {
+      } else {
         for (unsigned int i = 0; i < n_; i++)
           if (errs[i] > std::max(
                             super_type::absolute_tolerance(),
                             super_type::relative_tolerance() * std::abs(vals[i])
-                        ))
+                        )) {
             return false;
+          }
         return true;
       }
     }
@@ -204,8 +211,8 @@ class lanczos_nlowest_better
 
 template <class T>
 class lanczos_iteration_nhighest
-    : public basic_lanczos_iteration<T, lanczos_iteration_nhighest<T> > {
-  typedef basic_lanczos_iteration<T, lanczos_iteration_nhighest<T> > super_type;
+    : public basic_lanczos_iteration<T, lanczos_iteration_nhighest<T>> {
+  using super_type = basic_lanczos_iteration<T, lanczos_iteration_nhighest<T>>;
 
  public:
   lanczos_iteration_nhighest(
@@ -213,7 +220,7 @@ class lanczos_iteration_nhighest
       T r = 100. * std::numeric_limits<T>::epsilon(),
       T a = 100. * std::numeric_limits<T>::epsilon()
   )
-      : basic_lanczos_iteration<T, lanczos_iteration_nhighest<T> >(
+      : basic_lanczos_iteration<T, lanczos_iteration_nhighest<T>>(
             max_iter, r, a
         ),
         n_(n) {}
@@ -224,17 +231,19 @@ class lanczos_iteration_nhighest
       const std::vector<T>& errs = tmatrix.errors();
       const std::vector<T>& vals = tmatrix.eigenvalues();
 
-      if (errs.size() < n_)
+      if (errs.size() < n_) {
         return false;
-      else {
-        for (int i = 0; i < n_; i++)
+      } else {
+        for (int i = 0; i < n_; i++) {
           if (errs[errs.size() - i - 1] >
               std::max(
                   super_type::absolute_tolerance(),
                   super_type::relative_tolerance() *
                       std::abs(vals[vals.size() - i - 1])
-              ))
+              )) {
             return false;
+          }
+        }
         return true;
       }
     }
@@ -247,10 +256,10 @@ class lanczos_iteration_nhighest
 
 template <class T>
 class fixed_lanczos_iteration
-    : public basic_lanczos_iteration<T, fixed_lanczos_iteration<T> > {
+    : public basic_lanczos_iteration<T, fixed_lanczos_iteration<T>> {
  public:
   fixed_lanczos_iteration(unsigned int max_iter)
-      : basic_lanczos_iteration<T, fixed_lanczos_iteration<T> >(
+      : basic_lanczos_iteration<T, fixed_lanczos_iteration<T>>(
             max_iter, 0., 0.
         ) {}
 
@@ -267,19 +276,17 @@ class bandlanczos_iteration_nlowest {
       unsigned int max_iter, T def_tol, T dep_tol, T ghost_tol,
       bool ghost_discarding, unsigned int evs
   )
-      : max_iter_(max_iter),
+      : i(0),
+        max_iter_(max_iter),
         def_tol_(def_tol),
         dep_tol_(dep_tol),
         ghost_tol_(ghost_tol),
         ghost_discarding_(ghost_discarding),
-        evs_(evs) {
-    i = 0;
-  };
+        evs_(evs){
+
+        };
   bool finished() const {
-    if (i < max_iter_)
-      return false;
-    else
-      return true;
+    return i >= max_iter_;
   }
   inline void operator++() { ++i; };
   inline void operator--() { --i; };
@@ -310,19 +317,16 @@ class bandlanczos_iteration_nhighest {
       unsigned int max_iter, T def_tol, T dep_tol, T ghost_tol,
       bool ghost_discarding, unsigned int evs
   )
-      : max_iter_(max_iter),
+      : i(0), max_iter_(max_iter),
         def_tol_(def_tol),
         dep_tol_(dep_tol),
         ghost_tol_(ghost_tol),
         ghost_discarding_(ghost_discarding),
         evs_(evs) {
-    i = 0;
+    
   };
   bool finished() const {
-    if (i < max_iter_)
-      return false;
-    else
-      return true;
+    return i >= max_iter_;
   }
   inline void operator++() { ++i; };
   inline void operator--() { --i; };

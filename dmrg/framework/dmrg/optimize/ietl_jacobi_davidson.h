@@ -99,9 +99,16 @@ solve_ietl_jcd(
   auto stop = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double, std::milli> duration_milisec = stop - start;
   if (verbose) {
-    maquis::cout << " Jacobi-Davidson diagonalization converged after "
-                 << iter.iterations() << " iterations."
-                 << " [" << duration_milisec.count() << " ms]\n";
+    bool has_converged = iter.has_converged();
+    if (has_converged){
+      maquis::cout << " JD diagonalization converged after "
+        << iter.iterations() << " iterations."
+        << " [" << duration_milisec.count() << " ms]\n";
+    } else {
+      maquis::cout << " Warning: JD diagonalization did not converge after "
+        << iter.iterations() << " iterations."
+        << " [" << duration_milisec.count() << " ms]\n";
+    }
   }
   return r0;
 }

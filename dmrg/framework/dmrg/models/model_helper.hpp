@@ -100,7 +100,9 @@ class modelHelper {
     if (!ret.second) {
       auto term = ret.first;
       term.coeff = coeff * scaling;
-      if (verbose) std::cout << term << std::endl;
+      if (verbose) {
+        std::cout << term << std::endl;
+      }
       terms.push_back(term);
     }
   }
