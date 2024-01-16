@@ -52,11 +52,13 @@ namespace detail {
 // * netlib-compatible LAPACK backend (the default), and
 // * float value-type.
 //
-inline std::ptrdiff_t ptcon( const fortran_int_t n, const float* d,
-        const float* e, const float anorm, float& rcond, float* work ) {
-    fortran_int_t info(0);
-    LAPACK_SPTCON( &n, d, e, &anorm, &rcond, work, &info );
-    return info;
+inline std::ptrdiff_t ptcon(
+    const fortran_int_t n, const float* d, const float* e, const float anorm,
+    float& rcond, float* work
+) {
+  fortran_int_t info(0);
+  LAPACK_SPTCON(&n, d, e, &anorm, &rcond, work, &info);
+  return info;
 }
 
 //
@@ -64,11 +66,13 @@ inline std::ptrdiff_t ptcon( const fortran_int_t n, const float* d,
 // * netlib-compatible LAPACK backend (the default), and
 // * double value-type.
 //
-inline std::ptrdiff_t ptcon( const fortran_int_t n, const double* d,
-        const double* e, const double anorm, double& rcond, double* work ) {
-    fortran_int_t info(0);
-    LAPACK_DPTCON( &n, d, e, &anorm, &rcond, work, &info );
-    return info;
+inline std::ptrdiff_t ptcon(
+    const fortran_int_t n, const double* d, const double* e, const double anorm,
+    double& rcond, double* work
+) {
+  fortran_int_t info(0);
+  LAPACK_DPTCON(&n, d, e, &anorm, &rcond, work, &info);
+  return info;
 }
 
 //
@@ -76,12 +80,13 @@ inline std::ptrdiff_t ptcon( const fortran_int_t n, const double* d,
 // * netlib-compatible LAPACK backend (the default), and
 // * complex<float> value-type.
 //
-inline std::ptrdiff_t ptcon( const fortran_int_t n, const float* d,
-        const std::complex<float>* e, const float anorm, float& rcond,
-        float* rwork ) {
-    fortran_int_t info(0);
-    LAPACK_CPTCON( &n, d, e, &anorm, &rcond, rwork, &info );
-    return info;
+inline std::ptrdiff_t ptcon(
+    const fortran_int_t n, const float* d, const std::complex<float>* e,
+    const float anorm, float& rcond, float* rwork
+) {
+  fortran_int_t info(0);
+  LAPACK_CPTCON(&n, d, e, &anorm, &rcond, rwork, &info);
+  return info;
 }
 
 //
@@ -89,169 +94,182 @@ inline std::ptrdiff_t ptcon( const fortran_int_t n, const float* d,
 // * netlib-compatible LAPACK backend (the default), and
 // * complex<double> value-type.
 //
-inline std::ptrdiff_t ptcon( const fortran_int_t n, const double* d,
-        const std::complex<double>* e, const double anorm, double& rcond,
-        double* rwork ) {
-    fortran_int_t info(0);
-    LAPACK_ZPTCON( &n, d, e, &anorm, &rcond, rwork, &info );
-    return info;
+inline std::ptrdiff_t ptcon(
+    const fortran_int_t n, const double* d, const std::complex<double>* e,
+    const double anorm, double& rcond, double* rwork
+) {
+  fortran_int_t info(0);
+  LAPACK_ZPTCON(&n, d, e, &anorm, &rcond, rwork, &info);
+  return info;
 }
 
-} // namespace detail
+}  // namespace detail
 
 //
 // Value-type based template class. Use this class if you need a type
 // for dispatching to ptcon.
 //
-template< typename Value, typename Enable = void >
+template <typename Value, typename Enable = void>
 struct ptcon_impl {};
 
 //
 // This implementation is enabled if Value is a real type.
 //
-template< typename Value >
-struct ptcon_impl< Value, typename boost::enable_if< is_real< Value > >::type > {
+template <typename Value>
+struct ptcon_impl<Value, typename boost::enable_if<is_real<Value> >::type> {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
+  //
+  // Static member function for user-defined workspaces, that
+  // * Deduces the required arguments for dispatching to LAPACK, and
+  // * Asserts that most arguments make sense.
+  //
+  template <typename VectorD, typename VectorE, typename WORK>
+  static std::ptrdiff_t invoke(
+      const VectorD& d, const VectorE& e, const real_type anorm,
+      real_type& rcond, detail::workspace1<WORK> work
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    BOOST_STATIC_ASSERT(
+        (boost::is_same<
+            typename remove_const<
+                typename bindings::value_type<VectorD>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<VectorE>::type>::type>::value)
+    );
+    BOOST_ASSERT(bindings::size(d) >= bindings::size(d));
+    BOOST_ASSERT(bindings::size(d) >= 0);
+    BOOST_ASSERT(bindings::size(e) >= bindings::size(d) - 1);
+    BOOST_ASSERT(
+        bindings::size(work.select(real_type())) >=
+        min_size_work(bindings::size(d))
+    );
+    return detail::ptcon(
+        bindings::size(d), bindings::begin_value(d), bindings::begin_value(e),
+        anorm, rcond, bindings::begin_value(work.select(real_type()))
+    );
+  }
 
-    //
-    // Static member function for user-defined workspaces, that
-    // * Deduces the required arguments for dispatching to LAPACK, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename VectorD, typename VectorE, typename WORK >
-    static std::ptrdiff_t invoke( const VectorD& d, const VectorE& e,
-            const real_type anorm, real_type& rcond, detail::workspace1<
-            WORK > work ) {
-        namespace bindings = ::boost::numeric::bindings;
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
-                typename bindings::value_type< VectorD >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                VectorE >::type >::type >::value) );
-        BOOST_ASSERT( bindings::size(d) >= bindings::size(d) );
-        BOOST_ASSERT( bindings::size(d) >= 0 );
-        BOOST_ASSERT( bindings::size(e) >= bindings::size(d)-1 );
-        BOOST_ASSERT( bindings::size(work.select(real_type())) >=
-                min_size_work( bindings::size(d) ));
-        return detail::ptcon( bindings::size(d), bindings::begin_value(d),
-                bindings::begin_value(e), anorm, rcond,
-                bindings::begin_value(work.select(real_type())) );
-    }
+  //
+  // Static member function that
+  // * Figures out the minimal workspace requirements, and passes
+  //   the results to the user-defined workspace overload of the
+  //   invoke static member function
+  // * Enables the unblocked algorithm (BLAS level 2)
+  //
+  template <typename VectorD, typename VectorE>
+  static std::ptrdiff_t invoke(
+      const VectorD& d, const VectorE& e, const real_type anorm,
+      real_type& rcond, minimal_workspace
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    bindings::detail::array<real_type> tmp_work(min_size_work(bindings::size(d))
+    );
+    return invoke(d, e, anorm, rcond, workspace(tmp_work));
+  }
 
-    //
-    // Static member function that
-    // * Figures out the minimal workspace requirements, and passes
-    //   the results to the user-defined workspace overload of the 
-    //   invoke static member function
-    // * Enables the unblocked algorithm (BLAS level 2)
-    //
-    template< typename VectorD, typename VectorE >
-    static std::ptrdiff_t invoke( const VectorD& d, const VectorE& e,
-            const real_type anorm, real_type& rcond, minimal_workspace ) {
-        namespace bindings = ::boost::numeric::bindings;
-        bindings::detail::array< real_type > tmp_work( min_size_work(
-                bindings::size(d) ) );
-        return invoke( d, e, anorm, rcond, workspace( tmp_work ) );
-    }
+  //
+  // Static member function that
+  // * Figures out the optimal workspace requirements, and passes
+  //   the results to the user-defined workspace overload of the
+  //   invoke static member
+  // * Enables the blocked algorithm (BLAS level 3)
+  //
+  template <typename VectorD, typename VectorE>
+  static std::ptrdiff_t invoke(
+      const VectorD& d, const VectorE& e, const real_type anorm,
+      real_type& rcond, optimal_workspace
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    return invoke(d, e, anorm, rcond, minimal_workspace());
+  }
 
-    //
-    // Static member function that
-    // * Figures out the optimal workspace requirements, and passes
-    //   the results to the user-defined workspace overload of the 
-    //   invoke static member
-    // * Enables the blocked algorithm (BLAS level 3)
-    //
-    template< typename VectorD, typename VectorE >
-    static std::ptrdiff_t invoke( const VectorD& d, const VectorE& e,
-            const real_type anorm, real_type& rcond, optimal_workspace ) {
-        namespace bindings = ::boost::numeric::bindings;
-        return invoke( d, e, anorm, rcond, minimal_workspace() );
-    }
-
-    //
-    // Static member function that returns the minimum size of
-    // workspace-array work.
-    //
-    static std::ptrdiff_t min_size_work( const std::ptrdiff_t n ) {
-        return n;
-    }
+  //
+  // Static member function that returns the minimum size of
+  // workspace-array work.
+  //
+  static std::ptrdiff_t min_size_work(const std::ptrdiff_t n) { return n; }
 };
 
 //
 // This implementation is enabled if Value is a complex type.
 //
-template< typename Value >
-struct ptcon_impl< Value, typename boost::enable_if< is_complex< Value > >::type > {
+template <typename Value>
+struct ptcon_impl<Value, typename boost::enable_if<is_complex<Value> >::type> {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
+  //
+  // Static member function for user-defined workspaces, that
+  // * Deduces the required arguments for dispatching to LAPACK, and
+  // * Asserts that most arguments make sense.
+  //
+  template <typename VectorD, typename VectorE, typename RWORK>
+  static std::ptrdiff_t invoke(
+      const VectorD& d, const VectorE& e, const real_type anorm,
+      real_type& rcond, detail::workspace1<RWORK> work
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    BOOST_ASSERT(bindings::size(d) >= bindings::size(d));
+    BOOST_ASSERT(bindings::size(d) >= 0);
+    BOOST_ASSERT(bindings::size(e) >= bindings::size(d) - 1);
+    BOOST_ASSERT(
+        bindings::size(work.select(real_type())) >=
+        min_size_rwork(bindings::size(d))
+    );
+    return detail::ptcon(
+        bindings::size(d), bindings::begin_value(d), bindings::begin_value(e),
+        anorm, rcond, bindings::begin_value(work.select(real_type()))
+    );
+  }
 
-    //
-    // Static member function for user-defined workspaces, that
-    // * Deduces the required arguments for dispatching to LAPACK, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename VectorD, typename VectorE, typename RWORK >
-    static std::ptrdiff_t invoke( const VectorD& d, const VectorE& e,
-            const real_type anorm, real_type& rcond, detail::workspace1<
-            RWORK > work ) {
-        namespace bindings = ::boost::numeric::bindings;
-        BOOST_ASSERT( bindings::size(d) >= bindings::size(d) );
-        BOOST_ASSERT( bindings::size(d) >= 0 );
-        BOOST_ASSERT( bindings::size(e) >= bindings::size(d)-1 );
-        BOOST_ASSERT( bindings::size(work.select(real_type())) >=
-                min_size_rwork( bindings::size(d) ));
-        return detail::ptcon( bindings::size(d), bindings::begin_value(d),
-                bindings::begin_value(e), anorm, rcond,
-                bindings::begin_value(work.select(real_type())) );
-    }
+  //
+  // Static member function that
+  // * Figures out the minimal workspace requirements, and passes
+  //   the results to the user-defined workspace overload of the
+  //   invoke static member function
+  // * Enables the unblocked algorithm (BLAS level 2)
+  //
+  template <typename VectorD, typename VectorE>
+  static std::ptrdiff_t invoke(
+      const VectorD& d, const VectorE& e, const real_type anorm,
+      real_type& rcond, minimal_workspace
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    bindings::detail::array<real_type> tmp_rwork(min_size_rwork(bindings::size(d
+    )));
+    return invoke(d, e, anorm, rcond, workspace(tmp_rwork));
+  }
 
-    //
-    // Static member function that
-    // * Figures out the minimal workspace requirements, and passes
-    //   the results to the user-defined workspace overload of the 
-    //   invoke static member function
-    // * Enables the unblocked algorithm (BLAS level 2)
-    //
-    template< typename VectorD, typename VectorE >
-    static std::ptrdiff_t invoke( const VectorD& d, const VectorE& e,
-            const real_type anorm, real_type& rcond, minimal_workspace ) {
-        namespace bindings = ::boost::numeric::bindings;
-        bindings::detail::array< real_type > tmp_rwork( min_size_rwork(
-                bindings::size(d) ) );
-        return invoke( d, e, anorm, rcond, workspace( tmp_rwork ) );
-    }
+  //
+  // Static member function that
+  // * Figures out the optimal workspace requirements, and passes
+  //   the results to the user-defined workspace overload of the
+  //   invoke static member
+  // * Enables the blocked algorithm (BLAS level 3)
+  //
+  template <typename VectorD, typename VectorE>
+  static std::ptrdiff_t invoke(
+      const VectorD& d, const VectorE& e, const real_type anorm,
+      real_type& rcond, optimal_workspace
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    return invoke(d, e, anorm, rcond, minimal_workspace());
+  }
 
-    //
-    // Static member function that
-    // * Figures out the optimal workspace requirements, and passes
-    //   the results to the user-defined workspace overload of the 
-    //   invoke static member
-    // * Enables the blocked algorithm (BLAS level 3)
-    //
-    template< typename VectorD, typename VectorE >
-    static std::ptrdiff_t invoke( const VectorD& d, const VectorE& e,
-            const real_type anorm, real_type& rcond, optimal_workspace ) {
-        namespace bindings = ::boost::numeric::bindings;
-        return invoke( d, e, anorm, rcond, minimal_workspace() );
-    }
-
-    //
-    // Static member function that returns the minimum size of
-    // workspace-array rwork.
-    //
-    static std::ptrdiff_t min_size_rwork( const std::ptrdiff_t n ) {
-        return n;
-    }
+  //
+  // Static member function that returns the minimum size of
+  // workspace-array rwork.
+  //
+  static std::ptrdiff_t min_size_rwork(const std::ptrdiff_t n) { return n; }
 };
-
 
 //
 // Functions for direct use. These functions are overloaded for temporaries,
 // so that wrapped types can still be passed and used for write-access. In
 // addition, if applicable, they are overloaded for user-defined workspaces.
-// Calls to these functions are passed to the ptcon_impl classes. In the 
+// Calls to these functions are passed to the ptcon_impl classes. In the
 // documentation, most overloads are collapsed to avoid a large number of
 // prototypes which are very similar.
 //
@@ -260,37 +278,44 @@ struct ptcon_impl< Value, typename boost::enable_if< is_complex< Value > >::type
 // Overloaded function for ptcon. Its overload differs for
 // * User-defined workspace
 //
-template< typename VectorD, typename VectorE, typename Workspace >
-inline typename boost::enable_if< detail::is_workspace< Workspace >,
-        std::ptrdiff_t >::type
-ptcon( const VectorD& d, const VectorE& e,
-        const typename remove_imaginary< typename bindings::value_type<
-        VectorE >::type >::type anorm, typename remove_imaginary<
-        typename bindings::value_type< VectorE >::type >::type& rcond,
-        Workspace work ) {
-    return ptcon_impl< typename bindings::value_type<
-            VectorE >::type >::invoke( d, e, anorm, rcond, work );
+template <typename VectorD, typename VectorE, typename Workspace>
+inline typename boost::enable_if<
+    detail::is_workspace<Workspace>, std::ptrdiff_t>::type
+ptcon(
+    const VectorD& d, const VectorE& e,
+    const typename remove_imaginary<
+        typename bindings::value_type<VectorE>::type>::type anorm,
+    typename remove_imaginary<
+        typename bindings::value_type<VectorE>::type>::type& rcond,
+    Workspace work
+) {
+  return ptcon_impl<typename bindings::value_type<VectorE>::type>::invoke(
+      d, e, anorm, rcond, work
+  );
 }
 
 //
 // Overloaded function for ptcon. Its overload differs for
 // * Default workspace-type (optimal)
 //
-template< typename VectorD, typename VectorE >
-inline typename boost::disable_if< detail::is_workspace< VectorE >,
-        std::ptrdiff_t >::type
-ptcon( const VectorD& d, const VectorE& e,
-        const typename remove_imaginary< typename bindings::value_type<
-        VectorE >::type >::type anorm, typename remove_imaginary<
-        typename bindings::value_type< VectorE >::type >::type& rcond ) {
-    return ptcon_impl< typename bindings::value_type<
-            VectorE >::type >::invoke( d, e, anorm, rcond,
-            optimal_workspace() );
+template <typename VectorD, typename VectorE>
+inline typename boost::disable_if<
+    detail::is_workspace<VectorE>, std::ptrdiff_t>::type
+ptcon(
+    const VectorD& d, const VectorE& e,
+    const typename remove_imaginary<
+        typename bindings::value_type<VectorE>::type>::type anorm,
+    typename remove_imaginary<
+        typename bindings::value_type<VectorE>::type>::type& rcond
+) {
+  return ptcon_impl<typename bindings::value_type<VectorE>::type>::invoke(
+      d, e, anorm, rcond, optimal_workspace()
+  );
 }
 
-} // namespace lapack
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace lapack
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #include "dmrg/models/lattice/lattice.h"
@@ -17,24 +17,22 @@
 #endif
 
 /// lattice factory
-std::shared_ptr<lattice_impl>
-lattice_factory(BaseParameters & parms)
-{
-    using impl_ptr = std::shared_ptr<lattice_impl>;
+std::shared_ptr<lattice_impl> lattice_factory(BaseParameters& parms) {
+  using impl_ptr = std::shared_ptr<lattice_impl>;
 
-    if (parms["lattice_library"] == "coded") {
-        return coded_lattice_factory(parms);
-    } else if (parms["lattice_library"] == "alps") {
+  if (parms["lattice_library"] == "coded") {
+    return coded_lattice_factory(parms);
+  } else if (parms["lattice_library"] == "alps") {
 #ifdef ENABLE_ALPS_MODELS
-        return impl_ptr( new alps_lattice(parms) );
+    return impl_ptr(new alps_lattice(parms));
 #else
-        throw std::runtime_error("This code was compiled without alps lattice.");
+    throw std::runtime_error("This code was compiled without alps lattice.");
 #endif
 #ifdef ENABLE_LL_MODELS
-    } else if (parms["lattice_library"] == "ll") {
-        return ll_lattice_factory(parms);
+  } else if (parms["lattice_library"] == "ll") {
+    return ll_lattice_factory(parms);
 #endif
-    } else {
-        throw std::runtime_error("Don't know this lattice_library!");
-    }
+  } else {
+    throw std::runtime_error("Don't know this lattice_library!");
+  }
 }

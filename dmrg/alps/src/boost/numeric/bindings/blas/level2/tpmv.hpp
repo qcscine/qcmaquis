@@ -64,13 +64,15 @@ namespace detail {
 // * CBLAS backend, and
 // * float value-type.
 //
-template< typename Order, typename UpLo, typename Trans, typename Diag >
-inline void tpmv( const Order order, const UpLo uplo, const Trans trans,
-        const Diag diag, const int n, const float* ap, float* x,
-        const int incx ) {
-    cblas_stpmv( cblas_option< Order >::value, cblas_option< UpLo >::value,
-            cblas_option< Trans >::value, cblas_option< Diag >::value, n, ap,
-            x, incx );
+template <typename Order, typename UpLo, typename Trans, typename Diag>
+inline void tpmv(
+    const Order order, const UpLo uplo, const Trans trans, const Diag diag,
+    const int n, const float* ap, float* x, const int incx
+) {
+  cblas_stpmv(
+      cblas_option<Order>::value, cblas_option<UpLo>::value,
+      cblas_option<Trans>::value, cblas_option<Diag>::value, n, ap, x, incx
+  );
 }
 
 //
@@ -78,13 +80,15 @@ inline void tpmv( const Order order, const UpLo uplo, const Trans trans,
 // * CBLAS backend, and
 // * double value-type.
 //
-template< typename Order, typename UpLo, typename Trans, typename Diag >
-inline void tpmv( const Order order, const UpLo uplo, const Trans trans,
-        const Diag diag, const int n, const double* ap, double* x,
-        const int incx ) {
-    cblas_dtpmv( cblas_option< Order >::value, cblas_option< UpLo >::value,
-            cblas_option< Trans >::value, cblas_option< Diag >::value, n, ap,
-            x, incx );
+template <typename Order, typename UpLo, typename Trans, typename Diag>
+inline void tpmv(
+    const Order order, const UpLo uplo, const Trans trans, const Diag diag,
+    const int n, const double* ap, double* x, const int incx
+) {
+  cblas_dtpmv(
+      cblas_option<Order>::value, cblas_option<UpLo>::value,
+      cblas_option<Trans>::value, cblas_option<Diag>::value, n, ap, x, incx
+  );
 }
 
 //
@@ -92,13 +96,16 @@ inline void tpmv( const Order order, const UpLo uplo, const Trans trans,
 // * CBLAS backend, and
 // * complex<float> value-type.
 //
-template< typename Order, typename UpLo, typename Trans, typename Diag >
-inline void tpmv( const Order order, const UpLo uplo, const Trans trans,
-        const Diag diag, const int n, const std::complex<float>* ap,
-        std::complex<float>* x, const int incx ) {
-    cblas_ctpmv( cblas_option< Order >::value, cblas_option< UpLo >::value,
-            cblas_option< Trans >::value, cblas_option< Diag >::value, n, ap,
-            x, incx );
+template <typename Order, typename UpLo, typename Trans, typename Diag>
+inline void tpmv(
+    const Order order, const UpLo uplo, const Trans trans, const Diag diag,
+    const int n, const std::complex<float>* ap, std::complex<float>* x,
+    const int incx
+) {
+  cblas_ctpmv(
+      cblas_option<Order>::value, cblas_option<UpLo>::value,
+      cblas_option<Trans>::value, cblas_option<Diag>::value, n, ap, x, incx
+  );
 }
 
 //
@@ -106,13 +113,16 @@ inline void tpmv( const Order order, const UpLo uplo, const Trans trans,
 // * CBLAS backend, and
 // * complex<double> value-type.
 //
-template< typename Order, typename UpLo, typename Trans, typename Diag >
-inline void tpmv( const Order order, const UpLo uplo, const Trans trans,
-        const Diag diag, const int n, const std::complex<double>* ap,
-        std::complex<double>* x, const int incx ) {
-    cblas_ztpmv( cblas_option< Order >::value, cblas_option< UpLo >::value,
-            cblas_option< Trans >::value, cblas_option< Diag >::value, n, ap,
-            x, incx );
+template <typename Order, typename UpLo, typename Trans, typename Diag>
+inline void tpmv(
+    const Order order, const UpLo uplo, const Trans trans, const Diag diag,
+    const int n, const std::complex<double>* ap, std::complex<double>* x,
+    const int incx
+) {
+  cblas_ztpmv(
+      cblas_option<Order>::value, cblas_option<UpLo>::value,
+      cblas_option<Trans>::value, cblas_option<Diag>::value, n, ap, x, incx
+  );
 }
 
 #elif defined BOOST_NUMERIC_BINDINGS_BLAS_CUBLAS
@@ -121,13 +131,16 @@ inline void tpmv( const Order order, const UpLo uplo, const Trans trans,
 // * CUBLAS backend, and
 // * float value-type.
 //
-template< typename Order, typename UpLo, typename Trans, typename Diag >
-inline void tpmv( const Order order, const UpLo uplo, const Trans trans,
-        const Diag diag, const int n, const float* ap, float* x,
-        const int incx ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    cublasStpmv( blas_option< UpLo >::value, blas_option< Trans >::value,
-            blas_option< Diag >::value, n, ap, x, incx );
+template <typename Order, typename UpLo, typename Trans, typename Diag>
+inline void tpmv(
+    const Order order, const UpLo uplo, const Trans trans, const Diag diag,
+    const int n, const float* ap, float* x, const int incx
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  cublasStpmv(
+      blas_option<UpLo>::value, blas_option<Trans>::value,
+      blas_option<Diag>::value, n, ap, x, incx
+  );
 }
 
 //
@@ -135,12 +148,13 @@ inline void tpmv( const Order order, const UpLo uplo, const Trans trans,
 // * CUBLAS backend, and
 // * double value-type.
 //
-template< typename Order, typename UpLo, typename Trans, typename Diag >
-inline void tpmv( const Order order, const UpLo uplo, const Trans trans,
-        const Diag diag, const int n, const double* ap, double* x,
-        const int incx ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    // NOT FOUND();
+template <typename Order, typename UpLo, typename Trans, typename Diag>
+inline void tpmv(
+    const Order order, const UpLo uplo, const Trans trans, const Diag diag,
+    const int n, const double* ap, double* x, const int incx
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  // NOT FOUND();
 }
 
 //
@@ -148,13 +162,17 @@ inline void tpmv( const Order order, const UpLo uplo, const Trans trans,
 // * CUBLAS backend, and
 // * complex<float> value-type.
 //
-template< typename Order, typename UpLo, typename Trans, typename Diag >
-inline void tpmv( const Order order, const UpLo uplo, const Trans trans,
-        const Diag diag, const int n, const std::complex<float>* ap,
-        std::complex<float>* x, const int incx ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    cublasCtpmv( blas_option< UpLo >::value, blas_option< Trans >::value,
-            blas_option< Diag >::value, n, ap, x, incx );
+template <typename Order, typename UpLo, typename Trans, typename Diag>
+inline void tpmv(
+    const Order order, const UpLo uplo, const Trans trans, const Diag diag,
+    const int n, const std::complex<float>* ap, std::complex<float>* x,
+    const int incx
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  cublasCtpmv(
+      blas_option<UpLo>::value, blas_option<Trans>::value,
+      blas_option<Diag>::value, n, ap, x, incx
+  );
 }
 
 //
@@ -162,12 +180,14 @@ inline void tpmv( const Order order, const UpLo uplo, const Trans trans,
 // * CUBLAS backend, and
 // * complex<double> value-type.
 //
-template< typename Order, typename UpLo, typename Trans, typename Diag >
-inline void tpmv( const Order order, const UpLo uplo, const Trans trans,
-        const Diag diag, const int n, const std::complex<double>* ap,
-        std::complex<double>* x, const int incx ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    // NOT FOUND();
+template <typename Order, typename UpLo, typename Trans, typename Diag>
+inline void tpmv(
+    const Order order, const UpLo uplo, const Trans trans, const Diag diag,
+    const int n, const std::complex<double>* ap, std::complex<double>* x,
+    const int incx
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  // NOT FOUND();
 }
 
 #else
@@ -176,13 +196,16 @@ inline void tpmv( const Order order, const UpLo uplo, const Trans trans,
 // * netlib-compatible BLAS backend (the default), and
 // * float value-type.
 //
-template< typename Order, typename UpLo, typename Trans, typename Diag >
-inline void tpmv( const Order order, const UpLo uplo, const Trans trans,
-        const Diag diag, const fortran_int_t n, const float* ap, float* x,
-        const fortran_int_t incx ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    BLAS_STPMV( &blas_option< UpLo >::value, &blas_option< Trans >::value,
-            &blas_option< Diag >::value, &n, ap, x, &incx );
+template <typename Order, typename UpLo, typename Trans, typename Diag>
+inline void tpmv(
+    const Order order, const UpLo uplo, const Trans trans, const Diag diag,
+    const fortran_int_t n, const float* ap, float* x, const fortran_int_t incx
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  BLAS_STPMV(
+      &blas_option<UpLo>::value, &blas_option<Trans>::value,
+      &blas_option<Diag>::value, &n, ap, x, &incx
+  );
 }
 
 //
@@ -190,13 +213,16 @@ inline void tpmv( const Order order, const UpLo uplo, const Trans trans,
 // * netlib-compatible BLAS backend (the default), and
 // * double value-type.
 //
-template< typename Order, typename UpLo, typename Trans, typename Diag >
-inline void tpmv( const Order order, const UpLo uplo, const Trans trans,
-        const Diag diag, const fortran_int_t n, const double* ap, double* x,
-        const fortran_int_t incx ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    BLAS_DTPMV( &blas_option< UpLo >::value, &blas_option< Trans >::value,
-            &blas_option< Diag >::value, &n, ap, x, &incx );
+template <typename Order, typename UpLo, typename Trans, typename Diag>
+inline void tpmv(
+    const Order order, const UpLo uplo, const Trans trans, const Diag diag,
+    const fortran_int_t n, const double* ap, double* x, const fortran_int_t incx
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  BLAS_DTPMV(
+      &blas_option<UpLo>::value, &blas_option<Trans>::value,
+      &blas_option<Diag>::value, &n, ap, x, &incx
+  );
 }
 
 //
@@ -204,13 +230,17 @@ inline void tpmv( const Order order, const UpLo uplo, const Trans trans,
 // * netlib-compatible BLAS backend (the default), and
 // * complex<float> value-type.
 //
-template< typename Order, typename UpLo, typename Trans, typename Diag >
-inline void tpmv( const Order order, const UpLo uplo, const Trans trans,
-        const Diag diag, const fortran_int_t n, const std::complex<float>* ap,
-        std::complex<float>* x, const fortran_int_t incx ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    BLAS_CTPMV( &blas_option< UpLo >::value, &blas_option< Trans >::value,
-            &blas_option< Diag >::value, &n, ap, x, &incx );
+template <typename Order, typename UpLo, typename Trans, typename Diag>
+inline void tpmv(
+    const Order order, const UpLo uplo, const Trans trans, const Diag diag,
+    const fortran_int_t n, const std::complex<float>* ap,
+    std::complex<float>* x, const fortran_int_t incx
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  BLAS_CTPMV(
+      &blas_option<UpLo>::value, &blas_option<Trans>::value,
+      &blas_option<Diag>::value, &n, ap, x, &incx
+  );
 }
 
 //
@@ -218,59 +248,64 @@ inline void tpmv( const Order order, const UpLo uplo, const Trans trans,
 // * netlib-compatible BLAS backend (the default), and
 // * complex<double> value-type.
 //
-template< typename Order, typename UpLo, typename Trans, typename Diag >
-inline void tpmv( const Order order, const UpLo uplo, const Trans trans,
-        const Diag diag, const fortran_int_t n,
-        const std::complex<double>* ap, std::complex<double>* x,
-        const fortran_int_t incx ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    BLAS_ZTPMV( &blas_option< UpLo >::value, &blas_option< Trans >::value,
-            &blas_option< Diag >::value, &n, ap, x, &incx );
+template <typename Order, typename UpLo, typename Trans, typename Diag>
+inline void tpmv(
+    const Order order, const UpLo uplo, const Trans trans, const Diag diag,
+    const fortran_int_t n, const std::complex<double>* ap,
+    std::complex<double>* x, const fortran_int_t incx
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  BLAS_ZTPMV(
+      &blas_option<UpLo>::value, &blas_option<Trans>::value,
+      &blas_option<Diag>::value, &n, ap, x, &incx
+  );
 }
 
 #endif
 
-} // namespace detail
+}  // namespace detail
 
 //
 // Value-type based template class. Use this class if you need a type
 // for dispatching to tpmv.
 //
-template< typename Value >
+template <typename Value>
 struct tpmv_impl {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
+  typedef void result_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
-    typedef void result_type;
-
-    //
-    // Static member function that
-    // * Deduces the required arguments for dispatching to BLAS, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename MatrixAP, typename VectorX >
-    static result_type invoke( const MatrixAP& ap, VectorX& x ) {
-        namespace bindings = ::boost::numeric::bindings;
-        typedef typename detail::default_order< MatrixAP >::type order;
-        typedef typename result_of::trans_tag< MatrixAP, order >::type trans;
-        typedef typename result_of::uplo_tag< MatrixAP, trans >::type uplo;
-        typedef typename result_of::diag_tag< MatrixAP >::type diag;
-        BOOST_STATIC_ASSERT( (is_same< typename remove_const<
-                typename bindings::value_type< MatrixAP >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                VectorX >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorX >::value) );
-        detail::tpmv( order(), uplo(), trans(), diag(),
-                bindings::size_column_op(ap, trans()),
-                bindings::begin_value(ap), bindings::begin_value(x),
-                bindings::stride(x) );
-    }
+  //
+  // Static member function that
+  // * Deduces the required arguments for dispatching to BLAS, and
+  // * Asserts that most arguments make sense.
+  //
+  template <typename MatrixAP, typename VectorX>
+  static result_type invoke(const MatrixAP& ap, VectorX& x) {
+    namespace bindings = ::boost::numeric::bindings;
+    typedef typename detail::default_order<MatrixAP>::type order;
+    typedef typename result_of::trans_tag<MatrixAP, order>::type trans;
+    typedef typename result_of::uplo_tag<MatrixAP, trans>::type uplo;
+    typedef typename result_of::diag_tag<MatrixAP>::type diag;
+    BOOST_STATIC_ASSERT(
+        (is_same<
+            typename remove_const<
+                typename bindings::value_type<MatrixAP>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<VectorX>::type>::type>::value)
+    );
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorX>::value));
+    detail::tpmv(
+        order(), uplo(), trans(), diag(), bindings::size_column_op(ap, trans()),
+        bindings::begin_value(ap), bindings::begin_value(x), bindings::stride(x)
+    );
+  }
 };
 
 //
 // Functions for direct use. These functions are overloaded for temporaries,
 // so that wrapped types can still be passed and used for write-access. Calls
-// to these functions are passed to the tpmv_impl classes. In the 
+// to these functions are passed to the tpmv_impl classes. In the
 // documentation, the const-overloads are collapsed to avoid a large number of
 // prototypes which are very similar.
 //
@@ -278,17 +313,16 @@ struct tpmv_impl {
 //
 // Overloaded function for tpmv. Its overload differs for
 //
-template< typename MatrixAP, typename VectorX >
-inline typename tpmv_impl< typename bindings::value_type<
-        MatrixAP >::type >::result_type
-tpmv( const MatrixAP& ap, VectorX& x ) {
-    tpmv_impl< typename bindings::value_type<
-            MatrixAP >::type >::invoke( ap, x );
+template <typename MatrixAP, typename VectorX>
+inline typename tpmv_impl<
+    typename bindings::value_type<MatrixAP>::type>::result_type
+tpmv(const MatrixAP& ap, VectorX& x) {
+  tpmv_impl<typename bindings::value_type<MatrixAP>::type>::invoke(ap, x);
 }
 
-} // namespace blas
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace blas
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

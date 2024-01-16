@@ -9,7 +9,7 @@
 #include <alps/config.h>
 #include <string>
 
-namespace alps { 
-  ALPS_DECL std::string temporary_filename(std::string prefix);
+namespace alps {
+ALPS_DECL std::string temporary_filename(std::string prefix);
 }
-#endif // ALPS_UTILITY_TEMPORARU_FILENAME_HPP
+#endif  // ALPS_UTILITY_TEMPORARU_FILENAME_HPP

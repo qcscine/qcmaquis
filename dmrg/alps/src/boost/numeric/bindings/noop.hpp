@@ -18,44 +18,39 @@ namespace numeric {
 namespace bindings {
 namespace detail {
 
-template< typename T >
-struct noop_wrapper:
-        adaptable_type< noop_wrapper<T> >,
-        reference_wrapper<T> {
-    noop_wrapper( T& t ): reference_wrapper<T>( t ) {}
+template <typename T>
+struct noop_wrapper : adaptable_type<noop_wrapper<T> >, reference_wrapper<T> {
+  noop_wrapper(T& t) : reference_wrapper<T>(t) {}
 };
 
-template< typename T, typename Id, typename Enable >
-struct adaptor< noop_wrapper<T>, Id, Enable >:
-        basic_unwrapper< T, Id > {
-
-    typedef typename property_map_of< T >::type property_map;
-
+template <typename T, typename Id, typename Enable>
+struct adaptor<noop_wrapper<T>, Id, Enable> : basic_unwrapper<T, Id> {
+  typedef typename property_map_of<T>::type property_map;
 };
 
-} // namespace detail
+}  // namespace detail
 
 namespace result_of {
 
-template< typename T >
+template <typename T>
 struct noop {
-    typedef detail::noop_wrapper<T> type;
+  typedef detail::noop_wrapper<T> type;
 };
 
-} // namespace result_of
+}  // namespace result_of
 
-template< typename T >
-detail::noop_wrapper<T> const noop( T& underlying ) {
-    return detail::noop_wrapper<T>( underlying );
+template <typename T>
+detail::noop_wrapper<T> const noop(T& underlying) {
+  return detail::noop_wrapper<T>(underlying);
 }
 
-template< typename T >
-detail::noop_wrapper<const T> const noop( const T& underlying ) {
-    return detail::noop_wrapper<const T>( underlying );
+template <typename T>
+detail::noop_wrapper<const T> const noop(const T& underlying) {
+  return detail::noop_wrapper<const T>(underlying);
 }
 
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

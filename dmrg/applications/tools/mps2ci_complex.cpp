@@ -46,8 +46,7 @@ typedef TwoU1 grp;
 typedef TwoU1PG grp;
 #endif
 
-int main(int argc, char ** argv)
-{
+int main(int argc, char** argv) {
   if (argc != 3) {
     maquis::cout << "Usage: mps2ci <mps.h5> <determinants_file> " << std::endl;
     maquis::cout << "See J. Chem. Phys. 126, 244109(2007)" << std::endl;

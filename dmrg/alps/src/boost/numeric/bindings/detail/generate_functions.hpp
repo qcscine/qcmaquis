@@ -16,33 +16,29 @@
 // Macro used to generate convenience functions
 //
 
-#define GENERATE_FUNCTIONS( function_name, suffix, tag ) \
-\
-namespace result_of {\
-\
-template< typename T > \
-struct BOOST_PP_CAT( function_name, suffix ) { \
-    typedef typename detail::\
-    BOOST_PP_CAT( function_name, _impl ) \
-    <T, tag >::result_type type; \
-}; \
-\
-}\
-\
-template< typename T >\
-typename result_of:: BOOST_PP_CAT( function_name, suffix )<T>::type \
-BOOST_PP_CAT( function_name, suffix )( T& t ) {\
-    return detail:: \
-        BOOST_PP_CAT( function_name, _impl ) \
-        <T, tag >::invoke( t );\
-}\
-\
-template< typename T >\
-typename result_of:: BOOST_PP_CAT( function_name, suffix )<const T>::type \
-BOOST_PP_CAT( function_name, suffix )( const T& t ) {\
-    return detail:: \
-        BOOST_PP_CAT( function_name, _impl ) \
-        <const T, tag >::invoke( t );\
-}
+#define GENERATE_FUNCTIONS(function_name, suffix, tag)                        \
+                                                                              \
+  namespace result_of {                                                       \
+                                                                              \
+  template <typename T>                                                       \
+  struct BOOST_PP_CAT(function_name, suffix) {                                \
+    typedef typename detail::BOOST_PP_CAT(                                    \
+        function_name, _impl                                                  \
+    )<T, tag>::result_type type;                                              \
+  };                                                                          \
+  }                                                                           \
+                                                                              \
+  template <typename T>                                                       \
+  typename result_of::BOOST_PP_CAT(function_name, suffix)<T>::type            \
+  BOOST_PP_CAT(function_name, suffix)(T & t) {                                \
+    return detail::BOOST_PP_CAT(function_name, _impl)<T, tag>::invoke(t);     \
+  }                                                                           \
+                                                                              \
+  template <typename T>                                                       \
+  typename result_of::BOOST_PP_CAT(function_name, suffix)<const T>::type      \
+  BOOST_PP_CAT(function_name, suffix)(const T& t) {                           \
+    return detail::BOOST_PP_CAT(function_name, _impl)<const T, tag>::invoke(t \
+    );                                                                        \
+  }
 
 #endif

@@ -17,29 +17,28 @@ namespace numeric {
 namespace bindings {
 namespace result_of {
 
-template< typename T >
+template <typename T>
 struct upper {
-    typedef detail::basic_wrapper<
-        T,
-        mpl::pair< tag::matrix_type, tag::triangular >,
-        mpl::pair< tag::data_side, tag::upper >
-    > type;
+  typedef detail::basic_wrapper<
+      T, mpl::pair<tag::matrix_type, tag::triangular>,
+      mpl::pair<tag::data_side, tag::upper> >
+      type;
 };
 
-} // namespace result_of
+}  // namespace result_of
 
-template< typename T >
-typename result_of::upper< T >::type const upper( T& underlying ) {
-    return typename result_of::upper< T >::type( underlying );
+template <typename T>
+typename result_of::upper<T>::type const upper(T& underlying) {
+  return typename result_of::upper<T>::type(underlying);
 }
 
-template< typename T >
-typename result_of::upper< const T >::type const upper( const T& underlying ) {
-    return typename result_of::upper< const T >::type( underlying );
+template <typename T>
+typename result_of::upper<const T>::type const upper(const T& underlying) {
+  return typename result_of::upper<const T>::type(underlying);
 }
 
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

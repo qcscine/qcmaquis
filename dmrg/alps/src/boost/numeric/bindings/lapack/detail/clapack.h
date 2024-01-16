@@ -12,7 +12,7 @@
 #define BOOST_NUMERIC_BINDINGS_LAPACK_DETAIL_CLAPACK_H
 
 extern "C" {
-#include <clapack.h> 
+#include <clapack.h>
 }
 
-#endif 
+#endif

@@ -16,19 +16,19 @@ namespace numeric {
 namespace bindings {
 namespace detail {
 
-template< typename Order, typename True, typename False >
+template <typename Order, typename True, typename False>
 struct if_row_major {
-    typedef False type;
+  typedef False type;
 };
 
-template< typename True, typename False >
-struct if_row_major< tag::row_major, True, False > {
-    typedef True type;
+template <typename True, typename False>
+struct if_row_major<tag::row_major, True, False> {
+  typedef True type;
 };
 
-} // namespace detail
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace detail
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

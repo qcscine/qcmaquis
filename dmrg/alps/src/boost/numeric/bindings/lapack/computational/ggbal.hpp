@@ -53,14 +53,16 @@ namespace detail {
 // * netlib-compatible LAPACK backend (the default), and
 // * float value-type.
 //
-inline std::ptrdiff_t ggbal( const char job, const fortran_int_t n, float* a,
-        const fortran_int_t lda, float* b, const fortran_int_t ldb,
-        fortran_int_t& ilo, fortran_int_t& ihi, float* lscale, float* rscale,
-        float* work ) {
-    fortran_int_t info(0);
-    LAPACK_SGGBAL( &job, &n, a, &lda, b, &ldb, &ilo, &ihi, lscale, rscale,
-            work, &info );
-    return info;
+inline std::ptrdiff_t ggbal(
+    const char job, const fortran_int_t n, float* a, const fortran_int_t lda,
+    float* b, const fortran_int_t ldb, fortran_int_t& ilo, fortran_int_t& ihi,
+    float* lscale, float* rscale, float* work
+) {
+  fortran_int_t info(0);
+  LAPACK_SGGBAL(
+      &job, &n, a, &lda, b, &ldb, &ilo, &ihi, lscale, rscale, work, &info
+  );
+  return info;
 }
 
 //
@@ -68,14 +70,16 @@ inline std::ptrdiff_t ggbal( const char job, const fortran_int_t n, float* a,
 // * netlib-compatible LAPACK backend (the default), and
 // * double value-type.
 //
-inline std::ptrdiff_t ggbal( const char job, const fortran_int_t n, double* a,
-        const fortran_int_t lda, double* b, const fortran_int_t ldb,
-        fortran_int_t& ilo, fortran_int_t& ihi, double* lscale,
-        double* rscale, double* work ) {
-    fortran_int_t info(0);
-    LAPACK_DGGBAL( &job, &n, a, &lda, b, &ldb, &ilo, &ihi, lscale, rscale,
-            work, &info );
-    return info;
+inline std::ptrdiff_t ggbal(
+    const char job, const fortran_int_t n, double* a, const fortran_int_t lda,
+    double* b, const fortran_int_t ldb, fortran_int_t& ilo, fortran_int_t& ihi,
+    double* lscale, double* rscale, double* work
+) {
+  fortran_int_t info(0);
+  LAPACK_DGGBAL(
+      &job, &n, a, &lda, b, &ldb, &ilo, &ihi, lscale, rscale, work, &info
+  );
+  return info;
 }
 
 //
@@ -83,14 +87,17 @@ inline std::ptrdiff_t ggbal( const char job, const fortran_int_t n, double* a,
 // * netlib-compatible LAPACK backend (the default), and
 // * complex<float> value-type.
 //
-inline std::ptrdiff_t ggbal( const char job, const fortran_int_t n,
-        std::complex<float>* a, const fortran_int_t lda,
-        std::complex<float>* b, const fortran_int_t ldb, fortran_int_t& ilo,
-        fortran_int_t& ihi, float* lscale, float* rscale, float* work ) {
-    fortran_int_t info(0);
-    LAPACK_CGGBAL( &job, &n, a, &lda, b, &ldb, &ilo, &ihi, lscale, rscale,
-            work, &info );
-    return info;
+inline std::ptrdiff_t ggbal(
+    const char job, const fortran_int_t n, std::complex<float>* a,
+    const fortran_int_t lda, std::complex<float>* b, const fortran_int_t ldb,
+    fortran_int_t& ilo, fortran_int_t& ihi, float* lscale, float* rscale,
+    float* work
+) {
+  fortran_int_t info(0);
+  LAPACK_CGGBAL(
+      &job, &n, a, &lda, b, &ldb, &ilo, &ihi, lscale, rscale, work, &info
+  );
+  return info;
 }
 
 //
@@ -98,241 +105,288 @@ inline std::ptrdiff_t ggbal( const char job, const fortran_int_t n,
 // * netlib-compatible LAPACK backend (the default), and
 // * complex<double> value-type.
 //
-inline std::ptrdiff_t ggbal( const char job, const fortran_int_t n,
-        std::complex<double>* a, const fortran_int_t lda,
-        std::complex<double>* b, const fortran_int_t ldb, fortran_int_t& ilo,
-        fortran_int_t& ihi, double* lscale, double* rscale, double* work ) {
-    fortran_int_t info(0);
-    LAPACK_ZGGBAL( &job, &n, a, &lda, b, &ldb, &ilo, &ihi, lscale, rscale,
-            work, &info );
-    return info;
+inline std::ptrdiff_t ggbal(
+    const char job, const fortran_int_t n, std::complex<double>* a,
+    const fortran_int_t lda, std::complex<double>* b, const fortran_int_t ldb,
+    fortran_int_t& ilo, fortran_int_t& ihi, double* lscale, double* rscale,
+    double* work
+) {
+  fortran_int_t info(0);
+  LAPACK_ZGGBAL(
+      &job, &n, a, &lda, b, &ldb, &ilo, &ihi, lscale, rscale, work, &info
+  );
+  return info;
 }
 
-} // namespace detail
+}  // namespace detail
 
 //
 // Value-type based template class. Use this class if you need a type
 // for dispatching to ggbal.
 //
-template< typename Value, typename Enable = void >
+template <typename Value, typename Enable = void>
 struct ggbal_impl {};
 
 //
 // This implementation is enabled if Value is a real type.
 //
-template< typename Value >
-struct ggbal_impl< Value, typename boost::enable_if< is_real< Value > >::type > {
+template <typename Value>
+struct ggbal_impl<Value, typename boost::enable_if<is_real<Value> >::type> {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
+  //
+  // Static member function for user-defined workspaces, that
+  // * Deduces the required arguments for dispatching to LAPACK, and
+  // * Asserts that most arguments make sense.
+  //
+  template <
+      typename MatrixA, typename MatrixB, typename VectorLSCALE,
+      typename VectorRSCALE, typename WORK>
+  static std::ptrdiff_t invoke(
+      const char job, MatrixA& a, MatrixB& b, fortran_int_t& ilo,
+      fortran_int_t& ihi, VectorLSCALE& lscale, VectorRSCALE& rscale,
+      detail::workspace1<WORK> work
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixA>::value));
+    BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixB>::value));
+    BOOST_STATIC_ASSERT(
+        (boost::is_same<
+            typename remove_const<
+                typename bindings::value_type<MatrixA>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<MatrixB>::type>::type>::value)
+    );
+    BOOST_STATIC_ASSERT((
+        boost::is_same<
+            typename remove_const<
+                typename bindings::value_type<MatrixA>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<VectorLSCALE>::type>::type>::value
+    ));
+    BOOST_STATIC_ASSERT((
+        boost::is_same<
+            typename remove_const<
+                typename bindings::value_type<MatrixA>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<VectorRSCALE>::type>::type>::value
+    ));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<MatrixA>::value));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<MatrixB>::value));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorLSCALE>::value));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorRSCALE>::value));
+    BOOST_ASSERT(
+        bindings::size(work.select(real_type())) >=
+        min_size_work(job, bindings::size_column(a))
+    );
+    BOOST_ASSERT(bindings::size_column(a) >= 0);
+    BOOST_ASSERT(
+        bindings::size_minor(a) == 1 || bindings::stride_minor(a) == 1
+    );
+    BOOST_ASSERT(
+        bindings::size_minor(b) == 1 || bindings::stride_minor(b) == 1
+    );
+    BOOST_ASSERT(
+        bindings::stride_major(a) >=
+        std::max<std::ptrdiff_t>(1, bindings::size_column(a))
+    );
+    BOOST_ASSERT(
+        bindings::stride_major(b) >=
+        std::max<std::ptrdiff_t>(1, bindings::size_column(a))
+    );
+    BOOST_ASSERT(job == 'N' || job == 'P' || job == 'S' || job == 'B');
+    return detail::ggbal(
+        job, bindings::size_column(a), bindings::begin_value(a),
+        bindings::stride_major(a), bindings::begin_value(b),
+        bindings::stride_major(b), ilo, ihi, bindings::begin_value(lscale),
+        bindings::begin_value(rscale),
+        bindings::begin_value(work.select(real_type()))
+    );
+  }
 
-    //
-    // Static member function for user-defined workspaces, that
-    // * Deduces the required arguments for dispatching to LAPACK, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename MatrixA, typename MatrixB, typename VectorLSCALE,
-            typename VectorRSCALE, typename WORK >
-    static std::ptrdiff_t invoke( const char job, MatrixA& a, MatrixB& b,
-            fortran_int_t& ilo, fortran_int_t& ihi,
-            VectorLSCALE& lscale, VectorRSCALE& rscale, detail::workspace1<
-            WORK > work ) {
-        namespace bindings = ::boost::numeric::bindings;
-        BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixA >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixB >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
-                typename bindings::value_type< MatrixA >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                MatrixB >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
-                typename bindings::value_type< MatrixA >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                VectorLSCALE >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
-                typename bindings::value_type< MatrixA >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                VectorRSCALE >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< MatrixA >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< MatrixB >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorLSCALE >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorRSCALE >::value) );
-        BOOST_ASSERT( bindings::size(work.select(real_type())) >=
-                min_size_work( job, bindings::size_column(a) ));
-        BOOST_ASSERT( bindings::size_column(a) >= 0 );
-        BOOST_ASSERT( bindings::size_minor(a) == 1 ||
-                bindings::stride_minor(a) == 1 );
-        BOOST_ASSERT( bindings::size_minor(b) == 1 ||
-                bindings::stride_minor(b) == 1 );
-        BOOST_ASSERT( bindings::stride_major(a) >= std::max< std::ptrdiff_t >(1,
-                bindings::size_column(a)) );
-        BOOST_ASSERT( bindings::stride_major(b) >= std::max< std::ptrdiff_t >(1,
-                bindings::size_column(a)) );
-        BOOST_ASSERT( job == 'N' || job == 'P' || job == 'S' || job == 'B' );
-        return detail::ggbal( job, bindings::size_column(a),
-                bindings::begin_value(a), bindings::stride_major(a),
-                bindings::begin_value(b), bindings::stride_major(b), ilo, ihi,
-                bindings::begin_value(lscale), bindings::begin_value(rscale),
-                bindings::begin_value(work.select(real_type())) );
-    }
+  //
+  // Static member function that
+  // * Figures out the minimal workspace requirements, and passes
+  //   the results to the user-defined workspace overload of the
+  //   invoke static member function
+  // * Enables the unblocked algorithm (BLAS level 2)
+  //
+  template <
+      typename MatrixA, typename MatrixB, typename VectorLSCALE,
+      typename VectorRSCALE>
+  static std::ptrdiff_t invoke(
+      const char job, MatrixA& a, MatrixB& b, fortran_int_t& ilo,
+      fortran_int_t& ihi, VectorLSCALE& lscale, VectorRSCALE& rscale,
+      minimal_workspace
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    bindings::detail::array<real_type> tmp_work(
+        min_size_work(job, bindings::size_column(a))
+    );
+    return invoke(job, a, b, ilo, ihi, lscale, rscale, workspace(tmp_work));
+  }
 
-    //
-    // Static member function that
-    // * Figures out the minimal workspace requirements, and passes
-    //   the results to the user-defined workspace overload of the 
-    //   invoke static member function
-    // * Enables the unblocked algorithm (BLAS level 2)
-    //
-    template< typename MatrixA, typename MatrixB, typename VectorLSCALE,
-            typename VectorRSCALE >
-    static std::ptrdiff_t invoke( const char job, MatrixA& a, MatrixB& b,
-            fortran_int_t& ilo, fortran_int_t& ihi,
-            VectorLSCALE& lscale, VectorRSCALE& rscale, minimal_workspace ) {
-        namespace bindings = ::boost::numeric::bindings;
-        bindings::detail::array< real_type > tmp_work( min_size_work( job,
-                bindings::size_column(a) ) );
-        return invoke( job, a, b, ilo, ihi, lscale, rscale,
-                workspace( tmp_work ) );
-    }
+  //
+  // Static member function that
+  // * Figures out the optimal workspace requirements, and passes
+  //   the results to the user-defined workspace overload of the
+  //   invoke static member
+  // * Enables the blocked algorithm (BLAS level 3)
+  //
+  template <
+      typename MatrixA, typename MatrixB, typename VectorLSCALE,
+      typename VectorRSCALE>
+  static std::ptrdiff_t invoke(
+      const char job, MatrixA& a, MatrixB& b, fortran_int_t& ilo,
+      fortran_int_t& ihi, VectorLSCALE& lscale, VectorRSCALE& rscale,
+      optimal_workspace
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    return invoke(job, a, b, ilo, ihi, lscale, rscale, minimal_workspace());
+  }
 
-    //
-    // Static member function that
-    // * Figures out the optimal workspace requirements, and passes
-    //   the results to the user-defined workspace overload of the 
-    //   invoke static member
-    // * Enables the blocked algorithm (BLAS level 3)
-    //
-    template< typename MatrixA, typename MatrixB, typename VectorLSCALE,
-            typename VectorRSCALE >
-    static std::ptrdiff_t invoke( const char job, MatrixA& a, MatrixB& b,
-            fortran_int_t& ilo, fortran_int_t& ihi,
-            VectorLSCALE& lscale, VectorRSCALE& rscale, optimal_workspace ) {
-        namespace bindings = ::boost::numeric::bindings;
-        return invoke( job, a, b, ilo, ihi, lscale, rscale,
-                minimal_workspace() );
-    }
-
-    //
-    // Static member function that returns the minimum size of
-    // workspace-array work.
-    //
-    static std::ptrdiff_t min_size_work( const char job,
-            const std::ptrdiff_t n ) {
-        if ( job == 'S' || job == 'B' )
-            return std::max< std::ptrdiff_t >(1, 6*n);
-        else // if ( job == 'N' || job == 'P' )
-            return 1;
-    }
+  //
+  // Static member function that returns the minimum size of
+  // workspace-array work.
+  //
+  static std::ptrdiff_t min_size_work(const char job, const std::ptrdiff_t n) {
+    if (job == 'S' || job == 'B')
+      return std::max<std::ptrdiff_t>(1, 6 * n);
+    else  // if ( job == 'N' || job == 'P' )
+      return 1;
+  }
 };
 
 //
 // This implementation is enabled if Value is a complex type.
 //
-template< typename Value >
-struct ggbal_impl< Value, typename boost::enable_if< is_complex< Value > >::type > {
+template <typename Value>
+struct ggbal_impl<Value, typename boost::enable_if<is_complex<Value> >::type> {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
+  //
+  // Static member function for user-defined workspaces, that
+  // * Deduces the required arguments for dispatching to LAPACK, and
+  // * Asserts that most arguments make sense.
+  //
+  template <
+      typename MatrixA, typename MatrixB, typename VectorLSCALE,
+      typename VectorRSCALE, typename WORK>
+  static std::ptrdiff_t invoke(
+      const char job, MatrixA& a, MatrixB& b, fortran_int_t& ilo,
+      fortran_int_t& ihi, VectorLSCALE& lscale, VectorRSCALE& rscale,
+      detail::workspace1<WORK> work
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixA>::value));
+    BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixB>::value));
+    BOOST_STATIC_ASSERT((
+        boost::is_same<
+            typename remove_const<
+                typename bindings::value_type<VectorLSCALE>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<VectorRSCALE>::type>::type>::value
+    ));
+    BOOST_STATIC_ASSERT(
+        (boost::is_same<
+            typename remove_const<
+                typename bindings::value_type<MatrixA>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<MatrixB>::type>::type>::value)
+    );
+    BOOST_STATIC_ASSERT((bindings::is_mutable<MatrixA>::value));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<MatrixB>::value));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorLSCALE>::value));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorRSCALE>::value));
+    BOOST_ASSERT(
+        bindings::size(work.select(real_type())) >=
+        min_size_work(job, bindings::size_column(a))
+    );
+    BOOST_ASSERT(bindings::size_column(a) >= 0);
+    BOOST_ASSERT(
+        bindings::size_minor(a) == 1 || bindings::stride_minor(a) == 1
+    );
+    BOOST_ASSERT(
+        bindings::size_minor(b) == 1 || bindings::stride_minor(b) == 1
+    );
+    BOOST_ASSERT(
+        bindings::stride_major(a) >=
+        std::max<std::ptrdiff_t>(1, bindings::size_column(a))
+    );
+    BOOST_ASSERT(
+        bindings::stride_major(b) >=
+        std::max<std::ptrdiff_t>(1, bindings::size_column(a))
+    );
+    BOOST_ASSERT(job == 'N' || job == 'P' || job == 'S' || job == 'B');
+    return detail::ggbal(
+        job, bindings::size_column(a), bindings::begin_value(a),
+        bindings::stride_major(a), bindings::begin_value(b),
+        bindings::stride_major(b), ilo, ihi, bindings::begin_value(lscale),
+        bindings::begin_value(rscale),
+        bindings::begin_value(work.select(real_type()))
+    );
+  }
 
-    //
-    // Static member function for user-defined workspaces, that
-    // * Deduces the required arguments for dispatching to LAPACK, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename MatrixA, typename MatrixB, typename VectorLSCALE,
-            typename VectorRSCALE, typename WORK >
-    static std::ptrdiff_t invoke( const char job, MatrixA& a, MatrixB& b,
-            fortran_int_t& ilo, fortran_int_t& ihi,
-            VectorLSCALE& lscale, VectorRSCALE& rscale, detail::workspace1<
-            WORK > work ) {
-        namespace bindings = ::boost::numeric::bindings;
-        BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixA >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixB >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
-                typename bindings::value_type< VectorLSCALE >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                VectorRSCALE >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
-                typename bindings::value_type< MatrixA >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                MatrixB >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< MatrixA >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< MatrixB >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorLSCALE >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorRSCALE >::value) );
-        BOOST_ASSERT( bindings::size(work.select(real_type())) >=
-                min_size_work( job, bindings::size_column(a) ));
-        BOOST_ASSERT( bindings::size_column(a) >= 0 );
-        BOOST_ASSERT( bindings::size_minor(a) == 1 ||
-                bindings::stride_minor(a) == 1 );
-        BOOST_ASSERT( bindings::size_minor(b) == 1 ||
-                bindings::stride_minor(b) == 1 );
-        BOOST_ASSERT( bindings::stride_major(a) >= std::max< std::ptrdiff_t >(1,
-                bindings::size_column(a)) );
-        BOOST_ASSERT( bindings::stride_major(b) >= std::max< std::ptrdiff_t >(1,
-                bindings::size_column(a)) );
-        BOOST_ASSERT( job == 'N' || job == 'P' || job == 'S' || job == 'B' );
-        return detail::ggbal( job, bindings::size_column(a),
-                bindings::begin_value(a), bindings::stride_major(a),
-                bindings::begin_value(b), bindings::stride_major(b), ilo, ihi,
-                bindings::begin_value(lscale), bindings::begin_value(rscale),
-                bindings::begin_value(work.select(real_type())) );
-    }
+  //
+  // Static member function that
+  // * Figures out the minimal workspace requirements, and passes
+  //   the results to the user-defined workspace overload of the
+  //   invoke static member function
+  // * Enables the unblocked algorithm (BLAS level 2)
+  //
+  template <
+      typename MatrixA, typename MatrixB, typename VectorLSCALE,
+      typename VectorRSCALE>
+  static std::ptrdiff_t invoke(
+      const char job, MatrixA& a, MatrixB& b, fortran_int_t& ilo,
+      fortran_int_t& ihi, VectorLSCALE& lscale, VectorRSCALE& rscale,
+      minimal_workspace
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    bindings::detail::array<real_type> tmp_work(
+        min_size_work(job, bindings::size_column(a))
+    );
+    return invoke(job, a, b, ilo, ihi, lscale, rscale, workspace(tmp_work));
+  }
 
-    //
-    // Static member function that
-    // * Figures out the minimal workspace requirements, and passes
-    //   the results to the user-defined workspace overload of the 
-    //   invoke static member function
-    // * Enables the unblocked algorithm (BLAS level 2)
-    //
-    template< typename MatrixA, typename MatrixB, typename VectorLSCALE,
-            typename VectorRSCALE >
-    static std::ptrdiff_t invoke( const char job, MatrixA& a, MatrixB& b,
-            fortran_int_t& ilo, fortran_int_t& ihi,
-            VectorLSCALE& lscale, VectorRSCALE& rscale, minimal_workspace ) {
-        namespace bindings = ::boost::numeric::bindings;
-        bindings::detail::array< real_type > tmp_work( min_size_work( job,
-                bindings::size_column(a) ) );
-        return invoke( job, a, b, ilo, ihi, lscale, rscale,
-                workspace( tmp_work ) );
-    }
+  //
+  // Static member function that
+  // * Figures out the optimal workspace requirements, and passes
+  //   the results to the user-defined workspace overload of the
+  //   invoke static member
+  // * Enables the blocked algorithm (BLAS level 3)
+  //
+  template <
+      typename MatrixA, typename MatrixB, typename VectorLSCALE,
+      typename VectorRSCALE>
+  static std::ptrdiff_t invoke(
+      const char job, MatrixA& a, MatrixB& b, fortran_int_t& ilo,
+      fortran_int_t& ihi, VectorLSCALE& lscale, VectorRSCALE& rscale,
+      optimal_workspace
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    return invoke(job, a, b, ilo, ihi, lscale, rscale, minimal_workspace());
+  }
 
-    //
-    // Static member function that
-    // * Figures out the optimal workspace requirements, and passes
-    //   the results to the user-defined workspace overload of the 
-    //   invoke static member
-    // * Enables the blocked algorithm (BLAS level 3)
-    //
-    template< typename MatrixA, typename MatrixB, typename VectorLSCALE,
-            typename VectorRSCALE >
-    static std::ptrdiff_t invoke( const char job, MatrixA& a, MatrixB& b,
-            fortran_int_t& ilo, fortran_int_t& ihi,
-            VectorLSCALE& lscale, VectorRSCALE& rscale, optimal_workspace ) {
-        namespace bindings = ::boost::numeric::bindings;
-        return invoke( job, a, b, ilo, ihi, lscale, rscale,
-                minimal_workspace() );
-    }
-
-    //
-    // Static member function that returns the minimum size of
-    // workspace-array work.
-    //
-    static std::ptrdiff_t min_size_work( const char job,
-            const std::ptrdiff_t n ) {
-        if ( job == 'S' || job == 'B' )
-            return std::max< std::ptrdiff_t >(1, 6*n);
-        else // if ( job == 'N' || job == 'P' )
-            return 1;
-    }
+  //
+  // Static member function that returns the minimum size of
+  // workspace-array work.
+  //
+  static std::ptrdiff_t min_size_work(const char job, const std::ptrdiff_t n) {
+    if (job == 'S' || job == 'B')
+      return std::max<std::ptrdiff_t>(1, 6 * n);
+    else  // if ( job == 'N' || job == 'P' )
+      return 1;
+  }
 };
-
 
 //
 // Functions for direct use. These functions are overloaded for temporaries,
 // so that wrapped types can still be passed and used for write-access. In
 // addition, if applicable, they are overloaded for user-defined workspaces.
-// Calls to these functions are passed to the ggbal_impl classes. In the 
+// Calls to these functions are passed to the ggbal_impl classes. In the
 // documentation, most overloads are collapsed to avoid a large number of
 // prototypes which are very similar.
 //
@@ -341,36 +395,42 @@ struct ggbal_impl< Value, typename boost::enable_if< is_complex< Value > >::type
 // Overloaded function for ggbal. Its overload differs for
 // * User-defined workspace
 //
-template< typename MatrixA, typename MatrixB, typename VectorLSCALE,
-        typename VectorRSCALE, typename Workspace >
-inline typename boost::enable_if< detail::is_workspace< Workspace >,
-        std::ptrdiff_t >::type
-ggbal( const char job, MatrixA& a, MatrixB& b, fortran_int_t& ilo,
-        fortran_int_t& ihi, VectorLSCALE& lscale, VectorRSCALE& rscale,
-        Workspace work ) {
-    return ggbal_impl< typename bindings::value_type<
-            MatrixA >::type >::invoke( job, a, b, ilo, ihi, lscale, rscale,
-            work );
+template <
+    typename MatrixA, typename MatrixB, typename VectorLSCALE,
+    typename VectorRSCALE, typename Workspace>
+inline typename boost::enable_if<
+    detail::is_workspace<Workspace>, std::ptrdiff_t>::type
+ggbal(
+    const char job, MatrixA& a, MatrixB& b, fortran_int_t& ilo,
+    fortran_int_t& ihi, VectorLSCALE& lscale, VectorRSCALE& rscale,
+    Workspace work
+) {
+  return ggbal_impl<typename bindings::value_type<MatrixA>::type>::invoke(
+      job, a, b, ilo, ihi, lscale, rscale, work
+  );
 }
 
 //
 // Overloaded function for ggbal. Its overload differs for
 // * Default workspace-type (optimal)
 //
-template< typename MatrixA, typename MatrixB, typename VectorLSCALE,
-        typename VectorRSCALE >
-inline typename boost::disable_if< detail::is_workspace< VectorRSCALE >,
-        std::ptrdiff_t >::type
-ggbal( const char job, MatrixA& a, MatrixB& b, fortran_int_t& ilo,
-        fortran_int_t& ihi, VectorLSCALE& lscale, VectorRSCALE& rscale ) {
-    return ggbal_impl< typename bindings::value_type<
-            MatrixA >::type >::invoke( job, a, b, ilo, ihi, lscale, rscale,
-            optimal_workspace() );
+template <
+    typename MatrixA, typename MatrixB, typename VectorLSCALE,
+    typename VectorRSCALE>
+inline typename boost::disable_if<
+    detail::is_workspace<VectorRSCALE>, std::ptrdiff_t>::type
+ggbal(
+    const char job, MatrixA& a, MatrixB& b, fortran_int_t& ilo,
+    fortran_int_t& ihi, VectorLSCALE& lscale, VectorRSCALE& rscale
+) {
+  return ggbal_impl<typename bindings::value_type<MatrixA>::type>::invoke(
+      job, a, b, ilo, ihi, lscale, rscale, optimal_workspace()
+  );
 }
 
-} // namespace lapack
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace lapack
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

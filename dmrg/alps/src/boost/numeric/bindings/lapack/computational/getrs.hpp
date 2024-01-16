@@ -59,13 +59,15 @@ namespace detail {
 // * ATLAS's CLAPACK backend, and
 // * float value-type.
 //
-template< typename Order, typename Trans >
-inline std::ptrdiff_t getrs( Order, const Trans, const int n, const int nrhs,
-        const float* a, const int lda, const int* ipiv, float* b,
-        const int ldb ) {
-    return clapack_sgetrs
-   ( clapack_option< Order >::value, clapack_option< Trans >::value, n, nrhs,
-           a, lda, ipiv, b, ldb );
+template <typename Order, typename Trans>
+inline std::ptrdiff_t getrs(
+    Order, const Trans, const int n, const int nrhs, const float* a,
+    const int lda, const int* ipiv, float* b, const int ldb
+) {
+  return clapack_sgetrs(
+      clapack_option<Order>::value, clapack_option<Trans>::value, n, nrhs, a,
+      lda, ipiv, b, ldb
+  );
 }
 
 //
@@ -73,13 +75,15 @@ inline std::ptrdiff_t getrs( Order, const Trans, const int n, const int nrhs,
 // * ATLAS's CLAPACK backend, and
 // * double value-type.
 //
-template< typename Order, typename Trans >
-inline std::ptrdiff_t getrs( Order, const Trans, const int n, const int nrhs,
-        const double* a, const int lda, const int* ipiv, double* b,
-        const int ldb ) {
-    return clapack_dgetrs
-   ( clapack_option< Order >::value, clapack_option< Trans >::value, n, nrhs,
-           a, lda, ipiv, b, ldb );
+template <typename Order, typename Trans>
+inline std::ptrdiff_t getrs(
+    Order, const Trans, const int n, const int nrhs, const double* a,
+    const int lda, const int* ipiv, double* b, const int ldb
+) {
+  return clapack_dgetrs(
+      clapack_option<Order>::value, clapack_option<Trans>::value, n, nrhs, a,
+      lda, ipiv, b, ldb
+  );
 }
 
 //
@@ -87,13 +91,16 @@ inline std::ptrdiff_t getrs( Order, const Trans, const int n, const int nrhs,
 // * ATLAS's CLAPACK backend, and
 // * complex<float> value-type.
 //
-template< typename Order, typename Trans >
-inline std::ptrdiff_t getrs( Order, const Trans, const int n, const int nrhs,
-        const std::complex<float>* a, const int lda, const int* ipiv,
-        std::complex<float>* b, const int ldb ) {
-    return clapack_cgetrs
-   ( clapack_option< Order >::value, clapack_option< Trans >::value, n, nrhs,
-           a, lda, ipiv, b, ldb );
+template <typename Order, typename Trans>
+inline std::ptrdiff_t getrs(
+    Order, const Trans, const int n, const int nrhs,
+    const std::complex<float>* a, const int lda, const int* ipiv,
+    std::complex<float>* b, const int ldb
+) {
+  return clapack_cgetrs(
+      clapack_option<Order>::value, clapack_option<Trans>::value, n, nrhs, a,
+      lda, ipiv, b, ldb
+  );
 }
 
 //
@@ -101,13 +108,16 @@ inline std::ptrdiff_t getrs( Order, const Trans, const int n, const int nrhs,
 // * ATLAS's CLAPACK backend, and
 // * complex<double> value-type.
 //
-template< typename Order, typename Trans >
-inline std::ptrdiff_t getrs( Order, const Trans, const int n, const int nrhs,
-        const std::complex<double>* a, const int lda, const int* ipiv,
-        std::complex<double>* b, const int ldb ) {
-    return clapack_zgetrs
-   ( clapack_option< Order >::value, clapack_option< Trans >::value, n, nrhs,
-           a, lda, ipiv, b, ldb );
+template <typename Order, typename Trans>
+inline std::ptrdiff_t getrs(
+    Order, const Trans, const int n, const int nrhs,
+    const std::complex<double>* a, const int lda, const int* ipiv,
+    std::complex<double>* b, const int ldb
+) {
+  return clapack_zgetrs(
+      clapack_option<Order>::value, clapack_option<Trans>::value, n, nrhs, a,
+      lda, ipiv, b, ldb
+  );
 }
 
 #else
@@ -116,15 +126,18 @@ inline std::ptrdiff_t getrs( Order, const Trans, const int n, const int nrhs,
 // * netlib-compatible LAPACK backend (the default), and
 // * float value-type.
 //
-template< typename Order, typename Trans >
-inline std::ptrdiff_t getrs( Order, const Trans, const fortran_int_t n,
-        const fortran_int_t nrhs, const float* a, const fortran_int_t lda,
-        const fortran_int_t* ipiv, float* b, const fortran_int_t ldb ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    fortran_int_t info(0);
-    LAPACK_SGETRS( &lapack_option< Trans >::value, &n, &nrhs, a, &lda, ipiv,
-            b, &ldb, &info );
-    return info;
+template <typename Order, typename Trans>
+inline std::ptrdiff_t getrs(
+    Order, const Trans, const fortran_int_t n, const fortran_int_t nrhs,
+    const float* a, const fortran_int_t lda, const fortran_int_t* ipiv,
+    float* b, const fortran_int_t ldb
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  fortran_int_t info(0);
+  LAPACK_SGETRS(
+      &lapack_option<Trans>::value, &n, &nrhs, a, &lda, ipiv, b, &ldb, &info
+  );
+  return info;
 }
 
 //
@@ -132,15 +145,18 @@ inline std::ptrdiff_t getrs( Order, const Trans, const fortran_int_t n,
 // * netlib-compatible LAPACK backend (the default), and
 // * double value-type.
 //
-template< typename Order, typename Trans >
-inline std::ptrdiff_t getrs( Order, const Trans, const fortran_int_t n,
-        const fortran_int_t nrhs, const double* a, const fortran_int_t lda,
-        const fortran_int_t* ipiv, double* b, const fortran_int_t ldb ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    fortran_int_t info(0);
-    LAPACK_DGETRS( &lapack_option< Trans >::value, &n, &nrhs, a, &lda, ipiv,
-            b, &ldb, &info );
-    return info;
+template <typename Order, typename Trans>
+inline std::ptrdiff_t getrs(
+    Order, const Trans, const fortran_int_t n, const fortran_int_t nrhs,
+    const double* a, const fortran_int_t lda, const fortran_int_t* ipiv,
+    double* b, const fortran_int_t ldb
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  fortran_int_t info(0);
+  LAPACK_DGETRS(
+      &lapack_option<Trans>::value, &n, &nrhs, a, &lda, ipiv, b, &ldb, &info
+  );
+  return info;
 }
 
 //
@@ -148,16 +164,18 @@ inline std::ptrdiff_t getrs( Order, const Trans, const fortran_int_t n,
 // * netlib-compatible LAPACK backend (the default), and
 // * complex<float> value-type.
 //
-template< typename Order, typename Trans >
-inline std::ptrdiff_t getrs( Order, const Trans, const fortran_int_t n,
-        const fortran_int_t nrhs, const std::complex<float>* a,
-        const fortran_int_t lda, const fortran_int_t* ipiv,
-        std::complex<float>* b, const fortran_int_t ldb ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    fortran_int_t info(0);
-    LAPACK_CGETRS( &lapack_option< Trans >::value, &n, &nrhs, a, &lda, ipiv,
-            b, &ldb, &info );
-    return info;
+template <typename Order, typename Trans>
+inline std::ptrdiff_t getrs(
+    Order, const Trans, const fortran_int_t n, const fortran_int_t nrhs,
+    const std::complex<float>* a, const fortran_int_t lda,
+    const fortran_int_t* ipiv, std::complex<float>* b, const fortran_int_t ldb
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  fortran_int_t info(0);
+  LAPACK_CGETRS(
+      &lapack_option<Trans>::value, &n, &nrhs, a, &lda, ipiv, b, &ldb, &info
+  );
+  return info;
 }
 
 //
@@ -165,74 +183,84 @@ inline std::ptrdiff_t getrs( Order, const Trans, const fortran_int_t n,
 // * netlib-compatible LAPACK backend (the default), and
 // * complex<double> value-type.
 //
-template< typename Order, typename Trans >
-inline std::ptrdiff_t getrs( Order, const Trans, const fortran_int_t n,
-        const fortran_int_t nrhs, const std::complex<double>* a,
-        const fortran_int_t lda, const fortran_int_t* ipiv,
-        std::complex<double>* b, const fortran_int_t ldb ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    fortran_int_t info(0);
-    LAPACK_ZGETRS( &lapack_option< Trans >::value, &n, &nrhs, a, &lda, ipiv,
-            b, &ldb, &info );
-    return info;
+template <typename Order, typename Trans>
+inline std::ptrdiff_t getrs(
+    Order, const Trans, const fortran_int_t n, const fortran_int_t nrhs,
+    const std::complex<double>* a, const fortran_int_t lda,
+    const fortran_int_t* ipiv, std::complex<double>* b, const fortran_int_t ldb
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  fortran_int_t info(0);
+  LAPACK_ZGETRS(
+      &lapack_option<Trans>::value, &n, &nrhs, a, &lda, ipiv, b, &ldb, &info
+  );
+  return info;
 }
 
 #endif
-} // namespace detail
+}  // namespace detail
 
 //
 // Value-type based template class. Use this class if you need a type
 // for dispatching to getrs.
 //
-template< typename Value >
+template <typename Value>
 struct getrs_impl {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
-
-    //
-    // Static member function, that
-    // * Deduces the required arguments for dispatching to LAPACK, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename MatrixA, typename VectorIPIV, typename MatrixB >
-    static std::ptrdiff_t invoke( const MatrixA& a, const VectorIPIV& ipiv,
-            MatrixB& b ) {
-        namespace bindings = ::boost::numeric::bindings;
-        typedef typename result_of::data_order< MatrixB >::type order;
-        typedef typename result_of::trans_tag< MatrixA, order >::type trans;
-        BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixB >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
-                typename bindings::value_type< MatrixA >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                MatrixB >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< MatrixB >::value) );
-        BOOST_ASSERT( bindings::size(ipiv) >= bindings::size_column_op(a,
-                trans()) );
-        BOOST_ASSERT( bindings::size_column(b) >= 0 );
-        BOOST_ASSERT( bindings::size_column_op(a, trans()) >= 0 );
-        BOOST_ASSERT( bindings::size_minor(a) == 1 ||
-                bindings::stride_minor(a) == 1 );
-        BOOST_ASSERT( bindings::size_minor(b) == 1 ||
-                bindings::stride_minor(b) == 1 );
-        BOOST_ASSERT( bindings::stride_major(a) >= std::max< std::ptrdiff_t >(1,
-                bindings::size_column_op(a, trans())) );
-        BOOST_ASSERT( bindings::stride_major(b) >= std::max< std::ptrdiff_t >(1,
-                bindings::size_column_op(a, trans())) );
-        return detail::getrs( order(), trans(), bindings::size_column_op(a,
-                trans()), bindings::size_column(b), bindings::begin_value(a),
-                bindings::stride_major(a), bindings::begin_value(ipiv),
-                bindings::begin_value(b), bindings::stride_major(b) );
-    }
-
+  //
+  // Static member function, that
+  // * Deduces the required arguments for dispatching to LAPACK, and
+  // * Asserts that most arguments make sense.
+  //
+  template <typename MatrixA, typename VectorIPIV, typename MatrixB>
+  static std::ptrdiff_t invoke(
+      const MatrixA& a, const VectorIPIV& ipiv, MatrixB& b
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    typedef typename result_of::data_order<MatrixB>::type order;
+    typedef typename result_of::trans_tag<MatrixA, order>::type trans;
+    BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixB>::value));
+    BOOST_STATIC_ASSERT(
+        (boost::is_same<
+            typename remove_const<
+                typename bindings::value_type<MatrixA>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<MatrixB>::type>::type>::value)
+    );
+    BOOST_STATIC_ASSERT((bindings::is_mutable<MatrixB>::value));
+    BOOST_ASSERT(bindings::size(ipiv) >= bindings::size_column_op(a, trans()));
+    BOOST_ASSERT(bindings::size_column(b) >= 0);
+    BOOST_ASSERT(bindings::size_column_op(a, trans()) >= 0);
+    BOOST_ASSERT(
+        bindings::size_minor(a) == 1 || bindings::stride_minor(a) == 1
+    );
+    BOOST_ASSERT(
+        bindings::size_minor(b) == 1 || bindings::stride_minor(b) == 1
+    );
+    BOOST_ASSERT(
+        bindings::stride_major(a) >=
+        std::max<std::ptrdiff_t>(1, bindings::size_column_op(a, trans()))
+    );
+    BOOST_ASSERT(
+        bindings::stride_major(b) >=
+        std::max<std::ptrdiff_t>(1, bindings::size_column_op(a, trans()))
+    );
+    return detail::getrs(
+        order(), trans(), bindings::size_column_op(a, trans()),
+        bindings::size_column(b), bindings::begin_value(a),
+        bindings::stride_major(a), bindings::begin_value(ipiv),
+        bindings::begin_value(b), bindings::stride_major(b)
+    );
+  }
 };
-
 
 //
 // Functions for direct use. These functions are overloaded for temporaries,
 // so that wrapped types can still be passed and used for write-access. In
 // addition, if applicable, they are overloaded for user-defined workspaces.
-// Calls to these functions are passed to the getrs_impl classes. In the 
+// Calls to these functions are passed to the getrs_impl classes. In the
 // documentation, most overloads are collapsed to avoid a large number of
 // prototypes which are very similar.
 //
@@ -240,16 +268,18 @@ struct getrs_impl {
 //
 // Overloaded function for getrs. Its overload differs for
 //
-template< typename MatrixA, typename VectorIPIV, typename MatrixB >
-inline std::ptrdiff_t getrs( const MatrixA& a, const VectorIPIV& ipiv,
-        MatrixB& b ) {
-    return getrs_impl< typename bindings::value_type<
-            MatrixA >::type >::invoke( a, ipiv, b );
+template <typename MatrixA, typename VectorIPIV, typename MatrixB>
+inline std::ptrdiff_t getrs(
+    const MatrixA& a, const VectorIPIV& ipiv, MatrixB& b
+) {
+  return getrs_impl<typename bindings::value_type<MatrixA>::type>::invoke(
+      a, ipiv, b
+  );
 }
 
-} // namespace lapack
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace lapack
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

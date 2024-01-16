@@ -1,30 +1,30 @@
 /*****************************************************************************
-*
-* ALPS Project: Algorithms and Libraries for Physics Simulations
-*
-* ALPS Libraries
-*
-* Copyright (C) 2001-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
-*                            Synge Todo <wistaria@comp-phys.org>
-*
-* This software is part of the ALPS libraries, published under the ALPS
-* Library License; you can use, redistribute it and/or modify it under
-* the terms of the license, either version 1 or (at your option) any later
-* version.
-* 
-* You should have received a copy of the ALPS Library License along with
-* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
-* available from http://alps.comp-phys.org/.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-* FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
-* SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
-* FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
-* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
-* DEALINGS IN THE SOFTWARE.
-*
-*****************************************************************************/
+ *
+ * ALPS Project: Algorithms and Libraries for Physics Simulations
+ *
+ * ALPS Libraries
+ *
+ * Copyright (C) 2001-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+ *                            Synge Todo <wistaria@comp-phys.org>
+ *
+ * This software is part of the ALPS libraries, published under the ALPS
+ * Library License; you can use, redistribute it and/or modify it under
+ * the terms of the license, either version 1 or (at your option) any later
+ * version.
+ *
+ * You should have received a copy of the ALPS Library License along with
+ * the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+ * available from http://alps.comp-phys.org/.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
+ *****************************************************************************/
 
 /* $Id: xslt_path.h 4129 2010-04-05 21:15:07Z troyer $ */
 
@@ -56,20 +56,22 @@ namespace alps {
 /// "http://xml.comp-phys.org/2004/10/ALPS.xsl".
 extern ALPS_DECL std::string xslt_path(const std::string& stylefile);
 
-/// \brief returns the full path to the specified XML file and checks whether the file exists.
+/// \brief returns the full path to the specified XML file and checks whether
+/// the file exists.
 ///
 /// The function prepends the path to the ALPS XML/XSLT library
 /// directory to the specified filename.  \throw \c std::runtime_error
 /// if the file does not exist in the ALPS XML/XSLT library directory.
 extern ALPS_DECL std::string search_xml_library_path(const std::string& file);
-  
+
 /// \brief copies the ALPS.xsl stylesheet to the specifeid directory
 ///
 /// This function copies the ALPS.xsl stylesheet to the specified directory.
-/// The function does not overwrite an already existing file with the name ALPS.xsl
+/// The function does not overwrite an already existing file with the name
+/// ALPS.xsl
 
 extern ALPS_DECL void copy_stylesheet(boost::filesystem::path const& dir);
 
-} // end namespace alps
+}  // end namespace alps
 
-#endif // ALPS_PARSER_PARSER_H
+#endif  // ALPS_PARSER_PARSER_H

@@ -17,16 +17,15 @@ namespace boost {
 namespace numeric {
 namespace bindings {
 
-template< typename T >
-struct is_row_major:
-        mpl::if_<
-            detail::property_has_key< T, tag::data_order >,
-            detail::is_same_at< T, tag::data_order, tag::row_major >,
-            mpl::false_
-        >::type {};
+template <typename T>
+struct is_row_major
+    : mpl::if_<
+          detail::property_has_key<T, tag::data_order>,
+          detail::is_same_at<T, tag::data_order, tag::row_major>,
+          mpl::false_>::type {};
 
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

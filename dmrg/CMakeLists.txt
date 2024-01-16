@@ -107,8 +107,8 @@ if(BUILD_TRANSCORRELATED_DMRG)
   if (NOT BUILD_DMRG_EVOLVE)
     message(FATAL_ERROR "The [BUILD_DMRG_EVOLVE] flag should be set to ON in order to compile the tcDMRG code")
   endif()
-  list(APPEND DMRG_DEFINITIONS -DDMRG_TC)
-  set(DMRG_TC TRUE)
+  list(APPEND DMRG_DEFINITIONS -DDMRG_TRANSCORRELATED)
+  set(DMRG_TRANSCORRELATED TRUE)
 endif(BUILD_TRANSCORRELATED_DMRG)
 
 option (ENABLE_COLLECTOR "Enable profiling through DataCollector object" OFF)
@@ -167,37 +167,9 @@ endif()
 
 if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
   # message(STATUS "Debug build: Adding Address Sanitizer")
-  # add_compile_options(-fsanitize=address -g3 -Wall -Wextra)
-  # add_link_options(-fsanitize=address -g3 -Wall -Wextra)
-  if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-    message(STATUS "Adding CLANG warning flags")
-    set(COMPILER_WARNING_FLAGS
-      -Wall -Wextra
-      -Wno-unused-variable
-      -Wno-unused-parameter
-      -Wno-unused-local-typedef
-      -Wno-return-type-c-linkage      # boost ublas bug
-      -Wno-sign-compare               # TODO: These should be fixed
-      -Wno-reorder-ctor               # TODO: This as well
-      )
-  elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
-    message(STATUS "Adding GNU warning flags")
-    set(COMPILER_WARNING_FLAGS
-      -Wall -Wextra
-      -Wno-int-in-bool-context        # TODO: This should also be fixed
-      -Wno-unused-variable
-      -Wno-unused-but-set-variable
-      -Wno-unused-parameter
-      -Wno-unused-local-typedefs
-      -Wno-sign-compare               # TODO: These should be fixed
-      -Wno-deprecated-copy            # TODO: Fix this as well
-      )
-  add_compile_options(-fsanitize=address,leak,undefined)
-  add_link_options(-fsanitize=address,leak,undefined)
-  endif()
-  message(STATUS "Debug warnings = ${COMPILER_WARNING_FLAGS}")
-  add_compile_options(${COMPILER_WARNING_FLAGS})
-  add_link_options(${COMPILER_WARNING_FLAGS})
+  # message(STATUS "Debug warnings = ${COMPILER_WARNING_FLAGS}")
+  # add_compile_options(-g3 -fsanitize=address,leak,undefined)
+  # add_link_options(-g3 -fsanitize=address,leak,undefined)
 endif()
 ######################################################################
 # Symmetries management
@@ -357,6 +329,38 @@ endif(Boost_FOUND)
 # ALPS
 add_subdirectory(${ALPS_SOURCE_DIR})
 list(APPEND DMRG_LIBRARIES alps)
+
+# Add warning flags
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+  message(STATUS "Adding CLANG warning flags")
+  set(COMPILER_WARNING_FLAGS
+    -Wall -Wextra
+    -Wno-unused-variable
+    -Wno-unused-parameter
+    -Wno-unused-local-typedef
+    -Wno-return-type-c-linkage      # boost ublas bug
+    -Wno-sign-compare               # TODO: These should be fixed
+    -Wno-reorder-ctor               # TODO: This as well
+    )
+elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+  message(STATUS "Adding GNU warning flags")
+  set(COMPILER_WARNING_FLAGS
+    -Wall -Wextra
+    -Wno-int-in-bool-context        # TODO: This should also be fixed
+    -Wno-unused-variable
+    -Wno-unused-but-set-variable
+    -Wno-unused-parameter
+    -Wno-unused-local-typedefs
+    -Wno-sign-compare               # TODO: These should be fixed
+    -Wno-deprecated-copy            # TODO: Fix this as well
+    -Wno-reorder                    # TODO: This as well
+    -Wno-maybe-uninitialized        # TODO: This as well
+    -Wno-switch                     # TODO: This as well
+    )
+endif()
+add_compile_options(${COMPILER_WARNING_FLAGS})
+add_link_options(${COMPILER_WARNING_FLAGS})
+
 
 # Eigen
 find_package(Eigen3 3.2 NO_MODULE)

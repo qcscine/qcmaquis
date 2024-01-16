@@ -15,11 +15,11 @@ namespace boost {
 namespace numeric {
 namespace bindings {
 
-template< typename T >
-struct rank: mpl::int_< detail::property_at< T, tag::entity >::type::value > {};
+template <typename T>
+struct rank : mpl::int_<detail::property_at<T, tag::entity>::type::value> {};
 
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

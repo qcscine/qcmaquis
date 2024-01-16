@@ -60,9 +60,10 @@ namespace detail {
 // * CBLAS backend, and
 // * float value-type.
 //
-inline void swap( const int n, float* x, const int incx, float* y,
-        const int incy ) {
-    cblas_sswap( n, x, incx, y, incy );
+inline void swap(
+    const int n, float* x, const int incx, float* y, const int incy
+) {
+  cblas_sswap(n, x, incx, y, incy);
 }
 
 //
@@ -70,9 +71,10 @@ inline void swap( const int n, float* x, const int incx, float* y,
 // * CBLAS backend, and
 // * double value-type.
 //
-inline void swap( const int n, double* x, const int incx, double* y,
-        const int incy ) {
-    cblas_dswap( n, x, incx, y, incy );
+inline void swap(
+    const int n, double* x, const int incx, double* y, const int incy
+) {
+  cblas_dswap(n, x, incx, y, incy);
 }
 
 //
@@ -80,9 +82,11 @@ inline void swap( const int n, double* x, const int incx, double* y,
 // * CBLAS backend, and
 // * complex<float> value-type.
 //
-inline void swap( const int n, std::complex<float>* x, const int incx,
-        std::complex<float>* y, const int incy ) {
-    cblas_cswap( n, x, incx, y, incy );
+inline void swap(
+    const int n, std::complex<float>* x, const int incx, std::complex<float>* y,
+    const int incy
+) {
+  cblas_cswap(n, x, incx, y, incy);
 }
 
 //
@@ -90,9 +94,11 @@ inline void swap( const int n, std::complex<float>* x, const int incx,
 // * CBLAS backend, and
 // * complex<double> value-type.
 //
-inline void swap( const int n, std::complex<double>* x, const int incx,
-        std::complex<double>* y, const int incy ) {
-    cblas_zswap( n, x, incx, y, incy );
+inline void swap(
+    const int n, std::complex<double>* x, const int incx,
+    std::complex<double>* y, const int incy
+) {
+  cblas_zswap(n, x, incx, y, incy);
 }
 
 #elif defined BOOST_NUMERIC_BINDINGS_BLAS_CUBLAS
@@ -101,9 +107,10 @@ inline void swap( const int n, std::complex<double>* x, const int incx,
 // * CUBLAS backend, and
 // * float value-type.
 //
-inline void swap( const int n, float* x, const int incx, float* y,
-        const int incy ) {
-    cublasSswap( n, x, incx, y, incy );
+inline void swap(
+    const int n, float* x, const int incx, float* y, const int incy
+) {
+  cublasSswap(n, x, incx, y, incy);
 }
 
 //
@@ -111,9 +118,10 @@ inline void swap( const int n, float* x, const int incx, float* y,
 // * CUBLAS backend, and
 // * double value-type.
 //
-inline void swap( const int n, double* x, const int incx, double* y,
-        const int incy ) {
-    cublasDswap( n, x, incx, y, incy );
+inline void swap(
+    const int n, double* x, const int incx, double* y, const int incy
+) {
+  cublasDswap(n, x, incx, y, incy);
 }
 
 //
@@ -121,9 +129,11 @@ inline void swap( const int n, double* x, const int incx, double* y,
 // * CUBLAS backend, and
 // * complex<float> value-type.
 //
-inline void swap( const int n, std::complex<float>* x, const int incx,
-        std::complex<float>* y, const int incy ) {
-    cublasCswap( n, x, incx, y, incy );
+inline void swap(
+    const int n, std::complex<float>* x, const int incx, std::complex<float>* y,
+    const int incy
+) {
+  cublasCswap(n, x, incx, y, incy);
 }
 
 //
@@ -131,9 +141,11 @@ inline void swap( const int n, std::complex<float>* x, const int incx,
 // * CUBLAS backend, and
 // * complex<double> value-type.
 //
-inline void swap( const int n, std::complex<double>* x, const int incx,
-        std::complex<double>* y, const int incy ) {
-    // NOT FOUND();
+inline void swap(
+    const int n, std::complex<double>* x, const int incx,
+    std::complex<double>* y, const int incy
+) {
+  // NOT FOUND();
 }
 
 #else
@@ -142,9 +154,11 @@ inline void swap( const int n, std::complex<double>* x, const int incx,
 // * netlib-compatible BLAS backend (the default), and
 // * float value-type.
 //
-inline void swap( const fortran_int_t n, float* x, const fortran_int_t incx,
-        float* y, const fortran_int_t incy ) {
-    BLAS_SSWAP( &n, x, &incx, y, &incy );
+inline void swap(
+    const fortran_int_t n, float* x, const fortran_int_t incx, float* y,
+    const fortran_int_t incy
+) {
+  BLAS_SSWAP(&n, x, &incx, y, &incy);
 }
 
 //
@@ -152,9 +166,11 @@ inline void swap( const fortran_int_t n, float* x, const fortran_int_t incx,
 // * netlib-compatible BLAS backend (the default), and
 // * double value-type.
 //
-inline void swap( const fortran_int_t n, double* x, const fortran_int_t incx,
-        double* y, const fortran_int_t incy ) {
-    BLAS_DSWAP( &n, x, &incx, y, &incy );
+inline void swap(
+    const fortran_int_t n, double* x, const fortran_int_t incx, double* y,
+    const fortran_int_t incy
+) {
+  BLAS_DSWAP(&n, x, &incx, y, &incy);
 }
 
 //
@@ -162,10 +178,11 @@ inline void swap( const fortran_int_t n, double* x, const fortran_int_t incx,
 // * netlib-compatible BLAS backend (the default), and
 // * complex<float> value-type.
 //
-inline void swap( const fortran_int_t n, std::complex<float>* x,
-        const fortran_int_t incx, std::complex<float>* y,
-        const fortran_int_t incy ) {
-    BLAS_CSWAP( &n, x, &incx, y, &incy );
+inline void swap(
+    const fortran_int_t n, std::complex<float>* x, const fortran_int_t incx,
+    std::complex<float>* y, const fortran_int_t incy
+) {
+  BLAS_CSWAP(&n, x, &incx, y, &incy);
 }
 
 //
@@ -173,51 +190,55 @@ inline void swap( const fortran_int_t n, std::complex<float>* x,
 // * netlib-compatible BLAS backend (the default), and
 // * complex<double> value-type.
 //
-inline void swap( const fortran_int_t n, std::complex<double>* x,
-        const fortran_int_t incx, std::complex<double>* y,
-        const fortran_int_t incy ) {
-    BLAS_ZSWAP( &n, x, &incx, y, &incy );
+inline void swap(
+    const fortran_int_t n, std::complex<double>* x, const fortran_int_t incx,
+    std::complex<double>* y, const fortran_int_t incy
+) {
+  BLAS_ZSWAP(&n, x, &incx, y, &incy);
 }
 
 #endif
 
-} // namespace detail
+}  // namespace detail
 
 //
 // Value-type based template class. Use this class if you need a type
 // for dispatching to swap.
 //
-template< typename Value >
+template <typename Value>
 struct swap_impl {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
+  typedef void result_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
-    typedef void result_type;
-
-    //
-    // Static member function that
-    // * Deduces the required arguments for dispatching to BLAS, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename VectorX, typename VectorY >
-    static result_type invoke( VectorX& x, VectorY& y ) {
-        namespace bindings = ::boost::numeric::bindings;
-        BOOST_STATIC_ASSERT( (is_same< typename remove_const<
-                typename bindings::value_type< VectorX >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                VectorY >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorX >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorY >::value) );
-        detail::swap( bindings::size(x), bindings::begin_value(x),
-                bindings::stride(x), bindings::begin_value(y),
-                bindings::stride(y) );
-    }
+  //
+  // Static member function that
+  // * Deduces the required arguments for dispatching to BLAS, and
+  // * Asserts that most arguments make sense.
+  //
+  template <typename VectorX, typename VectorY>
+  static result_type invoke(VectorX& x, VectorY& y) {
+    namespace bindings = ::boost::numeric::bindings;
+    BOOST_STATIC_ASSERT(
+        (is_same<
+            typename remove_const<
+                typename bindings::value_type<VectorX>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<VectorY>::type>::type>::value)
+    );
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorX>::value));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorY>::value));
+    detail::swap(
+        bindings::size(x), bindings::begin_value(x), bindings::stride(x),
+        bindings::begin_value(y), bindings::stride(y)
+    );
+  }
 };
 
 //
 // Functions for direct use. These functions are overloaded for temporaries,
 // so that wrapped types can still be passed and used for write-access. Calls
-// to these functions are passed to the swap_impl classes. In the 
+// to these functions are passed to the swap_impl classes. In the
 // documentation, the const-overloads are collapsed to avoid a large number of
 // prototypes which are very similar.
 //
@@ -225,17 +246,16 @@ struct swap_impl {
 //
 // Overloaded function for swap. Its overload differs for
 //
-template< typename VectorX, typename VectorY >
-inline typename swap_impl< typename bindings::value_type<
-        VectorX >::type >::result_type
-swap( VectorX& x, VectorY& y ) {
-    swap_impl< typename bindings::value_type<
-            VectorX >::type >::invoke( x, y );
+template <typename VectorX, typename VectorY>
+inline typename swap_impl<
+    typename bindings::value_type<VectorX>::type>::result_type
+swap(VectorX& x, VectorY& y) {
+  swap_impl<typename bindings::value_type<VectorX>::type>::invoke(x, y);
 }
 
-} // namespace blas
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace blas
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

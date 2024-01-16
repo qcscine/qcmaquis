@@ -47,10 +47,10 @@ namespace detail {
 // * netlib-compatible LAPACK backend (the default), and
 // * float value-type.
 //
-inline std::ptrdiff_t sterf( const fortran_int_t n, float* d, float* e ) {
-    fortran_int_t info(0);
-    LAPACK_SSTERF( &n, d, e, &info );
-    return info;
+inline std::ptrdiff_t sterf(const fortran_int_t n, float* d, float* e) {
+  fortran_int_t info(0);
+  LAPACK_SSTERF(&n, d, e, &info);
+  return info;
 }
 
 //
@@ -58,53 +58,51 @@ inline std::ptrdiff_t sterf( const fortran_int_t n, float* d, float* e ) {
 // * netlib-compatible LAPACK backend (the default), and
 // * double value-type.
 //
-inline std::ptrdiff_t sterf( const fortran_int_t n, double* d, double* e ) {
-    fortran_int_t info(0);
-    LAPACK_DSTERF( &n, d, e, &info );
-    return info;
+inline std::ptrdiff_t sterf(const fortran_int_t n, double* d, double* e) {
+  fortran_int_t info(0);
+  LAPACK_DSTERF(&n, d, e, &info);
+  return info;
 }
 
-} // namespace detail
+}  // namespace detail
 
 //
 // Value-type based template class. Use this class if you need a type
 // for dispatching to sterf.
 //
-template< typename Value >
+template <typename Value>
 struct sterf_impl {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
-
-    //
-    // Static member function, that
-    // * Deduces the required arguments for dispatching to LAPACK, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename VectorD, typename VectorE >
-    static std::ptrdiff_t invoke( const fortran_int_t n, VectorD& d,
-            VectorE& e ) {
-        namespace bindings = ::boost::numeric::bindings;
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
-                typename bindings::value_type< VectorD >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                VectorE >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorD >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorE >::value) );
-        BOOST_ASSERT( bindings::size(e) >= n-1 );
-        BOOST_ASSERT( n >= 0 );
-        return detail::sterf( n, bindings::begin_value(d),
-                bindings::begin_value(e) );
-    }
-
+  //
+  // Static member function, that
+  // * Deduces the required arguments for dispatching to LAPACK, and
+  // * Asserts that most arguments make sense.
+  //
+  template <typename VectorD, typename VectorE>
+  static std::ptrdiff_t invoke(const fortran_int_t n, VectorD& d, VectorE& e) {
+    namespace bindings = ::boost::numeric::bindings;
+    BOOST_STATIC_ASSERT(
+        (boost::is_same<
+            typename remove_const<
+                typename bindings::value_type<VectorD>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<VectorE>::type>::type>::value)
+    );
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorD>::value));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorE>::value));
+    BOOST_ASSERT(bindings::size(e) >= n - 1);
+    BOOST_ASSERT(n >= 0);
+    return detail::sterf(n, bindings::begin_value(d), bindings::begin_value(e));
+  }
 };
-
 
 //
 // Functions for direct use. These functions are overloaded for temporaries,
 // so that wrapped types can still be passed and used for write-access. In
 // addition, if applicable, they are overloaded for user-defined workspaces.
-// Calls to these functions are passed to the sterf_impl classes. In the 
+// Calls to these functions are passed to the sterf_impl classes. In the
 // documentation, most overloads are collapsed to avoid a large number of
 // prototypes which are very similar.
 //
@@ -112,16 +110,16 @@ struct sterf_impl {
 //
 // Overloaded function for sterf. Its overload differs for
 //
-template< typename VectorD, typename VectorE >
-inline std::ptrdiff_t sterf( const fortran_int_t n, VectorD& d,
-        VectorE& e ) {
-    return sterf_impl< typename bindings::value_type<
-            VectorD >::type >::invoke( n, d, e );
+template <typename VectorD, typename VectorE>
+inline std::ptrdiff_t sterf(const fortran_int_t n, VectorD& d, VectorE& e) {
+  return sterf_impl<typename bindings::value_type<VectorD>::type>::invoke(
+      n, d, e
+  );
 }
 
-} // namespace lapack
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace lapack
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

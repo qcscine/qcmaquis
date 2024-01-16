@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #ifndef BOUNDARY_PROPAGATOR_H
@@ -14,7 +14,8 @@
 #include "dmrg/mp_tensors/mpo.h"
 
 /**
- * @brief This class serves as a wrapper around the boundary propagation routine.
+ * @brief This class serves as a wrapper around the boundary propagation
+ * routine.
  *
  * The boundary propagation is represented by the following contraction patters:
  *
@@ -26,27 +27,28 @@
  *
  * And the result of the contraction between the MPS and the MPO are stored in
  * so-called boundaries.
- * The (i)-th left boundary collects the partial MPS/MPO contraction up to site (i)
- * from the left, with the (i)-th site *excluded*.
- * The (i)-th right boundary collects instead the partial MPS/MPO contraction up
- * to site (i) included.
- * When solving the local problem on a given site j one, therefore, needs, the j-th
- * left boundaries and the (j+1)-th right boundary (for the single-site case).
+ * The (i)-th left boundary collects the partial MPS/MPO contraction up to site
+ * (i) from the left, with the (i)-th site *excluded*. The (i)-th right boundary
+ * collects instead the partial MPS/MPO contraction up to site (i) included.
+ * When solving the local problem on a given site j one, therefore, needs, the
+ * j-th left boundaries and the (j+1)-th right boundary (for the single-site
+ * case).
  */
-template<class Matrix, class SymmGroup, class Storage>
+template <class Matrix, class SymmGroup, class Storage>
 class BoundaryPropagator {
-public:
+ public:
   using MPSType = MPS<Matrix, SymmGroup>;
   using MPOType = MPO<Matrix, SymmGroup>;
-  using BoundariesType = std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> >;
-  using Contraction = contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>;
+  using BoundariesType = std::vector<
+      Boundary<typename storage::constrained<Matrix>::type, SymmGroup> >;
+  using Contraction = contraction::Engine<
+      Matrix, typename storage::constrained<Matrix>::type, SymmGroup>;
 
   /** @brief Class constructor */
-  BoundaryPropagator(const MPSType& mps, const MPOType& mpo, int initSite=0)
-    : L_(mps.length()), initSite_(initSite), mpo_(mpo), mps_(mps)
-  {
-    left_.resize(L_+1);
-    right_.resize(L_+1);
+  BoundaryPropagator(const MPSType& mps, const MPOType& mpo, int initSite = 0)
+      : L_(mps.length()), initSite_(initSite), mpo_(mpo), mps_(mps) {
+    left_.resize(L_ + 1);
+    right_.resize(L_ + 1);
     generateLeftBoundary();
     generateRightBoundary();
   }
@@ -98,9 +100,10 @@ public:
   inline void updateLeftBoundary(int iSite) {
     if (iSite > 0 && iSite <= L_) {
       Storage::drop(left_[iSite]);
-      left_[iSite] = Contraction::overlap_mpo_left_step(mps_[iSite-1], mps_[iSite-1],
-                                                        left_[iSite-1], mpo_[iSite-1]);
-      Storage::StoreToFile(left_[iSite-1]);
+      left_[iSite] = Contraction::overlap_mpo_left_step(
+          mps_[iSite - 1], mps_[iSite - 1], left_[iSite - 1], mpo_[iSite - 1]
+      );
+      Storage::StoreToFile(left_[iSite - 1]);
     }
   }
 
@@ -115,20 +118,19 @@ public:
   inline void updateRightBoundary(int iSite) {
     if (iSite >= 0 && iSite < L_) {
       Storage::drop(right_[iSite]);
-      right_[iSite] = Contraction::overlap_mpo_right_step(mps_[iSite], mps_[iSite],
-                                                          right_[iSite+1], mpo_[iSite]);
-      Storage::StoreToFile(right_[iSite+1]);
+      right_[iSite] = Contraction::overlap_mpo_right_step(
+          mps_[iSite], mps_[iSite], right_[iSite + 1], mpo_[iSite]
+      );
+      Storage::StoreToFile(right_[iSite + 1]);
     }
   }
 
-private:
-
+ private:
   /** @brief Generates the left boundary */
   void generateLeftBoundary() {
     Storage::drop(left_[0]);
     left_[0] = mps_.left_boundary();
-    for (int iSite = 1; iSite <= initSite_; iSite++)
-      updateLeftBoundary(iSite);
+    for (int iSite = 1; iSite <= initSite_; iSite++) updateLeftBoundary(iSite);
     Storage::StoreToFile(left_[initSite_]);
   }
 
@@ -136,9 +138,9 @@ private:
   void generateRightBoundary() {
     Storage::drop(right_[L_]);
     right_[L_] = mps_.right_boundary();
-    for (int iSite = L_-1; iSite > initSite_; iSite--)
+    for (int iSite = L_ - 1; iSite > initSite_; iSite--)
       updateRightBoundary(iSite);
-    Storage::StoreToFile(right_[initSite_+1]);
+    Storage::StoreToFile(right_[initSite_ + 1]);
   }
 
   // Class members

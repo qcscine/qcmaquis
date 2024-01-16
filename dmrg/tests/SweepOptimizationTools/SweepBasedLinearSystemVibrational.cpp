@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #define BOOST_TEST_MODULE SweepBasedLinearSystemVibrational
@@ -18,19 +18,24 @@
 
 #ifdef DMRG_VIBRATIONAL
 
-/** @brief Checks that the linear system solver via interface works for vibrational problems. */
-BOOST_FIXTURE_TEST_CASE(Test_SweepBasedLinearSystemSS_Vibrational_Bilinearlty, WatsonFixture)
-{
+/** @brief Checks that the linear system solver via interface works for
+ * vibrational problems. */
+BOOST_FIXTURE_TEST_CASE(
+    Test_SweepBasedLinearSystemSS_Vibrational_Bilinearlty, WatsonFixture
+) {
 #ifdef HAVE_TrivialGroup
   parametersBilinearly.set("nsweeps", 5);
   parametersBilinearly.set("max_bond_dimension", 100);
   parametersBilinearly.set("truncation_initial", 1.0E-20);
   parametersBilinearly.set("truncation_main", 1.0E-15);
   auto bilinearlyLattice = Lattice(parametersBilinearly);
-  auto bilinearlyModel = Model<matrix, TrivialGroup>(bilinearlyLattice, parametersBilinearly);
+  auto bilinearlyModel =
+      Model<matrix, TrivialGroup>(bilinearlyLattice, parametersBilinearly);
   parametersBilinearly.set("init_type", "const");
-  auto bilinearlyMPS = MPS<matrix, TrivialGroup>(bilinearlyLattice.size(),
-                                                 *(bilinearlyModel.initializer(bilinearlyLattice, parametersBilinearly)));
+  auto bilinearlyMPS = MPS<matrix, TrivialGroup>(
+      bilinearlyLattice.size(),
+      *(bilinearlyModel.initializer(bilinearlyLattice, parametersBilinearly))
+  );
   bilinearlyMPS.normalize_right();
   // Calculates the energy via the interface
   parametersBilinearly.set("optimization", "singlesite");
@@ -45,8 +50,9 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedLinearSystemSS_Vibrational_Bilinearlty, W
   parametersBilinearly.set("linsystem_tol", 1.0E-10);
   parametersBilinearly.set("linsystem_krylov_dim", 20);
   parametersBilinearly.set("linsystem_solver", "GMRES");
-  // Set the shift of DMRG[IPI] as the energy shifted by -0.1 (note that this Hamiltonian is unitless)
-  parametersBilinearly.set("ipi_shift", energyFromInterface-0.1);
+  // Set the shift of DMRG[IPI] as the energy shifted by -0.1 (note that this
+  // Hamiltonian is unitless)
+  parametersBilinearly.set("ipi_shift", energyFromInterface - 0.1);
   parametersBilinearly.set("ipi_sweep_threshold", 1.0E-5);
   parametersBilinearly.set("nsweeps", 2);
   parametersBilinearly.set("ipi_iterations", 10);
@@ -54,7 +60,7 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedLinearSystemSS_Vibrational_Bilinearlty, W
   interfaceBilinearlyIpi.runInversePowerIteration();
   auto ipiEnergy = interfaceBilinearlyIpi.energy();
   BOOST_CHECK_CLOSE(energyFromInterface, ipiEnergy, 1.0e-7);
-#endif // HAVE_TrivialGroup
+#endif  // HAVE_TrivialGroup
 }
 
-#endif // DMRG_VIBRATIONAL
+#endif  // DMRG_VIBRATIONAL

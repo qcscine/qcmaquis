@@ -51,12 +51,14 @@ namespace detail {
 // * netlib-compatible LAPACK backend (the default), and
 // * float value-type.
 //
-inline std::ptrdiff_t orgql( const fortran_int_t m, const fortran_int_t n,
-        const fortran_int_t k, float* a, const fortran_int_t lda,
-        const float* tau, float* work, const fortran_int_t lwork ) {
-    fortran_int_t info(0);
-    LAPACK_SORGQL( &m, &n, &k, a, &lda, tau, work, &lwork, &info );
-    return info;
+inline std::ptrdiff_t orgql(
+    const fortran_int_t m, const fortran_int_t n, const fortran_int_t k,
+    float* a, const fortran_int_t lda, const float* tau, float* work,
+    const fortran_int_t lwork
+) {
+  fortran_int_t info(0);
+  LAPACK_SORGQL(&m, &n, &k, a, &lda, tau, work, &lwork, &info);
+  return info;
 }
 
 //
@@ -64,108 +66,124 @@ inline std::ptrdiff_t orgql( const fortran_int_t m, const fortran_int_t n,
 // * netlib-compatible LAPACK backend (the default), and
 // * double value-type.
 //
-inline std::ptrdiff_t orgql( const fortran_int_t m, const fortran_int_t n,
-        const fortran_int_t k, double* a, const fortran_int_t lda,
-        const double* tau, double* work, const fortran_int_t lwork ) {
-    fortran_int_t info(0);
-    LAPACK_DORGQL( &m, &n, &k, a, &lda, tau, work, &lwork, &info );
-    return info;
+inline std::ptrdiff_t orgql(
+    const fortran_int_t m, const fortran_int_t n, const fortran_int_t k,
+    double* a, const fortran_int_t lda, const double* tau, double* work,
+    const fortran_int_t lwork
+) {
+  fortran_int_t info(0);
+  LAPACK_DORGQL(&m, &n, &k, a, &lda, tau, work, &lwork, &info);
+  return info;
 }
 
-} // namespace detail
+}  // namespace detail
 
 //
 // Value-type based template class. Use this class if you need a type
 // for dispatching to orgql.
 //
-template< typename Value >
+template <typename Value>
 struct orgql_impl {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
+  //
+  // Static member function for user-defined workspaces, that
+  // * Deduces the required arguments for dispatching to LAPACK, and
+  // * Asserts that most arguments make sense.
+  //
+  template <typename MatrixA, typename VectorTAU, typename WORK>
+  static std::ptrdiff_t invoke(
+      MatrixA& a, const VectorTAU& tau, detail::workspace1<WORK> work
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixA>::value));
+    BOOST_STATIC_ASSERT(
+        (boost::is_same<
+            typename remove_const<
+                typename bindings::value_type<MatrixA>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<VectorTAU>::type>::type>::value)
+    );
+    BOOST_STATIC_ASSERT((bindings::is_mutable<MatrixA>::value));
+    BOOST_ASSERT(bindings::size(tau) >= bindings::size(tau));
+    BOOST_ASSERT(
+        bindings::size(work.select(real_type())) >=
+        min_size_work(bindings::size_column(a))
+    );
+    BOOST_ASSERT(
+        bindings::size_minor(a) == 1 || bindings::stride_minor(a) == 1
+    );
+    BOOST_ASSERT(bindings::size_row(a) >= 0);
+    BOOST_ASSERT(
+        bindings::stride_major(a) >=
+        std::max<std::ptrdiff_t>(1, bindings::size_row(a))
+    );
+    return detail::orgql(
+        bindings::size_row(a), bindings::size_column(a), bindings::size(tau),
+        bindings::begin_value(a), bindings::stride_major(a),
+        bindings::begin_value(tau),
+        bindings::begin_value(work.select(real_type())),
+        bindings::size(work.select(real_type()))
+    );
+  }
 
-    //
-    // Static member function for user-defined workspaces, that
-    // * Deduces the required arguments for dispatching to LAPACK, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename MatrixA, typename VectorTAU, typename WORK >
-    static std::ptrdiff_t invoke( MatrixA& a, const VectorTAU& tau,
-            detail::workspace1< WORK > work ) {
-        namespace bindings = ::boost::numeric::bindings;
-        BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixA >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
-                typename bindings::value_type< MatrixA >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                VectorTAU >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< MatrixA >::value) );
-        BOOST_ASSERT( bindings::size(tau) >= bindings::size(tau) );
-        BOOST_ASSERT( bindings::size(work.select(real_type())) >=
-                min_size_work( bindings::size_column(a) ));
-        BOOST_ASSERT( bindings::size_minor(a) == 1 ||
-                bindings::stride_minor(a) == 1 );
-        BOOST_ASSERT( bindings::size_row(a) >= 0 );
-        BOOST_ASSERT( bindings::stride_major(a) >= std::max< std::ptrdiff_t >(1,
-                bindings::size_row(a)) );
-        return detail::orgql( bindings::size_row(a), bindings::size_column(a),
-                bindings::size(tau), bindings::begin_value(a),
-                bindings::stride_major(a), bindings::begin_value(tau),
-                bindings::begin_value(work.select(real_type())),
-                bindings::size(work.select(real_type())) );
-    }
+  //
+  // Static member function that
+  // * Figures out the minimal workspace requirements, and passes
+  //   the results to the user-defined workspace overload of the
+  //   invoke static member function
+  // * Enables the unblocked algorithm (BLAS level 2)
+  //
+  template <typename MatrixA, typename VectorTAU>
+  static std::ptrdiff_t invoke(
+      MatrixA& a, const VectorTAU& tau, minimal_workspace
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    bindings::detail::array<real_type> tmp_work(
+        min_size_work(bindings::size_column(a))
+    );
+    return invoke(a, tau, workspace(tmp_work));
+  }
 
-    //
-    // Static member function that
-    // * Figures out the minimal workspace requirements, and passes
-    //   the results to the user-defined workspace overload of the 
-    //   invoke static member function
-    // * Enables the unblocked algorithm (BLAS level 2)
-    //
-    template< typename MatrixA, typename VectorTAU >
-    static std::ptrdiff_t invoke( MatrixA& a, const VectorTAU& tau,
-            minimal_workspace ) {
-        namespace bindings = ::boost::numeric::bindings;
-        bindings::detail::array< real_type > tmp_work( min_size_work(
-                bindings::size_column(a) ) );
-        return invoke( a, tau, workspace( tmp_work ) );
-    }
+  //
+  // Static member function that
+  // * Figures out the optimal workspace requirements, and passes
+  //   the results to the user-defined workspace overload of the
+  //   invoke static member
+  // * Enables the blocked algorithm (BLAS level 3)
+  //
+  template <typename MatrixA, typename VectorTAU>
+  static std::ptrdiff_t invoke(
+      MatrixA& a, const VectorTAU& tau, optimal_workspace
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    real_type opt_size_work;
+    detail::orgql(
+        bindings::size_row(a), bindings::size_column(a), bindings::size(tau),
+        bindings::begin_value(a), bindings::stride_major(a),
+        bindings::begin_value(tau), &opt_size_work, -1
+    );
+    bindings::detail::array<real_type> tmp_work(
+        traits::detail::to_int(opt_size_work)
+    );
+    return invoke(a, tau, workspace(tmp_work));
+  }
 
-    //
-    // Static member function that
-    // * Figures out the optimal workspace requirements, and passes
-    //   the results to the user-defined workspace overload of the 
-    //   invoke static member
-    // * Enables the blocked algorithm (BLAS level 3)
-    //
-    template< typename MatrixA, typename VectorTAU >
-    static std::ptrdiff_t invoke( MatrixA& a, const VectorTAU& tau,
-            optimal_workspace ) {
-        namespace bindings = ::boost::numeric::bindings;
-        real_type opt_size_work;
-        detail::orgql( bindings::size_row(a), bindings::size_column(a),
-                bindings::size(tau), bindings::begin_value(a),
-                bindings::stride_major(a), bindings::begin_value(tau),
-                &opt_size_work, -1 );
-        bindings::detail::array< real_type > tmp_work(
-                traits::detail::to_int( opt_size_work ) );
-        return invoke( a, tau, workspace( tmp_work ) );
-    }
-
-    //
-    // Static member function that returns the minimum size of
-    // workspace-array work.
-    //
-    static std::ptrdiff_t min_size_work( const std::ptrdiff_t n ) {
-        return std::max< std::ptrdiff_t >( 1, n );
-    }
+  //
+  // Static member function that returns the minimum size of
+  // workspace-array work.
+  //
+  static std::ptrdiff_t min_size_work(const std::ptrdiff_t n) {
+    return std::max<std::ptrdiff_t>(1, n);
+  }
 };
-
 
 //
 // Functions for direct use. These functions are overloaded for temporaries,
 // so that wrapped types can still be passed and used for write-access. In
 // addition, if applicable, they are overloaded for user-defined workspaces.
-// Calls to these functions are passed to the orgql_impl classes. In the 
+// Calls to these functions are passed to the orgql_impl classes. In the
 // documentation, most overloads are collapsed to avoid a large number of
 // prototypes which are very similar.
 //
@@ -174,29 +192,31 @@ struct orgql_impl {
 // Overloaded function for orgql. Its overload differs for
 // * User-defined workspace
 //
-template< typename MatrixA, typename VectorTAU, typename Workspace >
-inline typename boost::enable_if< detail::is_workspace< Workspace >,
-        std::ptrdiff_t >::type
-orgql( MatrixA& a, const VectorTAU& tau, Workspace work ) {
-    return orgql_impl< typename bindings::value_type<
-            MatrixA >::type >::invoke( a, tau, work );
+template <typename MatrixA, typename VectorTAU, typename Workspace>
+inline typename boost::enable_if<
+    detail::is_workspace<Workspace>, std::ptrdiff_t>::type
+orgql(MatrixA& a, const VectorTAU& tau, Workspace work) {
+  return orgql_impl<typename bindings::value_type<MatrixA>::type>::invoke(
+      a, tau, work
+  );
 }
 
 //
 // Overloaded function for orgql. Its overload differs for
 // * Default workspace-type (optimal)
 //
-template< typename MatrixA, typename VectorTAU >
-inline typename boost::disable_if< detail::is_workspace< VectorTAU >,
-        std::ptrdiff_t >::type
-orgql( MatrixA& a, const VectorTAU& tau ) {
-    return orgql_impl< typename bindings::value_type<
-            MatrixA >::type >::invoke( a, tau, optimal_workspace() );
+template <typename MatrixA, typename VectorTAU>
+inline typename boost::disable_if<
+    detail::is_workspace<VectorTAU>, std::ptrdiff_t>::type
+orgql(MatrixA& a, const VectorTAU& tau) {
+  return orgql_impl<typename bindings::value_type<MatrixA>::type>::invoke(
+      a, tau, optimal_workspace()
+  );
 }
 
-} // namespace lapack
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace lapack
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

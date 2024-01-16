@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #ifndef MAQUIS_DMRG_BASIS_SECTOR_ITERATOR_H
@@ -14,113 +14,101 @@
 
 template <class SymmGroup>
 class basis_sector_iterator_
-: public boost::forward_iterator_helper<
-                                          basis_sector_iterator_<SymmGroup>
-                                        , std::vector<std::tuple<typename SymmGroup::charge, std::size_t> >
-                                        , std::ptrdiff_t
-                                        , std::vector<std::tuple<typename SymmGroup::charge, std::size_t> > *
-                                        , std::vector<std::tuple<typename SymmGroup::charge, std::size_t> > &
-                                       >
+    : public boost::forward_iterator_helper<
+          basis_sector_iterator_<SymmGroup>,
+          std::vector<std::tuple<typename SymmGroup::charge, std::size_t>>,
+          std::ptrdiff_t,
+          std::vector<std::tuple<typename SymmGroup::charge, std::size_t>>*,
+          std::vector<std::tuple<typename SymmGroup::charge, std::size_t>>&>
 
 {
-    using charge = typename SymmGroup::charge;
-    using size_t = std::size_t;
-    using local_state = std::tuple<charge, size_t>;
-    using states_iterator = typename std::vector<local_state>::const_iterator;
+  using charge = typename SymmGroup::charge;
+  using size_t = std::size_t;
+  using local_state = std::tuple<charge, size_t>;
+  using states_iterator = typename std::vector<local_state>::const_iterator;
 
-    using get0_fn_t = const charge &(*)(const boost::tuples::cons<charge, boost::tuples::cons<size_t, boost::tuples::null_type>> &);
+  using get0_fn_t =
+      const charge& (*)(const boost::tuples::cons<
+                        charge, boost::tuples::cons<
+                                    size_t, boost::tuples::null_type>>&);
 
-public:
-    basis_sector_iterator_()
-    : valid(false)
-    { }
-    
-    basis_sector_iterator_(size_t L_, Index<SymmGroup> const& phys, charge initc_)
-    : valid(true)
-    , L(L_)
-    , initc(initc_)
-    , it(L, 0)
-    , state(L)
-    {
-        getter_fn = &std::get<0, charge, boost::tuples::cons<size_t, boost::tuples::null_type> >;
-    
-        for (size_t i=0; i<phys.size(); ++i)
-            for (size_t j=0; j<phys[i].second; ++j)
-                alllocal.push_back( local_state(phys[i].first, j) );
-                
-        for (size_t i=0; i<L; ++i) {
-            state[i] = alllocal[it[i]];
+ public:
+  basis_sector_iterator_() : valid(false) {}
+
+  basis_sector_iterator_(size_t L_, Index<SymmGroup> const& phys, charge initc_)
+      : valid(true), L(L_), initc(initc_), it(L, 0), state(L) {
+    getter_fn = &std::get<
+        0, charge, boost::tuples::cons<size_t, boost::tuples::null_type>>;
+
+    for (size_t i = 0; i < phys.size(); ++i)
+      for (size_t j = 0; j < phys[i].second; ++j)
+        alllocal.push_back(local_state(phys[i].first, j));
+
+    for (size_t i = 0; i < L; ++i) {
+      state[i] = alllocal[it[i]];
+    }
+
+    if (total_charge() != initc) advance();
+  }
+
+  std::vector<local_state> const& operator*() const { return state; }
+
+  void operator++() { advance(); }
+
+  bool operator==(basis_sector_iterator_<SymmGroup> const& rhs) const {
+    if (valid != rhs.valid) return false;
+    if (!valid) return true;
+
+    return (L == rhs.L) && (initc == rhs.initc) && (alllocal == rhs.alllocal) &&
+           std::equal(state.begin(), state.end(), rhs.state.begin());
+  }
+
+ private:
+  charge total_charge() const {
+    return std::accumulate(
+        state.begin(), state.end(), SymmGroup::IdentityCharge,
+        [&](const charge& acc, const local_state& x) {
+          return SymmGroup::fuse(acc, getter_fn(x));
         }
-        
-        if (total_charge() != initc)
-            advance();
-    }
-    
-    std::vector<local_state> const& operator*() const
-    {
-        return state;
-    }
-    
-    void operator++()
-    {
-        advance();
-    }
-    
-    bool operator==(basis_sector_iterator_<SymmGroup> const & rhs) const
-    {
-        if (valid != rhs.valid)
-            return false;
-        if (!valid)
-            return true;
-        
-        return (L == rhs.L) && (initc == rhs.initc) && (alllocal == rhs.alllocal) && std::equal(state.begin(), state.end(), rhs.state.begin());
-    }
+    );
+  }
 
-private:
-    
-    charge total_charge() const
-    {
-        return std::accumulate(state.begin(), state.end(), SymmGroup::IdentityCharge,
-            [&](const charge& acc, const local_state& x){
-                return SymmGroup::fuse(acc, getter_fn(x));
-            });
-    }
-    
-    void advance()
-    {
-        do {
-            ++it[L-1];
-            for (int i=L-1; (i > 0) && (it[i] == alllocal.size()); --i) {
-                it[i] = 0;
-                ++it[i-1];
-            }
-            if ( it[0] == alllocal.size() ) {
-                valid = false;
-                return;
-            }
-            
-            for (size_t i=0; i<L; ++i)
-                state[i] = alllocal[it[i]];
-        } while(total_charge() != initc);
-    }
-    
-    bool valid;
-    size_t L;
-    charge initc;
-    get0_fn_t getter_fn;
-    
-    std::vector<local_state> alllocal;
-    std::vector<size_t> it;
-    std::vector<local_state> state;
+  void advance() {
+    do {
+      ++it[L - 1];
+      for (int i = L - 1; (i > 0) && (it[i] == alllocal.size()); --i) {
+        it[i] = 0;
+        ++it[i - 1];
+      }
+      if (it[0] == alllocal.size()) {
+        valid = false;
+        return;
+      }
+
+      for (size_t i = 0; i < L; ++i) state[i] = alllocal[it[i]];
+    } while (total_charge() != initc);
+  }
+
+  bool valid;
+  size_t L;
+  charge initc;
+  get0_fn_t getter_fn;
+
+  std::vector<local_state> alllocal;
+  std::vector<size_t> it;
+  std::vector<local_state> state;
 };
 
-
 template <class SymmGroup>
-std::pair<basis_sector_iterator_<SymmGroup>, basis_sector_iterator_<SymmGroup> >
-basis_sector_iterators(size_t L, Index<SymmGroup> const& phys, typename SymmGroup::charge initc=SymmGroup::IdentityCharge)
-{
-    return std::make_pair(basis_sector_iterator_<SymmGroup>(L, phys, initc), basis_sector_iterator_<SymmGroup>());
+std::pair<basis_sector_iterator_<SymmGroup>, basis_sector_iterator_<SymmGroup>>
+basis_sector_iterators(
+    size_t L, Index<SymmGroup> const& phys,
+    typename SymmGroup::charge initc = SymmGroup::IdentityCharge
+) {
+  return std::make_pair(
+      basis_sector_iterator_<SymmGroup>(L, phys, initc),
+      basis_sector_iterator_<SymmGroup>()
+  );
 }
-
 
 #endif

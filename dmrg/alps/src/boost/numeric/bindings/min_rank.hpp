@@ -15,12 +15,11 @@ namespace boost {
 namespace numeric {
 namespace bindings {
 
-template< typename T >
-int min_rank( T const& t ) {
-}
+template <typename T>
+int min_rank(T const& t) {}
 
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

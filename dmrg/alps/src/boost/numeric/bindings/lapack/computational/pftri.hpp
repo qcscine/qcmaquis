@@ -50,13 +50,15 @@ namespace detail {
 // * netlib-compatible LAPACK backend (the default), and
 // * float value-type.
 //
-template< typename TransR, typename UpLo >
-inline std::ptrdiff_t pftri( const TransR, const UpLo, const fortran_int_t n,
-        float* a ) {
-    fortran_int_t info(0);
-    LAPACK_SPFTRI( &lapack_option< TransR >::value, &lapack_option<
-            UpLo >::value, &n, a, &info );
-    return info;
+template <typename TransR, typename UpLo>
+inline std::ptrdiff_t pftri(
+    const TransR, const UpLo, const fortran_int_t n, float* a
+) {
+  fortran_int_t info(0);
+  LAPACK_SPFTRI(
+      &lapack_option<TransR>::value, &lapack_option<UpLo>::value, &n, a, &info
+  );
+  return info;
 }
 
 //
@@ -64,13 +66,15 @@ inline std::ptrdiff_t pftri( const TransR, const UpLo, const fortran_int_t n,
 // * netlib-compatible LAPACK backend (the default), and
 // * double value-type.
 //
-template< typename TransR, typename UpLo >
-inline std::ptrdiff_t pftri( const TransR, const UpLo, const fortran_int_t n,
-        double* a ) {
-    fortran_int_t info(0);
-    LAPACK_DPFTRI( &lapack_option< TransR >::value, &lapack_option<
-            UpLo >::value, &n, a, &info );
-    return info;
+template <typename TransR, typename UpLo>
+inline std::ptrdiff_t pftri(
+    const TransR, const UpLo, const fortran_int_t n, double* a
+) {
+  fortran_int_t info(0);
+  LAPACK_DPFTRI(
+      &lapack_option<TransR>::value, &lapack_option<UpLo>::value, &n, a, &info
+  );
+  return info;
 }
 
 //
@@ -78,13 +82,15 @@ inline std::ptrdiff_t pftri( const TransR, const UpLo, const fortran_int_t n,
 // * netlib-compatible LAPACK backend (the default), and
 // * complex<float> value-type.
 //
-template< typename TransR, typename UpLo >
-inline std::ptrdiff_t pftri( const TransR, const UpLo, const fortran_int_t n,
-        std::complex<float>* a ) {
-    fortran_int_t info(0);
-    LAPACK_CPFTRI( &lapack_option< TransR >::value, &lapack_option<
-            UpLo >::value, &n, a, &info );
-    return info;
+template <typename TransR, typename UpLo>
+inline std::ptrdiff_t pftri(
+    const TransR, const UpLo, const fortran_int_t n, std::complex<float>* a
+) {
+  fortran_int_t info(0);
+  LAPACK_CPFTRI(
+      &lapack_option<TransR>::value, &lapack_option<UpLo>::value, &n, a, &info
+  );
+  return info;
 }
 
 //
@@ -92,52 +98,53 @@ inline std::ptrdiff_t pftri( const TransR, const UpLo, const fortran_int_t n,
 // * netlib-compatible LAPACK backend (the default), and
 // * complex<double> value-type.
 //
-template< typename TransR, typename UpLo >
-inline std::ptrdiff_t pftri( const TransR, const UpLo, const fortran_int_t n,
-        std::complex<double>* a ) {
-    fortran_int_t info(0);
-    LAPACK_ZPFTRI( &lapack_option< TransR >::value, &lapack_option<
-            UpLo >::value, &n, a, &info );
-    return info;
+template <typename TransR, typename UpLo>
+inline std::ptrdiff_t pftri(
+    const TransR, const UpLo, const fortran_int_t n, std::complex<double>* a
+) {
+  fortran_int_t info(0);
+  LAPACK_ZPFTRI(
+      &lapack_option<TransR>::value, &lapack_option<UpLo>::value, &n, a, &info
+  );
+  return info;
 }
 
-} // namespace detail
+}  // namespace detail
 
 //
 // Value-type based template class. Use this class if you need a type
 // for dispatching to pftri.
 //
-template< typename Value >
+template <typename Value>
 struct pftri_impl {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
-
-    //
-    // Static member function, that
-    // * Deduces the required arguments for dispatching to LAPACK, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename MatrixA >
-    static std::ptrdiff_t invoke( MatrixA& a ) {
-        namespace bindings = ::boost::numeric::bindings;
-        typedef typename blas::detail::default_order< MatrixA >::type order;
-        typedef typename result_of::trans_tag< MatrixA, order >::type transr;
-        typedef typename result_of::uplo_tag< MatrixA, transr >::type uplo;
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< MatrixA >::value) );
-        BOOST_ASSERT( bindings::size_column_op(a, transr()) >= 0 );
-        return detail::pftri( transr(), uplo(), bindings::size_column_op(a,
-                transr()), bindings::begin_value(a) );
-    }
-
+  //
+  // Static member function, that
+  // * Deduces the required arguments for dispatching to LAPACK, and
+  // * Asserts that most arguments make sense.
+  //
+  template <typename MatrixA>
+  static std::ptrdiff_t invoke(MatrixA& a) {
+    namespace bindings = ::boost::numeric::bindings;
+    typedef typename blas::detail::default_order<MatrixA>::type order;
+    typedef typename result_of::trans_tag<MatrixA, order>::type transr;
+    typedef typename result_of::uplo_tag<MatrixA, transr>::type uplo;
+    BOOST_STATIC_ASSERT((bindings::is_mutable<MatrixA>::value));
+    BOOST_ASSERT(bindings::size_column_op(a, transr()) >= 0);
+    return detail::pftri(
+        transr(), uplo(), bindings::size_column_op(a, transr()),
+        bindings::begin_value(a)
+    );
+  }
 };
-
 
 //
 // Functions for direct use. These functions are overloaded for temporaries,
 // so that wrapped types can still be passed and used for write-access. In
 // addition, if applicable, they are overloaded for user-defined workspaces.
-// Calls to these functions are passed to the pftri_impl classes. In the 
+// Calls to these functions are passed to the pftri_impl classes. In the
 // documentation, most overloads are collapsed to avoid a large number of
 // prototypes which are very similar.
 //
@@ -145,15 +152,14 @@ struct pftri_impl {
 //
 // Overloaded function for pftri. Its overload differs for
 //
-template< typename MatrixA >
-inline std::ptrdiff_t pftri( MatrixA& a ) {
-    return pftri_impl< typename bindings::value_type<
-            MatrixA >::type >::invoke( a );
+template <typename MatrixA>
+inline std::ptrdiff_t pftri(MatrixA& a) {
+  return pftri_impl<typename bindings::value_type<MatrixA>::type>::invoke(a);
 }
 
-} // namespace lapack
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace lapack
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

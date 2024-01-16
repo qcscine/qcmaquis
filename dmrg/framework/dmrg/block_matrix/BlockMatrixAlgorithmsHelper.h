@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #ifndef BLOCK_MATRIX_ALGORITHMS_HELPER_H
@@ -11,20 +11,21 @@
 #include "dmrg/sim/matrix_types.h"
 
 /** @brief Helper class for block matrix algorithms */
-template<class Matrix, class SymmGroup>
+template <class Matrix, class SymmGroup>
 class BlockMatrixAlgorithmsHelperClass {
-public:
+ public:
   /**
    * @brief Adjusts the phase of the
    */
-  static void adjustPhase(Matrix& eigenVectors) {};
+  static void adjustPhase(Matrix& eigenVectors){};
 };
 
 /** @brief Specialization for complex-values matrices */
-template<class SymmGroup>
+template <class SymmGroup>
 class BlockMatrixAlgorithmsHelperClass<cmatrix, SymmGroup> {
   using ComplexType = std::complex<double>;
-public:
+
+ public:
   static void adjustPhase(cmatrix& eigenVectors) {
     std::vector<ComplexType> vectorOfPhases;
     // Picks up the phases
@@ -33,14 +34,14 @@ public:
       bool exit = false;
       do {
         if (std::abs(eigenVectors(iRow, iCol)) > threshold) {
-          vectorOfPhases.push_back(std::exp(-std::complex<double>(0., 1.)*std::arg(eigenVectors(iRow, iCol))));
+          vectorOfPhases.push_back(std::exp(
+              -std::complex<double>(0., 1.) * std::arg(eigenVectors(iRow, iCol))
+          ));
           exit = true;
-        }
-        else if (iRow == num_rows(eigenVectors)-1) {
+        } else if (iRow == num_rows(eigenVectors) - 1) {
           vectorOfPhases.emplace_back(1., 0.);
           exit = true;
-        }
-        else {
+        } else {
           iRow++;
         }
       } while (!exit);
@@ -50,8 +51,9 @@ public:
       for (int iRow = 0; iRow < num_rows(eigenVectors); iRow++)
         eigenVectors(iRow, iCol) *= vectorOfPhases[iCol];
   }
-private:
+
+ private:
   static constexpr double threshold = 1.0E-16;
 };
 
-#endif // BLOCK_MATRIX_ALGORITHMS_HELPER_H
+#endif  // BLOCK_MATRIX_ALGORITHMS_HELPER_H

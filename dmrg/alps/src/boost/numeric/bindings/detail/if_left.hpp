@@ -16,38 +16,31 @@ namespace numeric {
 namespace bindings {
 namespace detail {
 
-template< typename Side, typename Left, typename Right >
+template <typename Side, typename Left, typename Right>
 struct if_left_impl {
+  typedef Right result_type;
 
-    typedef Right result_type;
-
-    static result_type invoke( Left, Right right ) {
-        return right;
-    }
-
+  static result_type invoke(Left, Right right) { return right; }
 };
 
-template< typename Left, typename Right >
-struct if_left_impl< tag::left, Left, Right > {
+template <typename Left, typename Right>
+struct if_left_impl<tag::left, Left, Right> {
+  typedef Left result_type;
 
-    typedef Left result_type;
-
-    static result_type invoke( Left left, Right ) {
-        return left;
-    }
-
+  static result_type invoke(Left left, Right) { return left; }
 };
 
-// by-value 
-template< typename Side, typename Left, typename Right >
-typename if_left_impl< Side, const Left, const Right >::result_type 
-if_left( const Side, const Left left, const Right right ) {
-    return if_left_impl< Side, const Left, const Right >::invoke( left, right );
+// by-value
+template <typename Side, typename Left, typename Right>
+typename if_left_impl<Side, const Left, const Right>::result_type if_left(
+    const Side, const Left left, const Right right
+) {
+  return if_left_impl<Side, const Left, const Right>::invoke(left, right);
 }
 
-} // namespace detail
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace detail
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif
