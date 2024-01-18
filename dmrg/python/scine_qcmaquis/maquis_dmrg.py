@@ -4,6 +4,7 @@ import numpy as np
 
 # pylint: disable=import-error
 from .dmrg_wrapper import DmrgWrapper
+from .entropy_builder import EntropyBuilder
 from .integral_wrapper import ComplexTCIntegralMap, IntegralMap, IntegralMapWrapper, IntegralType, TCIntegralMap
 from .parameters_wrapper import ExcitedStates, ParametersWrapper
 from .utils.ci_coeffs import (make_doubles_aa, make_doubles_ab, make_doubles_bb, make_ref, make_singles_aa,
@@ -40,6 +41,7 @@ class MaquisDmrg:
         "_orbital_optimization",
         "_excited_states",
         "_energy",
+        "_entropy_builder",
     )
 
     def __init__(self):
@@ -64,6 +66,8 @@ class MaquisDmrg:
         """Flag for excited states."""
         self._energy: Union[float, List[float]] = 0.0
         """Final energy of the system."""
+        self._entropy_builder: EntropyBuilder = None
+        """Assembly s1, s2 and mut inf from qcmaquis"""
 
     def set_parameter(self, parameter_name: str, parameter_value: Any):
         """Set any parameter in DmrgParameters.
@@ -157,7 +161,12 @@ class MaquisDmrg:
             The mutual information
         """
         self._dmrg.measure()
-        return self._dmrg.entropies()
+        self._entropy_builder.make_diagnostics(self._dmrg._dmrg)
+        return (
+            self._entropy_builder.s1_entropy,
+            self._entropy_builder.s2_entropy,
+            self._entropy_builder.mutual_information
+        )
 
     def get_reduced_density_matrices(self) -> Tuple[np.ndarray, np.ndarray]:
         """Get 1 and 2 RDM.
@@ -253,6 +262,9 @@ class MaquisDmrg:
                 fiedler_orderer.set_integrals(self._integral_map)
             orbital_order = fiedler_orderer.get_fiedler()
             self._parameters.set("orbital_order", orbital_order)
+            self._entropy_builder = EntropyBuilder(n_orbitals, orbital_order)
+        else:
+            self._entropy_builder = EntropyBuilder(n_orbitals)
 
         self._dmrg.set_parameters(self._parameters)
 

@@ -37,7 +37,7 @@ class DmrgWrapper:
         Number of feast states.
     """
 
-    __slots__ = ("_dmrg", "_run_flag", "_measure_flag", "_run_option", "_feast_states", )
+    __slots__ = ("_dmrg", "_run_flag", "_measure_flag", "_run_option", "_feast_states")
 
     def __init__(self):
         """Construct Wrapper."""
@@ -157,11 +157,6 @@ class DmrgWrapper:
                     pass
             return energies
         return self._dmrg.energy()
-
-    def entropies(self) -> Any:
-        """Getter for entropies."""
-        self._dmrg.measure()
-        return self._dmrg.mutinf()
 
     def measure(self) -> Any:
         """Measure set measurements."""

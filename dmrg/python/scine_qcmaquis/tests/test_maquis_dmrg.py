@@ -3,6 +3,7 @@ import os
 import numpy as np
 import pytest
 
+from scine_qcmaquis.entropy_builder import EntropyBuilder
 from scine_qcmaquis.maquis_dmrg import MaquisDmrg
 
 
@@ -93,11 +94,14 @@ def test_maquis_dmrg_sweep_from_fcidump():
     dmrg._parameters.erase("lattice_library")
     dmrg._parameters.erase("model_library")
     dmrg._parameters.erase("LATTICE")
+    dmrg.set_entropies()
 
     dmrg.set_fcidump("fcidump_mock")
     dmrg.run(4, 2, 0, fiedler=False)
     # from cpp test2
     assert abs(dmrg.get_energy() - -7.90435750473166) < 1e-14
+
+    s1, s2, mut_inf = dmrg.get_entropies()
 
     dmrg = MaquisDmrg()
     dmrg.set_parameter("nsweeps", 2)
@@ -111,11 +115,16 @@ def test_maquis_dmrg_sweep_from_fcidump():
     dmrg._parameters.erase("lattice_library")
     dmrg._parameters.erase("model_library")
     dmrg._parameters.erase("LATTICE")
+    dmrg.set_entropies()
 
     dmrg.set_fcidump("fcidump_mock")
     dmrg.run(4, 2, 0, fiedler=True)
     # from cpp test2
     assert abs(dmrg.get_energy() - -7.90435750473166) < 1e-14
+
+    s1_fiedler, s2_fiedler, mut_inf_fielder = dmrg.get_entropies()
+    assert (np.abs(s1 - s1_fiedler)).sum() < 1e-10
+    # assert (np.abs(mut_inf - mut_inf_fielder)).sum() < 1e-10
 
 
 if __name__ == "__main__":
