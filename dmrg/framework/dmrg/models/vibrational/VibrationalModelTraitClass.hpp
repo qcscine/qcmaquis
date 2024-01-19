@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #ifndef VIBRATIONAL_MODEL_TRAIT_CLASS_H
@@ -11,27 +11,29 @@
 #include "dmrg/block_matrix/symmetry.h"
 
 /** @brief Trait class containing data required for vibrational models */
-template<class SymmGroup>
+template <class SymmGroup>
 class VibrationalModelTraitClass {};
 
 /**
  * @brief Class specialization for the TrivialGroup
- * The trait class includes the maximum number of coupling terms that are supported.
+ * The trait class includes the maximum number of coupling terms that are
+ * supported.
  */
-template<>
+template <>
 class VibrationalModelTraitClass<TrivialGroup> {
-public:
+ public:
   static constexpr int maximumNumberOfCouplings = 6;
 };
 
 /**
  * @brief Class specialization for the TrivialGroup
- * The trait class includes the maximum number of coupling terms that are supported.
+ * The trait class includes the maximum number of coupling terms that are
+ * supported.
  */
-template<>
+template <>
 class VibrationalModelTraitClass<U1> {
-public:
+ public:
   static constexpr int maximumNumberOfCouplings = 2;
 };
 
-#endif // VIBRATIONAL_MODEL_TRAIT_CLASS_H
+#endif  // VIBRATIONAL_MODEL_TRAIT_CLASS_H

@@ -51,13 +51,14 @@ namespace detail {
 // * netlib-compatible LAPACK backend (the default), and
 // * float value-type.
 //
-template< typename UpLo >
-inline std::ptrdiff_t ppequ( const UpLo, const fortran_int_t n,
-        const float* ap, float* s, float& scond, float& amax ) {
-    fortran_int_t info(0);
-    LAPACK_SPPEQU( &lapack_option< UpLo >::value, &n, ap, s, &scond, &amax,
-            &info );
-    return info;
+template <typename UpLo>
+inline std::ptrdiff_t ppequ(
+    const UpLo, const fortran_int_t n, const float* ap, float* s, float& scond,
+    float& amax
+) {
+  fortran_int_t info(0);
+  LAPACK_SPPEQU(&lapack_option<UpLo>::value, &n, ap, s, &scond, &amax, &info);
+  return info;
 }
 
 //
@@ -65,13 +66,14 @@ inline std::ptrdiff_t ppequ( const UpLo, const fortran_int_t n,
 // * netlib-compatible LAPACK backend (the default), and
 // * double value-type.
 //
-template< typename UpLo >
-inline std::ptrdiff_t ppequ( const UpLo, const fortran_int_t n,
-        const double* ap, double* s, double& scond, double& amax ) {
-    fortran_int_t info(0);
-    LAPACK_DPPEQU( &lapack_option< UpLo >::value, &n, ap, s, &scond, &amax,
-            &info );
-    return info;
+template <typename UpLo>
+inline std::ptrdiff_t ppequ(
+    const UpLo, const fortran_int_t n, const double* ap, double* s,
+    double& scond, double& amax
+) {
+  fortran_int_t info(0);
+  LAPACK_DPPEQU(&lapack_option<UpLo>::value, &n, ap, s, &scond, &amax, &info);
+  return info;
 }
 
 //
@@ -79,13 +81,14 @@ inline std::ptrdiff_t ppequ( const UpLo, const fortran_int_t n,
 // * netlib-compatible LAPACK backend (the default), and
 // * complex<float> value-type.
 //
-template< typename UpLo >
-inline std::ptrdiff_t ppequ( const UpLo, const fortran_int_t n,
-        const std::complex<float>* ap, float* s, float& scond, float& amax ) {
-    fortran_int_t info(0);
-    LAPACK_CPPEQU( &lapack_option< UpLo >::value, &n, ap, s, &scond, &amax,
-            &info );
-    return info;
+template <typename UpLo>
+inline std::ptrdiff_t ppequ(
+    const UpLo, const fortran_int_t n, const std::complex<float>* ap, float* s,
+    float& scond, float& amax
+) {
+  fortran_int_t info(0);
+  LAPACK_CPPEQU(&lapack_option<UpLo>::value, &n, ap, s, &scond, &amax, &info);
+  return info;
 }
 
 //
@@ -93,91 +96,93 @@ inline std::ptrdiff_t ppequ( const UpLo, const fortran_int_t n,
 // * netlib-compatible LAPACK backend (the default), and
 // * complex<double> value-type.
 //
-template< typename UpLo >
-inline std::ptrdiff_t ppequ( const UpLo, const fortran_int_t n,
-        const std::complex<double>* ap, double* s, double& scond,
-        double& amax ) {
-    fortran_int_t info(0);
-    LAPACK_ZPPEQU( &lapack_option< UpLo >::value, &n, ap, s, &scond, &amax,
-            &info );
-    return info;
+template <typename UpLo>
+inline std::ptrdiff_t ppequ(
+    const UpLo, const fortran_int_t n, const std::complex<double>* ap,
+    double* s, double& scond, double& amax
+) {
+  fortran_int_t info(0);
+  LAPACK_ZPPEQU(&lapack_option<UpLo>::value, &n, ap, s, &scond, &amax, &info);
+  return info;
 }
 
-} // namespace detail
+}  // namespace detail
 
 //
 // Value-type based template class. Use this class if you need a type
 // for dispatching to ppequ.
 //
-template< typename Value, typename Enable = void >
+template <typename Value, typename Enable = void>
 struct ppequ_impl {};
 
 //
 // This implementation is enabled if Value is a real type.
 //
-template< typename Value >
-struct ppequ_impl< Value, typename boost::enable_if< is_real< Value > >::type > {
+template <typename Value>
+struct ppequ_impl<Value, typename boost::enable_if<is_real<Value> >::type> {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
-
-    //
-    // Static member function, that
-    // * Deduces the required arguments for dispatching to LAPACK, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename MatrixAP, typename VectorS >
-    static std::ptrdiff_t invoke( const MatrixAP& ap, VectorS& s,
-            real_type& scond, real_type& amax ) {
-        namespace bindings = ::boost::numeric::bindings;
-        typedef typename result_of::uplo_tag< MatrixAP >::type uplo;
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
-                typename bindings::value_type< MatrixAP >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                VectorS >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorS >::value) );
-        BOOST_ASSERT( bindings::size_column(ap) >= 0 );
-        return detail::ppequ( uplo(), bindings::size_column(ap),
-                bindings::begin_value(ap), bindings::begin_value(s), scond,
-                amax );
-    }
-
+  //
+  // Static member function, that
+  // * Deduces the required arguments for dispatching to LAPACK, and
+  // * Asserts that most arguments make sense.
+  //
+  template <typename MatrixAP, typename VectorS>
+  static std::ptrdiff_t invoke(
+      const MatrixAP& ap, VectorS& s, real_type& scond, real_type& amax
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    typedef typename result_of::uplo_tag<MatrixAP>::type uplo;
+    BOOST_STATIC_ASSERT(
+        (boost::is_same<
+            typename remove_const<
+                typename bindings::value_type<MatrixAP>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<VectorS>::type>::type>::value)
+    );
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorS>::value));
+    BOOST_ASSERT(bindings::size_column(ap) >= 0);
+    return detail::ppequ(
+        uplo(), bindings::size_column(ap), bindings::begin_value(ap),
+        bindings::begin_value(s), scond, amax
+    );
+  }
 };
 
 //
 // This implementation is enabled if Value is a complex type.
 //
-template< typename Value >
-struct ppequ_impl< Value, typename boost::enable_if< is_complex< Value > >::type > {
+template <typename Value>
+struct ppequ_impl<Value, typename boost::enable_if<is_complex<Value> >::type> {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
-
-    //
-    // Static member function, that
-    // * Deduces the required arguments for dispatching to LAPACK, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename MatrixAP, typename VectorS >
-    static std::ptrdiff_t invoke( const MatrixAP& ap, VectorS& s,
-            real_type& scond, real_type& amax ) {
-        namespace bindings = ::boost::numeric::bindings;
-        typedef typename result_of::uplo_tag< MatrixAP >::type uplo;
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorS >::value) );
-        BOOST_ASSERT( bindings::size_column(ap) >= 0 );
-        return detail::ppequ( uplo(), bindings::size_column(ap),
-                bindings::begin_value(ap), bindings::begin_value(s), scond,
-                amax );
-    }
-
+  //
+  // Static member function, that
+  // * Deduces the required arguments for dispatching to LAPACK, and
+  // * Asserts that most arguments make sense.
+  //
+  template <typename MatrixAP, typename VectorS>
+  static std::ptrdiff_t invoke(
+      const MatrixAP& ap, VectorS& s, real_type& scond, real_type& amax
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    typedef typename result_of::uplo_tag<MatrixAP>::type uplo;
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorS>::value));
+    BOOST_ASSERT(bindings::size_column(ap) >= 0);
+    return detail::ppequ(
+        uplo(), bindings::size_column(ap), bindings::begin_value(ap),
+        bindings::begin_value(s), scond, amax
+    );
+  }
 };
-
 
 //
 // Functions for direct use. These functions are overloaded for temporaries,
 // so that wrapped types can still be passed and used for write-access. In
 // addition, if applicable, they are overloaded for user-defined workspaces.
-// Calls to these functions are passed to the ppequ_impl classes. In the 
+// Calls to these functions are passed to the ppequ_impl classes. In the
 // documentation, most overloads are collapsed to avoid a large number of
 // prototypes which are very similar.
 //
@@ -185,18 +190,22 @@ struct ppequ_impl< Value, typename boost::enable_if< is_complex< Value > >::type
 //
 // Overloaded function for ppequ. Its overload differs for
 //
-template< typename MatrixAP, typename VectorS >
-inline std::ptrdiff_t ppequ( const MatrixAP& ap, VectorS& s,
-        typename remove_imaginary< typename bindings::value_type<
-        MatrixAP >::type >::type& scond, typename remove_imaginary<
-        typename bindings::value_type< MatrixAP >::type >::type& amax ) {
-    return ppequ_impl< typename bindings::value_type<
-            MatrixAP >::type >::invoke( ap, s, scond, amax );
+template <typename MatrixAP, typename VectorS>
+inline std::ptrdiff_t ppequ(
+    const MatrixAP& ap, VectorS& s,
+    typename remove_imaginary<
+        typename bindings::value_type<MatrixAP>::type>::type& scond,
+    typename remove_imaginary<
+        typename bindings::value_type<MatrixAP>::type>::type& amax
+) {
+  return ppequ_impl<typename bindings::value_type<MatrixAP>::type>::invoke(
+      ap, s, scond, amax
+  );
 }
 
-} // namespace lapack
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace lapack
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

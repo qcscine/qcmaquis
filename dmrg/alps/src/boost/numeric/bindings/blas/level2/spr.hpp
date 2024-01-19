@@ -62,11 +62,15 @@ namespace detail {
 // * CBLAS backend, and
 // * float value-type.
 //
-template< typename Order, typename UpLo >
-inline void spr( const Order order, const UpLo uplo, const int n,
-        const float alpha, const float* x, const int incx, float* ap ) {
-    cblas_sspr( cblas_option< Order >::value, cblas_option< UpLo >::value, n,
-            alpha, x, incx, ap );
+template <typename Order, typename UpLo>
+inline void spr(
+    const Order order, const UpLo uplo, const int n, const float alpha,
+    const float* x, const int incx, float* ap
+) {
+  cblas_sspr(
+      cblas_option<Order>::value, cblas_option<UpLo>::value, n, alpha, x, incx,
+      ap
+  );
 }
 
 //
@@ -74,11 +78,15 @@ inline void spr( const Order order, const UpLo uplo, const int n,
 // * CBLAS backend, and
 // * double value-type.
 //
-template< typename Order, typename UpLo >
-inline void spr( const Order order, const UpLo uplo, const int n,
-        const double alpha, const double* x, const int incx, double* ap ) {
-    cblas_dspr( cblas_option< Order >::value, cblas_option< UpLo >::value, n,
-            alpha, x, incx, ap );
+template <typename Order, typename UpLo>
+inline void spr(
+    const Order order, const UpLo uplo, const int n, const double alpha,
+    const double* x, const int incx, double* ap
+) {
+  cblas_dspr(
+      cblas_option<Order>::value, cblas_option<UpLo>::value, n, alpha, x, incx,
+      ap
+  );
 }
 
 #elif defined BOOST_NUMERIC_BINDINGS_BLAS_CUBLAS
@@ -87,11 +95,13 @@ inline void spr( const Order order, const UpLo uplo, const int n,
 // * CUBLAS backend, and
 // * float value-type.
 //
-template< typename Order, typename UpLo >
-inline void spr( const Order order, const UpLo uplo, const int n,
-        const float alpha, const float* x, const int incx, float* ap ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    cublasSspr( blas_option< UpLo >::value, n, alpha, x, incx, ap );
+template <typename Order, typename UpLo>
+inline void spr(
+    const Order order, const UpLo uplo, const int n, const float alpha,
+    const float* x, const int incx, float* ap
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  cublasSspr(blas_option<UpLo>::value, n, alpha, x, incx, ap);
 }
 
 //
@@ -99,11 +109,13 @@ inline void spr( const Order order, const UpLo uplo, const int n,
 // * CUBLAS backend, and
 // * double value-type.
 //
-template< typename Order, typename UpLo >
-inline void spr( const Order order, const UpLo uplo, const int n,
-        const double alpha, const double* x, const int incx, double* ap ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    // NOT FOUND();
+template <typename Order, typename UpLo>
+inline void spr(
+    const Order order, const UpLo uplo, const int n, const double alpha,
+    const double* x, const int incx, double* ap
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  // NOT FOUND();
 }
 
 #else
@@ -112,12 +124,13 @@ inline void spr( const Order order, const UpLo uplo, const int n,
 // * netlib-compatible BLAS backend (the default), and
 // * float value-type.
 //
-template< typename Order, typename UpLo >
-inline void spr( const Order order, const UpLo uplo, const fortran_int_t n,
-        const float alpha, const float* x, const fortran_int_t incx,
-        float* ap ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    BLAS_SSPR( &blas_option< UpLo >::value, &n, &alpha, x, &incx, ap );
+template <typename Order, typename UpLo>
+inline void spr(
+    const Order order, const UpLo uplo, const fortran_int_t n,
+    const float alpha, const float* x, const fortran_int_t incx, float* ap
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  BLAS_SSPR(&blas_option<UpLo>::value, &n, &alpha, x, &incx, ap);
 }
 
 //
@@ -125,55 +138,60 @@ inline void spr( const Order order, const UpLo uplo, const fortran_int_t n,
 // * netlib-compatible BLAS backend (the default), and
 // * double value-type.
 //
-template< typename Order, typename UpLo >
-inline void spr( const Order order, const UpLo uplo, const fortran_int_t n,
-        const double alpha, const double* x, const fortran_int_t incx,
-        double* ap ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    BLAS_DSPR( &blas_option< UpLo >::value, &n, &alpha, x, &incx, ap );
+template <typename Order, typename UpLo>
+inline void spr(
+    const Order order, const UpLo uplo, const fortran_int_t n,
+    const double alpha, const double* x, const fortran_int_t incx, double* ap
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  BLAS_DSPR(&blas_option<UpLo>::value, &n, &alpha, x, &incx, ap);
 }
 
 #endif
 
-} // namespace detail
+}  // namespace detail
 
 //
 // Value-type based template class. Use this class if you need a type
 // for dispatching to spr.
 //
-template< typename Value >
+template <typename Value>
 struct spr_impl {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
+  typedef void result_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
-    typedef void result_type;
-
-    //
-    // Static member function that
-    // * Deduces the required arguments for dispatching to BLAS, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename VectorX, typename MatrixAP >
-    static result_type invoke( const real_type alpha, const VectorX& x,
-            MatrixAP& ap ) {
-        namespace bindings = ::boost::numeric::bindings;
-        typedef typename result_of::data_order< MatrixAP >::type order;
-        typedef typename result_of::uplo_tag< MatrixAP >::type uplo;
-        BOOST_STATIC_ASSERT( (is_same< typename remove_const<
-                typename bindings::value_type< VectorX >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                MatrixAP >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< MatrixAP >::value) );
-        detail::spr( order(), uplo(), bindings::size_column(ap), alpha,
-                bindings::begin_value(x), bindings::stride(x),
-                bindings::begin_value(ap) );
-    }
+  //
+  // Static member function that
+  // * Deduces the required arguments for dispatching to BLAS, and
+  // * Asserts that most arguments make sense.
+  //
+  template <typename VectorX, typename MatrixAP>
+  static result_type invoke(
+      const real_type alpha, const VectorX& x, MatrixAP& ap
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    typedef typename result_of::data_order<MatrixAP>::type order;
+    typedef typename result_of::uplo_tag<MatrixAP>::type uplo;
+    BOOST_STATIC_ASSERT(
+        (is_same<
+            typename remove_const<
+                typename bindings::value_type<VectorX>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<MatrixAP>::type>::type>::value)
+    );
+    BOOST_STATIC_ASSERT((bindings::is_mutable<MatrixAP>::value));
+    detail::spr(
+        order(), uplo(), bindings::size_column(ap), alpha,
+        bindings::begin_value(x), bindings::stride(x), bindings::begin_value(ap)
+    );
+  }
 };
 
 //
 // Functions for direct use. These functions are overloaded for temporaries,
 // so that wrapped types can still be passed and used for write-access. Calls
-// to these functions are passed to the spr_impl classes. In the 
+// to these functions are passed to the spr_impl classes. In the
 // documentation, the const-overloads are collapsed to avoid a large number of
 // prototypes which are very similar.
 //
@@ -181,18 +199,18 @@ struct spr_impl {
 //
 // Overloaded function for spr. Its overload differs for
 //
-template< typename VectorX, typename MatrixAP >
-inline typename spr_impl< typename bindings::value_type<
-        VectorX >::type >::result_type
-spr( const typename remove_imaginary< typename bindings::value_type<
-        VectorX >::type >::type alpha, const VectorX& x, MatrixAP& ap ) {
-    spr_impl< typename bindings::value_type<
-            VectorX >::type >::invoke( alpha, x, ap );
+template <typename VectorX, typename MatrixAP>
+inline
+    typename spr_impl<typename bindings::value_type<VectorX>::type>::result_type
+    spr(const typename remove_imaginary<
+            typename bindings::value_type<VectorX>::type>::type alpha,
+        const VectorX& x, MatrixAP& ap) {
+  spr_impl<typename bindings::value_type<VectorX>::type>::invoke(alpha, x, ap);
 }
 
-} // namespace blas
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace blas
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

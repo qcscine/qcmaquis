@@ -20,5 +20,6 @@ dmrg/doc/qcmaquis_manual.toc
 .cache
 ip64test
 compile_commands.json
+*.egg-info
 
 *.cache*

@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #ifndef MAQUIS_SIM_RUN_H
@@ -11,20 +11,21 @@
 #include "dmrg/utils/DmrgParameters.h"
 
 struct simulation_base {
-    virtual ~simulation_base() = default;
-    virtual void run(DmrgParameters & parms) = 0;
+  virtual ~simulation_base() = default;
+  virtual void run(DmrgParameters& parms) = 0;
 };
 
 template <class SymmGroup>
 struct simulation : public simulation_base {
-    void run(DmrgParameters & parms) override;
+  void run(DmrgParameters& parms) override;
 };
 
 struct simulation_traits {
-    using shared_ptr = std::shared_ptr<simulation_base>;
-    template <class SymmGroup> struct F {
-        using type = simulation<SymmGroup>;
-    };
+  using shared_ptr = std::shared_ptr<simulation_base>;
+  template <class SymmGroup>
+  struct F {
+    using type = simulation<SymmGroup>;
+  };
 };
 
 #endif

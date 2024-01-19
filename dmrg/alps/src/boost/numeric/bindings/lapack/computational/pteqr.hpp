@@ -53,11 +53,13 @@ namespace detail {
 // * netlib-compatible LAPACK backend (the default), and
 // * float value-type.
 //
-inline std::ptrdiff_t pteqr( const char compz, const fortran_int_t n, float* d,
-        float* e, float* z, const fortran_int_t ldz, float* work ) {
-    fortran_int_t info(0);
-    LAPACK_SPTEQR( &compz, &n, d, e, z, &ldz, work, &info );
-    return info;
+inline std::ptrdiff_t pteqr(
+    const char compz, const fortran_int_t n, float* d, float* e, float* z,
+    const fortran_int_t ldz, float* work
+) {
+  fortran_int_t info(0);
+  LAPACK_SPTEQR(&compz, &n, d, e, z, &ldz, work, &info);
+  return info;
 }
 
 //
@@ -65,12 +67,13 @@ inline std::ptrdiff_t pteqr( const char compz, const fortran_int_t n, float* d,
 // * netlib-compatible LAPACK backend (the default), and
 // * double value-type.
 //
-inline std::ptrdiff_t pteqr( const char compz, const fortran_int_t n,
-        double* d, double* e, double* z, const fortran_int_t ldz,
-        double* work ) {
-    fortran_int_t info(0);
-    LAPACK_DPTEQR( &compz, &n, d, e, z, &ldz, work, &info );
-    return info;
+inline std::ptrdiff_t pteqr(
+    const char compz, const fortran_int_t n, double* d, double* e, double* z,
+    const fortran_int_t ldz, double* work
+) {
+  fortran_int_t info(0);
+  LAPACK_DPTEQR(&compz, &n, d, e, z, &ldz, work, &info);
+  return info;
 }
 
 //
@@ -78,12 +81,13 @@ inline std::ptrdiff_t pteqr( const char compz, const fortran_int_t n,
 // * netlib-compatible LAPACK backend (the default), and
 // * complex<float> value-type.
 //
-inline std::ptrdiff_t pteqr( const char compz, const fortran_int_t n, float* d,
-        float* e, std::complex<float>* z, const fortran_int_t ldz,
-        float* work ) {
-    fortran_int_t info(0);
-    LAPACK_CPTEQR( &compz, &n, d, e, z, &ldz, work, &info );
-    return info;
+inline std::ptrdiff_t pteqr(
+    const char compz, const fortran_int_t n, float* d, float* e,
+    std::complex<float>* z, const fortran_int_t ldz, float* work
+) {
+  fortran_int_t info(0);
+  LAPACK_CPTEQR(&compz, &n, d, e, z, &ldz, work, &info);
+  return info;
 }
 
 //
@@ -91,193 +95,212 @@ inline std::ptrdiff_t pteqr( const char compz, const fortran_int_t n, float* d,
 // * netlib-compatible LAPACK backend (the default), and
 // * complex<double> value-type.
 //
-inline std::ptrdiff_t pteqr( const char compz, const fortran_int_t n,
-        double* d, double* e, std::complex<double>* z,
-        const fortran_int_t ldz, double* work ) {
-    fortran_int_t info(0);
-    LAPACK_ZPTEQR( &compz, &n, d, e, z, &ldz, work, &info );
-    return info;
+inline std::ptrdiff_t pteqr(
+    const char compz, const fortran_int_t n, double* d, double* e,
+    std::complex<double>* z, const fortran_int_t ldz, double* work
+) {
+  fortran_int_t info(0);
+  LAPACK_ZPTEQR(&compz, &n, d, e, z, &ldz, work, &info);
+  return info;
 }
 
-} // namespace detail
+}  // namespace detail
 
 //
 // Value-type based template class. Use this class if you need a type
 // for dispatching to pteqr.
 //
-template< typename Value, typename Enable = void >
+template <typename Value, typename Enable = void>
 struct pteqr_impl {};
 
 //
 // This implementation is enabled if Value is a real type.
 //
-template< typename Value >
-struct pteqr_impl< Value, typename boost::enable_if< is_real< Value > >::type > {
+template <typename Value>
+struct pteqr_impl<Value, typename boost::enable_if<is_real<Value> >::type> {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
+  //
+  // Static member function for user-defined workspaces, that
+  // * Deduces the required arguments for dispatching to LAPACK, and
+  // * Asserts that most arguments make sense.
+  //
+  template <typename VectorD, typename VectorE, typename MatrixZ, typename WORK>
+  static std::ptrdiff_t invoke(
+      const char compz, VectorD& d, VectorE& e, MatrixZ& z,
+      detail::workspace1<WORK> work
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixZ>::value));
+    BOOST_STATIC_ASSERT(
+        (boost::is_same<
+            typename remove_const<
+                typename bindings::value_type<VectorD>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<VectorE>::type>::type>::value)
+    );
+    BOOST_STATIC_ASSERT(
+        (boost::is_same<
+            typename remove_const<
+                typename bindings::value_type<VectorD>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<MatrixZ>::type>::type>::value)
+    );
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorD>::value));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorE>::value));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<MatrixZ>::value));
+    BOOST_ASSERT(bindings::size(d) >= bindings::size(d));
+    BOOST_ASSERT(bindings::size(d) >= 0);
+    BOOST_ASSERT(bindings::size(e) >= bindings::size(d) - 1);
+    BOOST_ASSERT(
+        bindings::size(work.select(real_type())) >=
+        min_size_work(bindings::size(d))
+    );
+    BOOST_ASSERT(
+        bindings::size_minor(z) == 1 || bindings::stride_minor(z) == 1
+    );
+    BOOST_ASSERT(compz == 'N' || compz == 'V' || compz == 'I');
+    return detail::pteqr(
+        compz, bindings::size(d), bindings::begin_value(d),
+        bindings::begin_value(e), bindings::begin_value(z),
+        bindings::stride_major(z),
+        bindings::begin_value(work.select(real_type()))
+    );
+  }
 
-    //
-    // Static member function for user-defined workspaces, that
-    // * Deduces the required arguments for dispatching to LAPACK, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename VectorD, typename VectorE, typename MatrixZ,
-            typename WORK >
-    static std::ptrdiff_t invoke( const char compz, VectorD& d, VectorE& e,
-            MatrixZ& z, detail::workspace1< WORK > work ) {
-        namespace bindings = ::boost::numeric::bindings;
-        BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixZ >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
-                typename bindings::value_type< VectorD >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                VectorE >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
-                typename bindings::value_type< VectorD >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                MatrixZ >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorD >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorE >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< MatrixZ >::value) );
-        BOOST_ASSERT( bindings::size(d) >= bindings::size(d) );
-        BOOST_ASSERT( bindings::size(d) >= 0 );
-        BOOST_ASSERT( bindings::size(e) >= bindings::size(d)-1 );
-        BOOST_ASSERT( bindings::size(work.select(real_type())) >=
-                min_size_work( bindings::size(d) ));
-        BOOST_ASSERT( bindings::size_minor(z) == 1 ||
-                bindings::stride_minor(z) == 1 );
-        BOOST_ASSERT( compz == 'N' || compz == 'V' || compz == 'I' );
-        return detail::pteqr( compz, bindings::size(d),
-                bindings::begin_value(d), bindings::begin_value(e),
-                bindings::begin_value(z), bindings::stride_major(z),
-                bindings::begin_value(work.select(real_type())) );
-    }
+  //
+  // Static member function that
+  // * Figures out the minimal workspace requirements, and passes
+  //   the results to the user-defined workspace overload of the
+  //   invoke static member function
+  // * Enables the unblocked algorithm (BLAS level 2)
+  //
+  template <typename VectorD, typename VectorE, typename MatrixZ>
+  static std::ptrdiff_t invoke(
+      const char compz, VectorD& d, VectorE& e, MatrixZ& z, minimal_workspace
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    bindings::detail::array<real_type> tmp_work(min_size_work(bindings::size(d))
+    );
+    return invoke(compz, d, e, z, workspace(tmp_work));
+  }
 
-    //
-    // Static member function that
-    // * Figures out the minimal workspace requirements, and passes
-    //   the results to the user-defined workspace overload of the 
-    //   invoke static member function
-    // * Enables the unblocked algorithm (BLAS level 2)
-    //
-    template< typename VectorD, typename VectorE, typename MatrixZ >
-    static std::ptrdiff_t invoke( const char compz, VectorD& d, VectorE& e,
-            MatrixZ& z, minimal_workspace ) {
-        namespace bindings = ::boost::numeric::bindings;
-        bindings::detail::array< real_type > tmp_work( min_size_work(
-                bindings::size(d) ) );
-        return invoke( compz, d, e, z, workspace( tmp_work ) );
-    }
+  //
+  // Static member function that
+  // * Figures out the optimal workspace requirements, and passes
+  //   the results to the user-defined workspace overload of the
+  //   invoke static member
+  // * Enables the blocked algorithm (BLAS level 3)
+  //
+  template <typename VectorD, typename VectorE, typename MatrixZ>
+  static std::ptrdiff_t invoke(
+      const char compz, VectorD& d, VectorE& e, MatrixZ& z, optimal_workspace
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    return invoke(compz, d, e, z, minimal_workspace());
+  }
 
-    //
-    // Static member function that
-    // * Figures out the optimal workspace requirements, and passes
-    //   the results to the user-defined workspace overload of the 
-    //   invoke static member
-    // * Enables the blocked algorithm (BLAS level 3)
-    //
-    template< typename VectorD, typename VectorE, typename MatrixZ >
-    static std::ptrdiff_t invoke( const char compz, VectorD& d, VectorE& e,
-            MatrixZ& z, optimal_workspace ) {
-        namespace bindings = ::boost::numeric::bindings;
-        return invoke( compz, d, e, z, minimal_workspace() );
-    }
-
-    //
-    // Static member function that returns the minimum size of
-    // workspace-array work.
-    //
-    static std::ptrdiff_t min_size_work( const std::ptrdiff_t n ) {
-        return 4*n;
-    }
+  //
+  // Static member function that returns the minimum size of
+  // workspace-array work.
+  //
+  static std::ptrdiff_t min_size_work(const std::ptrdiff_t n) { return 4 * n; }
 };
 
 //
 // This implementation is enabled if Value is a complex type.
 //
-template< typename Value >
-struct pteqr_impl< Value, typename boost::enable_if< is_complex< Value > >::type > {
+template <typename Value>
+struct pteqr_impl<Value, typename boost::enable_if<is_complex<Value> >::type> {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
+  //
+  // Static member function for user-defined workspaces, that
+  // * Deduces the required arguments for dispatching to LAPACK, and
+  // * Asserts that most arguments make sense.
+  //
+  template <typename VectorD, typename VectorE, typename MatrixZ, typename WORK>
+  static std::ptrdiff_t invoke(
+      const char compz, VectorD& d, VectorE& e, MatrixZ& z,
+      detail::workspace1<WORK> work
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixZ>::value));
+    BOOST_STATIC_ASSERT(
+        (boost::is_same<
+            typename remove_const<
+                typename bindings::value_type<VectorD>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<VectorE>::type>::type>::value)
+    );
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorD>::value));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorE>::value));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<MatrixZ>::value));
+    BOOST_ASSERT(bindings::size(d) >= bindings::size(d));
+    BOOST_ASSERT(bindings::size(d) >= 0);
+    BOOST_ASSERT(bindings::size(e) >= bindings::size(d) - 1);
+    BOOST_ASSERT(
+        bindings::size(work.select(real_type())) >=
+        min_size_work(bindings::size(d))
+    );
+    BOOST_ASSERT(
+        bindings::size_minor(z) == 1 || bindings::stride_minor(z) == 1
+    );
+    BOOST_ASSERT(compz == 'N' || compz == 'V' || compz == 'I');
+    return detail::pteqr(
+        compz, bindings::size(d), bindings::begin_value(d),
+        bindings::begin_value(e), bindings::begin_value(z),
+        bindings::stride_major(z),
+        bindings::begin_value(work.select(real_type()))
+    );
+  }
 
-    //
-    // Static member function for user-defined workspaces, that
-    // * Deduces the required arguments for dispatching to LAPACK, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename VectorD, typename VectorE, typename MatrixZ,
-            typename WORK >
-    static std::ptrdiff_t invoke( const char compz, VectorD& d, VectorE& e,
-            MatrixZ& z, detail::workspace1< WORK > work ) {
-        namespace bindings = ::boost::numeric::bindings;
-        BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixZ >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
-                typename bindings::value_type< VectorD >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                VectorE >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorD >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorE >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< MatrixZ >::value) );
-        BOOST_ASSERT( bindings::size(d) >= bindings::size(d) );
-        BOOST_ASSERT( bindings::size(d) >= 0 );
-        BOOST_ASSERT( bindings::size(e) >= bindings::size(d)-1 );
-        BOOST_ASSERT( bindings::size(work.select(real_type())) >=
-                min_size_work( bindings::size(d) ));
-        BOOST_ASSERT( bindings::size_minor(z) == 1 ||
-                bindings::stride_minor(z) == 1 );
-        BOOST_ASSERT( compz == 'N' || compz == 'V' || compz == 'I' );
-        return detail::pteqr( compz, bindings::size(d),
-                bindings::begin_value(d), bindings::begin_value(e),
-                bindings::begin_value(z), bindings::stride_major(z),
-                bindings::begin_value(work.select(real_type())) );
-    }
+  //
+  // Static member function that
+  // * Figures out the minimal workspace requirements, and passes
+  //   the results to the user-defined workspace overload of the
+  //   invoke static member function
+  // * Enables the unblocked algorithm (BLAS level 2)
+  //
+  template <typename VectorD, typename VectorE, typename MatrixZ>
+  static std::ptrdiff_t invoke(
+      const char compz, VectorD& d, VectorE& e, MatrixZ& z, minimal_workspace
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    bindings::detail::array<real_type> tmp_work(min_size_work(bindings::size(d))
+    );
+    return invoke(compz, d, e, z, workspace(tmp_work));
+  }
 
-    //
-    // Static member function that
-    // * Figures out the minimal workspace requirements, and passes
-    //   the results to the user-defined workspace overload of the 
-    //   invoke static member function
-    // * Enables the unblocked algorithm (BLAS level 2)
-    //
-    template< typename VectorD, typename VectorE, typename MatrixZ >
-    static std::ptrdiff_t invoke( const char compz, VectorD& d, VectorE& e,
-            MatrixZ& z, minimal_workspace ) {
-        namespace bindings = ::boost::numeric::bindings;
-        bindings::detail::array< real_type > tmp_work( min_size_work(
-                bindings::size(d) ) );
-        return invoke( compz, d, e, z, workspace( tmp_work ) );
-    }
+  //
+  // Static member function that
+  // * Figures out the optimal workspace requirements, and passes
+  //   the results to the user-defined workspace overload of the
+  //   invoke static member
+  // * Enables the blocked algorithm (BLAS level 3)
+  //
+  template <typename VectorD, typename VectorE, typename MatrixZ>
+  static std::ptrdiff_t invoke(
+      const char compz, VectorD& d, VectorE& e, MatrixZ& z, optimal_workspace
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    return invoke(compz, d, e, z, minimal_workspace());
+  }
 
-    //
-    // Static member function that
-    // * Figures out the optimal workspace requirements, and passes
-    //   the results to the user-defined workspace overload of the 
-    //   invoke static member
-    // * Enables the blocked algorithm (BLAS level 3)
-    //
-    template< typename VectorD, typename VectorE, typename MatrixZ >
-    static std::ptrdiff_t invoke( const char compz, VectorD& d, VectorE& e,
-            MatrixZ& z, optimal_workspace ) {
-        namespace bindings = ::boost::numeric::bindings;
-        return invoke( compz, d, e, z, minimal_workspace() );
-    }
-
-    //
-    // Static member function that returns the minimum size of
-    // workspace-array work.
-    //
-    static std::ptrdiff_t min_size_work( const std::ptrdiff_t n ) {
-        return 4*n;
-    }
+  //
+  // Static member function that returns the minimum size of
+  // workspace-array work.
+  //
+  static std::ptrdiff_t min_size_work(const std::ptrdiff_t n) { return 4 * n; }
 };
-
 
 //
 // Functions for direct use. These functions are overloaded for temporaries,
 // so that wrapped types can still be passed and used for write-access. In
 // addition, if applicable, they are overloaded for user-defined workspaces.
-// Calls to these functions are passed to the pteqr_impl classes. In the 
+// Calls to these functions are passed to the pteqr_impl classes. In the
 // documentation, most overloads are collapsed to avoid a large number of
 // prototypes which are very similar.
 //
@@ -286,31 +309,32 @@ struct pteqr_impl< Value, typename boost::enable_if< is_complex< Value > >::type
 // Overloaded function for pteqr. Its overload differs for
 // * User-defined workspace
 //
-template< typename VectorD, typename VectorE, typename MatrixZ,
-        typename Workspace >
-inline typename boost::enable_if< detail::is_workspace< Workspace >,
-        std::ptrdiff_t >::type
-pteqr( const char compz, VectorD& d, VectorE& e, MatrixZ& z,
-        Workspace work ) {
-    return pteqr_impl< typename bindings::value_type<
-            MatrixZ >::type >::invoke( compz, d, e, z, work );
+template <
+    typename VectorD, typename VectorE, typename MatrixZ, typename Workspace>
+inline typename boost::enable_if<
+    detail::is_workspace<Workspace>, std::ptrdiff_t>::type
+pteqr(const char compz, VectorD& d, VectorE& e, MatrixZ& z, Workspace work) {
+  return pteqr_impl<typename bindings::value_type<MatrixZ>::type>::invoke(
+      compz, d, e, z, work
+  );
 }
 
 //
 // Overloaded function for pteqr. Its overload differs for
 // * Default workspace-type (optimal)
 //
-template< typename VectorD, typename VectorE, typename MatrixZ >
-inline typename boost::disable_if< detail::is_workspace< MatrixZ >,
-        std::ptrdiff_t >::type
-pteqr( const char compz, VectorD& d, VectorE& e, MatrixZ& z ) {
-    return pteqr_impl< typename bindings::value_type<
-            MatrixZ >::type >::invoke( compz, d, e, z, optimal_workspace() );
+template <typename VectorD, typename VectorE, typename MatrixZ>
+inline typename boost::disable_if<
+    detail::is_workspace<MatrixZ>, std::ptrdiff_t>::type
+pteqr(const char compz, VectorD& d, VectorE& e, MatrixZ& z) {
+  return pteqr_impl<typename bindings::value_type<MatrixZ>::type>::invoke(
+      compz, d, e, z, optimal_workspace()
+  );
 }
 
-} // namespace lapack
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace lapack
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

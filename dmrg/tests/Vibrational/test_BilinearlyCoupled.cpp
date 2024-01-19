@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #define BOOST_TEST_MAIN
@@ -20,8 +20,9 @@
  * storing full-dimensional vectors or matrices"
  * by the group of Tucker Carrington
  */
-BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_BilinearlyCoupled, WatsonFixture)
-{
+BOOST_FIXTURE_TEST_CASE(
+    Test_vDMRG_Calculation_BilinearlyCoupled, WatsonFixture
+) {
 #ifdef HAVE_TrivialGroup
   using InterfaceType = maquis::DMRGInterface<double>;
   // Adds the final input parameters
@@ -47,8 +48,9 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_BilinearlyCoupled, WatsonFixture)
 #ifdef HAVE_TrivialGroup
 
 /** @brief As above, but with mode-specific nMax */
-BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_BilinearlyCoupled_nMax, WatsonFixture)
-{
+BOOST_FIXTURE_TEST_CASE(
+    Test_vDMRG_Calculation_BilinearlyCoupled_nMax, WatsonFixture
+) {
   using InterfaceType = maquis::DMRGInterface<double>;
   // Adds the final input parameters
   parametersBilinearly.set("init_type", "basis_state_generic");
@@ -70,6 +72,6 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_BilinearlyCoupled_nMax, WatsonFix
   BOOST_CHECK_CLOSE(interface.energy(), 3.8164041, 1.0E-5);
 }
 
-#endif // HAVE_TrivialGroup
+#endif  // HAVE_TrivialGroup
 
-#endif // DMRG_VIBRATIONAL
+#endif  // DMRG_VIBRATIONAL

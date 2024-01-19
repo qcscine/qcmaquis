@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #ifndef CONTINUOUS_LATTICE_H
@@ -13,382 +13,326 @@
 #include <boost/lexical_cast.hpp>
 #include "dmrg/utils/BaseParameters.h"
 
-class ContChain : public lattice_impl
-{
-public:
-    using pos_t = lattice_impl::pos_t;
-    
-    ContChain (BaseParameters & parms, bool pbc_=false)
-    : L(parms["L"])
-    , N(parms["Ndiscr"])
-    , a(parms["a"])
-    , pbc(pbc_)
-    {}
-    
-    std::vector<pos_t> forward(pos_t i) const override
-    {
-        std::vector<pos_t> ret;
-        if (i < L*N-1)
-            ret.push_back(i+1);
-        if (pbc && i == L*N-1)
-            ret.push_back(0);
-        return ret;
-    }
-    std::vector<pos_t> all(pos_t i) const override
-    {
-        std::vector<pos_t> ret;
-        if (i < L*N-1)
-            ret.push_back(i+1);
-        if (i > 0)
-            ret.push_back(i-1);
-        if (pbc && i == L*N-1)
-            ret.push_back(0);
-        if (pbc && i == 0)
-            ret.push_back(L*N-1);
-        return ret;
-    }
-    
-    std::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const override
-    {
-        if (property == "label" && pos.size() == 1)
-            return std::any( site_label(pos[0]) );
-        else if (property == "label" && pos.size() == 2)
-            return std::any( bond_label(pos[0], pos[1]) );
-        else if (property == "type" && pos.size() == 1)
-            return std::any( pos[0]%N );
-        else if (property == "type" && pos.size() == 2)
-            return std::any( 0 );
-        else if (property == "x" && pos.size() == 1)
-            return std::any( a/N/2. + a/N * pos[0] );
-        else if (property == "dx" && pos.size() == 1)
-            return std::any( a/N );
-        else if (property == "dx" && pos.size() == 2)
-            return std::any( a/N * (pos[1]-pos[0]) );
-        else if (property == "at_open_boundary" && pos.size() == 1)
-            return std::any( (!pbc) && (pos[0]==0 || pos[0]==L*N-1) );
-        else if (property == "at_open_left_boundary" && pos.size() == 1)
-            return std::any( (!pbc) && pos[0]==0 );
-        else if (property == "at_open_right_boundary" && pos.size() == 1)
-            return std::any( (!pbc) && pos[0]==L*N-1 );
-        else if (property == "wraps_pbc" && pos.size() == 2)
-            return std::any( (pos[0] < pos[1]) );
-        else {
-            std::ostringstream ss;
-            ss << "No property '" << property << "' with " << pos.size() << " points implemented."; 
-            throw std::runtime_error(ss.str());
-            return std::any();
-        }
-    }
+class ContChain : public lattice_impl {
+ public:
+  using pos_t = lattice_impl::pos_t;
 
-    pos_t size() const override
-    {
-        return L*N;
-    }
-    
-    int maximum_vertex_type() const
-    {
-        return N-1;
-    }
+  ContChain(BaseParameters& parms, bool pbc_ = false)
+      : L(parms["L"]), N(parms["Ndiscr"]), a(parms["a"]), pbc(pbc_) {}
 
-private:
-    
-    std::string site_label (int i) const
-    {
-        return "( " + boost::lexical_cast<std::string>(a/N/2. + a/N * i) + " )";
+  std::vector<pos_t> forward(pos_t i) const override {
+    std::vector<pos_t> ret;
+    if (i < L * N - 1) ret.push_back(i + 1);
+    if (pbc && i == L * N - 1) ret.push_back(0);
+    return ret;
+  }
+  std::vector<pos_t> all(pos_t i) const override {
+    std::vector<pos_t> ret;
+    if (i < L * N - 1) ret.push_back(i + 1);
+    if (i > 0) ret.push_back(i - 1);
+    if (pbc && i == L * N - 1) ret.push_back(0);
+    if (pbc && i == 0) ret.push_back(L * N - 1);
+    return ret;
+  }
+
+  std::any get_prop_(std::string const& property, std::vector<pos_t> const& pos)
+      const override {
+    if (property == "label" && pos.size() == 1)
+      return std::any(site_label(pos[0]));
+    else if (property == "label" && pos.size() == 2)
+      return std::any(bond_label(pos[0], pos[1]));
+    else if (property == "type" && pos.size() == 1)
+      return std::any(pos[0] % N);
+    else if (property == "type" && pos.size() == 2)
+      return std::any(0);
+    else if (property == "x" && pos.size() == 1)
+      return std::any(a / N / 2. + a / N * pos[0]);
+    else if (property == "dx" && pos.size() == 1)
+      return std::any(a / N);
+    else if (property == "dx" && pos.size() == 2)
+      return std::any(a / N * (pos[1] - pos[0]));
+    else if (property == "at_open_boundary" && pos.size() == 1)
+      return std::any((!pbc) && (pos[0] == 0 || pos[0] == L * N - 1));
+    else if (property == "at_open_left_boundary" && pos.size() == 1)
+      return std::any((!pbc) && pos[0] == 0);
+    else if (property == "at_open_right_boundary" && pos.size() == 1)
+      return std::any((!pbc) && pos[0] == L * N - 1);
+    else if (property == "wraps_pbc" && pos.size() == 2)
+      return std::any((pos[0] < pos[1]));
+    else {
+      std::ostringstream ss;
+      ss << "No property '" << property << "' with " << pos.size()
+         << " points implemented.";
+      throw std::runtime_error(ss.str());
+      return std::any();
     }
-    
-    std::string bond_label (int i, int j) const
-    {
-        return (  "( " + boost::lexical_cast<std::string>(a/N/2. + a/N * i) + " )"
-                + " -- "
-                + "( " + boost::lexical_cast<std::string>(a/N/2. + a/N * j) + " )");
-    }
-    
-private:
-    int N, L;
-    double a;
-    bool pbc;
-    
+  }
+
+  pos_t size() const override { return L * N; }
+
+  int maximum_vertex_type() const { return N - 1; }
+
+ private:
+  std::string site_label(int i) const {
+    return "( " + boost::lexical_cast<std::string>(a / N / 2. + a / N * i) +
+           " )";
+  }
+
+  std::string bond_label(int i, int j) const {
+    return (
+        "( " + boost::lexical_cast<std::string>(a / N / 2. + a / N * i) + " )" +
+        " -- " + "( " +
+        boost::lexical_cast<std::string>(a / N / 2. + a / N * j) + " )"
+    );
+  }
+
+ private:
+  int N, L;
+  double a;
+  bool pbc;
 };
 
-class MixedContChain : public lattice_impl
-{
-public:
-    using pos_t = lattice_impl::pos_t;
-    
-    MixedContChain (BaseParameters & parms1, int L1_, BaseParameters & parms2, int L2_, bool pbc_=false)
-    : L1(L1_)
-    , L2(L2_)
-    , Lphys(parms1["L"])
-    , N1(parms1["Ndiscr"])
-    , a1(parms1["a"])
-    , N2(parms2["Ndiscr"])
-    , a2(parms2["a"])
-    , pbc(pbc_)
-    {
-        assert( parms1["L"] == parms1["L"] );
-        if (pbc)
-            throw std::runtime_error("Periodic boundary conditions are not implemented for the MixedChain.");
+class MixedContChain : public lattice_impl {
+ public:
+  using pos_t = lattice_impl::pos_t;
+
+  MixedContChain(
+      BaseParameters& parms1, int L1_, BaseParameters& parms2, int L2_,
+      bool pbc_ = false
+  )
+      : L1(L1_),
+        L2(L2_),
+        Lphys(parms1["L"]),
+        N1(parms1["Ndiscr"]),
+        a1(parms1["a"]),
+        N2(parms2["Ndiscr"]),
+        a2(parms2["a"]),
+        pbc(pbc_) {
+    assert(parms1["L"] == parms1["L"]);
+    if (pbc)
+      throw std::runtime_error(
+          "Periodic boundary conditions are not implemented for the MixedChain."
+      );
+  }
+
+  std::vector<pos_t> forward(pos_t i) const override {
+    std::vector<pos_t> ret;
+    if (i < L1 + L2 - 1) ret.push_back(i + 1);
+    if (pbc && i == L1 + L2 - 1) ret.push_back(0);
+    return ret;
+  }
+  std::vector<pos_t> all(pos_t i) const override {
+    std::vector<pos_t> ret;
+    if (i < L1 + L2 - 1) ret.push_back(i + 1);
+    if (i > 0) ret.push_back(i - 1);
+    if (pbc && i == L1 + L2 - 1) ret.push_back(0);
+    if (pbc && i == 0) ret.push_back(L1 + L2 - 1);
+    return ret;
+  }
+
+  std::any get_prop_(std::string const& property, std::vector<pos_t> const& pos)
+      const override {
+    if (property == "label" && pos.size() == 1)
+      return std::any(site_label(pos[0]));
+    else if (property == "label" && pos.size() == 2)
+      return std::any(bond_label(pos[0], pos[1]));
+    else if (property == "type" && (pos.size() == 1 || pos.size() == 2))
+      return std::any(0);
+    else if (property == "x" && pos.size() == 1)
+      return std::any(get_x(pos[0]));
+    else if (property == "dx" && pos.size() == 1)
+      return std::any(get_dx(pos[0]));
+    else if (property == "dx" && pos.size() == 2)
+      return std::any(get_dx(pos[0], pos[1]));
+    else if (property == "at_open_boundary" && pos.size() == 1)
+      return std::any((!pbc) && (pos[0] == 0 || pos[0] == L1 + L2 - 1));
+    else if (property == "at_open_left_boundary" && pos.size() == 1)
+      return std::any((!pbc) && pos[0] == 0);
+    else if (property == "at_open_right_boundary" && pos.size() == 1)
+      return std::any((!pbc) && pos[0] == L1 + L2 - 1);
+    else if (property == "wraps_pbc" && pos.size() == 2)
+      return std::any((pos[0] < pos[1]));
+    else {
+      std::ostringstream ss;
+      ss << "No property '" << property << "' with " << pos.size()
+         << " points implemented.";
+      throw std::runtime_error(ss.str());
+      return std::any();
     }
-    
-    std::vector<pos_t> forward(pos_t i) const override
-    {
-        std::vector<pos_t> ret;
-        if (i < L1+L2-1)
-            ret.push_back(i+1);
-        if (pbc && i == L1+L2-1)
-            ret.push_back(0);
-        return ret;
-    }
-    std::vector<pos_t> all(pos_t i) const override
-    {
-        std::vector<pos_t> ret;
-        if (i < L1+L2-1)
-            ret.push_back(i+1);
-        if (i > 0)
-            ret.push_back(i-1);
-        if (pbc && i == L1+L2-1)
-            ret.push_back(0);
-        if (pbc && i == 0)
-            ret.push_back(L1+L2-1);
-        return ret;
-    }
-    
-    std::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const override
-    {
-        if (property == "label" && pos.size() == 1)
-            return std::any( site_label(pos[0]) );
-        else if (property == "label" && pos.size() == 2)
-            return std::any( bond_label(pos[0], pos[1]) );
-        else if (property == "type" && (pos.size() == 1 || pos.size() == 2))
-            return std::any( 0 );
-        else if (property == "x" && pos.size() == 1)
-            return std::any( get_x(pos[0]) );
-        else if (property == "dx" && pos.size() == 1)
-            return std::any( get_dx(pos[0]) );
-        else if (property == "dx" && pos.size() == 2)
-            return std::any( get_dx(pos[0], pos[1]) );
-        else if (property == "at_open_boundary" && pos.size() == 1)
-            return std::any( (!pbc) && (pos[0]==0 || pos[0]==L1+L2-1) );
-        else if (property == "at_open_left_boundary" && pos.size() == 1)
-            return std::any( (!pbc) && pos[0]==0 );
-        else if (property == "at_open_right_boundary" && pos.size() == 1)
-            return std::any( (!pbc) && pos[0]==L1+L2-1 );
-        else if (property == "wraps_pbc" && pos.size() == 2)
-            return std::any( (pos[0] < pos[1]) );
-        else {
-            std::ostringstream ss;
-            ss << "No property '" << property << "' with " << pos.size() << " points implemented."; 
-            throw std::runtime_error(ss.str());
-            return std::any();
-        }
-    }
-    
-    pos_t size() const override
-    {
-        return L1+L2;
-    }
-    
-    int maximum_vertex_type() const
-    {
-        return 0;
+  }
+
+  pos_t size() const override { return L1 + L2; }
+
+  int maximum_vertex_type() const { return 0; }
+
+ private:
+  double get_x(int i) const {
+    int i1, i2;
+    if (i < L1) {
+      i1 = i;
+      i2 = 0;
+    } else {
+      i1 = L1;
+      i2 = i - L1;
     }
 
-private:
-    
-    double get_x (int i) const
-    {
-        int i1, i2;
-        if (i < L1) {
-            i1 = i;
-            i2 = 0;
-        } else {
-            i1 = L1;
-            i2 = i - L1;
-        }
-        
-        return a1/N1 * i1 + a2/N2 * i2;
-    }
-    
-    double get_dx (int i, int j) const
-    {
-        double dx;
-        if (std::max(i, j) <= L1)
-            dx = a1/N1 * (j-i);
-        else
-            dx = a2/N2 * (j-i);
-        return dx;
-    }
-    double get_dx (int i) const
-    {
-        return (i<L1) ? a1/N1 : a2/N2;
-    }
+    return a1 / N1 * i1 + a2 / N2 * i2;
+  }
 
-    
-    std::string site_label (int i) const
-    {
-        return "( " + boost::lexical_cast<std::string>( get_x(i) ) + " )";
-    }
-    
-    std::string bond_label (int i, int j) const
-    {
-        return (  "( " + boost::lexical_cast<std::string>( get_x(i) ) + " )"
-                + " -- "
-                + "( " + boost::lexical_cast<std::string>( get_x(j) ) + " )");
-    }
-    
-private:
-    int N1, N2, L1, L2;
-    double a1, a2, Lphys;
-    bool pbc;
-    
+  double get_dx(int i, int j) const {
+    double dx;
+    if (std::max(i, j) <= L1)
+      dx = a1 / N1 * (j - i);
+    else
+      dx = a2 / N2 * (j - i);
+    return dx;
+  }
+  double get_dx(int i) const { return (i < L1) ? a1 / N1 : a2 / N2; }
+
+  std::string site_label(int i) const {
+    return "( " + boost::lexical_cast<std::string>(get_x(i)) + " )";
+  }
+
+  std::string bond_label(int i, int j) const {
+    return (
+        "( " + boost::lexical_cast<std::string>(get_x(i)) + " )" + " -- " +
+        "( " + boost::lexical_cast<std::string>(get_x(j)) + " )"
+    );
+  }
+
+ private:
+  int N1, N2, L1, L2;
+  double a1, a2, Lphys;
+  bool pbc;
 };
 
+class MixedContChain_c : public lattice_impl {
+ public:
+  using pos_t = lattice_impl::pos_t;
 
-class MixedContChain_c : public lattice_impl
-{
-public:
-    using pos_t = lattice_impl::pos_t;
-    
-    MixedContChain_c (BaseParameters & parms1, int L1_, BaseParameters & parms2, int L2_, bool pbc_=false)
-    : L1(L1_)
-    , L2(L2_)
-    , Lphys(parms1["L"])
-    , N1(parms1["Ndiscr"])
-    , a1(parms1["a"])
-    , N2(parms2["Ndiscr"])
-    , a2(parms2["a"])
-    , pbc(pbc_)
-    {
-        assert( parms1["L"] == parms1["L"] );
-        if (pbc)
-            throw std::runtime_error("Periodic boundary conditions are not implemented for the MixedChain.");
+  MixedContChain_c(
+      BaseParameters& parms1, int L1_, BaseParameters& parms2, int L2_,
+      bool pbc_ = false
+  )
+      : L1(L1_),
+        L2(L2_),
+        Lphys(parms1["L"]),
+        N1(parms1["Ndiscr"]),
+        a1(parms1["a"]),
+        N2(parms2["Ndiscr"]),
+        a2(parms2["a"]),
+        pbc(pbc_) {
+    assert(parms1["L"] == parms1["L"]);
+    if (pbc)
+      throw std::runtime_error(
+          "Periodic boundary conditions are not implemented for the MixedChain."
+      );
+  }
+
+  std::vector<pos_t> forward(pos_t i) const override {
+    std::vector<pos_t> ret;
+    if (i < L1 + L2 - 1) ret.push_back(i + 1);
+    if (pbc && i == L1 + L2 - 1) ret.push_back(0);
+    return ret;
+  }
+  std::vector<pos_t> all(pos_t i) const override {
+    std::vector<pos_t> ret;
+    if (i < L1 + L2 - 1) ret.push_back(i + 1);
+    if (i > 0) ret.push_back(i - 1);
+    if (pbc && i == L1 + L2 - 1) ret.push_back(0);
+    if (pbc && i == 0) ret.push_back(L1 + L2 - 1);
+    return ret;
+  }
+
+  std::any get_prop_(std::string const& property, std::vector<pos_t> const& pos)
+      const override {
+    if (property == "label" && pos.size() == 1)
+      return std::any(site_label(pos[0]));
+    else if (property == "label" && pos.size() == 2)
+      return std::any(bond_label(pos[0], pos[1]));
+    else if (property == "type" && pos.size() == 1)
+      return std::any(0);
+    else if (property == "type" && pos.size() == 2)
+      return std::any(0);
+    else if (property == "x" && pos.size() == 1)
+      return std::any(get_x(pos[0]));
+    else if (property == "dx" && pos.size() == 1)
+      return std::any(get_dx(pos[0]));
+    else if (property == "dx" && pos.size() == 2)
+      return std::any(get_dx(pos[0], pos[1]));
+    else if (property == "at_open_boundary" && pos.size() == 1)
+      return std::any((!pbc) && (pos[0] == 0 || pos[0] == L1 + L2 - 1));
+    else if (property == "at_open_left_boundary" && pos.size() == 1)
+      return std::any((!pbc) && pos[0] == 0);
+    else if (property == "at_open_right_boundary" && pos.size() == 1)
+      return std::any((!pbc) && pos[0] == L1 + L2 - 1);
+    else if (property == "wraps_pbc" && pos.size() == 2)
+      return std::any((pos[0] < pos[1]));
+    else {
+      std::ostringstream ss;
+      ss << "No property '" << property << "' with " << pos.size()
+         << " points implemented.";
+      throw std::runtime_error(ss.str());
+      return std::any();
     }
-    
-    std::vector<pos_t> forward(pos_t i) const override
-    {
-        std::vector<pos_t> ret;
-        if (i < L1+L2-1)
-            ret.push_back(i+1);
-        if (pbc && i == L1+L2-1)
-            ret.push_back(0);
-        return ret;
-    }
-    std::vector<pos_t> all(pos_t i) const override
-    {
-        std::vector<pos_t> ret;
-        if (i < L1+L2-1)
-            ret.push_back(i+1);
-        if (i > 0)
-            ret.push_back(i-1);
-        if (pbc && i == L1+L2-1)
-            ret.push_back(0);
-        if (pbc && i == 0)
-            ret.push_back(L1+L2-1);
-        return ret;
-    }
-    
-    std::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const override
-    {
-        if (property == "label" && pos.size() == 1)
-            return std::any( site_label(pos[0]) );
-        else if (property == "label" && pos.size() == 2)
-            return std::any( bond_label(pos[0], pos[1]) );
-        else if (property == "type" && pos.size() == 1)
-            return std::any( 0 );
-        else if (property == "type" && pos.size() == 2)
-            return std::any( 0 );
-        else if (property == "x" && pos.size() == 1)
-            return std::any( get_x(pos[0]) );
-        else if (property == "dx" && pos.size() == 1)
-            return std::any( get_dx(pos[0]) );
-        else if (property == "dx" && pos.size() == 2)
-            return std::any( get_dx(pos[0], pos[1]) );
-        else if (property == "at_open_boundary" && pos.size() == 1)
-            return std::any( (!pbc) && (pos[0]==0 || pos[0]==L1+L2-1) );
-        else if (property == "at_open_left_boundary" && pos.size() == 1)
-            return std::any( (!pbc) && pos[0]==0 );
-        else if (property == "at_open_right_boundary" && pos.size() == 1)
-            return std::any( (!pbc) && pos[0]==L1+L2-1 );
-        else if (property == "wraps_pbc" && pos.size() == 2)
-            return std::any( (pos[0] < pos[1]) );
-        else {
-            std::ostringstream ss;
-            ss << "No property '" << property << "' with " << pos.size() << " points implemented."; 
-            throw std::runtime_error(ss.str());
-            return std::any();
-        }
-    }
-    
-    pos_t size() const override
-    {
-        return L1+L2;
-    }
-    
-    int maximum_vertex_type() const
-    {
-        return 0;
+  }
+
+  pos_t size() const override { return L1 + L2; }
+
+  int maximum_vertex_type() const { return 0; }
+
+ private:
+  double get_x(int i) const {
+    int i1, i2;
+    double middle = 0;
+    double left = (L1 > 0) ? a1 / N1 / 2. : a2 / N2 / 2.;
+    if (L1 == 0) {
+      i1 = 0;
+      i2 = i;
+      middle = 0.;
+    } else if (i < L1) {
+      i1 = i;
+      i2 = 0;
+      middle = 0.;
+    } else {
+      i1 = L1 - 1;
+      i2 = i - L1;
+      middle = 3. / 2. * std::min(a1 / N1, a2 / N2);
     }
 
-private:
-    
-    double get_x (int i) const
-    {
-        int i1, i2;
-        double middle = 0;
-        double left = (L1 > 0) ? a1/N1/2. : a2/N2/2.;
-        if (L1 == 0) {
-            i1 = 0;
-            i2 = i;
-            middle = 0.;
-        } else if (i < L1) {
-            i1 = i;
-            i2 = 0;
-            middle = 0.;
-        } else {
-            i1 = L1-1;
-            i2 = i - L1;
-            middle = 3./2. * std::min(a1/N1, a2/N2);
-        }
-        
-        return left + a1/N1 * i1 + middle + a2/N2 * i2;
-    }
-    double get_dx (int i) const
-    {
-        return (i<L1) ? a1/N1 : a2/N2;
-    }
-    
-    double get_dx (int i, int j) const
-    {
-        if (L1 == 0)
-            return a2/N2 * (j-i);
-        else if (std::max(i, j) < L1 || L2 == 0)
-            return a1/N1 * (j-i);
-        else if (std::min(i,j) >= L1)
-            return a2/N2 * (j-i);
-        else
-            return (j-i)/std::abs(j-i) * ( a1/N1 * (L1-1 - std::min(i,j))
-                                          + 3./2. * std::min(a1/N1, a2/N2)
-                                          + a2/N2 * (std::max(i,j) - L1) );
-    }
-    
-    std::string site_label (int i) const
-    {
-        return "( " + boost::lexical_cast<std::string>( get_x(i) ) + " )";
-    }
-    
-    std::string bond_label (int i, int j) const
-    {
-        return (  "( " + boost::lexical_cast<std::string>( get_x(i) ) + " )"
-                + " -- "
-                + "( " + boost::lexical_cast<std::string>( get_x(j) ) + " )");
-    }
-    
-private:
-    int N1, N2, L1, L2;
-    double a1, a2, Lphys;
-    bool pbc;
-    
+    return left + a1 / N1 * i1 + middle + a2 / N2 * i2;
+  }
+  double get_dx(int i) const { return (i < L1) ? a1 / N1 : a2 / N2; }
+
+  double get_dx(int i, int j) const {
+    if (L1 == 0)
+      return a2 / N2 * (j - i);
+    else if (std::max(i, j) < L1 || L2 == 0)
+      return a1 / N1 * (j - i);
+    else if (std::min(i, j) >= L1)
+      return a2 / N2 * (j - i);
+    else
+      return (j - i) / std::abs(j - i) *
+             (a1 / N1 * (L1 - 1 - std::min(i, j)) +
+              3. / 2. * std::min(a1 / N1, a2 / N2) +
+              a2 / N2 * (std::max(i, j) - L1));
+  }
+
+  std::string site_label(int i) const {
+    return "( " + boost::lexical_cast<std::string>(get_x(i)) + " )";
+  }
+
+  std::string bond_label(int i, int j) const {
+    return (
+        "( " + boost::lexical_cast<std::string>(get_x(i)) + " )" + " -- " +
+        "( " + boost::lexical_cast<std::string>(get_x(j)) + " )"
+    );
+  }
+
+ private:
+  int N1, N2, L1, L2;
+  double a1, a2, Lphys;
+  bool pbc;
 };
 
 #endif

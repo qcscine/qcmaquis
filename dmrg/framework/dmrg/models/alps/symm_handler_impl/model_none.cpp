@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #include "dmrg/models/alps/symm_handler.hpp"
@@ -12,14 +12,18 @@
 
 // TrivialGroup Symmetry
 template <>
-TrivialGroup::charge init_charge<TrivialGroup> (const alps::Parameters& parms, std::map<std::string, int> const& all_conserved_qn)
-{
-    return TrivialGroup::IdentityCharge;
+TrivialGroup::charge init_charge<TrivialGroup>(
+    const alps::Parameters& parms,
+    std::map<std::string, int> const& all_conserved_qn
+) {
+  return TrivialGroup::IdentityCharge;
 }
 
 template <>
-TrivialGroup::charge state_to_charge<TrivialGroup>(alps::site_state<short> const & state, alps::SiteBasisDescriptor<short> const& b,
-                                                   std::map<std::string, int> const& all_conserved_qn)
-{
-    return TrivialGroup::IdentityCharge;
+TrivialGroup::charge state_to_charge<TrivialGroup>(
+    alps::site_state<short> const& state,
+    alps::SiteBasisDescriptor<short> const& b,
+    std::map<std::string, int> const& all_conserved_qn
+) {
+  return TrivialGroup::IdentityCharge;
 }

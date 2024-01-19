@@ -16,20 +16,20 @@ namespace numeric {
 namespace bindings {
 namespace result_of {
 
-template< typename T >
+template <typename T>
 struct index_base {
-    typedef typename detail::property_at< T, tag::index_base >::type type;
+  typedef typename detail::property_at<T, tag::index_base>::type type;
 };
 
-} // namespace result_of
+}  // namespace result_of
 
-template< typename T >
-typename result_of::index_base<T>::type index_base( const T& ) {
-    return typename result_of::index_base<T>::type();
+template <typename T>
+typename result_of::index_base<T>::type index_base(const T&) {
+  return typename result_of::index_base<T>::type();
 }
 
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

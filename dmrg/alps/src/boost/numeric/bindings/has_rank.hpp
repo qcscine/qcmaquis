@@ -16,21 +16,16 @@ namespace boost {
 namespace numeric {
 namespace bindings {
 
-template< typename T, int N, typename Enable = void >
+template <typename T, int N, typename Enable = void>
 struct has_rank {};
 
-template< typename T, int N >
-struct has_rank<
-        T, N,
-        typename boost::enable_if< detail::is_adaptable<T> >::type
-    >:
-    mpl::equal_to<
-        typename detail::property_at< T, tag::entity >::type,
-        mpl::int_< N >
-    > {};
+template <typename T, int N>
+struct has_rank<T, N, typename boost::enable_if<detail::is_adaptable<T> >::type>
+    : mpl::equal_to<
+          typename detail::property_at<T, tag::entity>::type, mpl::int_<N> > {};
 
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

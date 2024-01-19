@@ -1,4 +1,3 @@
-add_subdirectory(dmrg)
 add_subdirectory(measure)
 
 if (BUILD_INIT)
@@ -18,17 +17,13 @@ if (BUILD_MPS_COMPRESS)
   add_subdirectory(compress)
 endif (BUILD_MPS_COMPRESS)
 
-if (BUILD_DMRG_EVOLVE)
-  add_subdirectory(evolve)
-endif (BUILD_DMRG_EVOLVE)
-
-if (BUILD_DMRG_FEAST)
-  add_subdirectory(feast)
-endif (BUILD_DMRG_FEAST)
-
-if (BUILD_TRANSCORRELATED_DMRG)
-  add_subdirectory(tcDMRG)
-endif (BUILD_TRANSCORRELATED_DMRG)
-
 add_subdirectory(tools)
 
+# Main executable
+set(DMRG_APP_LIBRARIES maquis_dmrg dmrg_models dmrg_utils ${DMRG_LIBRARIES})
+add_executable(qcmaquis qcmaquis.cpp)
+target_link_libraries(qcmaquis ${DMRG_APP_LIBRARIES})
+add_custom_command(
+  TARGET qcmaquis 
+  POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:qcmaquis> ${CMAKE_BINARY_DIR})

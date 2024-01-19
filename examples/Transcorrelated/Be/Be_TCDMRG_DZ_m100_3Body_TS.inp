@@ -1,0 +1,42 @@
+// -- General parameters --
+simulation_type               = "transcorrelated"
+L                             = 14
+max_bond_dimension            = 100
+ngrowsweeps                   = 3
+nmainsweeps                   = 3
+irrep                         = 0
+nelec                         = 4
+spin                          = 0
+symmetry                      = '2u1'
+u1_total_charge1              = 2
+u1_total_charge2              = 2
+LATTICE                       = "orbitals"
+CONSERVED_QUANTUMNUMBERS      = "Nup,Ndown"
+MODEL                         = "quantum_chemistry"
+integral_file                 = "FCIDUMP_be_dz_conventional"
+integral_cutoff               = 0.
+optimization                  = twosite
+conv_thresh                   = -1. 
+
+// -- Transcorrelated options --
+transcorrelated_nsweeps_TI    = 10
+transcorrelated_nsweeps_TC    = 20
+transcorrelated_integral_file = "FCIDUMP_3body_be_dz"
+
+// -- SVD truncation --
+truncation_initial            = 1e-20
+truncation_final              = 1e-16
+
+// -- Initialization and storage information --
+init_type                     = "hf"
+hf_occ                        = "4,4,1,1,1,1,1,1,1,1,1,1,1,1"
+chkpfile                      = 'Be_TCDMRG_DZ_m100_3Body_TS.checkpoint_state.0.h5'
+resultfile                    = 'Be_TCDMRG_DZ_m100_3Body_TS.results_state.0.h5'
+
+// -- Time-dependent simulation --
+propagator_accuracy           = 1.0E-10
+propagator_maxiter            = 10
+time_step                     = 0.1
+hamiltonian_units             = "Hartree"
+time_units                    = "fs"
+TD_backpropagation            = "no"

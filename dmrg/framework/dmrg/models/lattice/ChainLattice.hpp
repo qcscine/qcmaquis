@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #ifndef MAQUIS_DMRG_lattice_hpp
@@ -14,80 +14,77 @@
 #include "dmrg/models/lattice/lattice.h"
 #include "dmrg/utils/BaseParameters.h"
 
-class ChainLattice : public lattice_impl
-{
-public:
+class ChainLattice : public lattice_impl {
+ public:
   // Types definition
   using pos_t = typename lattice_impl::pos_t;
 
   /** @brief Constructor from a parameter container */
-  ChainLattice (BaseParameters & parms, bool pbc_=false)
-    : L(parms["L"]) , pbc(pbc_) { }
+  ChainLattice(BaseParameters& parms, bool pbc_ = false)
+      : L(parms["L"]), pbc(pbc_) {}
 
   /** @brief Constructor from parameters */
-  ChainLattice (int L_, bool pbc_=false)
-    : L(L_), pbc(pbc_) { }
+  ChainLattice(int L_, bool pbc_ = false) : L(L_), pbc(pbc_) {}
 
   /** @brief Get next position in the lattice */
-  std::vector<pos_t> forward(pos_t i) const override
-  {
+  std::vector<pos_t> forward(pos_t i) const override {
     std::vector<pos_t> ret;
-    if (i < L-1) {
-      ret.push_back(i+1);
+    if (i < L - 1) {
+      ret.push_back(i + 1);
     }
-    if (pbc && i == L-1) {
+    if (pbc && i == L - 1) {
       ret.push_back(0);
     }
     return ret;
   }
 
   /** @brief Getter for the neighbours of a given site */
-  std::vector<pos_t> all(pos_t i) const override
-  {
+  std::vector<pos_t> all(pos_t i) const override {
     std::vector<pos_t> ret;
-    if (i < L-1) {
-      ret.push_back(i+1);
+    if (i < L - 1) {
+      ret.push_back(i + 1);
     }
     if (i > 0) {
-      ret.push_back(i-1);
+      ret.push_back(i - 1);
     }
-    if (pbc && i == L-1) {
+    if (pbc && i == L - 1) {
       ret.push_back(0);
     }
     if (pbc && i == 0) {
-      ret.push_back(L-1);
+      ret.push_back(L - 1);
     }
     return ret;
   }
 
   /** @brief Getter for a generic property of the lattice */
-  std::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const override
-  {
+  std::any get_prop_(std::string const& property, std::vector<pos_t> const& pos)
+      const override {
     if (property == "label" && pos.size() == 1) {
-      return std::any( site_label(pos[0]) );
+      return std::any(site_label(pos[0]));
     } else if (property == "label" && pos.size() == 2) {
-      return std::any( bond_label(pos[0], pos[1]) );
+      return std::any(bond_label(pos[0], pos[1]));
     } else if (property == "type" && pos.size() == 1) {
-      return std::any( 0 );
+      return std::any(0);
     } else if (property == "type" && pos.size() == 2) {
-      return std::any( 0 );
+      return std::any(0);
     } else if (property == "x" && pos.size() == 1) {
-      return std::any( pos[0] );
+      return std::any(pos[0]);
     } else if (property == "at_open_boundary" && pos.size() == 1) {
-      return std::any( (!pbc) && (pos[0]==0 || pos[0]==L-1) );
+      return std::any((!pbc) && (pos[0] == 0 || pos[0] == L - 1));
     } else if (property == "at_open_left_boundary" && pos.size() == 1) {
-      return std::any( (!pbc) && pos[0]==0 );
+      return std::any((!pbc) && pos[0] == 0);
     } else if (property == "at_open_right_boundary" && pos.size() == 1) {
-      return std::any( (!pbc) && pos[0]==L-1 );
+      return std::any((!pbc) && pos[0] == L - 1);
     } else if (property == "wraps_pbc" && pos.size() == 2) {
-      return std::any( (pos[0] < pos[1]) );
+      return std::any((pos[0] < pos[1]));
     } else if (property == "NumTypes") {
-      return std::any( 1 );
+      return std::any(1);
     } else if (property == "ParticleType" && pos.size() == 1) {
-      return std::any( 0 );
+      return std::any(0);
     } else {
       std::ostringstream ss;
-      ss << "No property '" << property << "' with " << pos.size() << " points implemented.";
+      ss << "No property '" << property << "' with " << pos.size()
+         << " points implemented.";
       throw std::runtime_error(ss.str());
       return std::any();
     }
@@ -99,21 +96,21 @@ public:
   /** @brief Getter for the number of site types */
   int getMaxType() const override { return 1; }
 
-private:
-
+ private:
   /** @brief Prints the label of a given site */
-  std::string site_label (int i) const {
-      return "( " + boost::lexical_cast<std::string>(a * i) + " )";
+  std::string site_label(int i) const {
+    return "( " + boost::lexical_cast<std::string>(a * i) + " )";
   }
 
   /** @brief Prints the label of a given pair of sites */
-  std::string bond_label (int i, int j) const {
-    return (  "( " + boost::lexical_cast<std::string>(a * i) + " )"
-            + " -- "
-            + "( " + boost::lexical_cast<std::string>(a * j) + " )");
+  std::string bond_label(int i, int j) const {
+    return (
+        "( " + boost::lexical_cast<std::string>(a * i) + " )" + " -- " + "( " +
+        boost::lexical_cast<std::string>(a * j) + " )"
+    );
   }
 
-private:
+ private:
   int L;
   double a;
   bool pbc;

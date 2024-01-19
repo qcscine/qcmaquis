@@ -63,14 +63,16 @@ namespace detail {
 // * CBLAS backend, and
 // * float value-type.
 //
-template< typename Order, typename UpLo, typename Trans >
-inline void her2k( const Order order, const UpLo uplo, const Trans trans,
-        const int n, const int k, const float alpha, const float* a,
-        const int lda, const float* b, const int ldb, const float beta,
-        float* c, const int ldc ) {
-    cblas_ssyr2k( cblas_option< Order >::value, cblas_option< UpLo >::value,
-            cblas_option< Trans >::value, n, k, alpha, a, lda, b, ldb, beta,
-            c, ldc );
+template <typename Order, typename UpLo, typename Trans>
+inline void her2k(
+    const Order order, const UpLo uplo, const Trans trans, const int n,
+    const int k, const float alpha, const float* a, const int lda,
+    const float* b, const int ldb, const float beta, float* c, const int ldc
+) {
+  cblas_ssyr2k(
+      cblas_option<Order>::value, cblas_option<UpLo>::value,
+      cblas_option<Trans>::value, n, k, alpha, a, lda, b, ldb, beta, c, ldc
+  );
 }
 
 //
@@ -78,14 +80,16 @@ inline void her2k( const Order order, const UpLo uplo, const Trans trans,
 // * CBLAS backend, and
 // * double value-type.
 //
-template< typename Order, typename UpLo, typename Trans >
-inline void her2k( const Order order, const UpLo uplo, const Trans trans,
-        const int n, const int k, const double alpha, const double* a,
-        const int lda, const double* b, const int ldb, const double beta,
-        double* c, const int ldc ) {
-    cblas_dsyr2k( cblas_option< Order >::value, cblas_option< UpLo >::value,
-            cblas_option< Trans >::value, n, k, alpha, a, lda, b, ldb, beta,
-            c, ldc );
+template <typename Order, typename UpLo, typename Trans>
+inline void her2k(
+    const Order order, const UpLo uplo, const Trans trans, const int n,
+    const int k, const double alpha, const double* a, const int lda,
+    const double* b, const int ldb, const double beta, double* c, const int ldc
+) {
+  cblas_dsyr2k(
+      cblas_option<Order>::value, cblas_option<UpLo>::value,
+      cblas_option<Trans>::value, n, k, alpha, a, lda, b, ldb, beta, c, ldc
+  );
 }
 
 //
@@ -93,15 +97,17 @@ inline void her2k( const Order order, const UpLo uplo, const Trans trans,
 // * CBLAS backend, and
 // * complex<float> value-type.
 //
-template< typename Order, typename UpLo, typename Trans >
-inline void her2k( const Order order, const UpLo uplo, const Trans trans,
-        const int n, const int k, const std::complex<float> alpha,
-        const std::complex<float>* a, const int lda,
-        const std::complex<float>* b, const int ldb, const float beta,
-        std::complex<float>* c, const int ldc ) {
-    cblas_cher2k( cblas_option< Order >::value, cblas_option< UpLo >::value,
-            cblas_option< Trans >::value, n, k, &alpha, a, lda, b, ldb, beta,
-            c, ldc );
+template <typename Order, typename UpLo, typename Trans>
+inline void her2k(
+    const Order order, const UpLo uplo, const Trans trans, const int n,
+    const int k, const std::complex<float> alpha, const std::complex<float>* a,
+    const int lda, const std::complex<float>* b, const int ldb,
+    const float beta, std::complex<float>* c, const int ldc
+) {
+  cblas_cher2k(
+      cblas_option<Order>::value, cblas_option<UpLo>::value,
+      cblas_option<Trans>::value, n, k, &alpha, a, lda, b, ldb, beta, c, ldc
+  );
 }
 
 //
@@ -109,15 +115,17 @@ inline void her2k( const Order order, const UpLo uplo, const Trans trans,
 // * CBLAS backend, and
 // * complex<double> value-type.
 //
-template< typename Order, typename UpLo, typename Trans >
-inline void her2k( const Order order, const UpLo uplo, const Trans trans,
-        const int n, const int k, const std::complex<double> alpha,
-        const std::complex<double>* a, const int lda,
-        const std::complex<double>* b, const int ldb, const double beta,
-        std::complex<double>* c, const int ldc ) {
-    cblas_zher2k( cblas_option< Order >::value, cblas_option< UpLo >::value,
-            cblas_option< Trans >::value, n, k, &alpha, a, lda, b, ldb, beta,
-            c, ldc );
+template <typename Order, typename UpLo, typename Trans>
+inline void her2k(
+    const Order order, const UpLo uplo, const Trans trans, const int n,
+    const int k, const std::complex<double> alpha,
+    const std::complex<double>* a, const int lda, const std::complex<double>* b,
+    const int ldb, const double beta, std::complex<double>* c, const int ldc
+) {
+  cblas_zher2k(
+      cblas_option<Order>::value, cblas_option<UpLo>::value,
+      cblas_option<Trans>::value, n, k, &alpha, a, lda, b, ldb, beta, c, ldc
+  );
 }
 
 #elif defined BOOST_NUMERIC_BINDINGS_BLAS_CUBLAS
@@ -126,14 +134,17 @@ inline void her2k( const Order order, const UpLo uplo, const Trans trans,
 // * CUBLAS backend, and
 // * float value-type.
 //
-template< typename Order, typename UpLo, typename Trans >
-inline void her2k( const Order order, const UpLo uplo, const Trans trans,
-        const int n, const int k, const float alpha, const float* a,
-        const int lda, const float* b, const int ldb, const float beta,
-        float* c, const int ldc ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    cublasSsyr2k( blas_option< UpLo >::value, blas_option< Trans >::value, n,
-            k, alpha, a, lda, b, ldb, beta, c, ldc );
+template <typename Order, typename UpLo, typename Trans>
+inline void her2k(
+    const Order order, const UpLo uplo, const Trans trans, const int n,
+    const int k, const float alpha, const float* a, const int lda,
+    const float* b, const int ldb, const float beta, float* c, const int ldc
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  cublasSsyr2k(
+      blas_option<UpLo>::value, blas_option<Trans>::value, n, k, alpha, a, lda,
+      b, ldb, beta, c, ldc
+  );
 }
 
 //
@@ -141,14 +152,17 @@ inline void her2k( const Order order, const UpLo uplo, const Trans trans,
 // * CUBLAS backend, and
 // * double value-type.
 //
-template< typename Order, typename UpLo, typename Trans >
-inline void her2k( const Order order, const UpLo uplo, const Trans trans,
-        const int n, const int k, const double alpha, const double* a,
-        const int lda, const double* b, const int ldb, const double beta,
-        double* c, const int ldc ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    cublasDsyr2k( blas_option< UpLo >::value, blas_option< Trans >::value, n,
-            k, alpha, a, lda, b, ldb, beta, c, ldc );
+template <typename Order, typename UpLo, typename Trans>
+inline void her2k(
+    const Order order, const UpLo uplo, const Trans trans, const int n,
+    const int k, const double alpha, const double* a, const int lda,
+    const double* b, const int ldb, const double beta, double* c, const int ldc
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  cublasDsyr2k(
+      blas_option<UpLo>::value, blas_option<Trans>::value, n, k, alpha, a, lda,
+      b, ldb, beta, c, ldc
+  );
 }
 
 //
@@ -156,15 +170,18 @@ inline void her2k( const Order order, const UpLo uplo, const Trans trans,
 // * CUBLAS backend, and
 // * complex<float> value-type.
 //
-template< typename Order, typename UpLo, typename Trans >
-inline void her2k( const Order order, const UpLo uplo, const Trans trans,
-        const int n, const int k, const std::complex<float> alpha,
-        const std::complex<float>* a, const int lda,
-        const std::complex<float>* b, const int ldb, const float beta,
-        std::complex<float>* c, const int ldc ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    cublasCher2k( blas_option< UpLo >::value, blas_option< Trans >::value, n,
-            k, alpha, a, lda, b, ldb, beta, c, ldc );
+template <typename Order, typename UpLo, typename Trans>
+inline void her2k(
+    const Order order, const UpLo uplo, const Trans trans, const int n,
+    const int k, const std::complex<float> alpha, const std::complex<float>* a,
+    const int lda, const std::complex<float>* b, const int ldb,
+    const float beta, std::complex<float>* c, const int ldc
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  cublasCher2k(
+      blas_option<UpLo>::value, blas_option<Trans>::value, n, k, alpha, a, lda,
+      b, ldb, beta, c, ldc
+  );
 }
 
 //
@@ -172,14 +189,15 @@ inline void her2k( const Order order, const UpLo uplo, const Trans trans,
 // * CUBLAS backend, and
 // * complex<double> value-type.
 //
-template< typename Order, typename UpLo, typename Trans >
-inline void her2k( const Order order, const UpLo uplo, const Trans trans,
-        const int n, const int k, const std::complex<double> alpha,
-        const std::complex<double>* a, const int lda,
-        const std::complex<double>* b, const int ldb, const double beta,
-        std::complex<double>* c, const int ldc ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    // NOT FOUND();
+template <typename Order, typename UpLo, typename Trans>
+inline void her2k(
+    const Order order, const UpLo uplo, const Trans trans, const int n,
+    const int k, const std::complex<double> alpha,
+    const std::complex<double>* a, const int lda, const std::complex<double>* b,
+    const int ldb, const double beta, std::complex<double>* c, const int ldc
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  // NOT FOUND();
 }
 
 #else
@@ -188,15 +206,18 @@ inline void her2k( const Order order, const UpLo uplo, const Trans trans,
 // * netlib-compatible BLAS backend (the default), and
 // * float value-type.
 //
-template< typename Order, typename UpLo, typename Trans >
-inline void her2k( const Order order, const UpLo uplo, const Trans trans,
-        const fortran_int_t n, const fortran_int_t k, const float alpha,
-        const float* a, const fortran_int_t lda, const float* b,
-        const fortran_int_t ldb, const float beta, float* c,
-        const fortran_int_t ldc ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    BLAS_SSYR2K( &blas_option< UpLo >::value, &blas_option< Trans >::value,
-            &n, &k, &alpha, a, &lda, b, &ldb, &beta, c, &ldc );
+template <typename Order, typename UpLo, typename Trans>
+inline void her2k(
+    const Order order, const UpLo uplo, const Trans trans,
+    const fortran_int_t n, const fortran_int_t k, const float alpha,
+    const float* a, const fortran_int_t lda, const float* b,
+    const fortran_int_t ldb, const float beta, float* c, const fortran_int_t ldc
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  BLAS_SSYR2K(
+      &blas_option<UpLo>::value, &blas_option<Trans>::value, &n, &k, &alpha, a,
+      &lda, b, &ldb, &beta, c, &ldc
+  );
 }
 
 //
@@ -204,15 +225,19 @@ inline void her2k( const Order order, const UpLo uplo, const Trans trans,
 // * netlib-compatible BLAS backend (the default), and
 // * double value-type.
 //
-template< typename Order, typename UpLo, typename Trans >
-inline void her2k( const Order order, const UpLo uplo, const Trans trans,
-        const fortran_int_t n, const fortran_int_t k, const double alpha,
-        const double* a, const fortran_int_t lda, const double* b,
-        const fortran_int_t ldb, const double beta, double* c,
-        const fortran_int_t ldc ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    BLAS_DSYR2K( &blas_option< UpLo >::value, &blas_option< Trans >::value,
-            &n, &k, &alpha, a, &lda, b, &ldb, &beta, c, &ldc );
+template <typename Order, typename UpLo, typename Trans>
+inline void her2k(
+    const Order order, const UpLo uplo, const Trans trans,
+    const fortran_int_t n, const fortran_int_t k, const double alpha,
+    const double* a, const fortran_int_t lda, const double* b,
+    const fortran_int_t ldb, const double beta, double* c,
+    const fortran_int_t ldc
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  BLAS_DSYR2K(
+      &blas_option<UpLo>::value, &blas_option<Trans>::value, &n, &k, &alpha, a,
+      &lda, b, &ldb, &beta, c, &ldc
+  );
 }
 
 //
@@ -220,16 +245,20 @@ inline void her2k( const Order order, const UpLo uplo, const Trans trans,
 // * netlib-compatible BLAS backend (the default), and
 // * complex<float> value-type.
 //
-template< typename Order, typename UpLo, typename Trans >
-inline void her2k( const Order order, const UpLo uplo, const Trans trans,
-        const fortran_int_t n, const fortran_int_t k,
-        const std::complex<float> alpha, const std::complex<float>* a,
-        const fortran_int_t lda, const std::complex<float>* b,
-        const fortran_int_t ldb, const float beta, std::complex<float>* c,
-        const fortran_int_t ldc ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    BLAS_CHER2K( &blas_option< UpLo >::value, &blas_option< Trans >::value,
-            &n, &k, &alpha, a, &lda, b, &ldb, &beta, c, &ldc );
+template <typename Order, typename UpLo, typename Trans>
+inline void her2k(
+    const Order order, const UpLo uplo, const Trans trans,
+    const fortran_int_t n, const fortran_int_t k,
+    const std::complex<float> alpha, const std::complex<float>* a,
+    const fortran_int_t lda, const std::complex<float>* b,
+    const fortran_int_t ldb, const float beta, std::complex<float>* c,
+    const fortran_int_t ldc
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  BLAS_CHER2K(
+      &blas_option<UpLo>::value, &blas_option<Trans>::value, &n, &k, &alpha, a,
+      &lda, b, &ldb, &beta, c, &ldc
+  );
 }
 
 //
@@ -237,72 +266,88 @@ inline void her2k( const Order order, const UpLo uplo, const Trans trans,
 // * netlib-compatible BLAS backend (the default), and
 // * complex<double> value-type.
 //
-template< typename Order, typename UpLo, typename Trans >
-inline void her2k( const Order order, const UpLo uplo, const Trans trans,
-        const fortran_int_t n, const fortran_int_t k,
-        const std::complex<double> alpha, const std::complex<double>* a,
-        const fortran_int_t lda, const std::complex<double>* b,
-        const fortran_int_t ldb, const double beta, std::complex<double>* c,
-        const fortran_int_t ldc ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    BLAS_ZHER2K( &blas_option< UpLo >::value, &blas_option< Trans >::value,
-            &n, &k, &alpha, a, &lda, b, &ldb, &beta, c, &ldc );
+template <typename Order, typename UpLo, typename Trans>
+inline void her2k(
+    const Order order, const UpLo uplo, const Trans trans,
+    const fortran_int_t n, const fortran_int_t k,
+    const std::complex<double> alpha, const std::complex<double>* a,
+    const fortran_int_t lda, const std::complex<double>* b,
+    const fortran_int_t ldb, const double beta, std::complex<double>* c,
+    const fortran_int_t ldc
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  BLAS_ZHER2K(
+      &blas_option<UpLo>::value, &blas_option<Trans>::value, &n, &k, &alpha, a,
+      &lda, b, &ldb, &beta, c, &ldc
+  );
 }
 
 #endif
 
-} // namespace detail
+}  // namespace detail
 
 //
 // Value-type based template class. Use this class if you need a type
 // for dispatching to her2k.
 //
-template< typename Value >
+template <typename Value>
 struct her2k_impl {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
+  typedef void result_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
-    typedef void result_type;
-
-    //
-    // Static member function that
-    // * Deduces the required arguments for dispatching to BLAS, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename MatrixA, typename MatrixB, typename MatrixC >
-    static result_type invoke( const value_type alpha, const MatrixA& a,
-            const MatrixB& b, const real_type beta, MatrixC& c ) {
-        namespace bindings = ::boost::numeric::bindings;
-        typedef typename result_of::data_order< MatrixB >::type order;
-        typedef typename result_of::trans_tag< MatrixA, order >::type trans;
-        typedef typename result_of::uplo_tag< MatrixC >::type uplo;
-        BOOST_STATIC_ASSERT( (is_same< typename remove_const<
-                typename bindings::value_type< MatrixA >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                MatrixB >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (is_same< typename remove_const<
-                typename bindings::value_type< MatrixA >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                MatrixC >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< MatrixC >::value) );
-        BOOST_ASSERT( bindings::size_minor(a) == 1 ||
-                bindings::stride_minor(a) == 1 );
-        BOOST_ASSERT( bindings::size_minor(b) == 1 ||
-                bindings::stride_minor(b) == 1 );
-        BOOST_ASSERT( bindings::size_minor(c) == 1 ||
-                bindings::stride_minor(c) == 1 );
-        detail::her2k( order(), uplo(), trans(),
-                bindings::size_column(c), bindings::size_column(a), alpha,
-                bindings::begin_value(a), bindings::stride_major(a),
-                bindings::begin_value(b), bindings::stride_major(b), beta,
-                bindings::begin_value(c), bindings::stride_major(c) );
-    }
+  //
+  // Static member function that
+  // * Deduces the required arguments for dispatching to BLAS, and
+  // * Asserts that most arguments make sense.
+  //
+  template <typename MatrixA, typename MatrixB, typename MatrixC>
+  static result_type invoke(
+      const value_type alpha, const MatrixA& a, const MatrixB& b,
+      const real_type beta, MatrixC& c
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    typedef typename result_of::data_order<MatrixB>::type order;
+    typedef typename result_of::trans_tag<MatrixA, order>::type trans;
+    typedef typename result_of::uplo_tag<MatrixC>::type uplo;
+    BOOST_STATIC_ASSERT(
+        (is_same<
+            typename remove_const<
+                typename bindings::value_type<MatrixA>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<MatrixB>::type>::type>::value)
+    );
+    BOOST_STATIC_ASSERT(
+        (is_same<
+            typename remove_const<
+                typename bindings::value_type<MatrixA>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<MatrixC>::type>::type>::value)
+    );
+    BOOST_STATIC_ASSERT((bindings::is_mutable<MatrixC>::value));
+    BOOST_ASSERT(
+        bindings::size_minor(a) == 1 || bindings::stride_minor(a) == 1
+    );
+    BOOST_ASSERT(
+        bindings::size_minor(b) == 1 || bindings::stride_minor(b) == 1
+    );
+    BOOST_ASSERT(
+        bindings::size_minor(c) == 1 || bindings::stride_minor(c) == 1
+    );
+    detail::her2k(
+        order(), uplo(), trans(), bindings::size_column(c),
+        bindings::size_column(a), alpha, bindings::begin_value(a),
+        bindings::stride_major(a), bindings::begin_value(b),
+        bindings::stride_major(b), beta, bindings::begin_value(c),
+        bindings::stride_major(c)
+    );
+  }
 };
 
 //
 // Functions for direct use. These functions are overloaded for temporaries,
 // so that wrapped types can still be passed and used for write-access. Calls
-// to these functions are passed to the her2k_impl classes. In the 
+// to these functions are passed to the her2k_impl classes. In the
 // documentation, the const-overloads are collapsed to avoid a large number of
 // prototypes which are very similar.
 //
@@ -310,20 +355,24 @@ struct her2k_impl {
 //
 // Overloaded function for her2k. Its overload differs for
 //
-template< typename MatrixA, typename MatrixB, typename MatrixC >
-inline typename her2k_impl< typename bindings::value_type<
-        MatrixA >::type >::result_type
-her2k( const typename bindings::value_type< MatrixA >::type alpha,
-        const MatrixA& a, const MatrixB& b, const typename remove_imaginary<
-        typename bindings::value_type< MatrixA >::type >::type beta,
-        MatrixC& c ) {
-    her2k_impl< typename bindings::value_type<
-            MatrixA >::type >::invoke( alpha, a, b, beta, c );
+template <typename MatrixA, typename MatrixB, typename MatrixC>
+inline typename her2k_impl<
+    typename bindings::value_type<MatrixA>::type>::result_type
+her2k(
+    const typename bindings::value_type<MatrixA>::type alpha, const MatrixA& a,
+    const MatrixB& b,
+    const typename remove_imaginary<
+        typename bindings::value_type<MatrixA>::type>::type beta,
+    MatrixC& c
+) {
+  her2k_impl<typename bindings::value_type<MatrixA>::type>::invoke(
+      alpha, a, b, beta, c
+  );
 }
 
-} // namespace blas
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace blas
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

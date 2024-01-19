@@ -34,11 +34,10 @@ namespace detail {
 namespace parser_detail {
 
 /** @brief Reads in a value of type V from a generic input stream s */
-template<class V>
-inline std::istream& read_value(std::istream& s, V& v)
-{
-    s >> v;
-    return s;
+template <class V>
+inline std::istream& read_value(std::istream& s, V& v) {
+  s >> v;
+  return s;
 }
 
 /**
@@ -47,19 +46,21 @@ inline std::istream& read_value(std::istream& s, V& v)
  * Since complex integrals are read as space-separated real and imaginary part,
  * and operator>> of std::complex doesn't support this
  * function signature is similar to operator>> to be able to use it in a loop
- * need inline as this will be compiled in multiple objects and cause linker errors otherwise
+ * need inline as this will be compiled in multiple objects and cause linker
+ * errors otherwise
  */
-template<>
-inline std::istream& read_value<std::complex<double> >(std::istream& s, std::complex<double>& v)
-{
-    double real, imag;
-    s >> real >> imag;
-    v = { real, imag };
-    return s;
+template <>
+inline std::istream& read_value<std::complex<double> >(
+    std::istream& s, std::complex<double>& v
+) {
+  double real, imag;
+  s >> real >> imag;
+  v = {real, imag};
+  return s;
 }
 
-} // namespace parser_detail
-} // namespace detail
-} // namespace chem
+}  // namespace parser_detail
+}  // namespace detail
+}  // namespace chem
 
-#endif // PARSER_DETAIL_H
+#endif  // PARSER_DETAIL_H

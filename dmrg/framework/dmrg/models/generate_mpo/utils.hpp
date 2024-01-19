@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #ifndef GENERATE_MPO_UTILS_H
@@ -18,216 +18,226 @@
 #include <sstream>
 
 namespace generate_mpo {
-	template<class Matrix, class SymmGroup>
-	struct OperatorTagTerm
-	{
-		using tag_type = typename OPTable<Matrix, SymmGroup>::tag_type;
-    using pos_t = typename Lattice::pos_t;
-		using op_pair_t = std::pair<pos_t, tag_type>;
-        
-		std::vector<op_pair_t> operators;
-		tag_type fill_operator;
-        typename Matrix::value_type scale;
-        bool with_sign;
-        
-        OperatorTagTerm() : scale(1.), with_sign(false) {}
-        
-        void canonical_order() // TODO: check and fix for fermions
-        {
-            std::sort(
-                operators.begin(), operators.end(),
-                [](const op_pair_t& a, const op_pair_t& b){
-                    return a.first < b.first;
-                });
-        }
-        
-        bool operator< (OperatorTagTerm const & rhs) const
-        {
-            if (operators[0].first == rhs.operators[0].first) {
-                return operators.size() >= rhs.operators.size();
-            }
-            return operators[0].first < rhs.operators[0].first;
-        }
-        
-        bool site_match (OperatorTagTerm const & rhs) const
-        {
-            if (operators.size() == rhs.operators.size()) {
-                bool ret = true;
-                for (std::size_t p=0; p<operators.size() && ret; ++p) {
-                    ret = (operators[p].first == rhs.operators[p].first);
-                }
-                return ret;
-            } else if (operators.size() == 2 && rhs.operators.size() == 1) {
-                return (operators[0].first == rhs.operators[0].first || operators[1].first == rhs.operators[0].first);
-            } else if (operators.size() == 1 && rhs.operators.size() == 2) {
-                return (operators[0].first == rhs.operators[0].first || operators[0].first == rhs.operators[1].first);
-            } else {
-                throw std::runtime_error("site_match not implemented for this type of operator." );
-                return false;
-            }
-            
-        }
-        
-        bool overlap (OperatorTagTerm const & rhs) const
-        {
-        	return !( (operators.rbegin()->first < rhs.operators.begin()->first) || (rhs.operators.rbegin()->first < operators.begin()->first) );
-        }
-	};
-    
-    template<class Matrix, class SymmGroup>
-    std::ostream & operator<< (std::ostream & os, OperatorTagTerm<Matrix, SymmGroup> const& op)
-    {
-        os << "fill: " << op.fill_operator << std::endl;
-        os << "sign: " << op.with_sign << std::endl;
-        os << "scale: " << op.scale << std::endl;
-        os << "operators:";
-        for (const auto& e : op.operators) {
-          os << " {"  << e.first << "," << e.second << "}";
-          os << std::endl;
-        }
-        return os;
+template <class Matrix, class SymmGroup>
+struct OperatorTagTerm {
+  using tag_type = typename OPTable<Matrix, SymmGroup>::tag_type;
+  using pos_t = typename Lattice::pos_t;
+  using op_pair_t = std::pair<pos_t, tag_type>;
+
+  std::vector<op_pair_t> operators;
+  tag_type fill_operator;
+  typename Matrix::value_type scale;
+  bool with_sign;
+
+  OperatorTagTerm() : scale(1.), with_sign(false) {}
+
+  void canonical_order()  // TODO: check and fix for fermions
+  {
+    std::sort(
+        operators.begin(), operators.end(),
+        [](const op_pair_t& a, const op_pair_t& b) { return a.first < b.first; }
+    );
+  }
+
+  bool operator<(OperatorTagTerm const& rhs) const {
+    if (operators[0].first == rhs.operators[0].first) {
+      return operators.size() >= rhs.operators.size();
     }
-    
-	template<class Matrix, class SymmGroup>
-	struct OperatorTerm
-	{
-		using op_t = typename OPTable<Matrix, SymmGroup>::op_t;
-    using pos_t = Lattice::pos_t;
-		using op_pair_t = std::pair<pos_t, op_t>;
-        
-		std::vector<op_pair_t> operators;
-		op_t fill_operator;
-        bool with_sign;
-        
-        OperatorTerm() : with_sign(false) {}
-        
-        void canonical_order() // TODO: check and fix for fermions
-        {
-            std::sort(
-                operators.begin(), operators.end(),
-                [](const op_pair_t& a, const op_pair_t& b){
-                    return a.first < b.first;
-                });
-        }
-        
-        bool operator< (OperatorTerm const & rhs) const
-        {
-            if (operators[0].first == rhs.operators[0].first) {
-                return operators.size() >= rhs.operators.size();
-            }
-            return operators[0].first < rhs.operators[0].first;
-        }
+    return operators[0].first < rhs.operators[0].first;
+  }
 
-        bool site_match (OperatorTerm const & rhs) const
-        {
-            if (operators.size() == rhs.operators.size())
-            {
-                bool ret = true;
-                for (std::size_t p=0; p<operators.size() && ret; ++p) {
-                    ret = (operators[p].first == rhs.operators[p].first);
-                }
-                return ret;
-            } else if (operators.size() == 2 && rhs.operators.size() == 1) {
-                return (operators[0].first == rhs.operators[0].first || operators[1].first == rhs.operators[0].first);
-            } else if (operators.size() == 1 && rhs.operators.size() == 2) {
-                return (operators[0].first == rhs.operators[0].first || operators[0].first == rhs.operators[1].first);
-            } else {
-                throw std::runtime_error("site_match not implemented for this type of operator." );
-                return false;
-            }
-                
-        }
-        
-        bool overlap (OperatorTerm const & rhs) const
-        {
-        	return !( (operators.rbegin()->first < rhs.operators.begin()->first) || (rhs.operators.rbegin()->first < operators.begin()->first) );
-        }
-
-	};
-   
-    using namespace std;
-
-    inline size_t next_free(vector<size_t> const & out_taken,
-                            vector<size_t> const & in_taken)
-    {
-        for (size_t k = 0; true; ++k)
-        {
-            if (count(out_taken.begin(), out_taken.end(), k) == 0 &&
-                count(in_taken.begin(), in_taken.end(), k) == 0) {
-                return k;// +-------------+
-            }
-        }
+  bool site_match(OperatorTagTerm const& rhs) const {
+    if (operators.size() == rhs.operators.size()) {
+      bool ret = true;
+      for (std::size_t p = 0; p < operators.size() && ret; ++p) {
+        ret = (operators[p].first == rhs.operators[p].first);
+      }
+      return ret;
+    } else if (operators.size() == 2 && rhs.operators.size() == 1) {
+      return (
+          operators[0].first == rhs.operators[0].first ||
+          operators[1].first == rhs.operators[0].first
+      );
+    } else if (operators.size() == 1 && rhs.operators.size() == 2) {
+      return (
+          operators[0].first == rhs.operators[0].first ||
+          operators[0].first == rhs.operators[1].first
+      );
+    } else {
+      throw std::runtime_error(
+          "site_match not implemented for this type of operator."
+      );
+      return false;
     }
-    
-    inline size_t next_free(set<size_t> const & s)
-    {
-        for (size_t k = 2; true; ++k) {
-            if (s.count(k) == 0) {
-                return k;
-            }
-        }
-    }
-    
-    template<class Vector>
-    void compress_on_bond(Vector & pm1, Vector & pm2)
-    {
-        std::set<size_t> bond_used_dims;
-        for (const auto& it : pm1) {
-            if (get<1>(it) > 1) { bond_used_dims.insert(get<1>(it)); }
-        }
-        for (const auto& it : pm2) {
-            if (get<0>(it) > 1) { bond_used_dims.insert(get<0>(it)); }
-        }
+  }
 
-        std::map<size_t, size_t> compression_map;
-        size_t c = 2;
-        for (unsigned long bond_used_dim : bond_used_dims) {
-            compression_map[bond_used_dim] = c++;
-        }
-        
-        for (auto& it : pm1) {
-          if (compression_map.count(get<1>(it)) > 0) {
-            get<1>(it) = compression_map[get<1>(it)];
+  bool overlap(OperatorTagTerm const& rhs) const {
+    return !(
+        (operators.rbegin()->first < rhs.operators.begin()->first) ||
+        (rhs.operators.rbegin()->first < operators.begin()->first)
+    );
+  }
+};
 
-          }
-        }
-        for (auto& it : pm2) {
-            if (compression_map.count(get<0>(it)) > 0) {
-                get<0>(it) = compression_map[get<0>(it)];
-            }
-        }
-    }
-
-    template<class Vector>
-    std::pair<size_t, size_t> rcdim(Vector const & pm)
-    {
-        std::list<size_t> l;
-        std::list<size_t> r;
-        for (const auto& it : pm) {
-          l.push_back( get<0>(it) );
-          r.push_back( get<1>(it) );
-        }
-        
-        size_t ldim=0;
-        size_t rdim=0;
-        if (!l.empty()) { ldim = *max_element(l.begin(), l.end())+1; }
-        if (!r.empty()) { rdim = *max_element(r.begin(), r.end())+1; }
-        return make_pair(ldim, rdim);
-    }
-    
-    template<class Pair>
-    bool compare(Pair const & p1, Pair const & p2)
-    {
-        return p1.first < p2.first;
-    }
-
-    struct pos_tag_lt {
-        using value_type = std::pair<int, unsigned int>;
-        inline bool operator() (value_type const& lhs, value_type const& rhs)
-        {
-            return (lhs.first < rhs.first);
-        }
-    };
+template <class Matrix, class SymmGroup>
+std::ostream& operator<<(
+    std::ostream& os, OperatorTagTerm<Matrix, SymmGroup> const& op
+) {
+  os << "fill: " << op.fill_operator << std::endl;
+  os << "sign: " << op.with_sign << std::endl;
+  os << "scale: " << op.scale << std::endl;
+  os << "operators:";
+  for (const auto& e : op.operators) {
+    os << " {" << e.first << "," << e.second << "}";
+    os << std::endl;
+  }
+  return os;
 }
+
+template <class Matrix, class SymmGroup>
+struct OperatorTerm {
+  using op_t = typename OPTable<Matrix, SymmGroup>::op_t;
+  using pos_t = Lattice::pos_t;
+  using op_pair_t = std::pair<pos_t, op_t>;
+
+  std::vector<op_pair_t> operators;
+  op_t fill_operator;
+  bool with_sign;
+
+  OperatorTerm() : with_sign(false) {}
+
+  void canonical_order()  // TODO: check and fix for fermions
+  {
+    std::sort(
+        operators.begin(), operators.end(),
+        [](const op_pair_t& a, const op_pair_t& b) { return a.first < b.first; }
+    );
+  }
+
+  bool operator<(OperatorTerm const& rhs) const {
+    if (operators[0].first == rhs.operators[0].first) {
+      return operators.size() >= rhs.operators.size();
+    }
+    return operators[0].first < rhs.operators[0].first;
+  }
+
+  bool site_match(OperatorTerm const& rhs) const {
+    if (operators.size() == rhs.operators.size()) {
+      bool ret = true;
+      for (std::size_t p = 0; p < operators.size() && ret; ++p) {
+        ret = (operators[p].first == rhs.operators[p].first);
+      }
+      return ret;
+    } else if (operators.size() == 2 && rhs.operators.size() == 1) {
+      return (
+          operators[0].first == rhs.operators[0].first ||
+          operators[1].first == rhs.operators[0].first
+      );
+    } else if (operators.size() == 1 && rhs.operators.size() == 2) {
+      return (
+          operators[0].first == rhs.operators[0].first ||
+          operators[0].first == rhs.operators[1].first
+      );
+    } else {
+      throw std::runtime_error(
+          "site_match not implemented for this type of operator."
+      );
+      return false;
+    }
+  }
+
+  bool overlap(OperatorTerm const& rhs) const {
+    return !(
+        (operators.rbegin()->first < rhs.operators.begin()->first) ||
+        (rhs.operators.rbegin()->first < operators.begin()->first)
+    );
+  }
+};
+
+using namespace std;
+
+inline size_t next_free(
+    vector<size_t> const& out_taken, vector<size_t> const& in_taken
+) {
+  for (size_t k = 0; true; ++k) {
+    if (count(out_taken.begin(), out_taken.end(), k) == 0 &&
+        count(in_taken.begin(), in_taken.end(), k) == 0) {
+      return k;  // +-------------+
+    }
+  }
+}
+
+inline size_t next_free(set<size_t> const& s) {
+  for (size_t k = 2; true; ++k) {
+    if (s.count(k) == 0) {
+      return k;
+    }
+  }
+}
+
+template <class Vector>
+void compress_on_bond(Vector& pm1, Vector& pm2) {
+  std::set<size_t> bond_used_dims;
+  for (const auto& it : pm1) {
+    if (get<1>(it) > 1) {
+      bond_used_dims.insert(get<1>(it));
+    }
+  }
+  for (const auto& it : pm2) {
+    if (get<0>(it) > 1) {
+      bond_used_dims.insert(get<0>(it));
+    }
+  }
+
+  std::map<size_t, size_t> compression_map;
+  size_t c = 2;
+  for (unsigned long bond_used_dim : bond_used_dims) {
+    compression_map[bond_used_dim] = c++;
+  }
+
+  for (auto& it : pm1) {
+    if (compression_map.count(get<1>(it)) > 0) {
+      get<1>(it) = compression_map[get<1>(it)];
+    }
+  }
+  for (auto& it : pm2) {
+    if (compression_map.count(get<0>(it)) > 0) {
+      get<0>(it) = compression_map[get<0>(it)];
+    }
+  }
+}
+
+template <class Vector>
+std::pair<size_t, size_t> rcdim(Vector const& pm) {
+  std::list<size_t> l;
+  std::list<size_t> r;
+  for (const auto& it : pm) {
+    l.push_back(get<0>(it));
+    r.push_back(get<1>(it));
+  }
+
+  size_t ldim = 0;
+  size_t rdim = 0;
+  if (!l.empty()) {
+    ldim = *max_element(l.begin(), l.end()) + 1;
+  }
+  if (!r.empty()) {
+    rdim = *max_element(r.begin(), r.end()) + 1;
+  }
+  return make_pair(ldim, rdim);
+}
+
+template <class Pair>
+bool compare(Pair const& p1, Pair const& p2) {
+  return p1.first < p2.first;
+}
+
+struct pos_tag_lt {
+  using value_type = std::pair<int, unsigned int>;
+  inline bool operator()(value_type const& lhs, value_type const& rhs) {
+    return (lhs.first < rhs.first);
+  }
+};
+}  // namespace generate_mpo
 
 #endif

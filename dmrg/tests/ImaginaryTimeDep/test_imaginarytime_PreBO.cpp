@@ -34,23 +34,27 @@
 #include "Fixtures/PreBOTimeEvolversFixture.h"
 
 /**
- * @brief Tests that the energy is conserved along a "true" PreBO TD-DMRG propagation.
+ * @brief Tests that the energy is conserved along a "true" PreBO TD-DMRG
+ * propagation.
  */
-BOOST_FIXTURE_TEST_CASE( TestImaginaryTimePreBO, PreBOTestTimeEvolverFixture )
-{
+BOOST_FIXTURE_TEST_CASE(TestImaginaryTimePreBO, PreBOTestTimeEvolverFixture) {
 #if defined(DMRG_PREBO) and defined(DMRG_TD)
-    // Generic settings
-    parametersPreBOComplex.set("optimization", "twosite");
-    parametersPreBOReal.set("optimization", "twosite");
-    maquis::DMRGInterface<double> realInterface(parametersPreBOReal);
-    maquis::DMRGInterface<std::complex<double>> complexInterface(parametersPreBOComplex);
-    maquis::cout << "Running conventional DMRG optimization test for PreBO model" << std::endl;
-    realInterface.optimize();
-    maquis::cout << "Running imaginary-time evolution for PreBO model " << std::endl;
-    complexInterface.evolve();
-    // Test energy conservation
-    auto TIEnergy = std::real(realInterface.energy());
-    auto iTDEnergy = std::real(complexInterface.energy());
-    BOOST_CHECK_CLOSE(TIEnergy, iTDEnergy, 1.0E-10);
-#endif // DMRG_PREBO and DMRG_TD
+  // Generic settings
+  parametersPreBOComplex.set("optimization", "twosite");
+  parametersPreBOReal.set("optimization", "twosite");
+  maquis::DMRGInterface<double> realInterface(parametersPreBOReal);
+  maquis::DMRGInterface<std::complex<double>> complexInterface(
+      parametersPreBOComplex
+  );
+  maquis::cout << "Running conventional DMRG optimization test for PreBO model"
+               << std::endl;
+  realInterface.optimize();
+  maquis::cout << "Running imaginary-time evolution for PreBO model "
+               << std::endl;
+  complexInterface.evolve();
+  // Test energy conservation
+  auto TIEnergy = std::real(realInterface.energy());
+  auto iTDEnergy = std::real(complexInterface.energy());
+  BOOST_CHECK_CLOSE(TIEnergy, iTDEnergy, 1.0E-10);
+#endif  // DMRG_PREBO and DMRG_TD
 }

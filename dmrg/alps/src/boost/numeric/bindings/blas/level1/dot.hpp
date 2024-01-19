@@ -60,9 +60,10 @@ namespace detail {
 // * CBLAS backend, and
 // * float value-type.
 //
-inline float dot( const int n, const float* x, const int incx, const float* y,
-        const int incy ) {
-    return cblas_sdot( n, x, incx, y, incy );
+inline float dot(
+    const int n, const float* x, const int incx, const float* y, const int incy
+) {
+  return cblas_sdot(n, x, incx, y, incy);
 }
 
 //
@@ -70,9 +71,11 @@ inline float dot( const int n, const float* x, const int incx, const float* y,
 // * CBLAS backend, and
 // * double value-type.
 //
-inline double dot( const int n, const double* x, const int incx,
-        const double* y, const int incy ) {
-    return cblas_ddot( n, x, incx, y, incy );
+inline double dot(
+    const int n, const double* x, const int incx, const double* y,
+    const int incy
+) {
+  return cblas_ddot(n, x, incx, y, incy);
 }
 
 //
@@ -80,11 +83,13 @@ inline double dot( const int n, const double* x, const int incx,
 // * CBLAS backend, and
 // * complex<float> value-type.
 //
-inline std::complex<float> dot( const int n, const std::complex<float>* x,
-        const int incx, const std::complex<float>* y, const int incy ) {
-    std::complex<float> result;
-    cblas_cdotu_sub( n, x, incx, y, incy, &result );
-    return result;
+inline std::complex<float> dot(
+    const int n, const std::complex<float>* x, const int incx,
+    const std::complex<float>* y, const int incy
+) {
+  std::complex<float> result;
+  cblas_cdotu_sub(n, x, incx, y, incy, &result);
+  return result;
 }
 
 //
@@ -92,11 +97,13 @@ inline std::complex<float> dot( const int n, const std::complex<float>* x,
 // * CBLAS backend, and
 // * complex<double> value-type.
 //
-inline std::complex<double> dot( const int n, const std::complex<double>* x,
-        const int incx, const std::complex<double>* y, const int incy ) {
-    std::complex<double> result;
-    cblas_zdotu_sub( n, x, incx, y, incy, &result );
-    return result;
+inline std::complex<double> dot(
+    const int n, const std::complex<double>* x, const int incx,
+    const std::complex<double>* y, const int incy
+) {
+  std::complex<double> result;
+  cblas_zdotu_sub(n, x, incx, y, incy, &result);
+  return result;
 }
 
 #elif defined BOOST_NUMERIC_BINDINGS_BLAS_CUBLAS
@@ -105,9 +112,10 @@ inline std::complex<double> dot( const int n, const std::complex<double>* x,
 // * CUBLAS backend, and
 // * float value-type.
 //
-inline float dot( const int n, const float* x, const int incx, const float* y,
-        const int incy ) {
-    return cublasSdot( n, x, incx, y, incy );
+inline float dot(
+    const int n, const float* x, const int incx, const float* y, const int incy
+) {
+  return cublasSdot(n, x, incx, y, incy);
 }
 
 //
@@ -115,9 +123,11 @@ inline float dot( const int n, const float* x, const int incx, const float* y,
 // * CUBLAS backend, and
 // * double value-type.
 //
-inline double dot( const int n, const double* x, const int incx,
-        const double* y, const int incy ) {
-    return cublasDdot( n, x, incx, y, incy );
+inline double dot(
+    const int n, const double* x, const int incx, const double* y,
+    const int incy
+) {
+  return cublasDdot(n, x, incx, y, incy);
 }
 
 //
@@ -125,9 +135,11 @@ inline double dot( const int n, const double* x, const int incx,
 // * CUBLAS backend, and
 // * complex<float> value-type.
 //
-inline std::complex<float> dot( const int n, const std::complex<float>* x,
-        const int incx, const std::complex<float>* y, const int incy ) {
-    return cublasCdotu( n, x, incx, y, incy );
+inline std::complex<float> dot(
+    const int n, const std::complex<float>* x, const int incx,
+    const std::complex<float>* y, const int incy
+) {
+  return cublasCdotu(n, x, incx, y, incy);
 }
 
 //
@@ -135,9 +147,11 @@ inline std::complex<float> dot( const int n, const std::complex<float>* x,
 // * CUBLAS backend, and
 // * complex<double> value-type.
 //
-inline std::complex<double> dot( const int n, const std::complex<double>* x,
-        const int incx, const std::complex<double>* y, const int incy ) {
-    return cublasZdotu( n, x, incx, y, incy );
+inline std::complex<double> dot(
+    const int n, const std::complex<double>* x, const int incx,
+    const std::complex<double>* y, const int incy
+) {
+  return cublasZdotu(n, x, incx, y, incy);
 }
 
 #else
@@ -146,9 +160,11 @@ inline std::complex<double> dot( const int n, const std::complex<double>* x,
 // * netlib-compatible BLAS backend (the default), and
 // * float value-type.
 //
-inline float dot( const fortran_int_t n, const float* x,
-        const fortran_int_t incx, const float* y, const fortran_int_t incy ) {
-    return BLAS_SDOT( &n, x, &incx, y, &incy );
+inline float dot(
+    const fortran_int_t n, const float* x, const fortran_int_t incx,
+    const float* y, const fortran_int_t incy
+) {
+  return BLAS_SDOT(&n, x, &incx, y, &incy);
 }
 
 //
@@ -156,9 +172,11 @@ inline float dot( const fortran_int_t n, const float* x,
 // * netlib-compatible BLAS backend (the default), and
 // * double value-type.
 //
-inline double dot( const fortran_int_t n, const double* x,
-        const fortran_int_t incx, const double* y, const fortran_int_t incy ) {
-    return BLAS_DDOT( &n, x, &incx, y, &incy );
+inline double dot(
+    const fortran_int_t n, const double* x, const fortran_int_t incx,
+    const double* y, const fortran_int_t incy
+) {
+  return BLAS_DDOT(&n, x, &incx, y, &incy);
 }
 
 //
@@ -166,10 +184,12 @@ inline double dot( const fortran_int_t n, const double* x,
 // * netlib-compatible BLAS backend (the default), and
 // * complex<float> value-type.
 //
-inline std::complex<float> dot( const fortran_int_t n,
-        const std::complex<float>* x, const fortran_int_t incx,
-        const std::complex<float>* y, const fortran_int_t incy ) {
-    return BLAS_CDOTU( &n, x, &incx, y, &incy );
+inline std::complex<float> dot(
+    const fortran_int_t n, const std::complex<float>* x,
+    const fortran_int_t incx, const std::complex<float>* y,
+    const fortran_int_t incy
+) {
+  return BLAS_CDOTU(&n, x, &incx, y, &incy);
 }
 
 //
@@ -177,49 +197,54 @@ inline std::complex<float> dot( const fortran_int_t n,
 // * netlib-compatible BLAS backend (the default), and
 // * complex<double> value-type.
 //
-inline std::complex<double> dot( const fortran_int_t n,
-        const std::complex<double>* x, const fortran_int_t incx,
-        const std::complex<double>* y, const fortran_int_t incy ) {
-    return BLAS_ZDOTU( &n, x, &incx, y, &incy );
+inline std::complex<double> dot(
+    const fortran_int_t n, const std::complex<double>* x,
+    const fortran_int_t incx, const std::complex<double>* y,
+    const fortran_int_t incy
+) {
+  return BLAS_ZDOTU(&n, x, &incx, y, &incy);
 }
 
 #endif
 
-} // namespace detail
+}  // namespace detail
 
 //
 // Value-type based template class. Use this class if you need a type
 // for dispatching to dot.
 //
-template< typename Value >
+template <typename Value>
 struct dot_impl {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
+  typedef value_type result_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
-    typedef value_type result_type;
-
-    //
-    // Static member function that
-    // * Deduces the required arguments for dispatching to BLAS, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename VectorX, typename VectorY >
-    static result_type invoke( const VectorX& x, const VectorY& y ) {
-        namespace bindings = ::boost::numeric::bindings;
-        BOOST_STATIC_ASSERT( (is_same< typename remove_const<
-                typename bindings::value_type< VectorX >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                VectorY >::type >::type >::value) );
-        return detail::dot( bindings::size(x),
-                bindings::begin_value(x), bindings::stride(x),
-                bindings::begin_value(y), bindings::stride(y) );
-    }
+  //
+  // Static member function that
+  // * Deduces the required arguments for dispatching to BLAS, and
+  // * Asserts that most arguments make sense.
+  //
+  template <typename VectorX, typename VectorY>
+  static result_type invoke(const VectorX& x, const VectorY& y) {
+    namespace bindings = ::boost::numeric::bindings;
+    BOOST_STATIC_ASSERT(
+        (is_same<
+            typename remove_const<
+                typename bindings::value_type<VectorX>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<VectorY>::type>::type>::value)
+    );
+    return detail::dot(
+        bindings::size(x), bindings::begin_value(x), bindings::stride(x),
+        bindings::begin_value(y), bindings::stride(y)
+    );
+  }
 };
 
 //
 // Functions for direct use. These functions are overloaded for temporaries,
 // so that wrapped types can still be passed and used for write-access. Calls
-// to these functions are passed to the dot_impl classes. In the 
+// to these functions are passed to the dot_impl classes. In the
 // documentation, the const-overloads are collapsed to avoid a large number of
 // prototypes which are very similar.
 //
@@ -227,17 +252,16 @@ struct dot_impl {
 //
 // Overloaded function for dot. Its overload differs for
 //
-template< typename VectorX, typename VectorY >
-inline typename dot_impl< typename bindings::value_type<
-        VectorX >::type >::result_type
-dot( const VectorX& x, const VectorY& y ) {
-    return dot_impl< typename bindings::value_type<
-            VectorX >::type >::invoke( x, y );
+template <typename VectorX, typename VectorY>
+inline
+    typename dot_impl<typename bindings::value_type<VectorX>::type>::result_type
+    dot(const VectorX& x, const VectorY& y) {
+  return dot_impl<typename bindings::value_type<VectorX>::type>::invoke(x, y);
 }
 
-} // namespace blas
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace blas
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

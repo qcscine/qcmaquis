@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #ifndef MAQUIS_DMRG_BLOCK_MATRIX_GROUPED_SYMMETRY_H
@@ -18,41 +18,45 @@ struct grouped_symmetry;
 
 template <>
 struct grouped_symmetry<TrivialGroup> {
-    using type = TrivialGroup;
+  using type = TrivialGroup;
 };
 
 template <>
 struct grouped_symmetry<U1> {
-    using type = TwoU1;
+  using type = TwoU1;
 };
 
 //// GROUPPING FUNCTIONS
 
-inline TrivialGroup::charge group(TrivialGroup::charge c1, TrivialGroup::charge c2)
-{
-    return TrivialGroup::IdentityCharge;
+inline TrivialGroup::charge group(
+    TrivialGroup::charge c1, TrivialGroup::charge c2
+) {
+  return TrivialGroup::IdentityCharge;
 }
 
-inline TwoU1::charge group(U1::charge c1, U1::charge c2)
-{
-    TwoU1::charge R;
-    R[0] = c1; R[1] = c2;
-    return R;
+inline TwoU1::charge group(U1::charge c1, U1::charge c2) {
+  TwoU1::charge R;
+  R[0] = c1;
+  R[1] = c2;
+  return R;
 }
 
-template<class SymmGroup>
-Index<typename grouped_symmetry<SymmGroup>::type> group(Index<SymmGroup> const & i1,
-                                             Index<SymmGroup> const & i2)
-{
-    using OutSymm = typename grouped_symmetry<SymmGroup>::type;
-    
-    Index<OutSymm> ret;
-    for (typename Index<SymmGroup>::const_iterator it1 = i1.begin(); it1 != i1.end(); ++it1)
-        for (typename Index<SymmGroup>::const_iterator it2 = i2.begin(); it2 != i2.end(); ++it2)
-        {
-            ret.insert(std::make_pair(group(it1->first, it2->first), it1->second*it2->second));
-        }
-    return ret;
+template <class SymmGroup>
+Index<typename grouped_symmetry<SymmGroup>::type> group(
+    Index<SymmGroup> const& i1, Index<SymmGroup> const& i2
+) {
+  using OutSymm = typename grouped_symmetry<SymmGroup>::type;
+
+  Index<OutSymm> ret;
+  for (typename Index<SymmGroup>::const_iterator it1 = i1.begin();
+       it1 != i1.end(); ++it1)
+    for (typename Index<SymmGroup>::const_iterator it2 = i2.begin();
+         it2 != i2.end(); ++it2) {
+      ret.insert(std::make_pair(
+          group(it1->first, it2->first), it1->second * it2->second
+      ));
+    }
+  return ret;
 }
 
 #endif

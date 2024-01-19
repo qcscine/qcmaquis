@@ -18,15 +18,15 @@ namespace numeric {
 namespace bindings {
 namespace detail {
 
-template< typename Source, typename Target >
+template <typename Source, typename Target>
 struct copy_const {
-    typedef typename mpl::if_< is_const<Source>,
-        typename add_const<Target>::type, Target >::type type;
+  typedef typename mpl::if_<
+      is_const<Source>, typename add_const<Target>::type, Target>::type type;
 };
 
-} // namespace detail
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace detail
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

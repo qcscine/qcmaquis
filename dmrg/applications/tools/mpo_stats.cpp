@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 #ifdef USE_AMBIENT
 #include <mpi.h>
@@ -44,89 +44,91 @@ typedef U1 symm;
 #include "dmrg/utils/DmrgOptions.h"
 #include "dmrg/utils/DmrgParameters.h"
 
-std::string operator * (std::string s, int m)
-{
-    std::string ret("");
-    for (int i=0; i < m; ++i) ret += s;
-    return ret;
+std::string operator*(std::string s, int m) {
+  std::string ret("");
+  for (int i = 0; i < m; ++i) ret += s;
+  return ret;
 }
 
 template <class Matrix, class SymmGroup>
-void write_mpo(MPO<Matrix, SymmGroup> const & mpo, std::string filename, bool save_space) 
-{        
-    std::string space(" ");
+void write_mpo(
+    MPO<Matrix, SymmGroup> const& mpo, std::string filename, bool save_space
+) {
+  std::string space(" ");
 
-    for (int p = 0; p < mpo.size(); ++p) {
-        std::ofstream ofs(std::string(filename+boost::lexical_cast<std::string>(p)+".dat").c_str());
+  for (int p = 0; p < mpo.size(); ++p) {
+    std::ofstream ofs(
+        std::string(filename + boost::lexical_cast<std::string>(p) + ".dat")
+            .c_str()
+    );
 
-        typename MPOTensor<Matrix, SymmGroup>::op_table_ptr op_table = mpo[p].get_operator_table();
-        unsigned maxtag = op_table->size();
-        int padding = 2;
-        if (maxtag < 100 || save_space) padding = 1;
+    typename MPOTensor<Matrix, SymmGroup>::op_table_ptr op_table =
+        mpo[p].get_operator_table();
+    unsigned maxtag = op_table->size();
+    int padding = 2;
+    if (maxtag < 100 || save_space) padding = 1;
 
-        for (int b1 = 0; b1 < mpo[p].row_dim(); ++b1) {
-            for (int b2 = 0; b2 < mpo[p].col_dim(); ++b2) {
-                if (mpo[p].has(b1, b2))
-                {
-                    MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo[p].at(b1,b2);
-                    int tag = mpo[p].tag_number(b1, b2, 0);
-                    if (access.size() > 1)
-                        ofs << space*(padding-1) << "X" << access.size();
-                    else if (tag < 10)
-                        ofs << space*padding << tag;
-                    else if (tag < 100)
-                        ofs << space*(padding-1) << tag;
-                    else
-                        if (save_space)
-                            if (tag%100 < 10)
-                                ofs << space*padding << tag%100;
-                            else
-                                ofs << tag%100;
-                        else
-                            ofs << tag;
-                }
-                else ofs << space*padding << ".";
-            }
-            ofs << std::endl;
-        }
-        
-        ofs << std::endl;
-        
-        for (unsigned tag=0; tag<op_table->size(); ++tag) {
-            ofs << "TAG " << tag << std::endl;
-            ofs << " * op :\n" << (*op_table)[tag] << std::endl;
-        }
+    for (int b1 = 0; b1 < mpo[p].row_dim(); ++b1) {
+      for (int b2 = 0; b2 < mpo[p].col_dim(); ++b2) {
+        if (mpo[p].has(b1, b2)) {
+          MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access =
+              mpo[p].at(b1, b2);
+          int tag = mpo[p].tag_number(b1, b2, 0);
+          if (access.size() > 1)
+            ofs << space * (padding - 1) << "X" << access.size();
+          else if (tag < 10)
+            ofs << space * padding << tag;
+          else if (tag < 100)
+            ofs << space * (padding - 1) << tag;
+          else if (save_space)
+            if (tag % 100 < 10)
+              ofs << space * padding << tag % 100;
+            else
+              ofs << tag % 100;
+          else
+            ofs << tag;
+        } else
+          ofs << space * padding << ".";
+      }
+      ofs << std::endl;
     }
+
+    ofs << std::endl;
+
+    for (unsigned tag = 0; tag < op_table->size(); ++tag) {
+      ofs << "TAG " << tag << std::endl;
+      ofs << " * op :\n" << (*op_table)[tag] << std::endl;
+    }
+  }
 }
 
-int main(int argc, char ** argv)
-{
-    try {
-        DmrgOptions opt(argc, argv);
-        if (!opt.valid) return 0;
-        DmrgParameters parms = opt.parms;
-        
-        maquis::cout.precision(10);
+int main(int argc, char** argv) {
+  try {
+    DmrgOptions opt(argc, argv);
+    if (!opt.valid) return 0;
+    DmrgParameters parms = opt.parms;
 
-        bool save_space = true;
-        if (parms.defined("save_space") && !parms["save_space"])
-            save_space = false;
-        
-        /// Parsing model
-        Lattice lattice = Lattice(parms);
-        Model<matrix, symm> model = Model<matrix, symm>(lattice, parms);
-        
-        MPO<matrix, symm> mpo = make_mpo(lattice, model);
-        write_mpo(mpo, "mpo_stats.", save_space);
+    maquis::cout.precision(10);
 
-        MPS<matrix, symm> mps = MPS<matrix, symm>(lattice.size(), *(model.initializer(lattice, parms)));
-        MPO<matrix, symm> ts_mpo;
-        make_ts_cache_mpo(mpo, ts_mpo, mps);
+    bool save_space = true;
+    if (parms.defined("save_space") && !parms["save_space"]) save_space = false;
 
-        write_mpo(ts_mpo, "ts_mpo_stats.", save_space);
-        
-    } catch (std::exception& e) {
-        std::cerr << "Error:" << std::endl << e.what() << std::endl;
-        return 1;
-    }
+    /// Parsing model
+    Lattice lattice = Lattice(parms);
+    Model<matrix, symm> model = Model<matrix, symm>(lattice, parms);
+
+    MPO<matrix, symm> mpo = make_mpo(lattice, model);
+    write_mpo(mpo, "mpo_stats.", save_space);
+
+    MPS<matrix, symm> mps =
+        MPS<matrix, symm>(lattice.size(), *(model.initializer(lattice, parms)));
+    MPO<matrix, symm> ts_mpo;
+    make_ts_cache_mpo(mpo, ts_mpo, mps);
+
+    write_mpo(ts_mpo, "ts_mpo_stats.", save_space);
+
+  } catch (std::exception& e) {
+    std::cerr << "Error:" << std::endl << e.what() << std::endl;
+    return 1;
+  }
 }

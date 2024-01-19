@@ -34,26 +34,28 @@
 #include "Fixtures/TimeEvolversFixture.h"
 
 /**
- * @brief Tests that the energy is conserved along a relativistic TD-DMRG propagation.
- * The data are obtained for N2+ and the 3-21G basis set.
+ * @brief Tests that the energy is conserved along a relativistic TD-DMRG
+ * propagation. The data are obtained for N2+ and the 3-21G basis set.
  */
-BOOST_FIXTURE_TEST_CASE( TestImaginaryTimeRelativistic, TestTimeEvolverFixture )
-{
+BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeRelativistic, TestTimeEvolverFixture) {
 #if defined(HAVE_U1DG) and defined(DMRG_TD)
-    // Two-site evolutions
-    parametersRelativistic.set("optimization", "twosite");
-    parametersRelativistic.set("time_step", 10.);
-    parametersRelativistic.set("nsweeps", 100);
-    // TD
-    maquis::DMRGInterface<std::complex<double>> interfaceTD(parametersRelativistic);
-    interfaceTD.evolve();
-    auto energyTD = std::real(interfaceTD.energy());
-    // TI
-    parametersRelativistic.set("nsweeps", 40);
-    maquis::DMRGInterface<std::complex<double>> interfaceTI(parametersRelativistic);
-    interfaceTI.optimize();
-    auto energyTI = std::real(interfaceTI.energy());
-    // The threshold is here a bit looser because the iTD-DMRG convergence is rather slow
-    BOOST_CHECK_CLOSE(energyTD, energyTI, 1.0E-8);
-#endif // HAVE_U1DG and DMRG_TD
+  // Two-site evolutions
+  parametersRelativistic.set("optimization", "twosite");
+  parametersRelativistic.set("time_step", 10.);
+  parametersRelativistic.set("nsweeps", 100);
+  // TD
+  maquis::DMRGInterface<std::complex<double>> interfaceTD(parametersRelativistic
+  );
+  interfaceTD.evolve();
+  auto energyTD = std::real(interfaceTD.energy());
+  // TI
+  parametersRelativistic.set("nsweeps", 40);
+  maquis::DMRGInterface<std::complex<double>> interfaceTI(parametersRelativistic
+  );
+  interfaceTI.optimize();
+  auto energyTI = std::real(interfaceTI.energy());
+  // The threshold is here a bit looser because the iTD-DMRG convergence is
+  // rather slow
+  BOOST_CHECK_CLOSE(energyTD, energyTI, 1.0E-8);
+#endif  // HAVE_U1DG and DMRG_TD
 }

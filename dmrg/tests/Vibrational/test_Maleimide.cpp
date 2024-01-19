@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher
+ * Group. See LICENSE.txt for details.
  */
 
 #define BOOST_TEST_MAIN
@@ -19,8 +19,7 @@
 #include "Fixtures/MaleimideFixture.h"
 
 /** @brief Watson-based calculation on maleimide - one-body potential */
-BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_Maleimide, MaleimideFixture)
-{
+BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_Maleimide, MaleimideFixture) {
 #if defined(HAVE_TrivialGroup) && ORDER_NONE >= 12
   using InterfaceType = maquis::DMRGInterface<double>;
   using MPSType = MPS<matrix, TrivialGroup>;
@@ -41,14 +40,21 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_Maleimide, MaleimideFixture)
   auto energyFromInterface = maquis::real(interface.energy());
   // Now calculates the energy of the HF determinant
   parametersMaleimideOneBody.set("init_type", "basis_state_generic");
-  parametersMaleimideOneBody.set("init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0");
+  parametersMaleimideOneBody.set(
+      "init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
+  );
   auto maleimideLattice = Lattice(parametersMaleimideOneBody);
-  auto maleimideModel = Model<matrix, TrivialGroup>(maleimideLattice, parametersMaleimideOneBody);
-  auto mpsHF = MPSType(maleimideLattice.size(), *(maleimideModel.initializer(maleimideLattice, parametersMaleimideOneBody)));
+  auto maleimideModel =
+      Model<matrix, TrivialGroup>(maleimideLattice, parametersMaleimideOneBody);
+  auto mpsHF = MPSType(
+      maleimideLattice.size(),
+      *(maleimideModel.initializer(maleimideLattice, parametersMaleimideOneBody)
+      )
+  );
   auto mpoMaleimide = make_mpo(maleimideLattice, maleimideModel);
-  auto energyFromHF = maquis::real(expval(mpsHF, mpoMaleimide)/norm(mpsHF));
+  auto energyFromHF = maquis::real(expval(mpsHF, mpoMaleimide) / norm(mpsHF));
   BOOST_CHECK(energyFromInterface < energyFromHF);
-#endif // HAVE_TrivialGroup && ORDER_NONE >= 12
+#endif  // HAVE_TrivialGroup && ORDER_NONE >= 12
 }
 
-#endif // DMRG_VIBRATIONAL
+#endif  // DMRG_VIBRATIONAL

@@ -3,8 +3,8 @@ CompileFlags:
 
 Diagnostics:
   Suppress: [pp_including_mainfile_in_preamble, pp_file_not_found, undeclared_var_use]
-  UnusedIncludes: Strict
-  MissingIncludes: Strict
+  UnusedIncludes: None
+  MissingIncludes: None
   ClangTidy:
     Add: [cppcoreguidelines-*, modernize-*, readability-*, bugprone-*]
     Remove: [
@@ -14,6 +14,8 @@ Diagnostics:
       modernize-return-braced-init-list,
       cppcoreguidelines-avoid-magic-numbers,
       cppcoreguidelines-non-private-member-variables-in-classes,
+      cppcoreguidelines-init-variables,
       readability-magic-numbers,
       readability-identifier-length,
-      readability-else-after-return]
+      readability-else-after-return,
+      readability-inconsistent-declaration-parameter-name]

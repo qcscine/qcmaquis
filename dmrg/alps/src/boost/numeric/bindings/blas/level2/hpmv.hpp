@@ -62,12 +62,16 @@ namespace detail {
 // * CBLAS backend, and
 // * float value-type.
 //
-template< typename Order, typename UpLo >
-inline void hpmv( const Order order, const UpLo uplo, const int n,
-        const float alpha, const float* ap, const float* x, const int incx,
-        const float beta, float* y, const int incy ) {
-    cblas_sspmv( cblas_option< Order >::value, cblas_option< UpLo >::value, n,
-            alpha, ap, x, incx, beta, y, incy );
+template <typename Order, typename UpLo>
+inline void hpmv(
+    const Order order, const UpLo uplo, const int n, const float alpha,
+    const float* ap, const float* x, const int incx, const float beta, float* y,
+    const int incy
+) {
+  cblas_sspmv(
+      cblas_option<Order>::value, cblas_option<UpLo>::value, n, alpha, ap, x,
+      incx, beta, y, incy
+  );
 }
 
 //
@@ -75,12 +79,16 @@ inline void hpmv( const Order order, const UpLo uplo, const int n,
 // * CBLAS backend, and
 // * double value-type.
 //
-template< typename Order, typename UpLo >
-inline void hpmv( const Order order, const UpLo uplo, const int n,
-        const double alpha, const double* ap, const double* x, const int incx,
-        const double beta, double* y, const int incy ) {
-    cblas_dspmv( cblas_option< Order >::value, cblas_option< UpLo >::value, n,
-            alpha, ap, x, incx, beta, y, incy );
+template <typename Order, typename UpLo>
+inline void hpmv(
+    const Order order, const UpLo uplo, const int n, const double alpha,
+    const double* ap, const double* x, const int incx, const double beta,
+    double* y, const int incy
+) {
+  cblas_dspmv(
+      cblas_option<Order>::value, cblas_option<UpLo>::value, n, alpha, ap, x,
+      incx, beta, y, incy
+  );
 }
 
 //
@@ -88,14 +96,17 @@ inline void hpmv( const Order order, const UpLo uplo, const int n,
 // * CBLAS backend, and
 // * complex<float> value-type.
 //
-template< typename Order, typename UpLo >
-inline void hpmv( const Order order, const UpLo uplo, const int n,
-        const std::complex<float> alpha, const std::complex<float>* ap,
-        const std::complex<float>* x, const int incx,
-        const std::complex<float> beta, std::complex<float>* y,
-        const int incy ) {
-    cblas_chpmv( cblas_option< Order >::value, cblas_option< UpLo >::value, n,
-            &alpha, ap, x, incx, &beta, y, incy );
+template <typename Order, typename UpLo>
+inline void hpmv(
+    const Order order, const UpLo uplo, const int n,
+    const std::complex<float> alpha, const std::complex<float>* ap,
+    const std::complex<float>* x, const int incx,
+    const std::complex<float> beta, std::complex<float>* y, const int incy
+) {
+  cblas_chpmv(
+      cblas_option<Order>::value, cblas_option<UpLo>::value, n, &alpha, ap, x,
+      incx, &beta, y, incy
+  );
 }
 
 //
@@ -103,14 +114,17 @@ inline void hpmv( const Order order, const UpLo uplo, const int n,
 // * CBLAS backend, and
 // * complex<double> value-type.
 //
-template< typename Order, typename UpLo >
-inline void hpmv( const Order order, const UpLo uplo, const int n,
-        const std::complex<double> alpha, const std::complex<double>* ap,
-        const std::complex<double>* x, const int incx,
-        const std::complex<double> beta, std::complex<double>* y,
-        const int incy ) {
-    cblas_zhpmv( cblas_option< Order >::value, cblas_option< UpLo >::value, n,
-            &alpha, ap, x, incx, &beta, y, incy );
+template <typename Order, typename UpLo>
+inline void hpmv(
+    const Order order, const UpLo uplo, const int n,
+    const std::complex<double> alpha, const std::complex<double>* ap,
+    const std::complex<double>* x, const int incx,
+    const std::complex<double> beta, std::complex<double>* y, const int incy
+) {
+  cblas_zhpmv(
+      cblas_option<Order>::value, cblas_option<UpLo>::value, n, &alpha, ap, x,
+      incx, &beta, y, incy
+  );
 }
 
 #elif defined BOOST_NUMERIC_BINDINGS_BLAS_CUBLAS
@@ -119,13 +133,14 @@ inline void hpmv( const Order order, const UpLo uplo, const int n,
 // * CUBLAS backend, and
 // * float value-type.
 //
-template< typename Order, typename UpLo >
-inline void hpmv( const Order order, const UpLo uplo, const int n,
-        const float alpha, const float* ap, const float* x, const int incx,
-        const float beta, float* y, const int incy ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    cublasSspmv( blas_option< UpLo >::value, n, alpha, ap, x, incx, beta, y,
-            incy );
+template <typename Order, typename UpLo>
+inline void hpmv(
+    const Order order, const UpLo uplo, const int n, const float alpha,
+    const float* ap, const float* x, const int incx, const float beta, float* y,
+    const int incy
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  cublasSspmv(blas_option<UpLo>::value, n, alpha, ap, x, incx, beta, y, incy);
 }
 
 //
@@ -133,12 +148,14 @@ inline void hpmv( const Order order, const UpLo uplo, const int n,
 // * CUBLAS backend, and
 // * double value-type.
 //
-template< typename Order, typename UpLo >
-inline void hpmv( const Order order, const UpLo uplo, const int n,
-        const double alpha, const double* ap, const double* x, const int incx,
-        const double beta, double* y, const int incy ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    // NOT FOUND();
+template <typename Order, typename UpLo>
+inline void hpmv(
+    const Order order, const UpLo uplo, const int n, const double alpha,
+    const double* ap, const double* x, const int incx, const double beta,
+    double* y, const int incy
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  // NOT FOUND();
 }
 
 //
@@ -146,15 +163,15 @@ inline void hpmv( const Order order, const UpLo uplo, const int n,
 // * CUBLAS backend, and
 // * complex<float> value-type.
 //
-template< typename Order, typename UpLo >
-inline void hpmv( const Order order, const UpLo uplo, const int n,
-        const std::complex<float> alpha, const std::complex<float>* ap,
-        const std::complex<float>* x, const int incx,
-        const std::complex<float> beta, std::complex<float>* y,
-        const int incy ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    cublasChpmv( blas_option< UpLo >::value, n, alpha, ap, x, incx, beta, y,
-            incy );
+template <typename Order, typename UpLo>
+inline void hpmv(
+    const Order order, const UpLo uplo, const int n,
+    const std::complex<float> alpha, const std::complex<float>* ap,
+    const std::complex<float>* x, const int incx,
+    const std::complex<float> beta, std::complex<float>* y, const int incy
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  cublasChpmv(blas_option<UpLo>::value, n, alpha, ap, x, incx, beta, y, incy);
 }
 
 //
@@ -162,14 +179,15 @@ inline void hpmv( const Order order, const UpLo uplo, const int n,
 // * CUBLAS backend, and
 // * complex<double> value-type.
 //
-template< typename Order, typename UpLo >
-inline void hpmv( const Order order, const UpLo uplo, const int n,
-        const std::complex<double> alpha, const std::complex<double>* ap,
-        const std::complex<double>* x, const int incx,
-        const std::complex<double> beta, std::complex<double>* y,
-        const int incy ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    // NOT FOUND();
+template <typename Order, typename UpLo>
+inline void hpmv(
+    const Order order, const UpLo uplo, const int n,
+    const std::complex<double> alpha, const std::complex<double>* ap,
+    const std::complex<double>* x, const int incx,
+    const std::complex<double> beta, std::complex<double>* y, const int incy
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  // NOT FOUND();
 }
 
 #else
@@ -178,14 +196,17 @@ inline void hpmv( const Order order, const UpLo uplo, const int n,
 // * netlib-compatible BLAS backend (the default), and
 // * float value-type.
 //
-template< typename Order, typename UpLo >
-inline void hpmv( const Order order, const UpLo uplo, const fortran_int_t n,
-        const float alpha, const float* ap, const float* x,
-        const fortran_int_t incx, const float beta, float* y,
-        const fortran_int_t incy ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    BLAS_SSPMV( &blas_option< UpLo >::value, &n, &alpha, ap, x, &incx, &beta,
-            y, &incy );
+template <typename Order, typename UpLo>
+inline void hpmv(
+    const Order order, const UpLo uplo, const fortran_int_t n,
+    const float alpha, const float* ap, const float* x,
+    const fortran_int_t incx, const float beta, float* y,
+    const fortran_int_t incy
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  BLAS_SSPMV(
+      &blas_option<UpLo>::value, &n, &alpha, ap, x, &incx, &beta, y, &incy
+  );
 }
 
 //
@@ -193,14 +214,17 @@ inline void hpmv( const Order order, const UpLo uplo, const fortran_int_t n,
 // * netlib-compatible BLAS backend (the default), and
 // * double value-type.
 //
-template< typename Order, typename UpLo >
-inline void hpmv( const Order order, const UpLo uplo, const fortran_int_t n,
-        const double alpha, const double* ap, const double* x,
-        const fortran_int_t incx, const double beta, double* y,
-        const fortran_int_t incy ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    BLAS_DSPMV( &blas_option< UpLo >::value, &n, &alpha, ap, x, &incx, &beta,
-            y, &incy );
+template <typename Order, typename UpLo>
+inline void hpmv(
+    const Order order, const UpLo uplo, const fortran_int_t n,
+    const double alpha, const double* ap, const double* x,
+    const fortran_int_t incx, const double beta, double* y,
+    const fortran_int_t incy
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  BLAS_DSPMV(
+      &blas_option<UpLo>::value, &n, &alpha, ap, x, &incx, &beta, y, &incy
+  );
 }
 
 //
@@ -208,15 +232,18 @@ inline void hpmv( const Order order, const UpLo uplo, const fortran_int_t n,
 // * netlib-compatible BLAS backend (the default), and
 // * complex<float> value-type.
 //
-template< typename Order, typename UpLo >
-inline void hpmv( const Order order, const UpLo uplo, const fortran_int_t n,
-        const std::complex<float> alpha, const std::complex<float>* ap,
-        const std::complex<float>* x, const fortran_int_t incx,
-        const std::complex<float> beta, std::complex<float>* y,
-        const fortran_int_t incy ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    BLAS_CHPMV( &blas_option< UpLo >::value, &n, &alpha, ap, x, &incx, &beta,
-            y, &incy );
+template <typename Order, typename UpLo>
+inline void hpmv(
+    const Order order, const UpLo uplo, const fortran_int_t n,
+    const std::complex<float> alpha, const std::complex<float>* ap,
+    const std::complex<float>* x, const fortran_int_t incx,
+    const std::complex<float> beta, std::complex<float>* y,
+    const fortran_int_t incy
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  BLAS_CHPMV(
+      &blas_option<UpLo>::value, &n, &alpha, ap, x, &incx, &beta, y, &incy
+  );
 }
 
 //
@@ -224,63 +251,74 @@ inline void hpmv( const Order order, const UpLo uplo, const fortran_int_t n,
 // * netlib-compatible BLAS backend (the default), and
 // * complex<double> value-type.
 //
-template< typename Order, typename UpLo >
-inline void hpmv( const Order order, const UpLo uplo, const fortran_int_t n,
-        const std::complex<double> alpha, const std::complex<double>* ap,
-        const std::complex<double>* x, const fortran_int_t incx,
-        const std::complex<double> beta, std::complex<double>* y,
-        const fortran_int_t incy ) {
-    BOOST_STATIC_ASSERT( (is_same<Order, tag::column_major>::value) );
-    BLAS_ZHPMV( &blas_option< UpLo >::value, &n, &alpha, ap, x, &incx, &beta,
-            y, &incy );
+template <typename Order, typename UpLo>
+inline void hpmv(
+    const Order order, const UpLo uplo, const fortran_int_t n,
+    const std::complex<double> alpha, const std::complex<double>* ap,
+    const std::complex<double>* x, const fortran_int_t incx,
+    const std::complex<double> beta, std::complex<double>* y,
+    const fortran_int_t incy
+) {
+  BOOST_STATIC_ASSERT((is_same<Order, tag::column_major>::value));
+  BLAS_ZHPMV(
+      &blas_option<UpLo>::value, &n, &alpha, ap, x, &incx, &beta, y, &incy
+  );
 }
 
 #endif
 
-} // namespace detail
+}  // namespace detail
 
 //
 // Value-type based template class. Use this class if you need a type
 // for dispatching to hpmv.
 //
-template< typename Value >
+template <typename Value>
 struct hpmv_impl {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
+  typedef void result_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
-    typedef void result_type;
-
-    //
-    // Static member function that
-    // * Deduces the required arguments for dispatching to BLAS, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename MatrixAP, typename VectorX, typename VectorY >
-    static result_type invoke( const value_type alpha, const MatrixAP& ap,
-            const VectorX& x, const value_type beta, VectorY& y ) {
-        namespace bindings = ::boost::numeric::bindings;
-        typedef typename result_of::data_order< MatrixAP >::type order;
-        typedef typename result_of::uplo_tag< MatrixAP >::type uplo;
-        BOOST_STATIC_ASSERT( (is_same< typename remove_const<
-                typename bindings::value_type< MatrixAP >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                VectorX >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (is_same< typename remove_const<
-                typename bindings::value_type< MatrixAP >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                VectorY >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorY >::value) );
-        detail::hpmv( order(), uplo(), bindings::size_column(ap), alpha,
-                bindings::begin_value(ap), bindings::begin_value(x),
-                bindings::stride(x), beta, bindings::begin_value(y),
-                bindings::stride(y) );
-    }
+  //
+  // Static member function that
+  // * Deduces the required arguments for dispatching to BLAS, and
+  // * Asserts that most arguments make sense.
+  //
+  template <typename MatrixAP, typename VectorX, typename VectorY>
+  static result_type invoke(
+      const value_type alpha, const MatrixAP& ap, const VectorX& x,
+      const value_type beta, VectorY& y
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    typedef typename result_of::data_order<MatrixAP>::type order;
+    typedef typename result_of::uplo_tag<MatrixAP>::type uplo;
+    BOOST_STATIC_ASSERT(
+        (is_same<
+            typename remove_const<
+                typename bindings::value_type<MatrixAP>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<VectorX>::type>::type>::value)
+    );
+    BOOST_STATIC_ASSERT(
+        (is_same<
+            typename remove_const<
+                typename bindings::value_type<MatrixAP>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<VectorY>::type>::type>::value)
+    );
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorY>::value));
+    detail::hpmv(
+        order(), uplo(), bindings::size_column(ap), alpha,
+        bindings::begin_value(ap), bindings::begin_value(x),
+        bindings::stride(x), beta, bindings::begin_value(y), bindings::stride(y)
+    );
+  }
 };
 
 //
 // Functions for direct use. These functions are overloaded for temporaries,
 // so that wrapped types can still be passed and used for write-access. Calls
-// to these functions are passed to the hpmv_impl classes. In the 
+// to these functions are passed to the hpmv_impl classes. In the
 // documentation, the const-overloads are collapsed to avoid a large number of
 // prototypes which are very similar.
 //
@@ -288,20 +326,22 @@ struct hpmv_impl {
 //
 // Overloaded function for hpmv. Its overload differs for
 //
-template< typename MatrixAP, typename VectorX, typename VectorY >
-inline typename hpmv_impl< typename bindings::value_type<
-        MatrixAP >::type >::result_type
-hpmv( const typename bindings::value_type< MatrixAP >::type alpha,
-        const MatrixAP& ap, const VectorX& x,
-        const typename bindings::value_type< MatrixAP >::type beta,
-        VectorY& y ) {
-    hpmv_impl< typename bindings::value_type<
-            MatrixAP >::type >::invoke( alpha, ap, x, beta, y );
+template <typename MatrixAP, typename VectorX, typename VectorY>
+inline typename hpmv_impl<
+    typename bindings::value_type<MatrixAP>::type>::result_type
+hpmv(
+    const typename bindings::value_type<MatrixAP>::type alpha,
+    const MatrixAP& ap, const VectorX& x,
+    const typename bindings::value_type<MatrixAP>::type beta, VectorY& y
+) {
+  hpmv_impl<typename bindings::value_type<MatrixAP>::type>::invoke(
+      alpha, ap, x, beta, y
+  );
 }
 
-} // namespace blas
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace blas
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

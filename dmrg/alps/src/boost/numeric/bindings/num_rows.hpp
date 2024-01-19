@@ -16,20 +16,20 @@ namespace numeric {
 namespace bindings {
 namespace result_of {
 
-template< typename T >
+template <typename T>
 struct num_rows {
-    typedef typename result_of::size1<T>::type type;
+  typedef typename result_of::size1<T>::type type;
 };
 
-} // namespace result_of
+}  // namespace result_of
 
-template< typename T >
-inline typename result_of::num_rows<T>::type num_rows( const T& t ) {
-    return size1( t );
+template <typename T>
+inline typename result_of::num_rows<T>::type num_rows(const T& t) {
+  return size1(t);
 }
 
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

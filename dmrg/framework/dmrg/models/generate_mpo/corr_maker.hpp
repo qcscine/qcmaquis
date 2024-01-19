@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #ifndef GENERATE_MPO_CORR_MAKER_H
@@ -20,354 +20,385 @@
 #include <string>
 #include <sstream>
 
-namespace generate_mpo
-{
-    template<class Matrix, class SymmGroup>
-    class CorrMakerBase {
-    public:
-        virtual ~CorrMakerBase() = default;
-        virtual MPO<Matrix, SymmGroup> create_mpo()=0;
-        virtual std::string description () const=0;
-        virtual vector<vector<Lattice::pos_t> > const& numeric_labels()=0;
+namespace generate_mpo {
+template <class Matrix, class SymmGroup>
+class CorrMakerBase {
+ public:
+  virtual ~CorrMakerBase() = default;
+  virtual MPO<Matrix, SymmGroup> create_mpo() = 0;
+  virtual std::string description() const = 0;
+  virtual vector<vector<Lattice::pos_t> > const& numeric_labels() = 0;
 
-    protected:
-        using tag_type = tag_detail::tag_type;
-        using block = std::tuple<size_t, size_t, tag_type, typename Matrix::value_type>;
+ protected:
+  using tag_type = tag_detail::tag_type;
+  using block =
+      std::tuple<size_t, size_t, tag_type, typename Matrix::value_type>;
 
-        MPOTensor<Matrix, SymmGroup> as_bulk(vector<block> const & ops, std::shared_ptr<OPTable<Matrix, SymmGroup> > tbl)
-        {
-            pair<size_t, size_t> rcd = rcdim(ops);
-            MPOTensor<Matrix, SymmGroup> r(rcd.first, rcd.second, ops, tbl);
-            return r;
-        }
+  MPOTensor<Matrix, SymmGroup> as_bulk(
+      vector<block> const& ops, std::shared_ptr<OPTable<Matrix, SymmGroup> > tbl
+  ) {
+    pair<size_t, size_t> rcd = rcdim(ops);
+    MPOTensor<Matrix, SymmGroup> r(rcd.first, rcd.second, ops, tbl);
+    return r;
+  }
 
-        MPOTensor<Matrix, SymmGroup> as_left(vector<block> const & ops, std::shared_ptr<OPTable<Matrix, SymmGroup> > tbl)
-        {
-            pair<size_t, size_t> rcd = rcdim(ops);
-            MPOTensor<Matrix, SymmGroup> r(1, rcd.second, ops, tbl);
-            return r;
-        }
-    };
+  MPOTensor<Matrix, SymmGroup> as_left(
+      vector<block> const& ops, std::shared_ptr<OPTable<Matrix, SymmGroup> > tbl
+  ) {
+    pair<size_t, size_t> rcd = rcdim(ops);
+    MPOTensor<Matrix, SymmGroup> r(1, rcd.second, ops, tbl);
+    return r;
+  }
+};
 
-    template<class Matrix, class SymmGroup>
-    class CorrMaker : public CorrMakerBase<Matrix, SymmGroup>
+template <class Matrix, class SymmGroup>
+class CorrMaker : public CorrMakerBase<Matrix, SymmGroup> {
+  using base = CorrMakerBase<Matrix, SymmGroup>;
+  using block = typename base::block;
+  using pos_t = Lattice::pos_t;
+  using tag_type = tag_detail::tag_type;
+  using op_t = typename OPTable<Matrix, SymmGroup>::op_t;
+  using tag = std::tuple<size_t, size_t, string>;
+
+ public:
+  CorrMaker(
+      Lattice const& lat_, const std::vector<op_t>& ident_,
+      const std::vector<op_t>& fill_,
+      std::vector<std::pair<std::vector<op_t>, bool> > const& ops, int ref = -1
+  )
+      : lat(lat_),
+        prempo(lat.size()),
+        tags(lat.size()),
+        used(lat.size()),
+        with_sign(lat.size() + 2),
+        identities(ident_.size()),
+        fillings(fill_.size()),
+        op_tags(ops.size()) {
+    /// register operators
+    for (int type = 0; type < ident_.size(); ++type)
+      identities[type] =
+          tag_handler.register_op(ident_[type], tag_detail::bosonic);
+    for (int type = 0; type < fill_.size(); ++type)
+      fillings[type] =
+          tag_handler.register_op(fill_[type], tag_detail::bosonic);
+
+    for (size_t n = 0; n < ops.size(); ++n) {
+      op_tags[n].first.resize(ops[n].first.size());
+      op_tags[n].second = ops[n].second;
+      std::vector<tag_type>& tops = op_tags[n].first;
+      for (int type = 0; type < tops.size(); ++type)
+        tops[type] = tag_handler.register_op(
+            ops[n].first[type],
+            ops[n].second ? tag_detail::fermionic : tag_detail::bosonic
+        );
+    }
+
+    with_sign[0][0] = false;
+    recurse(0, 0, 0, std::vector<pos_t>(), ref);
+  }
+
+  MPO<Matrix, SymmGroup> create_mpo() {
+    std::shared_ptr<OPTable<Matrix, SymmGroup> > tbl =
+        tag_handler.get_operator_table();
+    MPO<Matrix, SymmGroup> r(prempo.size());
+    for (pos_t p = 1; p < prempo.size(); ++p)
+      r[p] = base::as_bulk(prempo[p], tbl);
+    r[0] = base::as_left(prempo[0], tbl);
+
+    return r;
+  }
+
+  std::string description() const {
+    std::ostringstream ss;
+    for (pos_t p = 0; p < prempo.size(); ++p) {
+      ss << "Site: " << p << std::endl;
+      for (const auto& it : tags[p]) {
+        ss << "    " << get<0>(it) << " " << get<1>(it) << " " << get<2>(it)
+           << std::endl;
+      }
+    }
+    return ss.str();
+  }
+
+  vector<vector<pos_t> > const& numeric_labels() { return labels; }
+
+ private:
+  Lattice const& lat;
+  TagHandler<Matrix, SymmGroup> tag_handler;
+
+  vector<vector<block> > prempo;
+  vector<vector<tag> > tags;
+  vector<vector<pos_t> > labels;
+
+  vector<set<size_t> > used;
+  vector<map<size_t, bool> > with_sign;
+  std::vector<tag_type> identities, fillings;
+  // TODO: use just vector<tag_type>, as there is the is_fermionic() function in
+  // TagHandler
+  vector<std::pair<std::vector<tag_type>, bool> > op_tags;
+
+  size_t term(
+      pos_t p, size_t u1, std::pair<std::vector<tag_type>, bool> const& op_p,
+      bool trivial
+  ) {
+    std::string lab;
+    tag_type op;
+    typename Matrix::value_type scale;
+    if (trivial) {
+      op = (with_sign[p][u1]) ? fillings[lat.get_prop<int>("type", p)]
+                              : identities[lat.get_prop<int>("type", p)];
+      scale = 1.;
+      lab = (with_sign[p][u1]) ? "filling" : "ident";
+    } else {
+      lab = "nontriv";
+      if (!with_sign[p][u1] && op_p.second) {
+        // gemm(fill, op_p.first, op);
+        std::tie(op, scale) = tag_handler.get_product_tag(
+            fillings[lat.get_prop<int>("type", p)],
+            op_p.first[lat.get_prop<int>("type", p)]
+        );
+        lab += "*fill";
+      } else if (with_sign[p][u1] && !op_p.second) {
+        // gemm(fill, op_p.first, op);
+        std::tie(op, scale) = tag_handler.get_product_tag(
+            fillings[lat.get_prop<int>("type", p)],
+            op_p.first[lat.get_prop<int>("type", p)]
+        );
+        lab += "*fill";
+      } else {
+        op = op_p.first[lat.get_prop<int>("type", p)];
+        scale = 1.;
+      }
+    }
+
+    size_t u2 = 0;
+    while (used[p].count(u2) > 0) ++u2;
+    prempo[p].push_back(std::make_tuple(u1, u2, op, scale));
+    used[p].insert(u2);
+    with_sign[p + 1][u2] = (op_p.second) ? !with_sign[p][u1] : with_sign[p][u1];
+    //            maquis::cout << "Adding a " << lab << " term at " << p << ", "
+    //            << u1 << " -> " << u2 << std::endl; maquis::cout << op;
+    if (trivial)
+      tags[p].push_back(std::make_tuple(u1, u2, lab));
+    else
+      tags[p].push_back(std::make_tuple(u1, u2, lab));
+    return u2;
+  }
+
+  void recurse(
+      pos_t p0, size_t which, size_t use, vector<pos_t> label, int ref
+  ) {
+    if (p0 + op_tags.size() - which < prempo.size()) {
+      size_t use_next = term(p0, use, std::make_pair(identities, false), true);
+      recurse(p0 + 1, which, use_next, label, ref);
+    }
+
     {
-        using base = CorrMakerBase<Matrix, SymmGroup>;
-        using block = typename base::block;
-        using pos_t = Lattice::pos_t;
-        using tag_type = tag_detail::tag_type;
-        using op_t = typename OPTable<Matrix, SymmGroup>::op_t;
-        using tag = std::tuple<size_t, size_t, string>;
+      if (ref >= 0 && which == 0 && p0 != ref) return;
 
-    public:
-        CorrMaker(Lattice const& lat_,
-                  const std::vector<op_t> & ident_,
-                  const std::vector<op_t> & fill_,
-                  std::vector<std::pair<std::vector<op_t>, bool> > const & ops,
-                  int ref = -1)
-        : lat(lat_)
-        , prempo(lat.size())
-        , tags(lat.size())
-        , used(lat.size())
-        , with_sign(lat.size()+2)
-        , identities(ident_.size())
-        , fillings(fill_.size())
-        , op_tags(ops.size())
-        {
-            /// register operators
-            for (int type=0; type<ident_.size(); ++type)
-                identities[type] = tag_handler.register_op(ident_[type], tag_detail::bosonic);
-            for (int type=0; type<fill_.size(); ++type)
-                fillings[type] = tag_handler.register_op(fill_[type], tag_detail::bosonic);
+      if (tag_handler
+              .get_op(op_tags[which].first[lat.get_prop<int>("type", p0)])
+              .n_blocks() == 0)
+        return;
 
-            for (size_t n=0; n<ops.size(); ++n) {
-                op_tags[n].first.resize(ops[n].first.size());
-                op_tags[n].second = ops[n].second;
-                std::vector<tag_type> & tops = op_tags[n].first;
-                for (int type=0; type<tops.size(); ++type)
-                    tops[type] = tag_handler.register_op(ops[n].first[type], ops[n].second ? tag_detail::fermionic : tag_detail::bosonic);
-            }
+      size_t use_next = term(p0, use, op_tags[which], false);
 
-            with_sign[0][0] = false;
-        	recurse(0, 0, 0, std::vector<pos_t>(), ref);
+      vector<pos_t> label_(label);
+      label_.push_back(p0);
+
+      if (which == op_tags.size() - 1) {
+        size_t t1 = use_next, t2 = use_next;
+        for (pos_t p2 = p0 + 1; p2 < prempo.size(); ++p2) {
+          t2 = term(p2, t1, std::make_pair(identities, false), true);
+          t1 = t2;
         }
+        labels.resize(std::max(t2 + 1, labels.size()));
+        labels[t2] = label_;
+      } else {
+        recurse(p0 + 1, which + 1, use_next, label_, ref);
+      }
+    }
+  }
+};
 
-        MPO<Matrix, SymmGroup> create_mpo()
-        {
-            std::shared_ptr<OPTable<Matrix, SymmGroup> > tbl = tag_handler.get_operator_table();
-            MPO<Matrix, SymmGroup> r(prempo.size());
-            for (pos_t p = 1; p < prempo.size(); ++p)
-                r[p] = base::as_bulk(prempo[p], tbl);
-            r[0] = base::as_left(prempo[0], tbl);
+// same as CorrMaker, but operators in ops have to be even,
+//  and are avaluated as ops[0](i)*ops[1](i+1)*ops[2](j)*ops[3](j+1)
+template <class Matrix, class SymmGroup>
+class CorrMakerNN : public CorrMakerBase<Matrix, SymmGroup> {
+  using base = CorrMakerBase<Matrix, SymmGroup>;
+  using block = typename base::block;
+  using tag_type = tag_detail::tag_type;
+  using pos_t = Lattice::pos_t;
+  using op_t = typename OPTable<Matrix, SymmGroup>::op_t;
+  using tag = std::tuple<size_t, size_t, string>;
 
-            return r;
-        }
+ public:
+  CorrMakerNN(
+      Lattice const& lat_, const std::vector<op_t>& ident_,
+      const std::vector<op_t>& fill_,
+      std::vector<std::pair<std::vector<op_t>, bool> > const& ops, int ref = -1
+  )
+      : lat(lat_),
+        prempo(lat.size()),
+        tags(lat.size()),
+        used(lat.size()),
+        with_sign(lat.size() + 2),
+        identities(ident_.size()),
+        fillings(fill_.size()),
+        op_tags(ops.size()) {
+    assert(ops.size() % 2 == 0);
 
-        std::string description () const
-        {
-            std::ostringstream ss;
-        	for (pos_t p = 0; p < prempo.size(); ++p)
-            {
-                ss << "Site: " << p << std::endl;
-                for (const auto& it : tags[p]) {
-                    ss << "    " << get<0>(it) << " " << get<1>(it) << " " << get<2>(it) << std::endl;
-                }
-            }
-        	return ss.str();
-        }
+    /// register operators
+    for (int type = 0; type < ident_.size(); ++type)
+      identities[type] =
+          tag_handler.register_op(ident_[type], tag_detail::bosonic);
+    for (int type = 0; type < fill_.size(); ++type)
+      fillings[type] =
+          tag_handler.register_op(fill_[type], tag_detail::bosonic);
 
-        vector<vector<pos_t> > const& numeric_labels() { return labels; }
+    for (size_t n = 0; n < ops.size(); ++n) {
+      op_tags[n].first.resize(ops[n].first.size());
+      op_tags[n].second = ops[n].second;
+      std::vector<tag_type>& tops = op_tags[n].first;
+      for (int type = 0; type < tops.size(); ++type)
+        tops[type] = tag_handler.register_op(
+            ops[n].first[type],
+            ops[n].second ? tag_detail::fermionic : tag_detail::bosonic
+        );
+    }
 
-    private:
-        Lattice const& lat;
-        TagHandler<Matrix, SymmGroup> tag_handler;
+    with_sign[0][0] = false;
+    recurse(0, 0, 0, vector<pos_t>(), ref);
+  }
 
-        vector<vector<block> > prempo;
-        vector<vector<tag> > tags;
-        vector<vector<pos_t> > labels;
+  MPO<Matrix, SymmGroup> create_mpo() {
+    std::shared_ptr<OPTable<Matrix, SymmGroup> > tbl =
+        tag_handler.get_operator_table();
+    MPO<Matrix, SymmGroup> r(prempo.size());
+    for (size_t p = 1; p < prempo.size(); ++p)
+      r[p] = base::as_bulk(prempo[p], tbl);
+    r[0] = base::as_left(prempo[0], tbl);
 
-        vector<set<size_t> > used;
-        vector<map<size_t, bool> > with_sign;
-        std::vector<tag_type> identities, fillings;
-        // TODO: use just vector<tag_type>, as there is the is_fermionic() function in TagHandler
-        vector<std::pair<std::vector<tag_type>, bool> > op_tags;
+    return r;
+  }
 
-        size_t term(pos_t p, size_t u1, std::pair<std::vector<tag_type>, bool> const & op_p, bool trivial)
-        {
-            std::string lab;
-            tag_type op;
-            typename Matrix::value_type scale;
-            if (trivial) {
-            	op = (with_sign[p][u1]) ? fillings[lat.get_prop<int>("type", p)] : identities[lat.get_prop<int>("type", p)];
-                scale = 1.;
-            	lab = (with_sign[p][u1]) ? "filling" : "ident";
-            } else {
-				lab = "nontriv";
-            	if (!with_sign[p][u1] && op_p.second) {
-					//gemm(fill, op_p.first, op);
-					std::tie(op, scale) = tag_handler.get_product_tag(fillings[lat.get_prop<int>("type", p)], op_p.first[lat.get_prop<int>("type", p)]);
-					lab += "*fill";
-				} else if (with_sign[p][u1] && !op_p.second) {
-					//gemm(fill, op_p.first, op);
-					std::tie(op, scale) = tag_handler.get_product_tag(fillings[lat.get_prop<int>("type", p)], op_p.first[lat.get_prop<int>("type", p)]);
-					lab += "*fill";
-				} else {
-					op = op_p.first[lat.get_prop<int>("type", p)];
-                    scale = 1.;
-				}
-            }
+  vector<vector<pos_t> > const& numeric_labels() { return labels; }
 
-        	size_t u2 = 0;
-            while (used[p].count(u2) > 0) ++u2;
-            prempo[p].push_back( std::make_tuple(u1, u2, op, scale) );
-            used[p].insert(u2);
-           	with_sign[p+1][u2] = (op_p.second) ? !with_sign[p][u1] : with_sign[p][u1];
-            //            maquis::cout << "Adding a " << lab << " term at " << p << ", " << u1 << " -> " << u2 << std::endl;
-            //            maquis::cout << op;
-            if (trivial)
-                tags[p].push_back( std::make_tuple(u1, u2, lab) );
-            else
-                tags[p].push_back( std::make_tuple(u1, u2, lab) );
-            return u2;
-        }
+  std::string description() const {
+    std::ostringstream ss;
+    for (pos_t p = 0; p < prempo.size(); ++p) {
+      ss << "Site: " << p << std::endl;
+      for (const auto& it : tags[p]) {
+        ss << "    " << get<0>(it) << " " << get<1>(it) << " " << get<2>(it)
+           << std::endl;
+      }
+    }
+    return ss.str();
+  }
 
-        void recurse(pos_t p0, size_t which, size_t use, vector<pos_t> label, int ref)
-        {
-            if (p0 + op_tags.size() - which < prempo.size()) {
-                size_t use_next = term(p0, use, std::make_pair(identities, false), true);
-                recurse(p0+1, which, use_next, label, ref);
-            }
+ private:
+  Lattice const& lat;
+  TagHandler<Matrix, SymmGroup> tag_handler;
 
-            {
-                if (ref >= 0 && which == 0 && p0 != ref)
-                    return;
+  vector<vector<block> > prempo;
+  vector<vector<tag> > tags;
+  vector<vector<pos_t> > labels;
 
-                if (tag_handler.get_op(op_tags[which].first[lat.get_prop<int>("type", p0)]).n_blocks() == 0)
-                    return;
+  vector<set<size_t> > used;
+  vector<map<size_t, bool> > with_sign;
 
-                size_t use_next = term(p0, use, op_tags[which], false);
+  std::vector<tag_type> identities, fillings;
+  // TODO: use just vector<tag_type>, as there is the is_fermionic() function in
+  // TagHandler
+  vector<std::pair<std::vector<tag_type>, bool> > op_tags;
 
-                vector<pos_t> label_(label);
-                label_.push_back(p0);
+  size_t term(
+      pos_t p, size_t u1, std::pair<std::vector<tag_type>, bool> const& op_p,
+      bool trivial
+  ) {
+    std::string lab;
+    tag_type op;
+    typename Matrix::value_type scale;
+    if (trivial) {
+      op = (with_sign[p][u1]) ? fillings[lat.get_prop<int>("type", p)]
+                              : identities[lat.get_prop<int>("type", p)];
+      lab = (with_sign[p][u1]) ? "filling" : "ident";
+    } else {
+      lab = "nontriv";
+      if (!with_sign[p][u1] && op_p.second) {
+        // gemm(fill, op_p.first, op);
+        std::tie(op, scale) = tag_handler.get_product_tag(
+            fillings[lat.get_prop<int>("type", p)],
+            op_p.first[lat.get_prop<int>("type", p)]
+        );
+        lab += "*fill";
+      } else if (with_sign[p][u1] && !op_p.second) {
+        // gemm(fill, op_p.first, op);
+        std::tie(op, scale) = tag_handler.get_product_tag(
+            fillings[lat.get_prop<int>("type", p)],
+            op_p.first[lat.get_prop<int>("type", p)]
+        );
+        lab += "*fill";
+      } else {
+        op = op_p.first[lat.get_prop<int>("type", p)];
+      }
+    }
 
-                if (which == op_tags.size()-1) {
-                    size_t t1 = use_next, t2 = use_next;
-                    for (pos_t p2 = p0+1; p2 < prempo.size(); ++p2) {
-                        t2 = term(p2, t1, std::make_pair(identities, false), true);
-                        t1 = t2;
-                    }
-                    labels.resize(std::max(t2+1, labels.size()));
-                    labels[t2] = label_;
-                } else {
-                    recurse(p0+1, which+1, use_next, label_, ref);
-                }
-            }
-        }
-    };
+    size_t u2 = 0;
+    while (used[p].count(u2) > 0) ++u2;
+    prempo[p].push_back(std::make_tuple(u1, u2, op, 1.0));
+    used[p].insert(u2);
+    with_sign[p + 1][u2] = (op_p.second) ? !with_sign[p][u1] : with_sign[p][u1];
+    //            maquis::cout << "Adding a " << lab << " term at " << p << ", "
+    //            << u1 << " -> " << u2 << std::endl; maquis::cout << op;
+    if (trivial)
+      tags[p].push_back(std::make_tuple(u1, u2, lab));
+    else
+      tags[p].push_back(std::make_tuple(u1, u2, lab));
+    return u2;
+  }
 
-    // same as CorrMaker, but operators in ops have to be even,
-    //  and are avaluated as ops[0](i)*ops[1](i+1)*ops[2](j)*ops[3](j+1)
-    template<class Matrix, class SymmGroup>
-    class CorrMakerNN : public CorrMakerBase<Matrix, SymmGroup>
+  void recurse(
+      pos_t p0, size_t which, size_t use, vector<pos_t> label, int ref
+  ) {
+    if (p0 + op_tags.size() - which < prempo.size()) {
+      size_t use_next = term(p0, use, std::make_pair(identities, false), true);
+      recurse(p0 + 1, which, use_next, label, ref);
+    }
+
     {
-        using base = CorrMakerBase<Matrix, SymmGroup>;
-        using block = typename base::block;
-        using tag_type = tag_detail::tag_type;
-        using pos_t = Lattice::pos_t;
-        using op_t = typename OPTable<Matrix, SymmGroup>::op_t;
-        using tag = std::tuple<size_t, size_t, string>;
+      if (ref >= 0 && which == 0 && p0 != ref) return;
 
-    public:
-        CorrMakerNN(Lattice const& lat_,
-                    const std::vector<op_t> & ident_,
-                    const std::vector<op_t> & fill_,
-                    std::vector<std::pair<std::vector<op_t>, bool> > const & ops,
-                    int ref = -1)
-        : lat(lat_)
-        , prempo(lat.size())
-        , tags(lat.size())
-        , used(lat.size())
-        , with_sign(lat.size()+2)
-        , identities(ident_.size())
-        , fillings(fill_.size())
-        , op_tags(ops.size())
-        {
-            assert(ops.size() % 2 == 0);
+      if (tag_handler
+              .get_op(op_tags[which].first[lat.get_prop<int>("type", p0)])
+              .n_blocks() == 0)
+        return;
+      size_t use_next = term(p0++, use, op_tags[which++], false);
 
-            /// register operators
-            for (int type=0; type<ident_.size(); ++type)
-                identities[type] = tag_handler.register_op(ident_[type], tag_detail::bosonic);
-            for (int type=0; type<fill_.size(); ++type)
-                fillings[type] = tag_handler.register_op(fill_[type], tag_detail::bosonic);
+      if (tag_handler
+              .get_op(op_tags[which].first[lat.get_prop<int>("type", p0)])
+              .n_blocks() == 0)
+        return;
+      use_next = term(p0, use_next, op_tags[which], false);
 
-            for (size_t n=0; n<ops.size(); ++n) {
-                op_tags[n].first.resize(ops[n].first.size());
-                op_tags[n].second = ops[n].second;
-                std::vector<tag_type> & tops = op_tags[n].first;
-                for (int type=0; type<tops.size(); ++type)
-                    tops[type] = tag_handler.register_op(ops[n].first[type], ops[n].second ? tag_detail::fermionic : tag_detail::bosonic);
-            }
+      vector<pos_t> label_(label);
+      label_.push_back(p0 - 1);
+      label_.push_back(p0);
 
-            with_sign[0][0] = false;
-            recurse(0, 0, 0, vector<pos_t>(), ref);
+      if (which == op_tags.size() - 1) {
+        size_t t1 = use_next, t2 = use_next;
+        for (pos_t p2 = p0 + 1; p2 < prempo.size(); ++p2) {
+          t2 = term(p2, t1, std::make_pair(identities, false), true);
+          t1 = t2;
         }
-
-        MPO<Matrix, SymmGroup> create_mpo()
-        {
-            std::shared_ptr<OPTable<Matrix, SymmGroup> > tbl = tag_handler.get_operator_table();
-            MPO<Matrix, SymmGroup> r(prempo.size());
-            for (size_t p = 1; p < prempo.size(); ++p)
-                r[p] = base::as_bulk(prempo[p], tbl);
-            r[0] = base::as_left(prempo[0], tbl);
-
-            return r;
-        }
-
-        vector<vector<pos_t> > const& numeric_labels() { return labels; }
-
-        std::string description () const
-        {
-            std::ostringstream ss;
-        	for (pos_t p = 0; p < prempo.size(); ++p)
-            {
-                ss << "Site: " << p << std::endl;
-                for (const auto & it : tags[p]) {
-                    ss << "    " << get<0>(it) << " " << get<1>(it) << " " << get<2>(it) << std::endl;
-                }
-            }
-        	return ss.str();
-        }
-
-    private:
-        Lattice const& lat;
-        TagHandler<Matrix, SymmGroup> tag_handler;
-
-        vector<vector<block> > prempo;
-        vector<vector<tag> > tags;
-        vector<vector<pos_t> > labels;
-
-        vector<set<size_t> > used;
-        vector<map<size_t, bool> > with_sign;
-
-        std::vector<tag_type> identities, fillings;
-        // TODO: use just vector<tag_type>, as there is the is_fermionic() function in TagHandler
-        vector<std::pair<std::vector<tag_type>, bool> > op_tags;
-
-        size_t term(pos_t p, size_t u1, std::pair<std::vector<tag_type>, bool> const & op_p, bool trivial)
-        {
-            std::string lab;
-            tag_type op;
-            typename Matrix::value_type scale;
-            if (trivial) {
-            	op = (with_sign[p][u1]) ? fillings[lat.get_prop<int>("type", p)] : identities[lat.get_prop<int>("type", p)];
-            	lab = (with_sign[p][u1]) ? "filling" : "ident";
-            } else {
-				lab = "nontriv";
-            	if (!with_sign[p][u1] && op_p.second) {
-					//gemm(fill, op_p.first, op);
-					std::tie(op, scale) = tag_handler.get_product_tag(fillings[lat.get_prop<int>("type", p)], op_p.first[lat.get_prop<int>("type", p)]);
-					lab += "*fill";
-				} else if (with_sign[p][u1] && !op_p.second) {
-					//gemm(fill, op_p.first, op);
-					std::tie(op, scale) = tag_handler.get_product_tag(fillings[lat.get_prop<int>("type", p)], op_p.first[lat.get_prop<int>("type", p)]);
-					lab += "*fill";
-				} else {
-					op = op_p.first[lat.get_prop<int>("type", p)];
-				}
-            }
-
-        	size_t u2 = 0;
-            while (used[p].count(u2) > 0) ++u2;
-            prempo[p].push_back( std::make_tuple(u1, u2, op, 1.0) );
-            used[p].insert(u2);
-           	with_sign[p+1][u2] = (op_p.second) ? !with_sign[p][u1] : with_sign[p][u1];
-            //            maquis::cout << "Adding a " << lab << " term at " << p << ", " << u1 << " -> " << u2 << std::endl;
-            //            maquis::cout << op;
-            if (trivial)
-                tags[p].push_back( std::make_tuple(u1, u2, lab) );
-            else
-                tags[p].push_back( std::make_tuple(u1, u2, lab) );
-            return u2;
-        }
-
-        void recurse(pos_t p0, size_t which, size_t use, vector<pos_t> label, int ref)
-        {
-            if (p0 + op_tags.size() - which < prempo.size()) {
-                size_t use_next = term(p0, use, std::make_pair(identities, false),  true);
-                recurse(p0+1, which, use_next, label, ref);
-            }
-
-            {
-                if (ref >= 0 && which == 0 && p0 != ref)
-                    return;
-
-                if (tag_handler.get_op(op_tags[which].first[lat.get_prop<int>("type", p0)]).n_blocks() == 0)
-                    return;
-                size_t use_next = term(p0++, use, op_tags[which++], false);
-
-                if (tag_handler.get_op(op_tags[which].first[lat.get_prop<int>("type", p0)]).n_blocks() == 0)
-                    return;
-                use_next = term(p0, use_next, op_tags[which], false);
-
-                vector<pos_t> label_(label);
-                label_.push_back(p0-1);
-                label_.push_back(p0);
-
-                if (which == op_tags.size()-1) {
-                    size_t t1 = use_next, t2 = use_next;
-                    for (pos_t p2 = p0+1; p2 < prempo.size(); ++p2) {
-                        t2 = term(p2, t1, std::make_pair(identities, false), true);
-                        t1 = t2;
-                    }
-                    labels.resize(std::max(t2+1, labels.size()));
-                    labels[t2] = label_;
-                } else {
-                    recurse(p0+1, which+1, use_next, label_, ref);
-                }
-            }
-        }
-    };
-}
-
+        labels.resize(std::max(t2 + 1, labels.size()));
+        labels[t2] = label_;
+      } else {
+        recurse(p0 + 1, which + 1, use_next, label_, ref);
+      }
+    }
+  }
+};
+}  // namespace generate_mpo
 
 #endif

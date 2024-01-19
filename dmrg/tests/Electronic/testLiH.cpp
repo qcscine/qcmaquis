@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #define BOOST_TEST_MODULE TestLiH
@@ -12,20 +12,25 @@
 #include <boost/test/included/unit_test.hpp>
 #include "Fixtures/LiHFixture.h"
 
-//TODO NOTE THAT THE 2U1 VERSION OF THESE TESTS GETS STUCK IN A LOCAL MINIMUM -- TO BE CHECKED
+// TODO NOTE THAT THE 2U1 VERSION OF THESE TESTS GETS STUCK IN A LOCAL MINIMUM
+// -- TO BE CHECKED
 
 typedef boost::mpl::list<
 #ifdef HAVE_TwoU1PG
-TwoU1PG
+    TwoU1PG
 #endif
 #ifdef HAVE_SU2U1PG
-, SU2U1PG
+    ,
+    SU2U1PG
 #endif
-> symmetries;
+    >
+    symmetries;
 
-/** @brief Test FEAST for electronic calculations, both with SS and TS optimization */
-BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_LiH_DMRG_SSvsTS, S, symmetries, LiHFixture)
-{
+/** @brief Test FEAST for electronic calculations, both with SS and TS
+ * optimization */
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(
+    Test_LiH_DMRG_SSvsTS, S, symmetries, LiHFixture
+) {
   // Generic parameters
   parametersLiH.set("max_bond_dimension", 50);
   parametersLiH.set("symmetry", symm_traits::SymmetryNameTrait<S>::symmName());
@@ -47,8 +52,9 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_LiH_DMRG_SSvsTS, S, symmetries, LiHFixture
 }
 
 /** @brief Test conventional DMRG with dumping the boundaries to File */
-BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_LiH_DMRG_BoundaryStorage, S, symmetries, LiHFixture)
-{
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(
+    Test_LiH_DMRG_BoundaryStorage, S, symmetries, LiHFixture
+) {
   // Generic parameters
   parametersLiH.set("max_bond_dimension", 50);
   parametersLiH.set("init_type", "default");
@@ -79,8 +85,9 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_LiH_DMRG_BoundaryStorage, S, symmetries, L
 }
 
 /** @brief Test DMRG-IPI with dumping the boundaries to File */
-BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_LiH_IPI_BoundaryStorage, S, symmetries, LiHFixture)
-{
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(
+    Test_LiH_IPI_BoundaryStorage, S, symmetries, LiHFixture
+) {
   // Generic parameters
   parametersLiH.set("max_bond_dimension", 50);
   parametersLiH.set("init_type", "basis_state_generic");

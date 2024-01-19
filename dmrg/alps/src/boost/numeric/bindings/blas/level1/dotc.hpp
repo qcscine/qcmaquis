@@ -60,11 +60,13 @@ namespace detail {
 // * CBLAS backend, and
 // * complex<float> value-type.
 //
-inline std::complex<float> dotc( const int n, const std::complex<float>* x,
-        const int incx, const std::complex<float>* y, const int incy ) {
-    std::complex<float> result;
-    cblas_cdotc_sub( n, x, incx, y, incy, &result );
-    return result;
+inline std::complex<float> dotc(
+    const int n, const std::complex<float>* x, const int incx,
+    const std::complex<float>* y, const int incy
+) {
+  std::complex<float> result;
+  cblas_cdotc_sub(n, x, incx, y, incy, &result);
+  return result;
 }
 
 //
@@ -72,11 +74,13 @@ inline std::complex<float> dotc( const int n, const std::complex<float>* x,
 // * CBLAS backend, and
 // * complex<double> value-type.
 //
-inline std::complex<double> dotc( const int n, const std::complex<double>* x,
-        const int incx, const std::complex<double>* y, const int incy ) {
-    std::complex<double> result;
-    cblas_zdotc_sub( n, x, incx, y, incy, &result );
-    return result;
+inline std::complex<double> dotc(
+    const int n, const std::complex<double>* x, const int incx,
+    const std::complex<double>* y, const int incy
+) {
+  std::complex<double> result;
+  cblas_zdotc_sub(n, x, incx, y, incy, &result);
+  return result;
 }
 
 #elif defined BOOST_NUMERIC_BINDINGS_BLAS_CUBLAS
@@ -85,9 +89,11 @@ inline std::complex<double> dotc( const int n, const std::complex<double>* x,
 // * CUBLAS backend, and
 // * complex<float> value-type.
 //
-inline std::complex<float> dotc( const int n, const std::complex<float>* x,
-        const int incx, const std::complex<float>* y, const int incy ) {
-    return cublasCdotc( n, x, incx, y, incy );
+inline std::complex<float> dotc(
+    const int n, const std::complex<float>* x, const int incx,
+    const std::complex<float>* y, const int incy
+) {
+  return cublasCdotc(n, x, incx, y, incy);
 }
 
 //
@@ -95,9 +101,11 @@ inline std::complex<float> dotc( const int n, const std::complex<float>* x,
 // * CUBLAS backend, and
 // * complex<double> value-type.
 //
-inline std::complex<double> dotc( const int n, const std::complex<double>* x,
-        const int incx, const std::complex<double>* y, const int incy ) {
-    return // NOT FOUND();
+inline std::complex<double> dotc(
+    const int n, const std::complex<double>* x, const int incx,
+    const std::complex<double>* y, const int incy
+) {
+  return  // NOT FOUND();
 }
 
 #else
@@ -106,10 +114,12 @@ inline std::complex<double> dotc( const int n, const std::complex<double>* x,
 // * netlib-compatible BLAS backend (the default), and
 // * complex<float> value-type.
 //
-inline std::complex<float> dotc( const fortran_int_t n,
-        const std::complex<float>* x, const fortran_int_t incx,
-        const std::complex<float>* y, const fortran_int_t incy ) {
-    return BLAS_CDOTC( &n, x, &incx, y, &incy );
+inline std::complex<float> dotc(
+    const fortran_int_t n, const std::complex<float>* x,
+    const fortran_int_t incx, const std::complex<float>* y,
+    const fortran_int_t incy
+) {
+  return BLAS_CDOTC(&n, x, &incx, y, &incy);
 }
 
 //
@@ -117,49 +127,54 @@ inline std::complex<float> dotc( const fortran_int_t n,
 // * netlib-compatible BLAS backend (the default), and
 // * complex<double> value-type.
 //
-inline std::complex<double> dotc( const fortran_int_t n,
-        const std::complex<double>* x, const fortran_int_t incx,
-        const std::complex<double>* y, const fortran_int_t incy ) {
-    return BLAS_ZDOTC( &n, x, &incx, y, &incy );
+inline std::complex<double> dotc(
+    const fortran_int_t n, const std::complex<double>* x,
+    const fortran_int_t incx, const std::complex<double>* y,
+    const fortran_int_t incy
+) {
+  return BLAS_ZDOTC(&n, x, &incx, y, &incy);
 }
 
 #endif
 
-} // namespace detail
+}  // namespace detail
 
 //
 // Value-type based template class. Use this class if you need a type
 // for dispatching to dotc.
 //
-template< typename Value >
+template <typename Value>
 struct dotc_impl {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
+  typedef value_type result_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
-    typedef value_type result_type;
-
-    //
-    // Static member function that
-    // * Deduces the required arguments for dispatching to BLAS, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename VectorX, typename VectorY >
-    static result_type invoke( const VectorX& x, const VectorY& y ) {
-        namespace bindings = ::boost::numeric::bindings;
-        BOOST_STATIC_ASSERT( (is_same< typename remove_const<
-                typename bindings::value_type< VectorX >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                VectorY >::type >::type >::value) );
-        return detail::dotc( bindings::size(x),
-                bindings::begin_value(x), bindings::stride(x),
-                bindings::begin_value(y), bindings::stride(y) );
-    }
+  //
+  // Static member function that
+  // * Deduces the required arguments for dispatching to BLAS, and
+  // * Asserts that most arguments make sense.
+  //
+  template <typename VectorX, typename VectorY>
+  static result_type invoke(const VectorX& x, const VectorY& y) {
+    namespace bindings = ::boost::numeric::bindings;
+    BOOST_STATIC_ASSERT(
+        (is_same<
+            typename remove_const<
+                typename bindings::value_type<VectorX>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<VectorY>::type>::type>::value)
+    );
+    return detail::dotc(
+        bindings::size(x), bindings::begin_value(x), bindings::stride(x),
+        bindings::begin_value(y), bindings::stride(y)
+    );
+  }
 };
 
 //
 // Functions for direct use. These functions are overloaded for temporaries,
 // so that wrapped types can still be passed and used for write-access. Calls
-// to these functions are passed to the dotc_impl classes. In the 
+// to these functions are passed to the dotc_impl classes. In the
 // documentation, the const-overloads are collapsed to avoid a large number of
 // prototypes which are very similar.
 //
@@ -167,17 +182,16 @@ struct dotc_impl {
 //
 // Overloaded function for dotc. Its overload differs for
 //
-template< typename VectorX, typename VectorY >
-inline typename dotc_impl< typename bindings::value_type<
-        VectorX >::type >::result_type
-dotc( const VectorX& x, const VectorY& y ) {
-    return dotc_impl< typename bindings::value_type<
-            VectorX >::type >::invoke( x, y );
+template <typename VectorX, typename VectorY>
+inline typename dotc_impl<
+    typename bindings::value_type<VectorX>::type>::result_type
+dotc(const VectorX& x, const VectorY& y) {
+  return dotc_impl<typename bindings::value_type<VectorX>::type>::invoke(x, y);
 }
 
-} // namespace blas
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace blas
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

@@ -45,16 +45,20 @@
 /**
  * @brief iTD-DMRG calculation on the real-space Fermi-Hubbard model.
  *
- * Here we check that, for the 2x2 real-space Fermi-Hubbard Hamiltonian, iTD-DMRG
- * and TI-DMRG return the same energy (nothing here is transcorrelated).
+ * Here we check that, for the 2x2 real-space Fermi-Hubbard Hamiltonian,
+ * iTD-DMRG and TI-DMRG return the same energy (nothing here is
+ * transcorrelated).
  */
-BOOST_FIXTURE_TEST_CASE(TestImaginaryTimevsTIFermiHubbard_RealSpace2x2, TranscorrelatedFixture)
-{
+BOOST_FIXTURE_TEST_CASE(
+    TestImaginaryTimevsTIFermiHubbard_RealSpace2x2, TranscorrelatedFixture
+) {
 #if defined(HAVE_TwoU1) and defined(DMRG_TD)
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("nsweeps", 10);
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("max_bond_dimension", 50);
   // TI-DMRG
-  maquis::DMRGInterface<double> interfaceTI(parameters2x2_RealSpace_U4_2Alpha1Beta);
+  maquis::DMRGInterface<double> interfaceTI(
+      parameters2x2_RealSpace_U4_2Alpha1Beta
+  );
   interfaceTI.optimize();
   auto energyTI = interfaceTI.energy();
   // iTD-DMRG
@@ -62,14 +66,16 @@ BOOST_FIXTURE_TEST_CASE(TestImaginaryTimevsTIFermiHubbard_RealSpace2x2, Transcor
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("propagator_maxiter", 10);
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("imaginary_time", "yes");
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("TD_backpropagation", "no");
-  parameters2x2_RealSpace_U4_2Alpha1Beta.set("simulation_type", "TD");
+  parameters2x2_RealSpace_U4_2Alpha1Beta.set("simulation_type", "evolve");
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("COMPLEX", 1);
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("time_units", "fs");
-  maquis::DMRGInterface<std::complex<double>> interfaceTD(parameters2x2_RealSpace_U4_2Alpha1Beta);
+  maquis::DMRGInterface<std::complex<double>> interfaceTD(
+      parameters2x2_RealSpace_U4_2Alpha1Beta
+  );
   interfaceTD.evolve();
   auto energyTD = std::real(interfaceTD.energy());
   BOOST_CHECK_CLOSE(energyTD, energyTI, 1.0E-8);
-#endif // HAVE_TwoU1
+#endif  // HAVE_TwoU1
 }
 
 /**
@@ -83,9 +89,11 @@ BOOST_FIXTURE_TEST_CASE(TestImaginaryTimevsTIFermiHubbard_RealSpace2x2, Transcor
  * Note that the parameters of iTD-DMRG and tcDMRG are the same, so the
  * simulation is effectively the same.
  */
-BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_RealSpace2x2_Transcorrelated_J0, TranscorrelatedFixture)
-{
-#if defined(HAVE_TwoU1) and defined(DMRG_TC)
+BOOST_FIXTURE_TEST_CASE(
+    TestImaginaryTimeFermiHubbard_RealSpace2x2_Transcorrelated_J0,
+    TranscorrelatedFixture
+) {
+#if defined(HAVE_TwoU1) and defined(DMRG_TRANSCORRELATED)
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("nsweeps", 10);
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("max_bond_dimension", 10);
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("propagator_maxiter", 10);
@@ -94,35 +102,47 @@ BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_RealSpace2x2_Transcorrelat
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("time_units", "fs");
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("time_step", 10.);
   // iTD-DMRG
-  maquis::DMRGInterface<std::complex<double>> interfaceTD(parameters2x2_RealSpace_U4_2Alpha1Beta);
+  maquis::DMRGInterface<std::complex<double>> interfaceTD(
+      parameters2x2_RealSpace_U4_2Alpha1Beta
+  );
   interfaceTD.evolve();
   auto energyTD = std::real(interfaceTD.energy());
   // tcDMRG
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("transcorrelated_nsweeps_TI", 0);
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("transcorrelated_nsweeps_TC", 10);
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("J_Transcorrelated", 0.);
-  maquis::DMRGInterface<double> interfaceTC(parameters2x2_RealSpace_U4_2Alpha1Beta);
+  maquis::DMRGInterface<double> interfaceTC(
+      parameters2x2_RealSpace_U4_2Alpha1Beta
+  );
   interfaceTC.runTranscorrelated();
   auto energyTC = std::real(interfaceTC.energy());
   BOOST_CHECK_CLOSE(energyTD, energyTC, 1.0E-8);
-#endif // HAVE_TwoU1 and DMRG_TC
+#endif  // HAVE_TwoU1 and DMRG_TRANSCORRELATED
 }
 
-#if defined(HAVE_TwoU1) and defined(DMRG_TC)
+#if defined(HAVE_TwoU1) and defined(DMRG_TRANSCORRELATED)
 
 /**
- * @brief Checks consistency of calculations with +/- the same correlation parameter.
+ * @brief Checks consistency of calculations with +/- the same correlation
+ * parameter.
  *
- * For a sufficiently large bond dimension, tcDMRG should converge to the same energy
- * independently on the correlation parameter J. We check that here by running independent
- * calculations with J and -J, and check that the final energy is the same.
+ * For a sufficiently large bond dimension, tcDMRG should converge to the same
+ * energy independently on the correlation parameter J. We check that here by
+ * running independent calculations with J and -J, and check that the final
+ * energy is the same.
  */
-BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_RealSpace2x2_Transcorrelated_OppositeJ, TranscorrelatedFixture)
-{
+BOOST_FIXTURE_TEST_CASE(
+    TestImaginaryTimeFermiHubbard_RealSpace2x2_Transcorrelated_OppositeJ,
+    TranscorrelatedFixture
+) {
   std::vector<double> vectorOfJValues = {0.1, 0.5, 1.0};
-  for (const auto& iJ: vectorOfJValues) {
-    parameters2x2_RealSpace_U4_2Alpha1Beta.set("transcorrelated_nsweeps_TI", 10);
-    parameters2x2_RealSpace_U4_2Alpha1Beta.set("transcorrelated_nsweeps_TC", 25);
+  for (const auto& iJ : vectorOfJValues) {
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set(
+        "transcorrelated_nsweeps_TI", 10
+    );
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set(
+        "transcorrelated_nsweeps_TC", 25
+    );
     parameters2x2_RealSpace_U4_2Alpha1Beta.set("max_bond_dimension", 50);
     parameters2x2_RealSpace_U4_2Alpha1Beta.set("init_state", "const");
     parameters2x2_RealSpace_U4_2Alpha1Beta.set("optimization", "twosite");
@@ -132,12 +152,16 @@ BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_RealSpace2x2_Transcorrelat
     parameters2x2_RealSpace_U4_2Alpha1Beta.set("time_step", 100.);
     parameters2x2_RealSpace_U4_2Alpha1Beta.set("J_Transcorrelated", iJ);
     parameters2x2_RealSpace_U4_2Alpha1Beta.set("hamiltonian_units", "Hartree");
-    maquis::DMRGInterface<std::complex<double>> interfaceTCPlus(parameters2x2_RealSpace_U4_2Alpha1Beta);
+    maquis::DMRGInterface<std::complex<double>> interfaceTCPlus(
+        parameters2x2_RealSpace_U4_2Alpha1Beta
+    );
     interfaceTCPlus.runTranscorrelated();
     auto energyTCPlus = std::real(interfaceTCPlus.energy());
     //
     parameters2x2_RealSpace_U4_2Alpha1Beta.set("J_Transcorrelated", -iJ);
-    maquis::DMRGInterface<std::complex<double>> interfaceTCMinus(parameters2x2_RealSpace_U4_2Alpha1Beta);
+    maquis::DMRGInterface<std::complex<double>> interfaceTCMinus(
+        parameters2x2_RealSpace_U4_2Alpha1Beta
+    );
     interfaceTCMinus.runTranscorrelated();
     auto energyTCMinus = std::real(interfaceTCMinus.energy());
     BOOST_CHECK_CLOSE(energyTCPlus, energyTCMinus, 1.0E-8);
@@ -145,22 +169,25 @@ BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_RealSpace2x2_Transcorrelat
 }
 
 /**
- * @brief Compares the results of a conventional and transcorrelated DMRG calculation.
+ * @brief Compares the results of a conventional and transcorrelated DMRG
+ * calculation.
  *
- * We use as a reference the two-dimensional real-space Fermi-Hubbard Hamiltonian.
- * We take a simple lattice (2x2, with 3 electrons), for which TI-DMRG and tcDMRG
- * are expected to converge to the same limit with a relatively low bond dimension
- * of m=100. We then do the following checks:
+ * We use as a reference the two-dimensional real-space Fermi-Hubbard
+ * Hamiltonian. We take a simple lattice (2x2, with 3 electrons), for which
+ * TI-DMRG and tcDMRG are expected to converge to the same limit with a
+ * relatively low bond dimension of m=100. We then do the following checks:
  *
- *  1) We first calculate the energy with TI-DMRG, tcDMRG[SS], and tcDMRG[TS] and
- *     verify that the results that we obtain is the same. Note that the reference
- *     energy is taken from PRB, 88, 125132 (2015).
- *  2) We then explicitly apply the correlator onto the MPS, and verify that the
- *     resulting MPS gives the same energy as TI-DMRG, if the energy is evaluated
- *     with the *un-transcorrelated* MPO.
+ *  1) We first calculate the energy with TI-DMRG, tcDMRG[SS], and tcDMRG[TS]
+ * and verify that the results that we obtain is the same. Note that the
+ * reference energy is taken from PRB, 88, 125132 (2015). 2) We then explicitly
+ * apply the correlator onto the MPS, and verify that the resulting MPS gives
+ * the same energy as TI-DMRG, if the energy is evaluated with the
+ * *un-transcorrelated* MPO.
  */
-BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_RealSpace2x2_Transcorrelated_CheckLeftVsRight, TranscorrelatedFixture)
-{
+BOOST_FIXTURE_TEST_CASE(
+    TestImaginaryTimeFermiHubbard_RealSpace2x2_Transcorrelated_CheckLeftVsRight,
+    TranscorrelatedFixture
+) {
   using MPSType = MPS<matrix, TwoU1>;
   MPSType mpsSS, mpsTS;
   // == TI-DMRG CALCULATION ==
@@ -171,7 +198,7 @@ BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_RealSpace2x2_Transcorrelat
   interfaceTI.optimize();
   auto energyTI = interfaceTI.energy();
   // The reference energy is reported per site, so we must multiply by 4.
-  BOOST_CHECK_SMALL(energyTI - -1.60463*4, 1.0E-3);
+  BOOST_CHECK_SMALL(energyTI - -1.60463 * 4, 1.0E-3);
   // == TC-DMRG CALCULATION ==
   // Setup of the parameter object
   auto parametersTCDMRG = parameters2x2_RealSpace_U4_2Alpha1Beta;
@@ -188,8 +215,9 @@ BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_RealSpace2x2_Transcorrelat
   parametersTCDMRG.set("transcorrelated_nsweeps_TI", 0);
   parametersTCDMRG.set("transcorrelated_nsweeps_TC", 30);
   // Note that we do the check for various J values
-  std::vector<double> vectorOfTranscorrelationParameters = {-1., -0.5, -0.1, 0.1, 0.5, 1.};
-  for (const auto& jValue: vectorOfTranscorrelationParameters) {
+  std::vector<double> vectorOfTranscorrelationParameters = {-1., -0.5, -0.1,
+                                                            0.1, 0.5,  1.};
+  for (const auto& jValue : vectorOfTranscorrelationParameters) {
     parametersTCDMRG.set("J_Transcorrelated", jValue);
     // Single-site time evolution
     parametersTCDMRG.set("chkpfile", "SS.FermiHubbard.chkp.h5");
@@ -207,7 +235,9 @@ BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_RealSpace2x2_Transcorrelat
     BOOST_CHECK_CLOSE(energyTC_TS, energyTI, 1.0E-8);
     // == CHECKS TRANSCORRELATION PROPERTY ==
     auto latOriginal = Lattice(parameters2x2_RealSpace_U4_2Alpha1Beta);
-    auto modelOriginal = Model<matrix, TwoU1>(latOriginal, parameters2x2_RealSpace_U4_2Alpha1Beta);
+    auto modelOriginal = Model<matrix, TwoU1>(
+        latOriginal, parameters2x2_RealSpace_U4_2Alpha1Beta
+    );
     auto mpoOriginal = make_mpo(latOriginal, modelOriginal);
     // Single-site
     load("SS.FermiHubbard.chkp.h5", mpsSS);
@@ -219,24 +249,30 @@ BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_RealSpace2x2_Transcorrelat
     boost::filesystem::remove_all("TS.FermiHubbard.chkp.h5");
     for (int iSite = 0; iSite < mpsTS.size(); iSite++)
       mpsTS[iSite].scaleByExponentialProductOfCharges(jValue);
-    auto energySSFromExponential = std::real(expval(mpsSS, mpoOriginal)/overlap(mpsSS, mpsSS));
-    auto energyTSFromExponential = std::real(expval(mpsTS, mpoOriginal)/overlap(mpsTS, mpsTS));
+    auto energySSFromExponential =
+        std::real(expval(mpsSS, mpoOriginal) / overlap(mpsSS, mpsSS));
+    auto energyTSFromExponential =
+        std::real(expval(mpsTS, mpoOriginal) / overlap(mpsTS, mpsTS));
     BOOST_CHECK_CLOSE(energySSFromExponential, energyTI, 1.0E-8);
     BOOST_CHECK_CLOSE(energyTSFromExponential, energyTI, 1.0E-8);
   }
 }
 
 /**
- * @brief Compares the results of a conventional and transcorrelated DMRG calculation.
+ * @brief Compares the results of a conventional and transcorrelated DMRG
+ * calculation.
  *
- * We use as a reference the *asymmetric* two-dimensional real-space Fermi-Hubbard Hamiltonian.
- * We take a simple lattice (2x2, with 3 electrons), for tcDMRG is expected to converge to the same
- * limit with a relatively low bond dimension of m=100 for any J value.
- * We then explicitly apply e^{2*J} onto the left eigenvector, and verify that the
- * resulting MPS is equivalent to the right one.
+ * We use as a reference the *asymmetric* two-dimensional real-space
+ * Fermi-Hubbard Hamiltonian. We take a simple lattice (2x2, with 3 electrons),
+ * for tcDMRG is expected to converge to the same limit with a relatively low
+ * bond dimension of m=100 for any J value. We then explicitly apply e^{2*J}
+ * onto the left eigenvector, and verify that the resulting MPS is equivalent to
+ * the right one.
  */
-BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_AsymmetricRealSpace2x2_Transcorrelated_CheckLeftVsRight, TranscorrelatedFixture)
-{
+BOOST_FIXTURE_TEST_CASE(
+    TestImaginaryTimeFermiHubbard_AsymmetricRealSpace2x2_Transcorrelated_CheckLeftVsRight,
+    TranscorrelatedFixture
+) {
   // == J=0.5 ==
   auto parameters = parameters2x2_AsymmetricRealSpace_U4_2Alpha1Beta;
   parameters.set("transcorrelated_nsweeps_TI", 0);
@@ -283,48 +319,65 @@ BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_AsymmetricRealSpace2x2_Tra
 /**
  * @brief iTD-DMRG calculation on the momentum-space Fermi-Hubbard model.
  *
- * Here we check that, for the 2x2 momentum-space Fermi-Hubbard Hamiltonian, iTD-DMRG
- * and TI-DMRG return the same energy.
- * This is the first test where we look into the momentun-space FH Hamiltonian.
+ * Here we check that, for the 2x2 momentum-space Fermi-Hubbard Hamiltonian,
+ * iTD-DMRG and TI-DMRG return the same energy. This is the first test where we
+ * look into the momentun-space FH Hamiltonian.
  */
-BOOST_FIXTURE_TEST_CASE(TestImaginaryTimevsTIFermiHubbard_Momentum2x2, TranscorrelatedFixture)
-{
+BOOST_FIXTURE_TEST_CASE(
+    TestImaginaryTimevsTIFermiHubbard_Momentum2x2, TranscorrelatedFixture
+) {
   // TI-DMRG
   parameters2x2_MomentumSpace_U4_2Alpha1Beta.set("nsweeps", 10);
   parameters2x2_MomentumSpace_U4_2Alpha1Beta.set("max_bond_dimension", 300);
-  maquis::DMRGInterface<double> interfaceTI(parameters2x2_MomentumSpace_U4_2Alpha1Beta);
+  maquis::DMRGInterface<double> interfaceTI(
+      parameters2x2_MomentumSpace_U4_2Alpha1Beta
+  );
   interfaceTI.optimize();
   auto energyTI = interfaceTI.energy();
   // TC-DMRG
-  parameters2x2_MomentumSpace_U4_2Alpha1Beta.set("transcorrelated_nsweeps_TI", 10);
-  parameters2x2_MomentumSpace_U4_2Alpha1Beta.set("transcorrelated_nsweeps_TC", 30);
+  parameters2x2_MomentumSpace_U4_2Alpha1Beta.set(
+      "transcorrelated_nsweeps_TI", 10
+  );
+  parameters2x2_MomentumSpace_U4_2Alpha1Beta.set(
+      "transcorrelated_nsweeps_TC", 30
+  );
   parameters2x2_MomentumSpace_U4_2Alpha1Beta.set("time_step", 10.);
   parameters2x2_MomentumSpace_U4_2Alpha1Beta.set("propagator_maxiter", 10);
   parameters2x2_MomentumSpace_U4_2Alpha1Beta.set("TD_backpropagation", "no");
   parameters2x2_MomentumSpace_U4_2Alpha1Beta.set("time_units", "fs");
   parameters2x2_MomentumSpace_U4_2Alpha1Beta.set("J_Transcorrelated", 0.5);
-  maquis::DMRGInterface<std::complex<double>> interfaceTD(parameters2x2_MomentumSpace_U4_2Alpha1Beta);
+  maquis::DMRGInterface<std::complex<double>> interfaceTD(
+      parameters2x2_MomentumSpace_U4_2Alpha1Beta
+  );
   interfaceTD.runTranscorrelated();
   auto energyTD = std::real(interfaceTD.energy());
   BOOST_CHECK_CLOSE(energyTD, energyTI, 1.0E-8);
 }
 
 /**
- * @brief Checks consistency of calculations with +/- the same correlation parameter.
+ * @brief Checks consistency of calculations with +/- the same correlation
+ * parameter.
  *
- * For a sufficiently large bond dimension, tcDMRG should converge to the same energy
- * independently on the correlation parameter J. We check that here by running independent
- * calculations with different J values, and check that the final energy is the same.
- * Here we use as a reference the *momentum*-space Fermi-Hubbard Hamiltonian
+ * For a sufficiently large bond dimension, tcDMRG should converge to the same
+ * energy independently on the correlation parameter J. We check that here by
+ * running independent calculations with different J values, and check that the
+ * final energy is the same. Here we use as a reference the *momentum*-space
+ * Fermi-Hubbard Hamiltonian
  */
-BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_RealSpace2x2_Transcorrelated_DifferentJ, TranscorrelatedFixture)
-{
-  std::vector<std::pair<double, double>> jValues = {std::make_pair(0.3, -0.2),
-                                                    std::make_pair(0.5, -0.1),
-                                                    std::make_pair(0.1, -1.2)};
-  for (const auto& iJPair: jValues) {
-    parameters2x2_MomentumSpace_U4_2Alpha1Beta.set("transcorrelated_nsweeps_TI", 0);
-    parameters2x2_MomentumSpace_U4_2Alpha1Beta.set("transcorrelated_nsweeps_TC", 25);
+BOOST_FIXTURE_TEST_CASE(
+    TestImaginaryTimeFermiHubbard_RealSpace2x2_Transcorrelated_DifferentJ,
+    TranscorrelatedFixture
+) {
+  std::vector<std::pair<double, double>> jValues = {
+      std::make_pair(0.3, -0.2), std::make_pair(0.5, -0.1),
+      std::make_pair(0.1, -1.2)};
+  for (const auto& iJPair : jValues) {
+    parameters2x2_MomentumSpace_U4_2Alpha1Beta.set(
+        "transcorrelated_nsweeps_TI", 0
+    );
+    parameters2x2_MomentumSpace_U4_2Alpha1Beta.set(
+        "transcorrelated_nsweeps_TC", 25
+    );
     parameters2x2_MomentumSpace_U4_2Alpha1Beta.set("max_bond_dimension", 50);
     parameters2x2_MomentumSpace_U4_2Alpha1Beta.set("init_state", "const");
     parameters2x2_MomentumSpace_U4_2Alpha1Beta.set("optimization", "twosite");
@@ -333,18 +386,28 @@ BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_RealSpace2x2_Transcorrelat
     parameters2x2_MomentumSpace_U4_2Alpha1Beta.set("TD_backpropagation", "no");
     parameters2x2_MomentumSpace_U4_2Alpha1Beta.set("time_units", "as");
     parameters2x2_MomentumSpace_U4_2Alpha1Beta.set("time_step", 100.);
-    parameters2x2_MomentumSpace_U4_2Alpha1Beta.set("J_Transcorrelated", iJPair.first);
-    parameters2x2_MomentumSpace_U4_2Alpha1Beta.set("hamiltonian_units", "Hartree");
-    maquis::DMRGInterface<double> interfaceTCPlus(parameters2x2_MomentumSpace_U4_2Alpha1Beta);
+    parameters2x2_MomentumSpace_U4_2Alpha1Beta.set(
+        "J_Transcorrelated", iJPair.first
+    );
+    parameters2x2_MomentumSpace_U4_2Alpha1Beta.set(
+        "hamiltonian_units", "Hartree"
+    );
+    maquis::DMRGInterface<double> interfaceTCPlus(
+        parameters2x2_MomentumSpace_U4_2Alpha1Beta
+    );
     interfaceTCPlus.runTranscorrelated();
     auto energyTCPlus = std::real(interfaceTCPlus.energy());
     //
-    parameters2x2_MomentumSpace_U4_2Alpha1Beta.set("J_Transcorrelated", iJPair.second);
-    maquis::DMRGInterface<double> interfaceTCMinus(parameters2x2_MomentumSpace_U4_2Alpha1Beta);
+    parameters2x2_MomentumSpace_U4_2Alpha1Beta.set(
+        "J_Transcorrelated", iJPair.second
+    );
+    maquis::DMRGInterface<double> interfaceTCMinus(
+        parameters2x2_MomentumSpace_U4_2Alpha1Beta
+    );
     interfaceTCMinus.runTranscorrelated();
     auto energyTCMinus = std::real(interfaceTCMinus.energy());
     BOOST_CHECK_CLOSE(energyTCPlus, energyTCMinus, 1.0E-8);
   }
 }
 
-#endif // HAVE_TwoU1 and DMRG_TC
+#endif  // HAVE_TwoU1 and DMRG_TRANSCORRELATED

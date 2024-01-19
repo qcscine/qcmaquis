@@ -1,0 +1,45 @@
+// -- General parameters --
+simulation_type               = "transcorrelated"
+L                             = 10
+max_bond_dimension            = 100
+ngrowsweeps                   = 3
+nmainsweeps                   = 3
+irrep                         = 0
+nelec                         = 2
+spin                          = 0
+symmetry                      = '2u1pg'
+u1_total_charge1              = 1
+u1_total_charge2              = 1
+LATTICE                       = "orbitals"
+CONSERVED_QUANTUMNUMBERS      = "Nup,Ndown"
+MODEL                         = "quantum_chemistry"
+integral_file                 = "FCIDUMP_H2_Conventional"
+integral_cutoff               = 0.
+optimization                  = twosite
+conv_thresh                   = -1. 
+
+// -- SVD truncation --
+truncation_initial            = 1e-20
+truncation_final              = 1e-20
+
+// -- Initialization and storage information --
+init_type                     = "default"
+seed                          = 16071991
+chkpfile                      = 'H2_TCDMRG_ConventionalFormat_TS.checkpoint_state.0.h5'
+resultfile                    = 'H2_TCDMRG_ConventionalFormat_TS.results_state.0.h5'
+
+// -- Transcorrelated-specific parameters --
+transcorrelated_3body         = 'yes'
+transcorrelated_nsweeps_TI    = 10
+transcorrelated_nsweeps_TC    = 10
+transcorrelated_integral_file = "IntegralFile_H2_Transcorrelated"
+
+// -- Hamiltonian format --
+quantum_computing_format                 = "no"
+transcorrelated_quantum_computing_format = "no"
+
+// -- TD-DMRG parameters --
+time_step          = 10
+time_units         = "fs"
+hamiltonian_units  = "Hartree"
+TD_backpropagation = "no" 

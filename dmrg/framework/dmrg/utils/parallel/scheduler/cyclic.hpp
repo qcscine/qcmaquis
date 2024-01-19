@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #ifndef PARALLEL_SCHEDULER_CYCLIC_HPP
@@ -10,16 +10,15 @@
 
 namespace parallel {
 
-    class scheduler_cyclic {
-    public:
-        typedef traits::resource_iterator resource_iterator;
+class scheduler_cyclic {
+ public:
+  typedef traits::resource_iterator resource_iterator;
 
-        resource_iterator operator()(int k) const {
-            return traits::to_iterator( k % traits::size() );
-        }
-    };
+  resource_iterator operator()(int k) const {
+    return traits::to_iterator(k % traits::size());
+  }
+};
 
-}
+}  // namespace parallel
 
 #endif
-

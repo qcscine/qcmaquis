@@ -1,0 +1,31 @@
+// +----------------------------------------------------------------------+
+//  EXAMPLE 1: TI-DMRG[SS] with a 2x2 Momentum-Space Fermi-Hubbard Lattice 
+// +----------------------------------------------------------------------+
+
+// -- General parameters --
+simulation_type             = "transcorrelated"
+nsweeps                     = 20
+L                           = 4
+max_bond_dimension          = 100
+width_FermiHubbard          = 2
+height_FermiHubbard         = 2
+max_bond_dimension          = 50
+U_FermiHubbard              = 4
+symmetry                    = 2u1
+site_types                  = "0,0,0,0"
+MODEL                       = "fermi_hubbard_momentum"
+u1_total_charge1            = 2
+u1_total_charge2            = 1
+optimization                = "singlesite"
+
+// -- MPS Initialization --
+init_state                  = "const"
+
+// -- Noise --
+alpha_initial               = 1.0E-8
+alpha_main                  = 1.0E-15
+alpha_final                 = 1.0E-30
+
+// -- Initialization and storage information --
+chkpfile                    = 'FH_MomentumSpace_2x2_2alpha1beta_TIDMRG_SS.checkpoint_state.0.h5'
+resultfile                  = 'FH_MomentumSpace_2x2_2alpha1beta_TIDMRG_SS.results_state.0.h5'

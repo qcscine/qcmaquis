@@ -1,9 +1,9 @@
-/* 
+/*
  * Copyright Matthias Troyer 2006
  * Distributed under the Boost Software License, Version 1.0. (See
  * accompanying file LICENSE_1_0.txt or copy at
  * http://www.boost.org/LICENSE_1_0.txt)
-*
+ *
  */
 
 #ifndef ALPS_RANDOM_SPRNG_LFG_HPP
@@ -11,20 +11,24 @@
 
 #ifdef ALPS_DOXYGEN
 
-namespace alps { namespace random { namespace sprng {
-  /// @brief Wrapper for the SPRNG PMLCG random number generator
-  ///
-  ///  Wrapper for the SPRNG lfg random number generator
+namespace alps {
+namespace random {
+namespace sprng {
+/// @brief Wrapper for the SPRNG PMLCG random number generator
+///
+///  Wrapper for the SPRNG lfg random number generator
 
-  class lfg;
-}}}
+class lfg;
+}  // namespace sprng
+}  // namespace random
+}  // namespace alps
 
 #else
 
-#define ALPS_SPRNG_GENERATOR   lfg
-#define ALPS_SPRNG_TYPE        0
+#define ALPS_SPRNG_GENERATOR lfg
+#define ALPS_SPRNG_TYPE 0
 #define ALPS_SPRNG_MAX_STREAMS 0x7fffffff
-#define ALPS_SPRNG_MAX_PARAMS  11
+#define ALPS_SPRNG_MAX_PARAMS 11
 #define ALPS_SPRNG_VALIDATION 0.045600365747203677746
 
 #include <alps/random/sprng/detail/implementation.hpp>
@@ -37,4 +41,4 @@ namespace alps { namespace random { namespace sprng {
 
 #endif
 
-#endif // ALPS_RANDOM_SPRNG_LFG_HPP
+#endif  // ALPS_RANDOM_SPRNG_LFG_HPP
