@@ -33,7 +33,6 @@ public:
         //constructor
         tag_handler = std::make_shared<TagHandler<Matrix, U1>>();
         maxCoupling = model["vibronic_max_coupling"].as<int>(); 
-        only_nn_ = true; // currently hardcoded
         J_ = model["vibronic_J_coupling"].as<value_type>();
         epsilon_ = model["vibronic_J_excitation"].as<value_type>();
         nMaxVec = model["Nmax"].as<std::vector<int> >();
@@ -249,11 +248,11 @@ public:
             if(check_maxVibMode+1 < n_vib_states_) throw std::runtime_error("more vibronic_num_vibmodes than modes in FCIDUMP file");
         }
 
-           // Add the J term to the Hamiltonian
+        // Add the J term to the Hamiltonian
         std::vector<int> vec_jnk(2);
         for (int i1_body = 0; i1_body < n_particles_; i1_body++) {
             for (int i2_body = 0; i2_body < n_particles_; i2_body++) {
-                if ((only_nn_ && (i1_body-i2_body == 1 || i2_body-i1_body == 1)) || (!only_nn_ && i1_body!=i2_body)) {
+                if (only_nn_ && (i1_body-i2_body == 1 || i2_body-i1_body == 1) || !only_nn_ && i1_body!=i2_body) {
                     std::vector<tag_type> operators;
                     std::vector<pos_t> positions;
                     vec_jnk[0] = i1_body;
@@ -266,6 +265,16 @@ public:
                     modelHelper<Matrix, U1>::add_term(positions, operators, J_, tag_handler, this->terms_);
                 }
             }
+        }
+        // On-site term (for now not used, because we have only one electronic state, but this would be
+        // crucial when we have more than a single excited state).
+        for (int i1_body = 0; i1_body < n_particles_; i1_body++) {
+            vec_jnk[0] = i1_body;
+            std::vector<tag_type> operators;
+            std::vector<pos_t> positions;
+            positions.push_back(lat.get_prop<int>("eleindex", vec_jnk));
+            operators.push_back(count_ele);
+            modelHelper<Matrix, U1>::add_term(positions, operators, epsilon_, tag_handler, this->terms_);
         }
     }    
 

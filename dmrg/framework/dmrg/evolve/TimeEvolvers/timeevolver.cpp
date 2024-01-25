@@ -35,6 +35,8 @@ TimeEvolver<Matrix, SymmGroup, ParameterType>::TimeEvolver(ParameterType& parms)
       time_step_ *= 41.341374575751;
     else if (parms["time_units"] == "as")
       time_step_ *= 0.041341374575751;
+    else if (parms["time_units"] == "imaginary time units")
+      time_step_ *= 1;
     else
       throw std::runtime_error("Units for the time variable not yet supported");
   }

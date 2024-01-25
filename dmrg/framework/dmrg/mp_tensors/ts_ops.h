@@ -143,10 +143,9 @@ void make_ts_cache_mpo(MPO<MPOMatrix, SymmGroup> const & mpo_orig,
     auto L_ts = mpo_orig.length() - 1;
     mpo_out.resize(L_ts);
     // Generates the two-site MPOs
-    for(size_t p = 0; p < L_ts; p++){
-        maquis::cout << "fusing MPO site " << p << " with MPO site " << p+1 << std::endl;
+    omp_for(size_t p, parallel::range<size_t>(0,L_ts), {
         mpo_out[p] = make_twosite_mpo<MPOMatrix, MPSMatrix>(mpo_orig[p], mpo_orig[p+1], mps[p].site_dim(), mps[p+1].site_dim());
-    }
+    });
     // Calculates the overall number of tags
     std::size_t ntags=0;
     for (int p=0; p<mpo_out.length(); ++p)

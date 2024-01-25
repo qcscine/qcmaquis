@@ -110,6 +110,11 @@ public:
                 mident(n, n) = 1.;
                 if (n != 0) mcount(n, n) = value_type(n); //same count operator as in Watson Model
             }
+            //DEBUG
+            std::cout << "printing operators" << std::endl;
+            std::cout << "identity " << mident << std::endl;
+            std::cout << "count " << mcount << std::endl;
+            for(const auto &iEl : mpairedVec) std::cout << "paired operator " << iEl << std::endl;
             //local operators
             std::vector <op_t> paired_op_locVec;
             op_t ident_op_loc, count_op_loc;
@@ -181,6 +186,7 @@ public:
                 std::vector<pos_t> positions;
                 std::vector<int> modes;
                 std::vector<int> modals;
+                bool skip = false;
                 for(int i = 0; i < hamiltonianTerms.first[idx].size(); i++){ //loop over coupled modes and modals in a single integral line
                     if (hamiltonianTerms.first[idx][i] == -1 || hamiltonianTerms.first[idx][i+2] == -1) break;
                     else if (i % 2 == 0) modes.push_back(hamiltonianTerms.first[idx][i]-1); //-1 so that mode index starts at zero
@@ -202,11 +208,16 @@ public:
                             sumSquaredSmaller += squaredElement; // Add the squared element to the sum
                         }
                     }
+                    if(modalToCreate >= localDimension || modalToDestroy >= localDimension) skip = true;
                     int indexOp = (sumSquaredSmaller-1) + modalToCreate*(localDimension) + modalToDestroy;
+                    std::cout << "modalToDestroy " << modalToDestroy << std::endl;
+                    std::cout << "modalToCreate " << modalToCreate << std::endl;
+                    std::cout << "index " << indexOp << std::endl;
                     operators.push_back(paired[indexOp]); //define ops
                     positions.push_back(lat.get_prop<int>("vibindex", vec_jnk)); //define pos
                     std::cout << "pushed back paired operator with tag " << operators[0] << " at position " << positions[0] << std::endl; 
                 }
+                if(skip) continue;
                 // Add electronic contribution
                 // Add the count operator for the specific excited states.
                 if (ele_state == 1) { //if electronic excited state potential
@@ -323,8 +334,7 @@ public:
         tag_type ret ;
         if(type != 0){
             std::set<int> nModalsUnique(nMaxVec.begin(), nMaxVec.end());
-
-            std::set<int>::iterator it = nModalsUnique.find(nMaxVec[type]);
+            std::set<int>::iterator it = nModalsUnique.find(nMaxVec[type-1]);
             if(it == nModalsUnique.end()) std::runtime_error("Index of dimension not found in set nModalsUnique");
             int indexInSet = std::distance(nModalsUnique.begin(), it); // extract index of entry dimension in set
             return ident[indexInSet];
@@ -334,13 +344,29 @@ public:
         return ret;
     }
 
+    /** @brief Count matrix getter */
+    tag_type count_matrix_tag(size_t type) const
+    {
+        tag_type ret ;
+        if(type != 0){
+            std::set<int> nModalsUnique(nMaxVec.begin(), nMaxVec.end());
+            std::set<int>::iterator it = nModalsUnique.find(nMaxVec[type-1]);
+            if(it == nModalsUnique.end()) std::runtime_error("Index of dimension not found in set nModalsUnique");
+            int indexInSet = std::distance(nModalsUnique.begin(), it); // extract index of entry dimension in set
+            return count[indexInSet];
+        }
+        else
+            throw std::runtime_error("No number operator for electronic sites");
+        return ret;
+    }
+
     /** @brief Filling matrix getter */
     tag_type filling_matrix_tag(size_t type) const
     {
         tag_type ret ;
         if ((type <= num_vibtypes) && (type > 0)){
             std::set<int> nModalsUnique(nMaxVec.begin(), nMaxVec.end());
-            std::set<int>::iterator it = nModalsUnique.find(nMaxVec[type]);
+            std::set<int>::iterator it = nModalsUnique.find(nMaxVec[type-1]);
             if(it == nModalsUnique.end()) std::runtime_error("Index of dimension not found in set nModalsUnique");
             int indexInSet = std::distance(nModalsUnique.begin(), it); // extract index of entry dimension in set
             return ident[indexInSet];
@@ -408,6 +434,40 @@ public:
                 }
                 ops.push_back(std::make_pair(local_op_vec, false));
                 meas.push_back(new measurements::local_at<Matrix, U1>(name, lat, pos_local, identities_local, fillings_local, ops));
+            }
+        }
+
+        if (model.is_set("MEASURE[ModeExcitationDegree]")){
+            int typeCount = 1;
+            for(std::size_t iBody = 0; iBody < n_particles_; iBody++){ //loop over monomers
+                for(std::size_t iMode = 0; iMode < n_vib_states_; iMode++){ //loop over vibrational modes
+                    if( (iBody == n_particles_-1) && (iMode >= (n_vib_states_-n_connectingmodes)) ) break;
+                    std::string name = "Monomer"+std::to_string(iBody)+"ExcitationMode"+std::to_string(iMode);
+                    // Generates vectors for the positions
+                    std::vector<pos_t> pos_internal(0);
+                    std::vector<std::vector<pos_t>> pos_local(0);
+                    pos_internal.push_back((iMode+1) + (iBody*(n_vib_states_+n_ele_states_)));
+                    pos_local.push_back(pos_internal);
+                    // Account for fillings and identities
+                    op_vec identities_local, fillings_local;
+                    for(std::size_t idx = 0; idx <= num_vibtypes; idx++){
+                        identities_local.push_back(this->identity_matrix(idx)); 
+                        fillings_local.push_back(this->filling_matrix(idx)); 
+                    }
+                    bond_element ops;
+                    op_vec local_op_vec;
+                    local_op_vec.push_back(tag_handler->get_op(ident_ele)); //electronic identity
+                    for(std::size_t idx = 1; idx <= num_vibtypes; idx++){
+                        if(typeCount == idx){
+                            auto localOperator = tag_handler->get_op(count_matrix_tag(idx)); //TODO get correct operator
+                            local_op_vec.push_back(localOperator);
+                        }
+                        else local_op_vec.push_back(tag_handler->get_op(identity_matrix_tag(idx))); 
+                    }
+                    typeCount++;
+                    ops.push_back(std::make_pair(local_op_vec, false));
+                    meas.push_back(new measurements::local_at<Matrix, U1>(name, lat, pos_local, identities_local, fillings_local, ops));
+                }
             }
         }
         return meas;

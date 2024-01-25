@@ -111,6 +111,11 @@ public:
                     mident(n, n) = 1.;
                     mcount(n, n) = value_type(n); //same count operator as in Watson Model
             }
+            std::cout << "printing operators" << std::endl;
+            std::cout << "identity " << mident << std::endl;
+            std::cout << "count " << mcount << std::endl;
+            for(const auto &iEl : mdestroyVec) std::cout << "destroy operator " << iEl << std::endl;
+            for(const auto &iEl : mcreateVec) std::cout << "create operator " << iEl << std::endl;
             //local operators
             std::vector <op_t> create_op_locVec, destroy_op_locVec;
             op_t ident_op_loc, count_op_loc;
@@ -189,6 +194,7 @@ public:
                 std::vector<pos_t> positions;
                 std::vector<int> modes;
                 std::vector<int> modals;
+                bool skip = false;
                 for(int i = 0; i < hamiltonianTerms.first[idx].size(); i++){ //loop over coupled modes and modals in a single integral line
                     if (hamiltonianTerms.first[idx][i] == -1 || hamiltonianTerms.first[idx][i+2] == -1) break;
                     else if (i % 2 == 0) modes.push_back(hamiltonianTerms.first[idx][i]-1); //-1 so that mode index starts at zero
@@ -204,13 +210,16 @@ public:
                     int sum = 0;
                     std::set<int> nModalsUnique(nMaxVec.begin(), nMaxVec.end());
                     for(const auto& iEl : nModalsUnique){
-                        compareDimension = iEl -1;
+                        int compareDimension = iEl -1;
                         if(compareDimension < localDimension) sum += compareDimension;
                     }
+                    if(modalToCreate >= localDimension || modalToDestroy >= localDimension) skip = true;
                     operators.push_back(create[sum + modalToCreate]);
+                    std::cout << "pushed back vib op : " << create[sum + modalToCreate] << std::endl; 
                     operators.push_back(destroy[sum + modalToDestroy]);
-
+                    std::cout << "pushed back vib op : " << destroy[sum + modalToCreate] << std::endl;
                 }
+                if(skip) continue;
                 // Add electronic contribution
                 // Add the count operator for the specific excited states.
                 if (ele_state == 1) { //if electronic excited state potential
