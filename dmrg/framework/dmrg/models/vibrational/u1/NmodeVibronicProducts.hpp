@@ -199,10 +199,14 @@ public:
                 std::vector<int> modes;
                 std::vector<int> modals;
 <<<<<<< HEAD
+<<<<<<< HEAD
                 int dimensionError = 0;
 =======
                 bool skip = false;
 >>>>>>> c7869a68
+=======
+                bool skip = false;
+>>>>>>> c7869a68c235fab5a3d4e7987c18ce6356eeae9b
                 for(int i = 0; i < hamiltonianTerms.first[idx].size(); i++){ //loop over coupled modes and modals in a single integral line
                     if (hamiltonianTerms.first[idx][i] == -1 || hamiltonianTerms.first[idx][i+2] == -1) break;
                     else if (i % 2 == 0) modes.push_back(hamiltonianTerms.first[idx][i]-1); //-1 so that mode index starts at zero
@@ -229,16 +233,22 @@ public:
                         if(compareDimension < localDimension) sum += compareDimension;
                     }
 <<<<<<< HEAD
+<<<<<<< HEAD
                     operators.push_back(create[sum-1 + modalToCreate]);
                     operators.push_back(destroy[sum-1 + modalToDestroy]);
 
 =======
+=======
+>>>>>>> c7869a68c235fab5a3d4e7987c18ce6356eeae9b
                     if(modalToCreate >= localDimension || modalToDestroy >= localDimension) skip = true;
                     operators.push_back(create[sum + modalToCreate]);
                     std::cout << "pushed back vib op : " << create[sum + modalToCreate] << std::endl; 
                     operators.push_back(destroy[sum + modalToDestroy]);
                     std::cout << "pushed back vib op : " << destroy[sum + modalToCreate] << std::endl;
+<<<<<<< HEAD
 >>>>>>> c7869a68
+=======
+>>>>>>> c7869a68c235fab5a3d4e7987c18ce6356eeae9b
                 }
                 if(skip) continue;
                 // Add electronic contribution
@@ -493,9 +503,13 @@ public:
             }
         }
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
 >>>>>>> c7869a68
+=======
+
+>>>>>>> c7869a68c235fab5a3d4e7987c18ce6356eeae9b
         return meas;
     }
 
