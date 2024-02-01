@@ -1,11 +1,11 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
-#include "dmrg/models/chem/su2u1/model.h"
+#include "dmrg/models/MolecularHamiltonians/su2u1/model.h"
 #include "dmrg/models/factories/factory.h"
 
 template<class Matrix>

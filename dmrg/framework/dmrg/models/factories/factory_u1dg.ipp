@@ -1,11 +1,11 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
-#include "dmrg/models/chem/rel/model.h"
+#include "dmrg/models/MolecularHamiltonians/rel/model.h"
 #include "dmrg/models/factories/factory.h"
 
 template<class ScalarType>
@@ -15,7 +15,7 @@ template<>
 class RelativisticFactoryClass<double> {
 public:
   static auto getPointerToSimulation(const Lattice& lattice, BaseParameters& parms) {
-    typedef std::shared_ptr<model_impl<matrix, U1DG> > impl_ptr;
+    using impl_ptr = std::shared_ptr<model_impl<matrix, U1DG>>;
     throw std::runtime_error("Real-valued relativistic simulation does not make sense!");
     return impl_ptr();
   }
@@ -25,7 +25,7 @@ template<>
 class RelativisticFactoryClass<std::complex<double>> {
 public:
   static auto getPointerToSimulation(const Lattice& lattice, BaseParameters& parms) {
-    typedef std::shared_ptr<model_impl<cmatrix, U1DG> > impl_ptr;
+    using impl_ptr = std::shared_ptr<model_impl<cmatrix, U1DG>>;
     return impl_ptr( new rel_qc_model<U1DG>(lattice, parms) );
   }
 };
@@ -35,7 +35,7 @@ struct coded_model_factory<Matrix, U1DG> {
 
   static std::shared_ptr<model_impl<Matrix, U1DG> > parse(Lattice const & lattice, BaseParameters & parms)
   {
-	  typedef std::shared_ptr<model_impl<Matrix, U1DG> > impl_ptr;
+	  using impl_ptr = std::shared_ptr<model_impl<Matrix, U1DG>>;
     if (parms["MODEL"] == std::string("relativistic_quantum_chemistry")) {
       if (parms["LATTICE"] != std::string("spinors"))
         throw std::runtime_error("Please use \"LATTICE = spinors\" for relativistic_quantum_chemistry\n");

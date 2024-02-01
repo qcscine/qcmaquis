@@ -15,11 +15,11 @@ namespace boost {
 namespace numeric {
 namespace bindings {
 
-template< typename T >
-struct is_real: boost::is_floating_point<T> {};
+template <typename T>
+struct is_real : boost::is_floating_point<T> {};
 
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

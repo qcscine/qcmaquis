@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -12,6 +12,11 @@
 #include "dmrg/models/vibrational/u1/NmodeVibronic.hpp"
 #include "dmrg/models/vibrational/u1/NmodeVibronicProducts.hpp"
 
+#ifdef DMRG_VIBRONIC
+#include "dmrg/models/vibrational/u1/VibronicModel.hpp"
+#include "dmrg/models/vibrational/u1/ExcitonicModel.hpp"
+#endif
+
 template<class Matrix>
 struct coded_model_factory<Matrix, U1> {
     using PointerType = std::shared_ptr<model_impl<Matrix, U1> >;
@@ -19,7 +24,7 @@ struct coded_model_factory<Matrix, U1> {
     /** @brief Factory function for the model class */
     static PointerType parse(Lattice const& lattice, BaseParameters & parms)
     {
-        typedef std::shared_ptr<model_impl<Matrix, U1> > impl_ptr;
+        using impl_ptr = std::shared_ptr<model_impl<Matrix, U1>>;
         if (parms["MODEL"] == std::string("vibronic")) {
 #ifdef DMRG_VIBRONIC
             return impl_ptr( new VibronicModel<Matrix>(lattice, parms));

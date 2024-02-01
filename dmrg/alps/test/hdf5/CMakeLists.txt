@@ -96,10 +96,10 @@ IF (ALPS_BUILD_HDF5_TESTS)
         "alps::multi_array<double, 3>" "alps::multi_array<int, 3>" "alps::multi_array<std::complex<double>, 3>" "alps::multi_array<std::string, 3>"
         "std::vector<alps::multi_array<double, 2> >" "std::vector<alps::multi_array<double, 3> >" "std::vector<alps::multi_array<double, 4> >" 
         "std::pair<alps::multi_array<std::complex<double>, 3> *, std::vector<std::size_t> >" "alps::multi_array<std::complex<double>, 1> *"
-        "boost::array<int, 20>" "boost::array<long double, 20>" "boost::array<float, 20>" "boost::array<unsigned long long, 20>" 
-        "boost::array<boost::array<std::complex<double>, 20>, 20>"
-        "std::vector<boost::array<int, 4> >" "boost::array<std::vector<int>, 4>" "std::vector<boost::array<std::vector<int>, 4> >"
-        "boost::tuple<int, double, float, std::complex<double> >" "std::vector<boost::tuple<char, bool, long long> >"
+        "std::array<int, 20>" "std::array<long double, 20>" "std::array<float, 20>" "std::array<unsigned long long, 20>" 
+        "std::array<std::array<std::complex<double>, 20>, 20>"
+        "std::vector<std::array<int, 4> >" "std::array<std::vector<int>, 4>" "std::vector<std::array<std::vector<int>, 4> >"
+        "std::tuple<int, double, float, std::complex<double> >" "std::vector<std::tuple<char, bool, long long> >"
     )
     
     FOREACH (type ${ALPS_HDF5_DATA_TYPES})

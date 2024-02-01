@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #define BOOST_TEST_MAIN
@@ -21,28 +21,35 @@
 
 typedef boost::mpl::list<
 #ifdef HAVE_TwoU1PG
-TwoU1PG
+    TwoU1PG
 #endif
-> symmetries;
+    >
+    symmetries;
 
 /**
- * @brief Checks that [mpo_times_mps] gives results that are coherent with expval.
+ * @brief Checks that [mpo_times_mps] gives results that are coherent with
+ * expval.
  */
-BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPO_Times_MPS_ExpVal, S, symmetries, BenzeneFixture ) 
-{
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(
+    Test_MPO_Times_MPS_ExpVal, S, symmetries, BenzeneFixture
+) {
   // Generates the HF MPS
   auto lattice = Lattice(parametersBenzene);
   auto modelHF = Model<matrix, S>(lattice, parametersBenzene);
-  auto mpsHF = MPS<matrix, S>(lattice.size(), *(modelHF.initializer(lattice, parametersBenzene)));
+  auto mpsHF = MPS<matrix, S>(
+      lattice.size(), *(modelHF.initializer(lattice, parametersBenzene))
+  );
   auto mpo = make_mpo(lattice, modelHF);
   // Calculates the MPS-MPO contraction
-  auto traitClass = MPOTimesMPSTraitClass<matrix, S>(mpsHF, modelHF, lattice, 
-                                                     modelHF.total_quantum_numbers(parametersBenzene),
-                                                     parametersBenzene["max_bond_dimension"]);
+  auto traitClass = MPOTimesMPSTraitClass<matrix, S>(
+      mpsHF, modelHF, lattice, modelHF.total_quantum_numbers(parametersBenzene),
+      parametersBenzene["max_bond_dimension"]
+  );
   auto outputMPS = traitClass.applyMPO(mpo);
   // Calculates the energy in two ways
-  auto energyFromMPSTimesMPO = overlap(mpsHF, outputMPS)/norm(mpsHF) + mpo.getCoreEnergy();
-  auto energyFromExpVal = expval(mpsHF, mpo)/norm(mpsHF);
+  auto energyFromMPSTimesMPO =
+      overlap(mpsHF, outputMPS) / norm(mpsHF) + mpo.getCoreEnergy();
+  auto energyFromExpVal = expval(mpsHF, mpo) / norm(mpsHF);
   BOOST_CHECK_CLOSE(energyFromMPSTimesMPO, energyFromExpVal, 1.E-10);
 };
 
@@ -53,8 +60,9 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPO_Times_MPS_ExpVal, S, symmetries, Benz
  * 2) By ionizing the innermost orbital and, then, running a TS optimization.
  * The two strategies should give the same energy
  */
-BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPO_Times_MPS_Ionization, S, symmetries, BenzeneFixture ) 
-{
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(
+    Test_MPO_Times_MPS_Ionization, S, symmetries, BenzeneFixture
+) {
   // Types declaration
   using opt_base_t = optimizer_base<matrix, S, storage::disk>;
   int nSweeps = 50;
@@ -82,20 +90,25 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPO_Times_MPS_Ionization, S, symmetries, 
   parametersBenzene.set("alpha_final", 0.);
   auto lattice = Lattice(parametersBenzene);
   auto model = Model<matrix, S>(lattice, parametersBenzene);
-  auto mpsHF = MPS<matrix, S>(lattice.size(), *(model.initializer(lattice, parametersBenzene)));
+  auto mpsHF = MPS<matrix, S>(
+      lattice.size(), *(model.initializer(lattice, parametersBenzene))
+  );
   auto mpo = make_mpo(lattice, model);
   // Creates the destructor operator
-  auto traitClass = MPOTimesMPSTraitClass<matrix, S>(mpsHF, model, lattice, 
-                                                     model.total_quantum_numbers(parametersBenzene),
-                                                     parametersBenzene["max_bond_dimension"]);
+  auto traitClass = MPOTimesMPSTraitClass<matrix, S>(
+      mpsHF, model, lattice, model.total_quantum_numbers(parametersBenzene),
+      parametersBenzene["max_bond_dimension"]
+  );
   auto ionizedMPS = traitClass.ionizeMPS(0, generate_mpo::IonizedOrbital::Up);
   // "By hand" optimization
-  auto stop_callback = time_stopper(static_cast<double>(parametersBenzene["run_seconds"]));
+  auto stop_callback =
+      time_stopper(static_cast<double>(parametersBenzene["run_seconds"]));
   std::shared_ptr<opt_base_t> optimizer;
-  optimizer.reset( new ts_optimize<matrix, S, storage::disk>(ionizedMPS, mpo, parametersBenzene, stop_callback, lattice, 0) );
-  for (int sweep=0; sweep < nSweeps; ++sweep)
-    optimizer->sweep(sweep);
-  auto energyByHand = expval(ionizedMPS, mpo)/norm(ionizedMPS);
+  optimizer.reset(new ts_optimize<matrix, S, storage::disk>(
+      ionizedMPS, mpo, parametersBenzene, stop_callback, lattice, 0
+  ));
+  for (int sweep = 0; sweep < nSweeps; ++sweep) optimizer->sweep(sweep);
+  auto energyByHand = expval(ionizedMPS, mpo) / norm(ionizedMPS);
   // This check could be made stricter, but with more sweeps
   BOOST_CHECK_CLOSE(cationicEnergy, energyByHand, 1.0E-7);
 };

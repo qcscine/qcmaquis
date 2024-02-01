@@ -50,12 +50,14 @@ namespace detail {
 // * netlib-compatible LAPACK backend (the default), and
 // * float value-type.
 //
-template< typename UpLo >
-inline std::ptrdiff_t pbtrf( const UpLo, const fortran_int_t n,
-        const fortran_int_t kd, float* ab, const fortran_int_t ldab ) {
-    fortran_int_t info(0);
-    LAPACK_SPBTRF( &lapack_option< UpLo >::value, &n, &kd, ab, &ldab, &info );
-    return info;
+template <typename UpLo>
+inline std::ptrdiff_t pbtrf(
+    const UpLo, const fortran_int_t n, const fortran_int_t kd, float* ab,
+    const fortran_int_t ldab
+) {
+  fortran_int_t info(0);
+  LAPACK_SPBTRF(&lapack_option<UpLo>::value, &n, &kd, ab, &ldab, &info);
+  return info;
 }
 
 //
@@ -63,12 +65,14 @@ inline std::ptrdiff_t pbtrf( const UpLo, const fortran_int_t n,
 // * netlib-compatible LAPACK backend (the default), and
 // * double value-type.
 //
-template< typename UpLo >
-inline std::ptrdiff_t pbtrf( const UpLo, const fortran_int_t n,
-        const fortran_int_t kd, double* ab, const fortran_int_t ldab ) {
-    fortran_int_t info(0);
-    LAPACK_DPBTRF( &lapack_option< UpLo >::value, &n, &kd, ab, &ldab, &info );
-    return info;
+template <typename UpLo>
+inline std::ptrdiff_t pbtrf(
+    const UpLo, const fortran_int_t n, const fortran_int_t kd, double* ab,
+    const fortran_int_t ldab
+) {
+  fortran_int_t info(0);
+  LAPACK_DPBTRF(&lapack_option<UpLo>::value, &n, &kd, ab, &ldab, &info);
+  return info;
 }
 
 //
@@ -76,13 +80,14 @@ inline std::ptrdiff_t pbtrf( const UpLo, const fortran_int_t n,
 // * netlib-compatible LAPACK backend (the default), and
 // * complex<float> value-type.
 //
-template< typename UpLo >
-inline std::ptrdiff_t pbtrf( const UpLo, const fortran_int_t n,
-        const fortran_int_t kd, std::complex<float>* ab,
-        const fortran_int_t ldab ) {
-    fortran_int_t info(0);
-    LAPACK_CPBTRF( &lapack_option< UpLo >::value, &n, &kd, ab, &ldab, &info );
-    return info;
+template <typename UpLo>
+inline std::ptrdiff_t pbtrf(
+    const UpLo, const fortran_int_t n, const fortran_int_t kd,
+    std::complex<float>* ab, const fortran_int_t ldab
+) {
+  fortran_int_t info(0);
+  LAPACK_CPBTRF(&lapack_option<UpLo>::value, &n, &kd, ab, &ldab, &info);
+  return info;
 }
 
 //
@@ -90,57 +95,58 @@ inline std::ptrdiff_t pbtrf( const UpLo, const fortran_int_t n,
 // * netlib-compatible LAPACK backend (the default), and
 // * complex<double> value-type.
 //
-template< typename UpLo >
-inline std::ptrdiff_t pbtrf( const UpLo, const fortran_int_t n,
-        const fortran_int_t kd, std::complex<double>* ab,
-        const fortran_int_t ldab ) {
-    fortran_int_t info(0);
-    LAPACK_ZPBTRF( &lapack_option< UpLo >::value, &n, &kd, ab, &ldab, &info );
-    return info;
+template <typename UpLo>
+inline std::ptrdiff_t pbtrf(
+    const UpLo, const fortran_int_t n, const fortran_int_t kd,
+    std::complex<double>* ab, const fortran_int_t ldab
+) {
+  fortran_int_t info(0);
+  LAPACK_ZPBTRF(&lapack_option<UpLo>::value, &n, &kd, ab, &ldab, &info);
+  return info;
 }
 
-} // namespace detail
+}  // namespace detail
 
 //
 // Value-type based template class. Use this class if you need a type
 // for dispatching to pbtrf.
 //
-template< typename Value >
+template <typename Value>
 struct pbtrf_impl {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
-
-    //
-    // Static member function, that
-    // * Deduces the required arguments for dispatching to LAPACK, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename MatrixAB >
-    static std::ptrdiff_t invoke( MatrixAB& ab ) {
-        namespace bindings = ::boost::numeric::bindings;
-        typedef typename result_of::uplo_tag< MatrixAB >::type uplo;
-        BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixAB >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< MatrixAB >::value) );
-        BOOST_ASSERT( bindings::bandwidth(ab, uplo()) >= 0 );
-        BOOST_ASSERT( bindings::size_column(ab) >= 0 );
-        BOOST_ASSERT( bindings::size_minor(ab) == 1 ||
-                bindings::stride_minor(ab) == 1 );
-        BOOST_ASSERT( bindings::stride_major(ab) >= bindings::bandwidth(ab,
-                uplo())+1 );
-        return detail::pbtrf( uplo(), bindings::size_column(ab),
-                bindings::bandwidth(ab, uplo()), bindings::begin_value(ab),
-                bindings::stride_major(ab) );
-    }
-
+  //
+  // Static member function, that
+  // * Deduces the required arguments for dispatching to LAPACK, and
+  // * Asserts that most arguments make sense.
+  //
+  template <typename MatrixAB>
+  static std::ptrdiff_t invoke(MatrixAB& ab) {
+    namespace bindings = ::boost::numeric::bindings;
+    typedef typename result_of::uplo_tag<MatrixAB>::type uplo;
+    BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixAB>::value));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<MatrixAB>::value));
+    BOOST_ASSERT(bindings::bandwidth(ab, uplo()) >= 0);
+    BOOST_ASSERT(bindings::size_column(ab) >= 0);
+    BOOST_ASSERT(
+        bindings::size_minor(ab) == 1 || bindings::stride_minor(ab) == 1
+    );
+    BOOST_ASSERT(
+        bindings::stride_major(ab) >= bindings::bandwidth(ab, uplo()) + 1
+    );
+    return detail::pbtrf(
+        uplo(), bindings::size_column(ab), bindings::bandwidth(ab, uplo()),
+        bindings::begin_value(ab), bindings::stride_major(ab)
+    );
+  }
 };
-
 
 //
 // Functions for direct use. These functions are overloaded for temporaries,
 // so that wrapped types can still be passed and used for write-access. In
 // addition, if applicable, they are overloaded for user-defined workspaces.
-// Calls to these functions are passed to the pbtrf_impl classes. In the 
+// Calls to these functions are passed to the pbtrf_impl classes. In the
 // documentation, most overloads are collapsed to avoid a large number of
 // prototypes which are very similar.
 //
@@ -148,15 +154,14 @@ struct pbtrf_impl {
 //
 // Overloaded function for pbtrf. Its overload differs for
 //
-template< typename MatrixAB >
-inline std::ptrdiff_t pbtrf( MatrixAB& ab ) {
-    return pbtrf_impl< typename bindings::value_type<
-            MatrixAB >::type >::invoke( ab );
+template <typename MatrixAB>
+inline std::ptrdiff_t pbtrf(MatrixAB& ab) {
+  return pbtrf_impl<typename bindings::value_type<MatrixAB>::type>::invoke(ab);
 }
 
-} // namespace lapack
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace lapack
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

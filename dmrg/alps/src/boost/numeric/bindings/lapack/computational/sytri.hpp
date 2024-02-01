@@ -54,13 +54,14 @@ namespace detail {
 // * netlib-compatible LAPACK backend (the default), and
 // * float value-type.
 //
-template< typename UpLo >
-inline std::ptrdiff_t sytri( const UpLo, const fortran_int_t n, float* a,
-        const fortran_int_t lda, const fortran_int_t* ipiv, float* work ) {
-    fortran_int_t info(0);
-    LAPACK_SSYTRI( &lapack_option< UpLo >::value, &n, a, &lda, ipiv, work,
-            &info );
-    return info;
+template <typename UpLo>
+inline std::ptrdiff_t sytri(
+    const UpLo, const fortran_int_t n, float* a, const fortran_int_t lda,
+    const fortran_int_t* ipiv, float* work
+) {
+  fortran_int_t info(0);
+  LAPACK_SSYTRI(&lapack_option<UpLo>::value, &n, a, &lda, ipiv, work, &info);
+  return info;
 }
 
 //
@@ -68,13 +69,14 @@ inline std::ptrdiff_t sytri( const UpLo, const fortran_int_t n, float* a,
 // * netlib-compatible LAPACK backend (the default), and
 // * double value-type.
 //
-template< typename UpLo >
-inline std::ptrdiff_t sytri( const UpLo, const fortran_int_t n, double* a,
-        const fortran_int_t lda, const fortran_int_t* ipiv, double* work ) {
-    fortran_int_t info(0);
-    LAPACK_DSYTRI( &lapack_option< UpLo >::value, &n, a, &lda, ipiv, work,
-            &info );
-    return info;
+template <typename UpLo>
+inline std::ptrdiff_t sytri(
+    const UpLo, const fortran_int_t n, double* a, const fortran_int_t lda,
+    const fortran_int_t* ipiv, double* work
+) {
+  fortran_int_t info(0);
+  LAPACK_DSYTRI(&lapack_option<UpLo>::value, &n, a, &lda, ipiv, work, &info);
+  return info;
 }
 
 //
@@ -82,14 +84,15 @@ inline std::ptrdiff_t sytri( const UpLo, const fortran_int_t n, double* a,
 // * netlib-compatible LAPACK backend (the default), and
 // * complex<float> value-type.
 //
-template< typename UpLo >
-inline std::ptrdiff_t sytri( const UpLo, const fortran_int_t n,
-        std::complex<float>* a, const fortran_int_t lda,
-        const fortran_int_t* ipiv, std::complex<float>* work ) {
-    fortran_int_t info(0);
-    LAPACK_CSYTRI( &lapack_option< UpLo >::value, &n, a, &lda, ipiv, work,
-            &info );
-    return info;
+template <typename UpLo>
+inline std::ptrdiff_t sytri(
+    const UpLo, const fortran_int_t n, std::complex<float>* a,
+    const fortran_int_t lda, const fortran_int_t* ipiv,
+    std::complex<float>* work
+) {
+  fortran_int_t info(0);
+  LAPACK_CSYTRI(&lapack_option<UpLo>::value, &n, a, &lda, ipiv, work, &info);
+  return info;
 }
 
 //
@@ -97,183 +100,197 @@ inline std::ptrdiff_t sytri( const UpLo, const fortran_int_t n,
 // * netlib-compatible LAPACK backend (the default), and
 // * complex<double> value-type.
 //
-template< typename UpLo >
-inline std::ptrdiff_t sytri( const UpLo, const fortran_int_t n,
-        std::complex<double>* a, const fortran_int_t lda,
-        const fortran_int_t* ipiv, std::complex<double>* work ) {
-    fortran_int_t info(0);
-    LAPACK_ZSYTRI( &lapack_option< UpLo >::value, &n, a, &lda, ipiv, work,
-            &info );
-    return info;
+template <typename UpLo>
+inline std::ptrdiff_t sytri(
+    const UpLo, const fortran_int_t n, std::complex<double>* a,
+    const fortran_int_t lda, const fortran_int_t* ipiv,
+    std::complex<double>* work
+) {
+  fortran_int_t info(0);
+  LAPACK_ZSYTRI(&lapack_option<UpLo>::value, &n, a, &lda, ipiv, work, &info);
+  return info;
 }
 
-} // namespace detail
+}  // namespace detail
 
 //
 // Value-type based template class. Use this class if you need a type
 // for dispatching to sytri.
 //
-template< typename Value, typename Enable = void >
+template <typename Value, typename Enable = void>
 struct sytri_impl {};
 
 //
 // This implementation is enabled if Value is a real type.
 //
-template< typename Value >
-struct sytri_impl< Value, typename boost::enable_if< is_real< Value > >::type > {
+template <typename Value>
+struct sytri_impl<Value, typename boost::enable_if<is_real<Value> >::type> {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
+  //
+  // Static member function for user-defined workspaces, that
+  // * Deduces the required arguments for dispatching to LAPACK, and
+  // * Asserts that most arguments make sense.
+  //
+  template <typename MatrixA, typename VectorIPIV, typename WORK>
+  static std::ptrdiff_t invoke(
+      MatrixA& a, const VectorIPIV& ipiv, detail::workspace1<WORK> work
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    typedef typename result_of::uplo_tag<MatrixA>::type uplo;
+    BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixA>::value));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<MatrixA>::value));
+    BOOST_ASSERT(bindings::size(ipiv) >= bindings::size_column(a));
+    BOOST_ASSERT(
+        bindings::size(work.select(real_type())) >=
+        min_size_work(bindings::size_column(a))
+    );
+    BOOST_ASSERT(bindings::size_column(a) >= 0);
+    BOOST_ASSERT(
+        bindings::size_minor(a) == 1 || bindings::stride_minor(a) == 1
+    );
+    BOOST_ASSERT(
+        bindings::stride_major(a) >=
+        std::max<std::ptrdiff_t>(1, bindings::size_column(a))
+    );
+    return detail::sytri(
+        uplo(), bindings::size_column(a), bindings::begin_value(a),
+        bindings::stride_major(a), bindings::begin_value(ipiv),
+        bindings::begin_value(work.select(real_type()))
+    );
+  }
 
-    //
-    // Static member function for user-defined workspaces, that
-    // * Deduces the required arguments for dispatching to LAPACK, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename MatrixA, typename VectorIPIV, typename WORK >
-    static std::ptrdiff_t invoke( MatrixA& a, const VectorIPIV& ipiv,
-            detail::workspace1< WORK > work ) {
-        namespace bindings = ::boost::numeric::bindings;
-        typedef typename result_of::uplo_tag< MatrixA >::type uplo;
-        BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixA >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< MatrixA >::value) );
-        BOOST_ASSERT( bindings::size(ipiv) >= bindings::size_column(a) );
-        BOOST_ASSERT( bindings::size(work.select(real_type())) >=
-                min_size_work( bindings::size_column(a) ));
-        BOOST_ASSERT( bindings::size_column(a) >= 0 );
-        BOOST_ASSERT( bindings::size_minor(a) == 1 ||
-                bindings::stride_minor(a) == 1 );
-        BOOST_ASSERT( bindings::stride_major(a) >= std::max< std::ptrdiff_t >(1,
-                bindings::size_column(a)) );
-        return detail::sytri( uplo(), bindings::size_column(a),
-                bindings::begin_value(a), bindings::stride_major(a),
-                bindings::begin_value(ipiv),
-                bindings::begin_value(work.select(real_type())) );
-    }
+  //
+  // Static member function that
+  // * Figures out the minimal workspace requirements, and passes
+  //   the results to the user-defined workspace overload of the
+  //   invoke static member function
+  // * Enables the unblocked algorithm (BLAS level 2)
+  //
+  template <typename MatrixA, typename VectorIPIV>
+  static std::ptrdiff_t invoke(
+      MatrixA& a, const VectorIPIV& ipiv, minimal_workspace
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    typedef typename result_of::uplo_tag<MatrixA>::type uplo;
+    bindings::detail::array<real_type> tmp_work(
+        min_size_work(bindings::size_column(a))
+    );
+    return invoke(a, ipiv, workspace(tmp_work));
+  }
 
-    //
-    // Static member function that
-    // * Figures out the minimal workspace requirements, and passes
-    //   the results to the user-defined workspace overload of the 
-    //   invoke static member function
-    // * Enables the unblocked algorithm (BLAS level 2)
-    //
-    template< typename MatrixA, typename VectorIPIV >
-    static std::ptrdiff_t invoke( MatrixA& a, const VectorIPIV& ipiv,
-            minimal_workspace ) {
-        namespace bindings = ::boost::numeric::bindings;
-        typedef typename result_of::uplo_tag< MatrixA >::type uplo;
-        bindings::detail::array< real_type > tmp_work( min_size_work(
-                bindings::size_column(a) ) );
-        return invoke( a, ipiv, workspace( tmp_work ) );
-    }
+  //
+  // Static member function that
+  // * Figures out the optimal workspace requirements, and passes
+  //   the results to the user-defined workspace overload of the
+  //   invoke static member
+  // * Enables the blocked algorithm (BLAS level 3)
+  //
+  template <typename MatrixA, typename VectorIPIV>
+  static std::ptrdiff_t invoke(
+      MatrixA& a, const VectorIPIV& ipiv, optimal_workspace
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    typedef typename result_of::uplo_tag<MatrixA>::type uplo;
+    return invoke(a, ipiv, minimal_workspace());
+  }
 
-    //
-    // Static member function that
-    // * Figures out the optimal workspace requirements, and passes
-    //   the results to the user-defined workspace overload of the 
-    //   invoke static member
-    // * Enables the blocked algorithm (BLAS level 3)
-    //
-    template< typename MatrixA, typename VectorIPIV >
-    static std::ptrdiff_t invoke( MatrixA& a, const VectorIPIV& ipiv,
-            optimal_workspace ) {
-        namespace bindings = ::boost::numeric::bindings;
-        typedef typename result_of::uplo_tag< MatrixA >::type uplo;
-        return invoke( a, ipiv, minimal_workspace() );
-    }
-
-    //
-    // Static member function that returns the minimum size of
-    // workspace-array work.
-    //
-    static std::ptrdiff_t min_size_work( const std::ptrdiff_t n ) {
-        return n;
-    }
+  //
+  // Static member function that returns the minimum size of
+  // workspace-array work.
+  //
+  static std::ptrdiff_t min_size_work(const std::ptrdiff_t n) { return n; }
 };
 
 //
 // This implementation is enabled if Value is a complex type.
 //
-template< typename Value >
-struct sytri_impl< Value, typename boost::enable_if< is_complex< Value > >::type > {
+template <typename Value>
+struct sytri_impl<Value, typename boost::enable_if<is_complex<Value> >::type> {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
+  //
+  // Static member function for user-defined workspaces, that
+  // * Deduces the required arguments for dispatching to LAPACK, and
+  // * Asserts that most arguments make sense.
+  //
+  template <typename MatrixA, typename VectorIPIV, typename WORK>
+  static std::ptrdiff_t invoke(
+      MatrixA& a, const VectorIPIV& ipiv, detail::workspace1<WORK> work
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    typedef typename result_of::uplo_tag<MatrixA>::type uplo;
+    BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixA>::value));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<MatrixA>::value));
+    BOOST_ASSERT(bindings::size(ipiv) >= bindings::size_column(a));
+    BOOST_ASSERT(
+        bindings::size(work.select(value_type())) >=
+        min_size_work(bindings::size_column(a))
+    );
+    BOOST_ASSERT(bindings::size_column(a) >= 0);
+    BOOST_ASSERT(
+        bindings::size_minor(a) == 1 || bindings::stride_minor(a) == 1
+    );
+    BOOST_ASSERT(
+        bindings::stride_major(a) >=
+        std::max<std::ptrdiff_t>(1, bindings::size_column(a))
+    );
+    return detail::sytri(
+        uplo(), bindings::size_column(a), bindings::begin_value(a),
+        bindings::stride_major(a), bindings::begin_value(ipiv),
+        bindings::begin_value(work.select(value_type()))
+    );
+  }
 
-    //
-    // Static member function for user-defined workspaces, that
-    // * Deduces the required arguments for dispatching to LAPACK, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename MatrixA, typename VectorIPIV, typename WORK >
-    static std::ptrdiff_t invoke( MatrixA& a, const VectorIPIV& ipiv,
-            detail::workspace1< WORK > work ) {
-        namespace bindings = ::boost::numeric::bindings;
-        typedef typename result_of::uplo_tag< MatrixA >::type uplo;
-        BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixA >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< MatrixA >::value) );
-        BOOST_ASSERT( bindings::size(ipiv) >= bindings::size_column(a) );
-        BOOST_ASSERT( bindings::size(work.select(value_type())) >=
-                min_size_work( bindings::size_column(a) ));
-        BOOST_ASSERT( bindings::size_column(a) >= 0 );
-        BOOST_ASSERT( bindings::size_minor(a) == 1 ||
-                bindings::stride_minor(a) == 1 );
-        BOOST_ASSERT( bindings::stride_major(a) >= std::max< std::ptrdiff_t >(1,
-                bindings::size_column(a)) );
-        return detail::sytri( uplo(), bindings::size_column(a),
-                bindings::begin_value(a), bindings::stride_major(a),
-                bindings::begin_value(ipiv),
-                bindings::begin_value(work.select(value_type())) );
-    }
+  //
+  // Static member function that
+  // * Figures out the minimal workspace requirements, and passes
+  //   the results to the user-defined workspace overload of the
+  //   invoke static member function
+  // * Enables the unblocked algorithm (BLAS level 2)
+  //
+  template <typename MatrixA, typename VectorIPIV>
+  static std::ptrdiff_t invoke(
+      MatrixA& a, const VectorIPIV& ipiv, minimal_workspace
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    typedef typename result_of::uplo_tag<MatrixA>::type uplo;
+    bindings::detail::array<value_type> tmp_work(
+        min_size_work(bindings::size_column(a))
+    );
+    return invoke(a, ipiv, workspace(tmp_work));
+  }
 
-    //
-    // Static member function that
-    // * Figures out the minimal workspace requirements, and passes
-    //   the results to the user-defined workspace overload of the 
-    //   invoke static member function
-    // * Enables the unblocked algorithm (BLAS level 2)
-    //
-    template< typename MatrixA, typename VectorIPIV >
-    static std::ptrdiff_t invoke( MatrixA& a, const VectorIPIV& ipiv,
-            minimal_workspace ) {
-        namespace bindings = ::boost::numeric::bindings;
-        typedef typename result_of::uplo_tag< MatrixA >::type uplo;
-        bindings::detail::array< value_type > tmp_work( min_size_work(
-                bindings::size_column(a) ) );
-        return invoke( a, ipiv, workspace( tmp_work ) );
-    }
+  //
+  // Static member function that
+  // * Figures out the optimal workspace requirements, and passes
+  //   the results to the user-defined workspace overload of the
+  //   invoke static member
+  // * Enables the blocked algorithm (BLAS level 3)
+  //
+  template <typename MatrixA, typename VectorIPIV>
+  static std::ptrdiff_t invoke(
+      MatrixA& a, const VectorIPIV& ipiv, optimal_workspace
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    typedef typename result_of::uplo_tag<MatrixA>::type uplo;
+    return invoke(a, ipiv, minimal_workspace());
+  }
 
-    //
-    // Static member function that
-    // * Figures out the optimal workspace requirements, and passes
-    //   the results to the user-defined workspace overload of the 
-    //   invoke static member
-    // * Enables the blocked algorithm (BLAS level 3)
-    //
-    template< typename MatrixA, typename VectorIPIV >
-    static std::ptrdiff_t invoke( MatrixA& a, const VectorIPIV& ipiv,
-            optimal_workspace ) {
-        namespace bindings = ::boost::numeric::bindings;
-        typedef typename result_of::uplo_tag< MatrixA >::type uplo;
-        return invoke( a, ipiv, minimal_workspace() );
-    }
-
-    //
-    // Static member function that returns the minimum size of
-    // workspace-array work.
-    //
-    static std::ptrdiff_t min_size_work( const std::ptrdiff_t n ) {
-        return 2*n;
-    }
+  //
+  // Static member function that returns the minimum size of
+  // workspace-array work.
+  //
+  static std::ptrdiff_t min_size_work(const std::ptrdiff_t n) { return 2 * n; }
 };
-
 
 //
 // Functions for direct use. These functions are overloaded for temporaries,
 // so that wrapped types can still be passed and used for write-access. In
 // addition, if applicable, they are overloaded for user-defined workspaces.
-// Calls to these functions are passed to the sytri_impl classes. In the 
+// Calls to these functions are passed to the sytri_impl classes. In the
 // documentation, most overloads are collapsed to avoid a large number of
 // prototypes which are very similar.
 //
@@ -282,29 +299,31 @@ struct sytri_impl< Value, typename boost::enable_if< is_complex< Value > >::type
 // Overloaded function for sytri. Its overload differs for
 // * User-defined workspace
 //
-template< typename MatrixA, typename VectorIPIV, typename Workspace >
-inline typename boost::enable_if< detail::is_workspace< Workspace >,
-        std::ptrdiff_t >::type
-sytri( MatrixA& a, const VectorIPIV& ipiv, Workspace work ) {
-    return sytri_impl< typename bindings::value_type<
-            MatrixA >::type >::invoke( a, ipiv, work );
+template <typename MatrixA, typename VectorIPIV, typename Workspace>
+inline typename boost::enable_if<
+    detail::is_workspace<Workspace>, std::ptrdiff_t>::type
+sytri(MatrixA& a, const VectorIPIV& ipiv, Workspace work) {
+  return sytri_impl<typename bindings::value_type<MatrixA>::type>::invoke(
+      a, ipiv, work
+  );
 }
 
 //
 // Overloaded function for sytri. Its overload differs for
 // * Default workspace-type (optimal)
 //
-template< typename MatrixA, typename VectorIPIV >
-inline typename boost::disable_if< detail::is_workspace< VectorIPIV >,
-        std::ptrdiff_t >::type
-sytri( MatrixA& a, const VectorIPIV& ipiv ) {
-    return sytri_impl< typename bindings::value_type<
-            MatrixA >::type >::invoke( a, ipiv, optimal_workspace() );
+template <typename MatrixA, typename VectorIPIV>
+inline typename boost::disable_if<
+    detail::is_workspace<VectorIPIV>, std::ptrdiff_t>::type
+sytri(MatrixA& a, const VectorIPIV& ipiv) {
+  return sytri_impl<typename bindings::value_type<MatrixA>::type>::invoke(
+      a, ipiv, optimal_workspace()
+  );
 }
 
-} // namespace lapack
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace lapack
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

@@ -24,7 +24,7 @@ namespace bindings {
 namespace blas {
 
 //
-// set is an extension, not part of the BLAS API. 
+// set is an extension, not part of the BLAS API.
 //
 // TODO implement ATLAS backend call(s)
 //
@@ -36,27 +36,29 @@ namespace blas {
 // Overloaded function for set. Its overload differs for
 // * VectorX&
 //
-template< typename VectorX >
-inline void
-set( const typename bindings::value_type< VectorX >::type a, VectorX& x ) {
-    BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorX >::value) );
-    std::fill( bindings::begin(x), bindings::end(x), a );
+template <typename VectorX>
+inline void set(
+    const typename bindings::value_type<VectorX>::type a, VectorX& x
+) {
+  BOOST_STATIC_ASSERT((bindings::is_mutable<VectorX>::value));
+  std::fill(bindings::begin(x), bindings::end(x), a);
 }
 
 //
 // Overloaded function for set. Its overload differs for
 // * const VectorX&
 //
-template< typename VectorX >
-inline void
-set( const typename bindings::value_type< const VectorX >::type a,  const VectorX& x ) {
-    BOOST_STATIC_ASSERT( (bindings::is_mutable< const VectorX >::value) );
-    std::fill( bindings::begin(x), bindings::end(x), a );
+template <typename VectorX>
+inline void set(
+    const typename bindings::value_type<const VectorX>::type a, const VectorX& x
+) {
+  BOOST_STATIC_ASSERT((bindings::is_mutable<const VectorX>::value));
+  std::fill(bindings::begin(x), bindings::end(x), a);
 }
 
-} // namespace blas
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace blas
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

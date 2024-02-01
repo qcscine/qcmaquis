@@ -1,74 +1,73 @@
 #ifndef MAQUIS_TIMINGS_H
 #define MAQUIS_TIMINGS_H
 
+#include <iomanip>
 #include <string>
 #include <fstream>
 #include <iostream>
 #include <chrono>
+#include <utility>
 #include "utils/io.hpp"
 
 #ifdef MAQUIS_OPENMP
 #include "omp.h"
 #endif
 
-class Timer
-{
-public:
-    Timer(std::string name_)
-    : val(0.0), name(name_), nCounter(0) { }
+class Timer {
+ public:
+  Timer(std::string name_) : name(std::move(name_)) {}
 
-    ~Timer() { maquis::cout << name << " " << val << ", nCounter : " << nCounter << std::endl; }
+  ~Timer() {
+    maquis::cout << name << " took " << std::setprecision(2) << std::defaultfloat
+                 << val << " [s]\n";
+  }
 
-    Timer & operator+=(double t) {
-        val += t;
-        return *this;
-    }
+  Timer& operator+=(double t) {
+    val += t;
+    return *this;
+  }
 
-    void begin() {
-        t0 = std::chrono::system_clock::now();
-    }
+  virtual void begin() { t0 = std::chrono::high_resolution_clock::now(); }
 
-    void end() {
-		nCounter += 1;
-        std::chrono::duration<double> sec = std::chrono::system_clock::now() - t0;
-        val += sec.count();
-    }
+  void end() {
+    nCounter += 1;
+    std::chrono::duration<double> sec =
+        std::chrono::high_resolution_clock::now() - t0;
+    val += sec.count();
+  }
 
-    double get_time() const {
-	    return  val;
-    }
+  double get_time() const { return val; }
 
-    friend std::ostream& operator<< (std::ostream& os, Timer const& timer) {
-        os << timer.name << " " << timer.val << ", nCounter : " << timer.nCounter;
-        return os;
-    }
+  friend std::ostream& operator<<(std::ostream& os, Timer const& timer) {
+    os << timer.name << " " << timer.val << ", nCounter : " << timer.nCounter;
+    return os;
+  }
 
-protected:
-    double val;
-    std::string name;
-    std::chrono::system_clock::time_point t0;
-    unsigned long long nCounter;
+ protected:
+  double val = 0.0;
+  std::string name;
+  std::chrono::time_point<std::chrono::high_resolution_clock> t0;
+  unsigned long long nCounter = 0;
 };
 
 #ifdef MAQUIS_OPENMP
 class TimerOMP : public Timer {
-public:
-    TimerOMP(std::string name_) : Timer(name_), timer_start(0.0), timer_end(0.0){}
+ public:
+  TimerOMP(std::string name_) : Timer(name_) {}
 
-    ~TimerOMP(){}
+  ~TimerOMP() = default;
 
-    void begin() {
-        timer_start = omp_get_wtime();
-    }
+  void begin() { timer_start = omp_get_wtime(); }
 
-    void end() {
-        timer_end = omp_get_wtime();
-        val += timer_end - timer_start;
-    }
-private:
-    double timer_start, timer_end;
+  void end() {
+    timer_end = omp_get_wtime();
+    val += timer_end - timer_start;
+  }
+
+ private:
+  double timer_start = 0.0;
+  double timer_end = 0.0;
 };
 #endif
-
 
 #endif

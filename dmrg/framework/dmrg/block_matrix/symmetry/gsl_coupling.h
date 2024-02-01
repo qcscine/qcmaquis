@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #ifndef GSL_COUPLING_H
@@ -16,191 +16,192 @@
 #include <cmath>
 
 extern "C" {
-    double gsl_sf_coupling_3j(int two_ja, int two_jb, int two_jc, int two_ma, int two_mb, int two_mc);
-    double gsl_sf_coupling_6j(int two_ja, int two_jb, int two_jc, int two_jd, int two_je, int two_jf);
-    double gsl_sf_coupling_9j(int two_ja, int two_jb, int two_jc, int two_jd, int two_je, int two_jf, int two_jg, int two_jh, int two_ji);
-
+double gsl_sf_coupling_3j(
+    int two_ja, int two_jb, int two_jc, int two_ma, int two_mb, int two_mc
+);
+double gsl_sf_coupling_6j(
+    int two_ja, int two_jb, int two_jc, int two_jd, int two_je, int two_jf
+);
+double gsl_sf_coupling_9j(
+    int two_ja, int two_jb, int two_jc, int two_jd, int two_je, int two_jf,
+    int two_jg, int two_jh, int two_ji
+);
 }
 namespace SU2 {
-    inline bool triangle(int a, int b, int c)
-    {
-        return (( a + b + c ) % 2 == 0 ) && std::abs(a-b) <= c && c <= a+b;
-    }
-
+inline bool triangle(int a, int b, int c) {
+  return ((a + b + c) % 2 == 0) && std::abs(a - b) <= c && c <= a + b;
 }
 
-class WignerWrapper
-{
-    public:
-        // Global variable that enables or disables the cache
-        static bool UseCache;
+}  // namespace SU2
 
-        // Print the cache contents, useful for debugging.
-        static void print_map_contents()
-        {
-            for (auto&& m: map)
-                std::cout << std::get<0>(m.first) << " "
-                             << std::get<1>(m.first) << " "
-                             << std::get<2>(m.first) << " "
-                             << std::get<3>(m.first) << " "
-                             << std::get<4>(m.first) << " "
-                             << std::get<5>(m.first) << " "
-                             << std::get<6>(m.first) << " "
-                             << std::get<7>(m.first) << " "
-                             << std::get<8>(m.first) << " "
-                             << m.second << std::endl;
-            std::cout << "Number of elements: " << map.size() << std::endl;
+class WignerWrapper {
+ public:
+  // Global variable that enables or disables the cache
+  static bool UseCache;
 
-        }
+  // Print the cache contents, useful for debugging.
+  static void print_map_contents() {
+    for (auto&& m : map)
+      std::cout << std::get<0>(m.first) << " " << std::get<1>(m.first) << " "
+                << std::get<2>(m.first) << " " << std::get<3>(m.first) << " "
+                << std::get<4>(m.first) << " " << std::get<5>(m.first) << " "
+                << std::get<6>(m.first) << " " << std::get<7>(m.first) << " "
+                << std::get<8>(m.first) << " " << m.second << std::endl;
+    std::cout << "Number of elements: " << map.size() << std::endl;
+  }
 
-        // \brief Fills the Wigner 9j cache with elements up to (max,2,max,2,2,2,max,2,max)
-        // Zero elements are not added to the cache
-        // \param max maximum index for symbols, calculated as  (max_spin + spin)/2
-        //  with max_spin as maximum number of unpaired electrons (see also sim::sim())
-        static void fill_cache(int max);
+  // \brief Fills the Wigner 9j cache with elements up to
+  // (max,2,max,2,2,2,max,2,max) Zero elements are not added to the cache \param
+  // max maximum index for symbols, calculated as  (max_spin + spin)/2
+  //  with max_spin as maximum number of unpaired electrons (see also
+  //  sim::sim())
+  static void fill_cache(int max);
 
-        // woo hoo copy paste!!!
-        inline static double gsl_sf_coupling_3j(int two_ja, int two_jb, int two_jc, int two_ma, int two_mb, int two_mc)
-        {
-            return ::gsl_sf_coupling_3j(two_ja, two_jb, two_jc, two_ma, two_mb, two_mc);
-        }
+  // woo hoo copy paste!!!
+  inline static double gsl_sf_coupling_3j(
+      int two_ja, int two_jb, int two_jc, int two_ma, int two_mb, int two_mc
+  ) {
+    return ::gsl_sf_coupling_3j(two_ja, two_jb, two_jc, two_ma, two_mb, two_mc);
+  }
 
-        inline static double gsl_sf_coupling_6j(int two_ja, int two_jb, int two_jc, int two_jd, int two_je, int two_jf)
-        {
+  inline static double gsl_sf_coupling_6j(
+      int two_ja, int two_jb, int two_jc, int two_jd, int two_je, int two_jf
+  ) {
+    return ::gsl_sf_coupling_6j(two_ja, two_jb, two_jc, two_jd, two_je, two_jf);
+  }
 
-            return ::gsl_sf_coupling_6j(two_ja, two_jb, two_jc, two_jd, two_je, two_jf);
-        }
+  // \brief Calculate the Wigner 9j symbol, or obtain it from cache
+  inline static double gsl_sf_coupling_9j(
+      int two_ja, int two_jb, int two_jc, int two_jd, int two_je, int two_jf,
+      int two_jg, int two_jh, int two_ji
+  ) {
+    // Consider symmetry properties
+    if (triangle_9j_fails(
+            two_ja, two_jb, two_jc, two_jd, two_je, two_jf, two_jg, two_jh,
+            two_ji
+        )) {
+      return 0.0;
+    }
 
-        // \brief Calculate the Wigner 9j symbol, or obtain it from cache
-        inline static double gsl_sf_coupling_9j(int two_ja, int two_jb, int two_jc, int two_jd, int two_je, int two_jf, int two_jg, int two_jh, int two_ji)
-        {
+    // Reflection along the diagonals does not change the wigner 9j symbol
+    if ((two_jb < two_jd) && (two_jc < two_jg) && (two_jf < two_jh)) {
+      std::swap(two_jb, two_jd);
+      std::swap(two_jc, two_jg);
+      std::swap(two_jf, two_jh);
+    } else if ((two_jb < two_jf) && (two_ja < two_ji) && (two_jd < two_jh)) {
+      std::swap(two_jb, two_jf);
+      std::swap(two_ja, two_ji);
+      std::swap(two_jd, two_jh);
+    }
 
-            double phase = 1.;
+    // Other Wigner 9j symmetries are ignored because the cache is small enough
+    // anyway, and too many symmetry checks here might degrade performance
+    // besides, the previous implementations did not seem to work
 
-            // Consider symmetry properties
-            if (triangle_9j_fails(two_ja, two_jb, two_jc, two_jd, two_je, two_jf, two_jg, two_jh, two_ji)) return 0.0;
+    return (UseCache) ? wigner9j_cache(
+                            two_ja, two_jb, two_jc, two_jd, two_je, two_jf,
+                            two_jg, two_jh, two_ji
+                        )
+                      : wigner9j_nocache(
+                            two_ja, two_jb, two_jc, two_jd, two_je, two_jf,
+                            two_jg, two_jh, two_ji
+                        );
+  }
 
-            // Reflection along the diagonals does not change the wigner 9j symbol
-            if ((two_jb < two_jd) && (two_jc < two_jg) && (two_jf < two_jh))
-            {
-                std::swap(two_jb, two_jd);
-                std::swap(two_jc, two_jg);
-                std::swap(two_jf, two_jh);
-            }
-            else
-            if ((two_jb < two_jf) && (two_ja < two_ji) && (two_jd < two_jh))
-            {
-                std::swap(two_jb, two_jf);
-                std::swap(two_ja, two_ji);
-                std::swap(two_jd, two_jh);
-            }
+ private:
+  using gsl_indices = std::tuple<int, int, int, int, int, int, int, int, int>;
+  using map_type =
+      std::unordered_map<gsl_indices, double, hash_tuple::hash<gsl_indices>>;
 
-            // Other Wigner 9j symmetries are ignored because the cache is small enough anyway, and too many symmetry checks here might degrade performance
-            // besides, the previous implementations did not seem to work
+  // The map that stores the values
+  static map_type map;
 
-            return (UseCache) ?
-               wigner9j_cache(two_ja, two_jb, two_jc, two_jd, two_je, two_jf, two_jg, two_jh, two_ji)
-                : wigner9j_nocache(two_ja, two_jb, two_jc, two_jd, two_je, two_jf, two_jg, two_jh, two_ji);
-        }
+  inline static double wigner9j_cache(
+      int a, int b, int c, int d, int e, int f, int g, int h, int i
+  ) {
+    gsl_indices idx = std::make_tuple(a, b, c, d, e, f, g, h, i);
+    double ret;
+    // Search for the value in cache
+    auto map_idx = map.find(idx);
+    // If value not found in cache, issue a warning and calculate it
+    if (map_idx == map.end()) {
+      // print a warning
+      std::cout << "Warning: Wigner 9j symbol for " << a << "," << b << "," << c
+                << "," << d << "," << e << "," << f << "," << g << "," << h
+                << "," << i << " not found in cache." << std::endl;
 
+      ret = WignerWrapper::wigner9j_nocache(a, b, c, d, e, f, g, h, i);
 
-        private:
-            typedef std::tuple<int, int, int, int, int, int, int, int, int> gsl_indices;
-            typedef std::unordered_map<gsl_indices, double, hash_tuple::hash<gsl_indices> > map_type;
+      // alternatively, add the missing value to the cache, but this is not
+      // threadsafe so has been disabled
+      // map[idx] = ret;
+    } else  // use the cached value
+    {
+      ret = map_idx->second;
+    }
+    return ret;
+  }
 
-            // The map that stores the values
-            static map_type map;
+  inline static bool triangle_9j_fails(
+      int two_ja, int two_jb, int two_jc, int two_jd, int two_je, int two_jf,
+      int two_jg, int two_jh, int two_ji
+  ) {
+    return (
+        (!SU2::triangle(two_ja, two_jb, two_jc)) ||
+        (!SU2::triangle(two_jd, two_je, two_jf)) ||
+        (!SU2::triangle(two_jg, two_jh, two_ji)) ||
+        (!SU2::triangle(two_ja, two_jd, two_jg)) ||
+        (!SU2::triangle(two_jb, two_je, two_jh)) ||
+        (!SU2::triangle(two_jc, two_jf, two_ji))
+    );
+  }
 
-            inline static double wigner9j_cache(int a, int b, int c,
-                                    int d, int e, int f,
-                                    int g, int h, int i)
-            {
-                gsl_indices idx=std::make_tuple(a,b,c,d,e,f,g,h,i);
-                double ret;
-                // Search for the value in cache
-                auto map_idx = map.find(idx);
-                // If value not found in cache, issue a warning and calculate it
-                if (map_idx == map.end())
-                {
-                    // print a warning
-                    std::cout << "Warning: Wigner 9j symbol for " << a << "," << b << "," << c <<
-                                                              "," << d << "," << e << "," << f <<
-                                                              "," << g << "," << h << "," << i << " not found in cache." << std::endl;
-
-                    ret = WignerWrapper::wigner9j_nocache(a, b, c,
-                                                          d, e, f,
-                                                          g, h, i);
-
-                    // alternatively, add the missing value to the cache, but this is not threadsafe so has been disabled
-                    //map[idx] = ret;
-                }
-                else // use the cached value
-                {
-                    ret = map_idx->second;
-                }
-                return ret;
-            }
-
-            inline static bool triangle_9j_fails(int two_ja, int two_jb, int two_jc, int two_jd, int two_je, int two_jf, int two_jg, int two_jh, int two_ji)
-            {
-                return (( !SU2::triangle( two_ja, two_jb, two_jc ) ) ||
-                        ( !SU2::triangle( two_jd, two_je, two_jf ) ) ||
-                        ( !SU2::triangle( two_jg, two_jh, two_ji ) ) ||
-                        ( !SU2::triangle( two_ja, two_jd, two_jg ) ) ||
-                        ( !SU2::triangle( two_jb, two_je, two_jh ) ) ||
-                        ( !SU2::triangle( two_jc, two_jf, two_ji ) ));
-
-            }
-
-            inline static double wigner9j_nocache(int two_ja, int two_jb, int two_jc, int two_jd, int two_je, int two_jf, int two_jg, int two_jh, int two_ji)
-            {
-                return ::gsl_sf_coupling_9j(two_ja, two_jb, two_jc, two_jd, two_je, two_jf, two_jg, two_jh, two_ji);
-            }
-
-
+  inline static double wigner9j_nocache(
+      int two_ja, int two_jb, int two_jc, int two_jd, int two_je, int two_jf,
+      int two_jg, int two_jh, int two_ji
+  ) {
+    return ::gsl_sf_coupling_9j(
+        two_ja, two_jb, two_jc, two_jd, two_je, two_jf, two_jg, two_jh, two_ji
+    );
+  }
 };
 
 namespace SU2 {
 
-    inline double mod_coupling(int a, int b, int c,
-                               int d, int e, int f,
-                               int g, int h, int i)
-    {
-        double ret = sqrt( (g+1.) * (h+1.) * (c+1.) * (f+1.) ) *
-               WignerWrapper::gsl_sf_coupling_9j(a, b, c,
-                                  d, e, f,
-                                  g, h, i);
-        return ret;
-    }
-
-    template <class T>
-    inline void set_coupling(int a, int b, int c,
-                             int d, int e, int f,
-                             int g, int h, int i, T init, T couplings[])
-    {
-        T prefactor = T(sqrt((i+1.)*(a+1.)/((g+1.)*(c+1.)))) * init;
-        if (triangle(a,b,c))
-        {
-            couplings[0] = prefactor * (T)::SU2::mod_coupling(a, b, c, d, e, f, g, h, i);
-            couplings[2] = prefactor * (T)::SU2::mod_coupling(a, b, c, d, e, f, g, 2, i);
-        }
-        else
-        {
-            couplings[0] = 0.0;
-            couplings[2] = 0.0;
-        }
-
-        if (triangle(a,2,c))
-        {
-            couplings[1] = prefactor * (T)::SU2::mod_coupling(a, 2, c, d, e, f, g, h, i);
-            couplings[3] = prefactor * (T)::SU2::mod_coupling(a, 2, c, d, e, f, g, 2, i);
-        }
-        else
-        {
-            couplings[1] = 0.0;
-            couplings[3] = 0.0;
-        }
-    }
+inline double mod_coupling(
+    int a, int b, int c, int d, int e, int f, int g, int h, int i
+) {
+  double ret = sqrt((g + 1.) * (h + 1.) * (c + 1.) * (f + 1.)) *
+               WignerWrapper::gsl_sf_coupling_9j(a, b, c, d, e, f, g, h, i);
+  return ret;
 }
+
+template <class T>
+inline void set_coupling(
+    int a, int b, int c, int d, int e, int f, int g, int h, int i, T init,
+    T couplings[]
+) {
+  T prefactor = T(sqrt((i + 1.) * (a + 1.) / ((g + 1.) * (c + 1.)))) * init;
+  if (triangle(a, b, c)) {
+    couplings[0] =
+        prefactor * (T)::SU2::mod_coupling(a, b, c, d, e, f, g, h, i);
+    couplings[2] =
+        prefactor * (T)::SU2::mod_coupling(a, b, c, d, e, f, g, 2, i);
+  } else {
+    couplings[0] = 0.0;
+    couplings[2] = 0.0;
+  }
+
+  if (triangle(a, 2, c)) {
+    couplings[1] =
+        prefactor * (T)::SU2::mod_coupling(a, 2, c, d, e, f, g, h, i);
+    couplings[3] =
+        prefactor * (T)::SU2::mod_coupling(a, 2, c, d, e, f, g, 2, i);
+  } else {
+    couplings[1] = 0.0;
+    couplings[3] = 0.0;
+  }
+}
+}  // namespace SU2
 
 #endif

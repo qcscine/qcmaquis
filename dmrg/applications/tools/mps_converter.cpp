@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #include <cmath>
@@ -40,40 +40,46 @@ typedef U1 grp;
 #elif defined(USE_TWOU1)
 typedef TwoU1 grp;
 #else
-#error "SymmGroup has to be defined explicitly. (-DUSE_NONE, -DUSE_U1, -DUSE_TWOU1)"
+#error \
+    "SymmGroup has to be defined explicitly. (-DUSE_NONE, -DUSE_U1, -DUSE_TWOU1)"
 #endif
 
-
-int main(int argc, char ** argv)
-{
-    try {
-        if (argc != 3) {
-            std::cout << "Usage: " << argv[0] << " <in.h5> <out.h5>" << std::endl;
-            return 1;
-        }
-        MPS<ambient_matrix, grp> mps_in;
-        
-        {
-            storage::archive ar(argv[1]);
-            ar["/state"] >> mps_in;
-        }
-        
-        MPS<alps_matrix, grp> mps_out(mps_in.length());
-        for (int i=0; i<mps_in.length(); ++i) {
-            mps_in[i].make_left_paired();
-            block_matrix<alps_matrix, grp> m;
-            for (int k=0; k<mps_in[i].data().n_blocks(); ++k)
-                m.insert_block(maquis::bindings::matrix_cast<alps_matrix>(mps_in[i].data()[k]), mps_in[i].data().left_basis()[k].first, mps_in[i].data().right_basis()[k].first);
-            mps_out[i] = MPSTensor<alps_matrix, grp>(mps_in[i].site_dim(),mps_in[i].row_dim(), mps_in[i].col_dim(), m, LeftPaired);
-        }
-        
-        {
-            storage::archive ar(argv[2], "w");
-            ar["/state"] << mps_out;
-        }
-        
-    } catch (std::exception& e) {
-        std::cerr << "Error:" << std::endl << e.what() << std::endl;
-        return 1;
+int main(int argc, char** argv) {
+  try {
+    if (argc != 3) {
+      std::cout << "Usage: " << argv[0] << " <in.h5> <out.h5>" << std::endl;
+      return 1;
     }
+    MPS<ambient_matrix, grp> mps_in;
+
+    {
+      storage::archive ar(argv[1]);
+      ar["/state"] >> mps_in;
+    }
+
+    MPS<alps_matrix, grp> mps_out(mps_in.length());
+    for (int i = 0; i < mps_in.length(); ++i) {
+      mps_in[i].make_left_paired();
+      block_matrix<alps_matrix, grp> m;
+      for (int k = 0; k < mps_in[i].data().n_blocks(); ++k)
+        m.insert_block(
+            maquis::bindings::matrix_cast<alps_matrix>(mps_in[i].data()[k]),
+            mps_in[i].data().left_basis()[k].first,
+            mps_in[i].data().right_basis()[k].first
+        );
+      mps_out[i] = MPSTensor<alps_matrix, grp>(
+          mps_in[i].site_dim(), mps_in[i].row_dim(), mps_in[i].col_dim(), m,
+          LeftPaired
+      );
+    }
+
+    {
+      storage::archive ar(argv[2], "w");
+      ar["/state"] << mps_out;
+    }
+
+  } catch (std::exception& e) {
+    std::cerr << "Error:" << std::endl << e.what() << std::endl;
+    return 1;
+  }
 }

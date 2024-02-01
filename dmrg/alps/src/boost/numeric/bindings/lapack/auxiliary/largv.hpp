@@ -50,12 +50,13 @@ namespace detail {
 // * netlib-compatible LAPACK backend (the default), and
 // * float value-type.
 //
-inline std::ptrdiff_t largv( const fortran_int_t n, float* x,
-        const fortran_int_t incx, float* y, const fortran_int_t incy,
-        float* c, const fortran_int_t incc ) {
-    fortran_int_t info(0);
-    LAPACK_SLARGV( &n, x, &incx, y, &incy, c, &incc );
-    return info;
+inline std::ptrdiff_t largv(
+    const fortran_int_t n, float* x, const fortran_int_t incx, float* y,
+    const fortran_int_t incy, float* c, const fortran_int_t incc
+) {
+  fortran_int_t info(0);
+  LAPACK_SLARGV(&n, x, &incx, y, &incy, c, &incc);
+  return info;
 }
 
 //
@@ -63,12 +64,13 @@ inline std::ptrdiff_t largv( const fortran_int_t n, float* x,
 // * netlib-compatible LAPACK backend (the default), and
 // * double value-type.
 //
-inline std::ptrdiff_t largv( const fortran_int_t n, double* x,
-        const fortran_int_t incx, double* y, const fortran_int_t incy,
-        double* c, const fortran_int_t incc ) {
-    fortran_int_t info(0);
-    LAPACK_DLARGV( &n, x, &incx, y, &incy, c, &incc );
-    return info;
+inline std::ptrdiff_t largv(
+    const fortran_int_t n, double* x, const fortran_int_t incx, double* y,
+    const fortran_int_t incy, double* c, const fortran_int_t incc
+) {
+  fortran_int_t info(0);
+  LAPACK_DLARGV(&n, x, &incx, y, &incy, c, &incc);
+  return info;
 }
 
 //
@@ -76,12 +78,14 @@ inline std::ptrdiff_t largv( const fortran_int_t n, double* x,
 // * netlib-compatible LAPACK backend (the default), and
 // * complex<float> value-type.
 //
-inline std::ptrdiff_t largv( const fortran_int_t n, std::complex<float>* x,
-        const fortran_int_t incx, std::complex<float>* y,
-        const fortran_int_t incy, float* c, const fortran_int_t incc ) {
-    fortran_int_t info(0);
-    LAPACK_CLARGV( &n, x, &incx, y, &incy, c, &incc );
-    return info;
+inline std::ptrdiff_t largv(
+    const fortran_int_t n, std::complex<float>* x, const fortran_int_t incx,
+    std::complex<float>* y, const fortran_int_t incy, float* c,
+    const fortran_int_t incc
+) {
+  fortran_int_t info(0);
+  LAPACK_CLARGV(&n, x, &incx, y, &incy, c, &incc);
+  return info;
 }
 
 //
@@ -89,105 +93,115 @@ inline std::ptrdiff_t largv( const fortran_int_t n, std::complex<float>* x,
 // * netlib-compatible LAPACK backend (the default), and
 // * complex<double> value-type.
 //
-inline std::ptrdiff_t largv( const fortran_int_t n, std::complex<double>* x,
-        const fortran_int_t incx, std::complex<double>* y,
-        const fortran_int_t incy, double* c, const fortran_int_t incc ) {
-    fortran_int_t info(0);
-    LAPACK_ZLARGV( &n, x, &incx, y, &incy, c, &incc );
-    return info;
+inline std::ptrdiff_t largv(
+    const fortran_int_t n, std::complex<double>* x, const fortran_int_t incx,
+    std::complex<double>* y, const fortran_int_t incy, double* c,
+    const fortran_int_t incc
+) {
+  fortran_int_t info(0);
+  LAPACK_ZLARGV(&n, x, &incx, y, &incy, c, &incc);
+  return info;
 }
 
-} // namespace detail
+}  // namespace detail
 
 //
 // Value-type based template class. Use this class if you need a type
 // for dispatching to largv.
 //
-template< typename Value, typename Enable = void >
+template <typename Value, typename Enable = void>
 struct largv_impl {};
 
 //
 // This implementation is enabled if Value is a real type.
 //
-template< typename Value >
-struct largv_impl< Value, typename boost::enable_if< is_real< Value > >::type > {
+template <typename Value>
+struct largv_impl<Value, typename boost::enable_if<is_real<Value> >::type> {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
-
-    //
-    // Static member function, that
-    // * Deduces the required arguments for dispatching to LAPACK, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename VectorX, typename VectorY, typename VectorC >
-    static std::ptrdiff_t invoke( const fortran_int_t n, VectorX& x,
-            VectorY& y, VectorC& c ) {
-        namespace bindings = ::boost::numeric::bindings;
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
-                typename bindings::value_type< VectorX >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                VectorY >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
-                typename bindings::value_type< VectorX >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                VectorC >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorX >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorY >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorC >::value) );
-        BOOST_ASSERT( bindings::size(c) >= 1+(n-1)*bindings::stride(c) );
-        BOOST_ASSERT( bindings::size(x) >= 1+(n-1)*bindings::stride(x) );
-        BOOST_ASSERT( bindings::size(y) >= 1+(n-1)*bindings::stride(y) );
-        return detail::largv( n, bindings::begin_value(x),
-                bindings::stride(x), bindings::begin_value(y),
-                bindings::stride(y), bindings::begin_value(c),
-                bindings::stride(c) );
-    }
-
+  //
+  // Static member function, that
+  // * Deduces the required arguments for dispatching to LAPACK, and
+  // * Asserts that most arguments make sense.
+  //
+  template <typename VectorX, typename VectorY, typename VectorC>
+  static std::ptrdiff_t invoke(
+      const fortran_int_t n, VectorX& x, VectorY& y, VectorC& c
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    BOOST_STATIC_ASSERT(
+        (boost::is_same<
+            typename remove_const<
+                typename bindings::value_type<VectorX>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<VectorY>::type>::type>::value)
+    );
+    BOOST_STATIC_ASSERT(
+        (boost::is_same<
+            typename remove_const<
+                typename bindings::value_type<VectorX>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<VectorC>::type>::type>::value)
+    );
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorX>::value));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorY>::value));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorC>::value));
+    BOOST_ASSERT(bindings::size(c) >= 1 + (n - 1) * bindings::stride(c));
+    BOOST_ASSERT(bindings::size(x) >= 1 + (n - 1) * bindings::stride(x));
+    BOOST_ASSERT(bindings::size(y) >= 1 + (n - 1) * bindings::stride(y));
+    return detail::largv(
+        n, bindings::begin_value(x), bindings::stride(x),
+        bindings::begin_value(y), bindings::stride(y), bindings::begin_value(c),
+        bindings::stride(c)
+    );
+  }
 };
 
 //
 // This implementation is enabled if Value is a complex type.
 //
-template< typename Value >
-struct largv_impl< Value, typename boost::enable_if< is_complex< Value > >::type > {
+template <typename Value>
+struct largv_impl<Value, typename boost::enable_if<is_complex<Value> >::type> {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
-
-    //
-    // Static member function, that
-    // * Deduces the required arguments for dispatching to LAPACK, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename VectorX, typename VectorY, typename VectorC >
-    static std::ptrdiff_t invoke( const fortran_int_t n, VectorX& x,
-            VectorY& y, VectorC& c ) {
-        namespace bindings = ::boost::numeric::bindings;
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
-                typename bindings::value_type< VectorX >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                VectorY >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorX >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorY >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorC >::value) );
-        BOOST_ASSERT( bindings::size(c) >= 1+(n-1)*bindings::stride(c) );
-        BOOST_ASSERT( bindings::size(x) >= 1+(n-1)*bindings::stride(x) );
-        BOOST_ASSERT( bindings::size(y) >= 1+(n-1)*bindings::stride(y) );
-        return detail::largv( n, bindings::begin_value(x),
-                bindings::stride(x), bindings::begin_value(y),
-                bindings::stride(y), bindings::begin_value(c),
-                bindings::stride(c) );
-    }
-
+  //
+  // Static member function, that
+  // * Deduces the required arguments for dispatching to LAPACK, and
+  // * Asserts that most arguments make sense.
+  //
+  template <typename VectorX, typename VectorY, typename VectorC>
+  static std::ptrdiff_t invoke(
+      const fortran_int_t n, VectorX& x, VectorY& y, VectorC& c
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    BOOST_STATIC_ASSERT(
+        (boost::is_same<
+            typename remove_const<
+                typename bindings::value_type<VectorX>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<VectorY>::type>::type>::value)
+    );
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorX>::value));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorY>::value));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorC>::value));
+    BOOST_ASSERT(bindings::size(c) >= 1 + (n - 1) * bindings::stride(c));
+    BOOST_ASSERT(bindings::size(x) >= 1 + (n - 1) * bindings::stride(x));
+    BOOST_ASSERT(bindings::size(y) >= 1 + (n - 1) * bindings::stride(y));
+    return detail::largv(
+        n, bindings::begin_value(x), bindings::stride(x),
+        bindings::begin_value(y), bindings::stride(y), bindings::begin_value(c),
+        bindings::stride(c)
+    );
+  }
 };
-
 
 //
 // Functions for direct use. These functions are overloaded for temporaries,
 // so that wrapped types can still be passed and used for write-access. In
 // addition, if applicable, they are overloaded for user-defined workspaces.
-// Calls to these functions are passed to the largv_impl classes. In the 
+// Calls to these functions are passed to the largv_impl classes. In the
 // documentation, most overloads are collapsed to avoid a large number of
 // prototypes which are very similar.
 //
@@ -195,16 +209,18 @@ struct largv_impl< Value, typename boost::enable_if< is_complex< Value > >::type
 //
 // Overloaded function for largv. Its overload differs for
 //
-template< typename VectorX, typename VectorY, typename VectorC >
-inline std::ptrdiff_t largv( const fortran_int_t n, VectorX& x,
-        VectorY& y, VectorC& c ) {
-    return largv_impl< typename bindings::value_type<
-            VectorX >::type >::invoke( n, x, y, c );
+template <typename VectorX, typename VectorY, typename VectorC>
+inline std::ptrdiff_t largv(
+    const fortran_int_t n, VectorX& x, VectorY& y, VectorC& c
+) {
+  return largv_impl<typename bindings::value_type<VectorX>::type>::invoke(
+      n, x, y, c
+  );
 }
 
-} // namespace lapack
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace lapack
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #define BOOST_TEST_MODULE VibrationalFEAST
@@ -16,8 +16,7 @@
 #include "dmrg/sim/matrix_types.h"
 #include "utils/fpcomparison.h"
 
-BOOST_FIXTURE_TEST_CASE(Test_FEAST_MPS_Getter, WatsonFixture)
-{
+BOOST_FIXTURE_TEST_CASE(Test_FEAST_MPS_Getter, WatsonFixture) {
 #ifdef HAVE_TrivialGroup
   using FEASTSimulatorType = FEASTSimulator<TrivialGroup>;
   using ModelType = Model<cmatrix, TrivialGroup>;
@@ -32,7 +31,9 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_MPS_Getter, WatsonFixture)
   auto vibrationalLattice = Lattice(parametersH2COWatson);
   auto vibrationalModel = ModelType(vibrationalLattice, parametersH2COWatson);
   auto vibrationalMPO = make_mpo(vibrationalLattice, vibrationalModel);
-  auto feastSimulator = FEASTSimulatorType(parametersH2COWatson, vibrationalModel, vibrationalLattice, vibrationalMPO);
+  auto feastSimulator = FEASTSimulatorType(
+      parametersH2COWatson, vibrationalModel, vibrationalLattice, vibrationalMPO
+  );
   // Checks consistency between guess MPS
   auto firstMPS = feastSimulator.getCurrentGuess(0);
   auto secondMPS = feastSimulator.getCurrentGuess(1);
@@ -41,13 +42,12 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_MPS_Getter, WatsonFixture)
   // Checks consistency for quadrature points
   auto quadPoints = feastSimulator.getQuadraturePoints();
   BOOST_CHECK_EQUAL(quadPoints.size(), 8);
-#endif // HAVE_TrivialGroup
+#endif  // HAVE_TrivialGroup
 }
 
 #ifdef HAVE_TrivialGroup
 
-BOOST_FIXTURE_TEST_CASE(Test_FEAST_H2CO, WatsonFixture)
-{
+BOOST_FIXTURE_TEST_CASE(Test_FEAST_H2CO, WatsonFixture) {
   using FEASTSimulatorType = FEASTSimulator<TrivialGroup>;
   using ModelType = Model<cmatrix, TrivialGroup>;
   //
@@ -63,22 +63,28 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_H2CO, WatsonFixture)
   parametersH2COWatsonNoCoriolis.set("alpha_initial", 1.0E-8);
   parametersH2COWatsonNoCoriolis.set("alpha_main", 1.0E-16);
   parametersH2COWatsonNoCoriolis.set("alpha_final", 0.);
-  maquis::DMRGInterface<double> interfaceOptimizerGS(parametersH2COWatsonNoCoriolis);
+  maquis::DMRGInterface<double> interfaceOptimizerGS(
+      parametersH2COWatsonNoCoriolis
+  );
   interfaceOptimizerGS.optimize();
   auto energyFromOptimizerGS = interfaceOptimizerGS.energy();
   // Excited-state calculation
   parametersH2COWatsonNoCoriolis.set("n_ortho_states", 1);
   parametersH2COWatsonNoCoriolis.set("ortho_states", "GS.H2CO.chkp.h5");
   parametersH2COWatsonNoCoriolis.set("chkpfile", "ES.H2CO.chkp.h5");
-  maquis::DMRGInterface<double> interfaceOptimizerES(parametersH2COWatsonNoCoriolis);
+  maquis::DMRGInterface<double> interfaceOptimizerES(
+      parametersH2COWatsonNoCoriolis
+  );
   interfaceOptimizerES.optimize();
   auto energyFromOptimizerES = interfaceOptimizerES.energy();
   // Cleans up stuff
-  boost::filesystem::remove_all("GS.H2CO.chkp.h5");
-  boost::filesystem::remove_all("ES.H2CO.chkp.h5");
+  std::filesystem::remove_all("GS.H2CO.chkp.h5");
+  std::filesystem::remove_all("ES.H2CO.chkp.h5");
   // FEAST
-  auto eMin = energyFromOptimizerGS - (energyFromOptimizerES-energyFromOptimizerGS)/10.;
-  auto eMax = energyFromOptimizerGS + (energyFromOptimizerES-energyFromOptimizerGS)/10.;
+  auto eMin = energyFromOptimizerGS -
+              (energyFromOptimizerES - energyFromOptimizerGS) / 10.;
+  auto eMax = energyFromOptimizerGS +
+              (energyFromOptimizerES - energyFromOptimizerGS) / 10.;
   parametersH2COWatsonNoCoriolis.set("nsweeps", 3);
   parametersH2COWatsonNoCoriolis.set("feast_num_states", 1);
   parametersH2COWatsonNoCoriolis.set("feast_max_iter", 2);
@@ -87,9 +93,15 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_H2CO, WatsonFixture)
   parametersH2COWatsonNoCoriolis.set("feast_num_points", 8);
   parametersH2COWatsonNoCoriolis.set("init_type", "basis_state_generic_const");
   parametersH2COWatsonNoCoriolis.set("init_space", "3,2,1,1,2,0");
-  parametersH2COWatsonNoCoriolis.set("feast_overlap_convergence_threshold", 1.0E-5);
-  parametersH2COWatsonNoCoriolis.set("feast_energy_convergence_threshold", 1.0E-5);
-  parametersH2COWatsonNoCoriolis.set("feast_calculate_standard_deviation", "yes");
+  parametersH2COWatsonNoCoriolis.set(
+      "feast_overlap_convergence_threshold", 1.0E-5
+  );
+  parametersH2COWatsonNoCoriolis.set(
+      "feast_energy_convergence_threshold", 1.0E-5
+  );
+  parametersH2COWatsonNoCoriolis.set(
+      "feast_calculate_standard_deviation", "yes"
+  );
   //
   parametersH2COWatsonNoCoriolis.set("linsystem_precond", "no");
   parametersH2COWatsonNoCoriolis.set("linsystem_krylov_dim", 50);
@@ -97,9 +109,13 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_H2CO, WatsonFixture)
   parametersH2COWatsonNoCoriolis.set("linsystem_init", "last");
   parametersH2COWatsonNoCoriolis.set("linsystem_exact_error", "yes");
   auto vibrationalLattice = Lattice(parametersH2COWatsonNoCoriolis);
-  auto vibrationalModel = ModelType(vibrationalLattice, parametersH2COWatsonNoCoriolis);
+  auto vibrationalModel =
+      ModelType(vibrationalLattice, parametersH2COWatsonNoCoriolis);
   auto vibrationalMPO = make_mpo(vibrationalLattice, vibrationalModel);
-  auto feastSimulator = FEASTSimulatorType(parametersH2COWatsonNoCoriolis, vibrationalModel, vibrationalLattice, vibrationalMPO);
+  auto feastSimulator = FEASTSimulatorType(
+      parametersH2COWatsonNoCoriolis, vibrationalModel, vibrationalLattice,
+      vibrationalMPO
+  );
   feastSimulator.runFEAST();
   auto feastEnergy = feastSimulator.getEnergy(0);
   BOOST_CHECK_CLOSE(feastEnergy, energyFromOptimizerGS, 1.0E-6);
@@ -136,17 +152,17 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Ethylene, WatsonFixture)
   parametersEthyleneWatson.set("linsystem_krylov_dim", 50);
   parametersEthyleneWatson.set("linsystem_tol", 1.0E-5);
   auto vibrationalLattice = Lattice(parametersEthyleneWatson);
-  auto vibrationalModel = ModelType(vibrationalLattice, parametersEthyleneWatson);
-  auto vibrationalMPO = make_mpo(vibrationalLattice, vibrationalModel);
-  auto feastSimulator = FEASTSimulatorType(parametersEthyleneWatson, vibrationalModel, vibrationalLattice, vibrationalMPO);
-  feastSimulator.runFEAST();
-  auto feastEnergy = feastSimulator.getEnergy(0);
-  BOOST_CHECK_CLOSE(feastEnergy, energyFromOptimizerGS, 1.0E-6);
+  auto vibrationalModel = ModelType(vibrationalLattice,
+parametersEthyleneWatson); auto vibrationalMPO = make_mpo(vibrationalLattice,
+vibrationalModel); auto feastSimulator =
+FEASTSimulatorType(parametersEthyleneWatson, vibrationalModel,
+vibrationalLattice, vibrationalMPO); feastSimulator.runFEAST(); auto feastEnergy
+= feastSimulator.getEnergy(0); BOOST_CHECK_CLOSE(feastEnergy,
+energyFromOptimizerGS, 1.0E-6);
 }
 */
 
-BOOST_FIXTURE_TEST_CASE(Test_FEAST_Bilinearly, WatsonFixture)
-{
+BOOST_FIXTURE_TEST_CASE(Test_FEAST_Bilinearly, WatsonFixture) {
   using FEASTSimulatorType = FEASTSimulator<TrivialGroup>;
   using ModelType = Model<cmatrix, TrivialGroup>;
   //
@@ -173,11 +189,13 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Bilinearly, WatsonFixture)
   interfaceOptimizerES.optimize();
   auto energyFromOptimizerES = interfaceOptimizerES.energy();
   // Cleans up stuff
-  boost::filesystem::remove_all("GS.Bilinearly.chkp.h5");
-  boost::filesystem::remove_all("ES.Bilinearly.chkp.h5");
+  std::filesystem::remove_all("GS.Bilinearly.chkp.h5");
+  std::filesystem::remove_all("ES.Bilinearly.chkp.h5");
   // == DMRG[FEAST] ==
-  auto eMin = energyFromOptimizerGS - (energyFromOptimizerES-energyFromOptimizerGS)/10.;
-  auto eMax = energyFromOptimizerGS + (energyFromOptimizerES-energyFromOptimizerGS)/10.;
+  auto eMin = energyFromOptimizerGS -
+              (energyFromOptimizerES - energyFromOptimizerGS) / 10.;
+  auto eMax = energyFromOptimizerGS +
+              (energyFromOptimizerES - energyFromOptimizerGS) / 10.;
   // FEAST-specific parameters
   parametersBilinearly.set("nsweeps", 10);
   parametersBilinearly.set("feast_num_states", 1);
@@ -195,19 +213,20 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Bilinearly, WatsonFixture)
   auto vibrationalLattice = Lattice(parametersBilinearly);
   auto vibrationalModel = ModelType(vibrationalLattice, parametersBilinearly);
   auto vibrationalMPO = make_mpo(vibrationalLattice, vibrationalModel);
-  auto feastSimulator = FEASTSimulatorType(parametersBilinearly, vibrationalModel, vibrationalLattice, vibrationalMPO);
+  auto feastSimulator = FEASTSimulatorType(
+      parametersBilinearly, vibrationalModel, vibrationalLattice, vibrationalMPO
+  );
   feastSimulator.runFEAST();
   auto feastEnergy = feastSimulator.getEnergy(0);
   BOOST_CHECK_CLOSE(feastEnergy, energyFromOptimizerGS, 1.0E-6);
 }
 
-#endif // HAVE_TrivialGroup
+#endif  // HAVE_TrivialGroup
 
 #ifdef HAVE_NU1
 
 /** @brief DMRG[FEAST] test for the n-mode Hamiltonian */
-BOOST_FIXTURE_TEST_CASE(Test_FEAST_FAD_Fingerprint, NModeFixture)
-{
+BOOST_FIXTURE_TEST_CASE(Test_FEAST_FAD_Fingerprint, NModeFixture) {
   maquis::cout << "FINGERPRINT before otimization" << std::endl;
   parametersFADTwoBodyFingerPrint.set("nsweeps", 20);
   parametersFADTwoBodyFingerPrint.set("init_type", "const");
@@ -221,7 +240,9 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_FAD_Fingerprint, NModeFixture)
   parametersFADTwoBodyFingerPrint.set("max_bond_dimension", 100);
   parametersFADTwoBodyFingerPrint.set("seed", 30061957);
   // Ground-state calculation
-  maquis::DMRGInterface<double> interfaceGroundState(parametersFADTwoBodyFingerPrint);
+  maquis::DMRGInterface<double> interfaceGroundState(
+      parametersFADTwoBodyFingerPrint
+  );
   interfaceGroundState.optimize();
   auto groundStateEnergy = interfaceGroundState.energy();
   maquis::cout << "FINGERPRINT after otimization, before FEAST" << std::endl;
@@ -244,7 +265,9 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_FAD_Fingerprint, NModeFixture)
   parametersFADTwoBodyFingerPrint.set("linsystem_krylov_dim", 50);
   parametersFADTwoBodyFingerPrint.set("linsystem_tol", 1.0E-12);
   parametersFADTwoBodyFingerPrint.set("linsystem_init", "last");
-  maquis::DMRGInterface<std::complex<double>> interfaceFEAST(parametersFADTwoBodyFingerPrint);
+  maquis::DMRGInterface<std::complex<double>> interfaceFEAST(
+      parametersFADTwoBodyFingerPrint
+  );
   interfaceFEAST.runFEAST();
   auto feastEnergy = maquis::real(interfaceFEAST.energyFEAST(0));
   BOOST_CHECK_CLOSE(feastEnergy, groundStateEnergy, 1.0E-6);

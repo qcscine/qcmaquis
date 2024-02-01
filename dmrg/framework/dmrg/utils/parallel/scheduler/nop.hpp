@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #ifndef PARALLEL_SCHEDULER_NOP_HPP
@@ -10,18 +10,14 @@
 
 namespace parallel {
 
-    class scheduler_nop {
-    public:
-        typedef traits::resource_iterator_nop resource_iterator;
+class scheduler_nop {
+ public:
+  typedef traits::resource_iterator_nop resource_iterator;
 
-        resource_iterator operator()(int k) const {
-            return resource_iterator();
-        }
-        bool propagate() const {
-            return false;
-        }
-    };
+  resource_iterator operator()(int k) const { return resource_iterator(); }
+  bool propagate() const { return false; }
+};
 
-}
+}  // namespace parallel
 
 #endif

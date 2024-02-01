@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #define BOOST_TEST_MODULE LinearSolverVibrational
@@ -25,6 +25,7 @@
 #include <boost/mpl/push_front.hpp>
 #include <iostream>
 
+#ifdef HAVE_TrivialGroup
 /**
  * @brief Tests the linear solver for a trivial case.
  *
@@ -39,62 +40,94 @@
  * should, therefore, converge in a single iteration.
  */
 BOOST_FIXTURE_TEST_CASE(Test_LinearSolver_Trivial, WatsonFixture) {
-#ifdef HAVE_TrivialGroup
   // Types declaration
-  using BoundaryType = Boundary<typename storage::constrained<matrix>::type, TrivialGroup>;
-  using contr = contraction::Engine<matrix, typename storage::constrained<matrix>::type, TrivialGroup>;
-  using BlockMatrix = block_matrix<typename storage::constrained<matrix>::type, TrivialGroup>;
-  using OrthoContainer = std::vector< BlockMatrix >;
+  using BoundaryType =
+      Boundary<typename storage::constrained<matrix>::type, TrivialGroup>;
+  using contr = contraction::Engine<
+      matrix, typename storage::constrained<matrix>::type, TrivialGroup>;
+  using BlockMatrix =
+      block_matrix<typename storage::constrained<matrix>::type, TrivialGroup>;
+  using OrthoContainer = std::vector<BlockMatrix>;
   using SiteProblem = SiteProblem<matrix, TrivialGroup>;
   using LinSolver = LinSolver<matrix, TrivialGroup>;
   parametersEthyleneWatsonHarmonic.set("Nmax", "1,2,3,4,5,6,7,8,9,10,11,12");
   // Prepares the lattice, the model, and the corresponding MPO
   auto vibrationalLattice = Lattice(parametersEthyleneWatsonHarmonic);
-  auto model = Model<matrix, TrivialGroup>(vibrationalLattice, parametersEthyleneWatsonHarmonic);
+  auto model = Model<matrix, TrivialGroup>(
+      vibrationalLattice, parametersEthyleneWatsonHarmonic
+  );
   auto mpo = make_mpo(vibrationalLattice, model);
   auto latticeSize = mpo.length();
   // Generates the MPS.
   parametersEthyleneWatsonHarmonic.set("init_type", "basis_state_generic");
-  parametersEthyleneWatsonHarmonic.set("init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0");
-  auto mpsHF = MPS<matrix, TrivialGroup>(vibrationalLattice.size(),
-                                         *(model.initializer(vibrationalLattice, parametersEthyleneWatsonHarmonic)));
+  parametersEthyleneWatsonHarmonic.set(
+      "init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0"
+  );
+  auto mpsHF = MPS<matrix, TrivialGroup>(
+      vibrationalLattice.size(),
+      *(model.initializer(vibrationalLattice, parametersEthyleneWatsonHarmonic))
+  );
   mpsHF.normalize_right();
   // Prepares the boundaries
   std::vector<BoundaryType> leftBoundary, rightBoundary;
-  leftBoundary.resize(latticeSize+1);
-  rightBoundary.resize(latticeSize+1);
+  leftBoundary.resize(latticeSize + 1);
+  rightBoundary.resize(latticeSize + 1);
   leftBoundary[0] = mpsHF.left_boundary();
   for (int iSite = 0; iSite < latticeSize; iSite++)
-    leftBoundary[iSite+1] = contr::overlap_mpo_left_step(mpsHF[iSite], mpsHF[iSite], leftBoundary[iSite], mpo[iSite]);
+    leftBoundary[iSite + 1] = contr::overlap_mpo_left_step(
+        mpsHF[iSite], mpsHF[iSite], leftBoundary[iSite], mpo[iSite]
+    );
   rightBoundary[latticeSize] = mpsHF.right_boundary();
-  for (int iSite = latticeSize-1; iSite >= 0; iSite--)
-    rightBoundary[iSite] = contr::overlap_mpo_right_step(mpsHF[iSite], mpsHF[iSite], rightBoundary[iSite+1], mpo[iSite]);
+  for (int iSite = latticeSize - 1; iSite >= 0; iSite--)
+    rightBoundary[iSite] = contr::overlap_mpo_right_step(
+        mpsHF[iSite], mpsHF[iSite], rightBoundary[iSite + 1], mpo[iSite]
+    );
   // Prepares the overlap boundaries
-  OrthoContainer orthoLeft(latticeSize+1), orthoRight(latticeSize+1);
+  OrthoContainer orthoLeft(latticeSize + 1), orthoRight(latticeSize + 1);
   orthoLeft[0] = mpsHF.left_boundary()[0];
   orthoRight[latticeSize] = mpsHF.right_boundary()[0];
   for (int iSite = 0; iSite < latticeSize; iSite++)
-    orthoLeft[iSite+1] = contr::overlap_left_step(mpsHF[iSite], mpsHF[iSite], orthoLeft[iSite]);
-  for (int iSite = latticeSize-1; iSite >= 0; iSite--)
-    orthoRight[iSite] = contr::overlap_right_step(mpsHF[iSite], mpsHF[iSite], orthoRight[iSite+1]);
+    orthoLeft[iSite + 1] =
+        contr::overlap_left_step(mpsHF[iSite], mpsHF[iSite], orthoLeft[iSite]);
+  for (int iSite = latticeSize - 1; iSite >= 0; iSite--)
+    orthoRight[iSite] = contr::overlap_right_step(
+        mpsHF[iSite], mpsHF[iSite], orthoRight[iSite + 1]
+    );
   // Prepares the SiteProblem object and the corresponding ortho object.
-  auto siteProblem = std::make_shared<SiteProblem>(leftBoundary[0], rightBoundary[1], mpo[0]);
-  auto rhs = contraction::site_ortho_boundaries(mpsHF[0], mpsHF[0], orthoLeft[0], orthoRight[1]);
-  auto precond = std::make_shared<BlockMatrix>(contraction::Engine<matrix, matrix, TrivialGroup>::diagonal_hamiltonian(leftBoundary[0], rightBoundary[1], mpo[0], mpsHF[0]));
+  auto siteProblem =
+      std::make_shared<SiteProblem>(leftBoundary[0], rightBoundary[1], mpo[0]);
+  auto rhs = contraction::site_ortho_boundaries(
+      mpsHF[0], mpsHF[0], orthoLeft[0], orthoRight[1]
+  );
+  auto precond = std::make_shared<BlockMatrix>(
+      contraction::Engine<matrix, matrix, TrivialGroup>::diagonal_hamiltonian(
+          leftBoundary[0], rightBoundary[1], mpo[0], mpsHF[0]
+      )
+  );
   double zShift = 0.;
   parametersEthyleneWatsonHarmonic.set("linsystem_solver", "GMRES");
-  auto linearSolver = LinSolver(siteProblem, mpsHF[0], rhs, zShift, parametersEthyleneWatsonHarmonic, precond, true);
+  auto linearSolver = LinSolver(
+      siteProblem, mpsHF[0], rhs, zShift, parametersEthyleneWatsonHarmonic,
+      precond, true
+  );
   auto result = linearSolver.res();
-  // First check: since H*psi = E*psi, and we set rhs=psi, the solution to the linear system should be the inverse of the energy.
-  auto norm = 1./ietl::two_norm(std::get<2>(result));
+  // First check: since H*psi = E*psi, and we set rhs=psi, the solution to the
+  // linear system should be the inverse of the energy.
+  auto norm = 1. / ietl::two_norm(std::get<2>(result));
   BOOST_CHECK_CLOSE(norm, referenceHarmonicEnergy, 1.0E-8);
   // Does the same for Eigen
   parametersEthyleneWatsonHarmonic.set("linsystem_solver", "GMRES_EIGEN");
-  auto linearSolverEigen = LinSolver(siteProblem, mpsHF[0], rhs, zShift, parametersEthyleneWatsonHarmonic, precond, true);
+  auto linearSolverEigen = LinSolver(
+      siteProblem, mpsHF[0], rhs, zShift, parametersEthyleneWatsonHarmonic,
+      precond, true
+  );
   auto resultEigen = linearSolverEigen.res();
-  BOOST_CHECK_CLOSE(1./ietl::two_norm(std::get<2>(resultEigen)), referenceHarmonicEnergy, 1.0E-8);
-#endif // HAVE_TrivialGroup
+  BOOST_CHECK_CLOSE(
+      1. / ietl::two_norm(std::get<2>(resultEigen)), referenceHarmonicEnergy,
+      1.0E-8
+  );
 }
+#endif  // HAVE_TrivialGroup
 
 #ifdef HAVE_TrivialGroup
 
@@ -104,10 +137,13 @@ BOOST_FIXTURE_TEST_CASE(Test_LinearSolver_Trivial, WatsonFixture) {
  */
 BOOST_FIXTURE_TEST_CASE(Test_LinearSolver_Trivial_Complex, WatsonFixture) {
   // Types declaration
-  using BoundaryType = Boundary<typename storage::constrained<cmatrix>::type, TrivialGroup>;
-  using contr = contraction::Engine<cmatrix, typename storage::constrained<cmatrix>::type, TrivialGroup>;
-  using BlockMatrix = block_matrix<typename storage::constrained<cmatrix>::type, TrivialGroup>;
-  using OrthoContainer = std::vector< BlockMatrix >;
+  using BoundaryType =
+      Boundary<typename storage::constrained<cmatrix>::type, TrivialGroup>;
+  using contr = contraction::Engine<
+      cmatrix, typename storage::constrained<cmatrix>::type, TrivialGroup>;
+  using BlockMatrix =
+      block_matrix<typename storage::constrained<cmatrix>::type, TrivialGroup>;
+  using OrthoContainer = std::vector<BlockMatrix>;
   using SiteProblem = SiteProblem<cmatrix, TrivialGroup>;
   using LinSolver = LinSolver<cmatrix, TrivialGroup>;
   // Prepares the lattice, the model, and the corresponding MPO
@@ -115,66 +151,93 @@ BOOST_FIXTURE_TEST_CASE(Test_LinearSolver_Trivial_Complex, WatsonFixture) {
   parametersBilinearly.set("init_type", "default");
   parametersBilinearly.set("seed", 1989);
   auto vibrationalLattice = Lattice(parametersBilinearly);
-  auto model = Model<cmatrix, TrivialGroup>(vibrationalLattice, parametersBilinearly);
+  auto model =
+      Model<cmatrix, TrivialGroup>(vibrationalLattice, parametersBilinearly);
   auto mpo = make_mpo(vibrationalLattice, model);
   auto latticeSize = mpo.length();
   // Generates the first MPS
-  auto initializerPointerFirst = model.initializer(vibrationalLattice, parametersBilinearly);
-  auto firstMPS = MPS<cmatrix, TrivialGroup>(latticeSize, *initializerPointerFirst);
+  auto initializerPointerFirst =
+      model.initializer(vibrationalLattice, parametersBilinearly);
+  auto firstMPS =
+      MPS<cmatrix, TrivialGroup>(latticeSize, *initializerPointerFirst);
   firstMPS.normalize_right();
-  // Generates the second MPS (note that the seed is changed in order to ensure that the lhs != rhs)
+  // Generates the second MPS (note that the seed is changed in order to ensure
+  // that the lhs != rhs)
   parametersBilinearly.set("seed", 1991);
-  auto initializerPointerSecond = model.initializer(vibrationalLattice, parametersBilinearly);
-  auto secondMPS = MPS<cmatrix, TrivialGroup>(latticeSize, *initializerPointerSecond);
+  auto initializerPointerSecond =
+      model.initializer(vibrationalLattice, parametersBilinearly);
+  auto secondMPS =
+      MPS<cmatrix, TrivialGroup>(latticeSize, *initializerPointerSecond);
   secondMPS.normalize_right();
   // Prepares the boundaries
   std::vector<BoundaryType> leftBoundary, rightBoundary;
-  leftBoundary.resize(latticeSize+1);
-  rightBoundary.resize(latticeSize+1);
+  leftBoundary.resize(latticeSize + 1);
+  rightBoundary.resize(latticeSize + 1);
   leftBoundary[0] = firstMPS.left_boundary();
   for (int iSite = 0; iSite < latticeSize; iSite++)
-    leftBoundary[iSite+1] = contr::overlap_mpo_left_step(firstMPS[iSite], firstMPS[iSite], leftBoundary[iSite], mpo[iSite]);
+    leftBoundary[iSite + 1] = contr::overlap_mpo_left_step(
+        firstMPS[iSite], firstMPS[iSite], leftBoundary[iSite], mpo[iSite]
+    );
   rightBoundary[latticeSize] = firstMPS.right_boundary();
-  for (int iSite = latticeSize-1; iSite >= 0; iSite--)
-    rightBoundary[iSite] = contr::overlap_mpo_right_step(firstMPS[iSite], firstMPS[iSite], rightBoundary[iSite+1], mpo[iSite]);
+  for (int iSite = latticeSize - 1; iSite >= 0; iSite--)
+    rightBoundary[iSite] = contr::overlap_mpo_right_step(
+        firstMPS[iSite], firstMPS[iSite], rightBoundary[iSite + 1], mpo[iSite]
+    );
   // Prepares the overlap boundaries
-  OrthoContainer orthoLeft(latticeSize+1), orthoRight(latticeSize+1);
+  OrthoContainer orthoLeft(latticeSize + 1), orthoRight(latticeSize + 1);
   orthoLeft[0] = firstMPS.left_boundary()[0];
   orthoRight[latticeSize] = firstMPS.right_boundary()[0];
   for (int iSite = 0; iSite < latticeSize; iSite++)
-    orthoLeft[iSite+1] = contr::overlap_left_step(firstMPS[iSite], secondMPS[iSite], orthoLeft[iSite]);
-  for (int iSite = latticeSize-1; iSite >= 0; iSite--)
-    orthoRight[iSite] = contr::overlap_right_step(firstMPS[iSite], secondMPS[iSite], orthoRight[iSite+1]);
-  auto siteProblem = std::make_shared<SiteProblem>(leftBoundary[0], rightBoundary[1], mpo[0]);
-  auto rhs = contraction::site_ortho_boundaries(firstMPS[0], secondMPS[0], orthoLeft[0], orthoRight[1]);
+    orthoLeft[iSite + 1] = contr::overlap_left_step(
+        firstMPS[iSite], secondMPS[iSite], orthoLeft[iSite]
+    );
+  for (int iSite = latticeSize - 1; iSite >= 0; iSite--)
+    orthoRight[iSite] = contr::overlap_right_step(
+        firstMPS[iSite], secondMPS[iSite], orthoRight[iSite + 1]
+    );
+  auto siteProblem =
+      std::make_shared<SiteProblem>(leftBoundary[0], rightBoundary[1], mpo[0]);
+  auto rhs = contraction::site_ortho_boundaries(
+      firstMPS[0], secondMPS[0], orthoLeft[0], orthoRight[1]
+  );
   // Constructs the linear system solver
   parametersBilinearly.set("linsystem_init", "last");
   parametersBilinearly.set("linsystem_max_it", 1);
   parametersBilinearly.set("linsystem_tol", 1.0E-15);
   parametersBilinearly.set("linsystem_krylov_dim", 100);
   // Here we test all possible methods.
-  auto vectorOfMethods = std::vector<std::string>{"GMRES", "GMRES_EIGEN", "BiCGSTAB_EIGEN"};
+  auto vectorOfMethods =
+      std::vector<std::string>{"GMRES", "GMRES_EIGEN", "BiCGSTAB_EIGEN"};
   auto vectorOfPrecond = std::vector<std::string>{"no", "diagonal"};
-  for (const auto& iString: vectorOfMethods) {
-    for (const auto& iPrecond: vectorOfPrecond) {
-      // Note that, since we are not running anything via the interface, we have to explicitly construct the
-      // preconditioner if the parameter is set, and not do that if the parameter is not set.
+  for (const auto& iString : vectorOfMethods) {
+    for (const auto& iPrecond : vectorOfPrecond) {
+      // Note that, since we are not running anything via the interface, we have
+      // to explicitly construct the preconditioner if the parameter is set, and
+      // not do that if the parameter is not set.
       std::shared_ptr<BlockMatrix> precond;
       if (iPrecond == "diagonal")
-        precond = std::make_shared<BlockMatrix>(contraction::Engine<cmatrix, cmatrix, TrivialGroup>::diagonal_hamiltonian(leftBoundary[0], rightBoundary[1], mpo[0], firstMPS[0]));
+        precond = std::make_shared<BlockMatrix>(
+            contraction::Engine<cmatrix, cmatrix, TrivialGroup>::
+                diagonal_hamiltonian(
+                    leftBoundary[0], rightBoundary[1], mpo[0], firstMPS[0]
+                )
+        );
       parametersBilinearly.set("linsystem_solver", iString);
       parametersBilinearly.set("linsystem_precond", iPrecond);
       auto zShift = std::complex<double>(392., -521.);
-      auto linearSolver = LinSolver(siteProblem, firstMPS[0], rhs, zShift, parametersBilinearly, precond, true);
+      auto linearSolver = LinSolver(
+          siteProblem, firstMPS[0], rhs, zShift, parametersBilinearly, precond,
+          true
+      );
       auto result = linearSolver.res();
       auto mpsCopy = firstMPS[0];
       firstMPS[0] = std::get<2>(result);
-      std::complex<double> lhsTerm = expval(firstMPS, mpo)-zShift*overlap(firstMPS, firstMPS);
+      std::complex<double> lhsTerm =
+          expval(firstMPS, mpo) - zShift * overlap(firstMPS, firstMPS);
       std::complex<double> rhsTerm = overlap(firstMPS, secondMPS);
       BOOST_CHECK_CLOSE(std::abs(lhsTerm), std::abs(rhsTerm), 1.0E-10);
       firstMPS[0] = mpsCopy;
     }
   }
 }
-
-#endif // HAVE_TrivialGroup
+#endif  // HAVE_TrivialGroup

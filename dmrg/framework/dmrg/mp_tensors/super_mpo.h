@@ -1,29 +1,29 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #ifndef SUPER_MPO_H
 #define SUPER_MPO_H
 
+#include <tuple>
+#include <unordered_map>
+
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/block_matrix/grouped_symmetry.h"
 
-
 namespace detail {
-    /// This functor is needed because boost::function<> f = boost::lambda::bind()
-    /// fails with Boost 1.57.0 and Clang compilers.
-    template <class SymmGroup>
-    struct phys_fuse_functor {
-        typedef typename SymmGroup::charge charge;
-        charge operator()(charge a, charge b) {
-            return SymmGroup::fuse(a, -b);
-        }
-    };
-}
+/// This functor is needed because std::function<> f = boost::lambda::bind()
+/// fails with Boost 1.57.0 and Clang compilers.
+template <class SymmGroup>
+struct phys_fuse_functor {
+  using charge = typename SymmGroup::charge;
+  charge operator()(charge a, charge b) { return SymmGroup::fuse(a, -b); }
+};
+}  // namespace detail
 
 /*
  * Building Super MPS from an MPO object
@@ -49,125 +49,136 @@ namespace detail {
  */
 
 template <class Matrix, class SymmGroup>
-typename std::enable_if<!symm_traits::HasSU2<SymmGroup>::value, MPS<Matrix, SymmGroup> >::type
-mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<SymmGroup> const& phys_i)
-{
-    typedef typename SymmGroup::charge charge;
-    typedef boost::unordered_map<size_t,std::pair<charge,size_t> > bond_charge_map;
-    typedef typename MPOTensor<Matrix, SymmGroup>::row_proxy row_proxy;
-    typedef typename operator_selector<Matrix, SymmGroup>::type op_t;
+typename std::enable_if<
+    !symm_traits::HasSU2<SymmGroup>::value, MPS<Matrix, SymmGroup>>::type
+mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<SymmGroup> const& phys_i) {
+  using charge = typename SymmGroup::charge;
+  using bond_charge_map = std::unordered_map<size_t, std::pair<charge, size_t>>;
+  using row_proxy = typename MPOTensor<Matrix, SymmGroup>::row_proxy;
+  using op_t = typename operator_selector<Matrix, SymmGroup>::type;
 
-    MPS<Matrix, SymmGroup> mps(mpo.size());
+  MPS<Matrix, SymmGroup> mps(mpo.size());
 
-    detail::phys_fuse_functor<SymmGroup> phys_fuse;
+  detail::phys_fuse_functor<SymmGroup> phys_fuse;
 
-    Index<SymmGroup> phys2_i = phys_i*adjoin(phys_i);
-    ProductBasis<SymmGroup> phys_prod(phys_i, phys_i, phys_fuse);
-    Index<SymmGroup> left_i, right_i;
-    left_i.insert( std::make_pair(SymmGroup::IdentityCharge, 1) );
+  Index<SymmGroup> phys2_i = phys_i * adjoin(phys_i);
+  ProductBasis<SymmGroup> phys_prod(phys_i, phys_i, phys_fuse);
+  Index<SymmGroup> left_i, right_i;
+  left_i.insert(std::make_pair(SymmGroup::IdentityCharge, 1));
 
-    bond_charge_map left_map, right_map;
-    left_map[0] = std::make_pair(SymmGroup::IdentityCharge, 0);
+  bond_charge_map left_map, right_map;
+  left_map[0] = std::make_pair(SymmGroup::IdentityCharge, 0);
 
-    for (int i=0; i<mpo.size(); ++i) {
+  for (int i = 0; i < mpo.size(); ++i) {
+    ProductBasis<SymmGroup> left_out(phys2_i, left_i);
+    boost::unordered_map<charge, size_t> right_sizes;
 
-        ProductBasis<SymmGroup> left_out(phys2_i, left_i);
-        boost::unordered_map<charge, size_t> right_sizes;
+    block_matrix<Matrix, SymmGroup> out_block;
 
-        block_matrix<Matrix, SymmGroup> out_block;
+    /// run=0 computes the sizes of right blocks
+    for (int run = 0; run <= 1; ++run)
+      for (size_t b1 = 0; b1 < mpo[i].row_dim(); ++b1) {
+        // for (size_t b2=0; b2<mpo[i].col_dim(); ++b2)
+        row_proxy row_b1 = mpo[i].row(b1);
+        for (typename row_proxy::const_iterator it = row_b1.begin();
+             it != row_b1.end(); ++it) {
+          size_t b2 = it.index();
 
-        /// run=0 computes the sizes of right blocks
-        for (int run=0; run<=1; ++run)
-            for (size_t b1=0; b1<mpo[i].row_dim(); ++b1)
-            {
-                //for (size_t b2=0; b2<mpo[i].col_dim(); ++b2)
-                row_proxy row_b1 = mpo[i].row(b1);
-                for (typename row_proxy::const_iterator it = row_b1.begin(); it != row_b1.end(); ++it)
-                {
-                    size_t b2 = it.index();
+          /// note: this has to be here, because we don't know if b1 exists
+          charge l_charge;
+          size_t ll;
+          std::tie(l_charge, ll) = left_map[b1];
+          size_t l_size = left_i[left_i.position(l_charge)].second;
 
-                    /// note: this has to be here, because we don't know if b1 exists
-                    charge l_charge; size_t ll;
-                    boost::tie(l_charge, ll) = left_map[b1];
-                    size_t l_size = left_i[left_i.position(l_charge)].second;
+          typename Matrix::value_type scale = mpo[i].at(b1, b2).scale();
+          op_t const& in_block = mpo[i].at(b1, b2).op();
+          for (size_t n = 0; n < in_block.n_blocks(); ++n) {
+            charge s1_charge;
+            size_t size1;
+            std::tie(s1_charge, size1) = std::make_tuple(
+                in_block.basis().left_charge(n), in_block.basis().left_size(n)
+            );
+            charge s2_charge;
+            size_t size2;
+            std::tie(s2_charge, size2) = std::make_tuple(
+                in_block.basis().right_charge(n), in_block.basis().right_size(n)
+            );
 
-                    typename Matrix::value_type scale = mpo[i].at(b1, b2).scale();
-                    op_t const& in_block = mpo[i].at(b1, b2).op();
-                    for (size_t n=0; n<in_block.n_blocks(); ++n)
-                    {
-                        charge s1_charge; size_t size1;
-                        boost::tie(s1_charge, size1) = boost::make_tuple(in_block.basis().left_charge(n), in_block.basis().left_size(n));
-                        charge s2_charge; size_t size2;
-                        boost::tie(s2_charge, size2) = boost::make_tuple(in_block.basis().right_charge(n), in_block.basis().right_size(n));
+            charge s_charge = phys_fuse(s1_charge, s2_charge);
+            charge out_l_charge = SymmGroup::fuse(s_charge, l_charge);
+            charge out_r_charge = out_l_charge;
 
-                        charge s_charge = phys_fuse(s1_charge, s2_charge);
-                        charge out_l_charge = SymmGroup::fuse(s_charge, l_charge);
-                        charge out_r_charge = out_l_charge;
+            if (false && run == 0) {
+              maquis::cout << "s1: " << s1_charge << std::endl;
+              maquis::cout << "s2: " << s2_charge << std::endl;
+              maquis::cout << "s:  " << s_charge << std::endl;
+              maquis::cout << "b1: " << b1 << std::endl;
+              maquis::cout << "b2: " << b2 << std::endl;
+              maquis::cout << "l:  " << l_charge << std::endl;
+              maquis::cout << "r:  " << out_r_charge << std::endl;
 
-                        if (false && run==0) {
-                            maquis::cout << "s1: " << s1_charge << std::endl;
-                            maquis::cout << "s2: " << s2_charge << std::endl;
-                            maquis::cout << "s:  " << s_charge << std::endl;
-                            maquis::cout << "b1: " << b1 << std::endl;
-                            maquis::cout << "b2: " << b2 << std::endl;
-                            maquis::cout << "l:  " << l_charge << std::endl;
-                            maquis::cout << "r:  " << out_r_charge << std::endl;
-
-                            maquis::cout << " ------ " << std::endl;
-                        }
-
-                        if ( run == 0) {
-                            typename bond_charge_map::const_iterator match = right_map.find(b2);
-                            if (match == right_map.end()) {
-                                right_map[b2] = std::make_pair(out_r_charge, right_sizes[out_r_charge]++);
-                            } else
-                                assert(match->second.first == out_r_charge);
-
-                            continue;
-                        }
-
-
-                        if (!out_block.has_block(out_l_charge, out_r_charge))
-                            out_block.insert_block(Matrix(left_out.size(s_charge,l_charge), right_sizes[out_r_charge], 0.),
-                                                   out_l_charge, out_r_charge);
-
-                        size_t phys_offset = phys_prod(s1_charge, s2_charge);
-                        size_t left_offset = left_out(s_charge, l_charge);
-
-                        size_t rr = right_map[b2].second;
-
-                        Matrix & out_m = out_block(out_l_charge, out_r_charge);
-                        Matrix const& in_m = in_block[n];
-
-                        for (size_t ss2=0; ss2<size2; ++ss2)
-                            for (size_t ss1=0; ss1<size1; ++ss1)
-                            {
-                                size_t ss = ss2 + ss1*size2 + phys_offset;
-                                // TODO: Sebastian thinks, this is correct but should be checked
-                                out_m(left_offset + ss*l_size + ll, rr) = in_m(ss1, ss2) * scale;
-                            }
-                    }
-                }
+              maquis::cout << " ------ " << std::endl;
             }
 
-        right_i = out_block.right_basis();
+            if (run == 0) {
+              typename bond_charge_map::const_iterator match =
+                  right_map.find(b2);
+              if (match == right_map.end()) {
+                right_map[b2] =
+                    std::make_pair(out_r_charge, right_sizes[out_r_charge]++);
+              } else
+                assert(match->second.first == out_r_charge);
 
-        mps[i] = MPSTensor<Matrix, SymmGroup>(phys2_i, left_i, right_i, out_block, LeftPaired);
-        std::swap(left_i, right_i);
-        std::swap(left_map, right_map);
-        right_map.clear();
-    }
+              continue;
+            }
 
-    return mps;
+            if (!out_block.has_block(out_l_charge, out_r_charge))
+              out_block.insert_block(
+                  Matrix(
+                      left_out.size(s_charge, l_charge),
+                      right_sizes[out_r_charge], 0.
+                  ),
+                  out_l_charge, out_r_charge
+              );
+
+            size_t phys_offset = phys_prod(s1_charge, s2_charge);
+            size_t left_offset = left_out(s_charge, l_charge);
+
+            size_t rr = right_map[b2].second;
+
+            Matrix& out_m = out_block(out_l_charge, out_r_charge);
+            Matrix const& in_m = in_block[n];
+
+            for (size_t ss2 = 0; ss2 < size2; ++ss2)
+              for (size_t ss1 = 0; ss1 < size1; ++ss1) {
+                size_t ss = ss2 + ss1 * size2 + phys_offset;
+                // TODO: Sebastian thinks, this is correct but should be checked
+                out_m(left_offset + ss * l_size + ll, rr) =
+                    in_m(ss1, ss2) * scale;
+              }
+          }
+        }
+      }
+
+    right_i = out_block.right_basis();
+
+    mps[i] = MPSTensor<Matrix, SymmGroup>(
+        phys2_i, left_i, right_i, out_block, LeftPaired
+    );
+    std::swap(left_i, right_i);
+    std::swap(left_map, right_map);
+    right_map.clear();
+  }
+
+  return mps;
 }
 
 template <class Matrix, class SymmGroup>
-typename std::enable_if<symm_traits::HasSU2<SymmGroup>::value, MPS<Matrix, SymmGroup> >::type
-mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<SymmGroup> const& phys_i)
-{
-    throw std::runtime_error("There are no SuperMeasurements for SU2 symmetry");
+typename std::enable_if<
+    symm_traits::HasSU2<SymmGroup>::value, MPS<Matrix, SymmGroup>>::type
+mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<SymmGroup> const& phys_i) {
+  throw std::runtime_error("There are no SuperMeasurements for SU2 symmetry");
 }
-
 
 /*
  * Building Super MPS from an MPO object
@@ -190,97 +201,107 @@ mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<SymmGroup> const& phys_i)
  */
 
 template <class Matrix, class InSymm>
-MPS<Matrix, typename grouped_symmetry<InSymm>::type> mpo_to_smps_group(MPO<Matrix, InSymm> const& mpo, Index<InSymm> const& phys_i,
-                                                                       std::vector<Index<typename grouped_symmetry<InSymm>::type> > const& allowed)
-{
-    typedef typename operator_selector<Matrix, InSymm>::type op_t;
-    typedef typename grouped_symmetry<InSymm>::type OutSymm;
-    typedef typename InSymm::charge in_charge;
-    typedef typename OutSymm::charge out_charge;
-    typedef boost::unordered_map<size_t,std::pair<out_charge,size_t> > bond_charge_map;
-    typedef typename MPOTensor<Matrix, InSymm>::row_proxy row_proxy;
+MPS<Matrix, typename grouped_symmetry<InSymm>::type> mpo_to_smps_group(
+    MPO<Matrix, InSymm> const& mpo, Index<InSymm> const& phys_i,
+    std::vector<Index<typename grouped_symmetry<InSymm>::type>> const& allowed
+) {
+  using op_t = typename operator_selector<Matrix, InSymm>::type;
+  using OutSymm = typename grouped_symmetry<InSymm>::type;
+  using in_charge = typename InSymm::charge;
+  using out_charge = typename OutSymm::charge;
+  using bond_charge_map =
+      std::unordered_map<size_t, std::pair<out_charge, size_t>>;
+  using row_proxy = typename MPOTensor<Matrix, InSymm>::row_proxy;
 
-    MPS<Matrix, OutSymm> mps(mpo.size());
+  MPS<Matrix, OutSymm> mps(mpo.size());
 
-    boost::function<out_charge (in_charge, in_charge)> phys_group = boost::lambda::bind(static_cast<out_charge(*)(in_charge, in_charge)>(group),
-                                                                                        boost::lambda::_1, -boost::lambda::_2);
+  auto phys_group = [](const in_charge& a, const in_charge& b) {
+    return group(a, b);
+  };
 
-    Index<OutSymm> phys2_i = group(phys_i, adjoin(phys_i));
-    Index<OutSymm> left_i, right_i;
-    left_i.insert( std::make_pair(OutSymm::IdentityCharge, 1) );
+  Index<OutSymm> phys2_i = group(phys_i, adjoin(phys_i));
+  Index<OutSymm> left_i, right_i;
+  left_i.insert(std::make_pair(OutSymm::IdentityCharge, 1));
 
-    for (int i=0; i<mpo.size(); ++i) {
-        ProductBasis<OutSymm> left_out(phys2_i, left_i);
+  for (int i = 0; i < mpo.size(); ++i) {
+    ProductBasis<OutSymm> left_out(phys2_i, left_i);
 
-        block_matrix<Matrix, OutSymm> out_block;
-            //for (size_t b1=0; b1<mpo[i].row_dim(); ++b1)
-            //{
-            //    for (size_t b2=0; b2<mpo[i].col_dim(); ++b2)
-            //    {
-            //        if (!mpo[i].has(b1, b2))
-            //            continue;
+    block_matrix<Matrix, OutSymm> out_block;
+    // for (size_t b1=0; b1<mpo[i].row_dim(); ++b1)
+    //{
+    //     for (size_t b2=0; b2<mpo[i].col_dim(); ++b2)
+    //     {
+    //         if (!mpo[i].has(b1, b2))
+    //             continue;
 
-            for (size_t b1=0; b1<mpo[i].row_dim(); ++b1)
-            {
-                row_proxy row_b1 = mpo[i].row(b1);
-                for (typename row_proxy::const_iterator it = row_b1.begin(); it != row_b1.end(); ++it)
-                {
-                    size_t b2 = it.index();
+    for (size_t b1 = 0; b1 < mpo[i].row_dim(); ++b1) {
+      row_proxy row_b1 = mpo[i].row(b1);
+      for (typename row_proxy::const_iterator it = row_b1.begin();
+           it != row_b1.end(); ++it) {
+        size_t b2 = it.index();
 
-                    for (size_t l=0; l<left_i.size(); ++l)
-                    {
-                        out_charge l_charge = left_i[l].first;
-                        size_t     l_size   = left_i[l].second;
-                        size_t     ll       = b1;
+        for (size_t l = 0; l < left_i.size(); ++l) {
+          out_charge l_charge = left_i[l].first;
+          size_t l_size = left_i[l].second;
+          size_t ll = b1;
 
-                        typename Matrix::value_type scale = mpo[i].at(b1, b2).scale();
-                        op_t const& in_block = mpo[i].at(b1, b2).op();
-                        for (size_t n=0; n<in_block.n_blocks(); ++n)
-                        {
-                            in_charge s1_charge; size_t size1;
-                            boost::tie(s1_charge, size1) = boost::make_tuple(in_block.basis().left_charge(n), in_block.basis().left_size(n));
-                            in_charge s2_charge; size_t size2;
-                            boost::tie(s2_charge, size2) = boost::make_tuple(in_block.basis().right_charge(n), in_block.basis().right_size(n));
+          typename Matrix::value_type scale = mpo[i].at(b1, b2).scale();
+          op_t const& in_block = mpo[i].at(b1, b2).op();
+          for (size_t n = 0; n < in_block.n_blocks(); ++n) {
+            in_charge s1_charge;
+            size_t size1;
+            std::tie(s1_charge, size1) = std::make_tuple(
+                in_block.basis().left_charge(n), in_block.basis().left_size(n)
+            );
+            in_charge s2_charge;
+            size_t size2;
+            std::tie(s2_charge, size2) = std::make_tuple(
+                in_block.basis().right_charge(n), in_block.basis().right_size(n)
+            );
 
-                            out_charge s_charge = phys_group(s1_charge, s2_charge);
-                            out_charge out_l_charge = OutSymm::fuse(s_charge, l_charge);
-                            out_charge out_r_charge = out_l_charge;
+            out_charge s_charge = phys_group(s1_charge, s2_charge);
+            out_charge out_l_charge = OutSymm::fuse(s_charge, l_charge);
+            out_charge out_r_charge = out_l_charge;
 
-                            if (! allowed[i+1].has(out_r_charge) )
-                                continue;
+            if (!allowed[i + 1].has(out_r_charge)) continue;
 
-                            if (!out_block.has_block(out_l_charge, out_r_charge))
-                                out_block.insert_block(Matrix(left_out.size(s_charge,l_charge), mpo[i].col_dim(), 0.),
-                                                       out_l_charge, out_r_charge);
+            if (!out_block.has_block(out_l_charge, out_r_charge))
+              out_block.insert_block(
+                  Matrix(
+                      left_out.size(s_charge, l_charge), mpo[i].col_dim(), 0.
+                  ),
+                  out_l_charge, out_r_charge
+              );
 
-                            size_t phys_offset = 0;
-                            size_t left_offset = left_out(s_charge, l_charge);
+            size_t phys_offset = 0;
+            size_t left_offset = left_out(s_charge, l_charge);
 
-                            size_t rr = b2;
+            size_t rr = b2;
 
-                            Matrix & out_m = out_block(out_l_charge, out_r_charge);
-                            Matrix const& in_m = in_block[n];
+            Matrix& out_m = out_block(out_l_charge, out_r_charge);
+            Matrix const& in_m = in_block[n];
 
-                            for (size_t ss2=0; ss2<size2; ++ss2)
-                                for (size_t ss1=0; ss1<size1; ++ss1)
-                                {
-                                    size_t ss = ss2 + ss1*size2 + phys_offset;
-                                    // TODO: Sebastian thinks, this is correct but should be checked
-                                    out_m(left_offset + ss*l_size + ll, rr) = in_m(ss1, ss2) * scale;
-                                }
-                        }
-                    }
-                }
-            }
-
-        right_i = out_block.right_basis();
-
-        mps[i] = MPSTensor<Matrix, OutSymm>(phys2_i, left_i, right_i,
-                                            out_block, LeftPaired);
-        std::swap(left_i, right_i);
+            for (size_t ss2 = 0; ss2 < size2; ++ss2)
+              for (size_t ss1 = 0; ss1 < size1; ++ss1) {
+                size_t ss = ss2 + ss1 * size2 + phys_offset;
+                // TODO: Sebastian thinks, this is correct but should be checked
+                out_m(left_offset + ss * l_size + ll, rr) =
+                    in_m(ss1, ss2) * scale;
+              }
+          }
+        }
+      }
     }
 
-    return mps;
+    right_i = out_block.right_basis();
+
+    mps[i] = MPSTensor<Matrix, OutSymm>(
+        phys2_i, left_i, right_i, out_block, LeftPaired
+    );
+    std::swap(left_i, right_i);
+  }
+
+  return mps;
 }
 
 #endif

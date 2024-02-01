@@ -4,20 +4,20 @@
 #include "dmrg/models/vibrational/VibrationalHelperClass.hpp"
 #include "dmrg/models/vibrational/VibronicIntegralParser.hpp"
 
-template<class Matrix>
-class HolsteinbHubbardExcitonicExtendedHamiltonian : public model_impl<Matrix, U1>
-{
-public:
-    //Types definition
-    using base = model_impl<Matrix, U1>;
-    using table_type = typename base::table_type;
-    using table_ptr = typename base::table_ptr;
-    using tag_type = typename base::tag_type;
-    using term_descriptor = typename base::term_descriptor;
-    using op_t = typename base::op_t;
-    using measurements_type = typename base::measurements_type;
-    using value_type = typename Matrix::value_type;
-    using pos_t = typename Lattice::pos_t;
+template <class Matrix>
+class HolsteinbHubbardExcitonicExtendedHamiltonian
+    : public model_impl<Matrix, U1> {
+ public:
+  // Types definition
+  using base = model_impl<Matrix, U1>;
+  using table_type = typename base::table_type;
+  using table_ptr = typename base::table_ptr;
+  using tag_type = typename base::tag_type;
+  using term_descriptor = typename base::term_descriptor;
+  using op_t = typename base::op_t;
+  using measurements_type = typename base::measurements_type;
+  using value_type = typename Matrix::value_type;
+  using pos_t = typename Lattice::pos_t;
 
     /** 
      * @brief Model representing an extended Holstein-Hubbard Hamiltonian
@@ -278,66 +278,62 @@ public:
         }
     }    
 
-    void update(BaseParameters const& p)
-    {
-        // TODO: update this->terms_ with the new parameters
-        throw std::runtime_error("update() not yet implemented for this model.");
-    }
+  void update(BaseParameters const& p) {
+    // TODO: update this->terms_ with the new parameters
+    throw std::runtime_error("update() not yet implemented for this model.");
+  }
 
+  /** @brief Getter for the physical basis */
+  Index<U1> const& phys_dim(size_t type) const { return phys_indexes[type]; }
 
-    /** @brief Getter for the physical basis */
-    Index<U1> const& phys_dim(size_t type) const { return phys_indexes[type];
-    }
+  /** @brief Identity matrix getter */
+  tag_type identity_matrix_tag(size_t type) const {
+    tag_type ret;
+    if (type != 0)
+      ret = ident_vib.at(nMaxVec[type - 1]).first;
+    else
+      ret = ident_ele;
+    return ret;
+  }
 
-    /** @brief Identity matrix getter */
-    tag_type identity_matrix_tag(size_t type) const
-    {
-        tag_type ret ;
-        if(type != 0)
-            ret = ident_vib.at(nMaxVec[type-1]).first;
-        else
-            ret = ident_ele;
-        return ret;
-    }
+  /** @brief Filling matrix getter */
+  tag_type filling_matrix_tag(size_t type) const {
+    tag_type ret;
+    if ((type <= num_vibtypes) && (type > 0))
+      ret = ident_vib.at(nMaxVec[type - 1]).first;
+    else if (type == 0)
+      ret = ident_ele;
+    else
+      throw std::runtime_error("Site type not recognized");
+    return ret;
+  }
 
-    /** @brief Filling matrix getter */
-    tag_type filling_matrix_tag(size_t type) const
-    {
-        tag_type ret ;
-        if ((type <= num_vibtypes) && (type > 0))
-          ret = ident_vib.at(nMaxVec[type-1]).first;
-        else if (type == 0)
-          ret = ident_ele;
-        else
-          throw std::runtime_error("Site type not recognized") ;
-        return ret ;
-    }
+  /** @brief Identity matrix getter */
+  typename U1::charge total_quantum_numbers(BaseParameters& parms) const {
+    return parms["vibronic_num_excitons"];
+  }
 
-    /** @brief Identity matrix getter */
-    typename U1::charge total_quantum_numbers(BaseParameters & parms) const { return parms["vibronic_num_excitons"]; }
+  /** @brief Getter for the operator associated with a given string */
+  tag_type get_operator_tag(std::string const& name, size_t type) const {
+    if (name == "q")
+      return positionPowers.at(nMaxVec[type - 1])[1].first;
+    else if (name == "p")
+      return momentumPowers.at(nMaxVec[type - 1])[1].first;
+    else if (name == "aplus")
+      return create_ele;
+    else if (name == "a")
+      return destroy_ele;
+    else if (name == "id")
+      return identity_matrix_tag(type);
+    else if (name == "fill")
+      return identity_matrix_tag(type);
+    else
+      throw std::runtime_error("Operator not valid for this model.");
+    return 0;
+  }
 
-    /** @brief Getter for the operator associated with a given string */
-    tag_type get_operator_tag(std::string const & name, size_t type) const
-    {
-        if (name == "q")
-            return positionPowers.at(nMaxVec[type-1])[1].first;
-        else if (name == "p")
-            return momentumPowers.at(nMaxVec[type-1])[1].first;
-        else if (name == "aplus")
-            return create_ele;
-        else if (name == "a")
-            return destroy_ele;
-        else if (name == "id")
-            return identity_matrix_tag(type);
-        else if (name == "fill")
-            return identity_matrix_tag(type);
-        else
-          throw std::runtime_error("Operator not valid for this model.");
-        return 0;
-    }
-
-    /** @brief Getter for the operator table */
-    table_ptr operators_table() const { return tag_handler; }
+  /** @brief Getter for the operator table */
+  table_ptr operators_table() const { return tag_handler; }
 
     // Possible measurements associated to the model
     measurements_type measurements() const
@@ -423,72 +419,80 @@ public:
         }
     }
 
-    if(model.is_set("MEASURE[DisplacementSquared]")){
-        int n_connectingmodes = model["vibronic_num_connectingmodes"].as<int>();
-        int typeCount = 0; //typecount = type - 1 (for vibrational sites)
-        for (std::size_t idx = 0; idx < n_particles_; idx++){
-            for(std::size_t idx1 = 0; idx1 < n_vib_states_; idx1++){ 
-                //if non existing lattice site: break. 
-                //IMPORTANT: assumes underlying lattice sorting -> may be problematic
-                //Assumed lattice sorting: intertwined with all connecting modes active. 
-                //After an electronic site first come the local modes followed by the connecting modes
-                if( (idx == n_particles_-1) && (idx1 >= (n_vib_states_-n_connectingmodes)) ) break; //VAL : break statement may be problematic... 
-                std::string name = "DisplacementSquared"+std::to_string(idx)+"Mode"+std::to_string(idx1); 
-                std::vector<pos_t> pos_internal(0);
-                std::vector<std::vector<pos_t> > pos_local(0);
-                pos_internal.push_back((idx1+1) + (idx*(n_vib_states_+n_ele_states_))); 
-                pos_local.push_back(pos_internal);
-                // Generates vector for the fillings and identity operators
-                op_vec identities_local, fillings_local;
-                for (std::size_t idx2 = 0; idx2 <= num_vibtypes; idx2++) {
-                    identities_local.push_back(this->identity_matrix(idx2));
-                    fillings_local.push_back(this->filling_matrix(idx2));
-                }
-                bond_element ops;
-                op_vec local_op_vec;
-                local_op_vec.push_back(tag_handler->get_op(ident_ele));
-                for (std::size_t idx2 = 0; idx2 < num_vibtypes; idx2++) {
-                    if (typeCount == idx2){
-                        auto localOperator = tag_handler->get_op(positionPowers.at(nMaxVec[typeCount])[2].first);
-                        localOperator *= positionPowers.at(nMaxVec[typeCount])[2].second;
-                        local_op_vec.push_back(localOperator);
-                    }
-                    else{
-                        local_op_vec.push_back(tag_handler->get_op(ident_vib.at(nMaxVec[idx2]).first));
-                    }
-                }
-                typeCount++;
-                ops.push_back(std::make_pair(local_op_vec, false));
-                meas.push_back(new measurements::local_at<Matrix, U1>(name, lat, pos_local, identities_local,
-                                                                      fillings_local, ops));
+    if (model.is_set("MEASURE[DisplacementSquared]")) {
+      int n_connectingmodes = model["vibronic_num_connectingmodes"].as<int>();
+      int typeCount = 0;  // typecount = type - 1 (for vibrational sites)
+      for (std::size_t idx = 0; idx < n_particles_; idx++) {
+        for (std::size_t idx1 = 0; idx1 < n_vib_states_; idx1++) {
+          // if non existing lattice site: break.
+          // IMPORTANT: assumes underlying lattice sorting -> may be problematic
+          // Assumed lattice sorting: intertwined with all connecting modes
+          // active. After an electronic site first come the local modes
+          // followed by the connecting modes
+          if ((idx == n_particles_ - 1) &&
+              (idx1 >= (n_vib_states_ - n_connectingmodes)))
+            break;  // VAL : break statement may be problematic...
+          std::string name = "DisplacementSquared" + std::to_string(idx) +
+                             "Mode" + std::to_string(idx1);
+          std::vector<pos_t> pos_internal(0);
+          std::vector<std::vector<pos_t>> pos_local(0);
+          pos_internal.push_back(
+              (idx1 + 1) + (idx * (n_vib_states_ + n_ele_states_))
+          );
+          pos_local.push_back(pos_internal);
+          // Generates vector for the fillings and identity operators
+          op_vec identities_local, fillings_local;
+          for (std::size_t idx2 = 0; idx2 <= num_vibtypes; idx2++) {
+            identities_local.push_back(this->identity_matrix(idx2));
+            fillings_local.push_back(this->filling_matrix(idx2));
+          }
+          bond_element ops;
+          op_vec local_op_vec;
+          local_op_vec.push_back(tag_handler->get_op(ident_ele));
+          for (std::size_t idx2 = 0; idx2 < num_vibtypes; idx2++) {
+            if (typeCount == idx2) {
+              auto localOperator = tag_handler->get_op(
+                  positionPowers.at(nMaxVec[typeCount])[2].first
+              );
+              localOperator *= positionPowers.at(nMaxVec[typeCount])[2].second;
+              local_op_vec.push_back(localOperator);
+            } else {
+              local_op_vec.push_back(
+                  tag_handler->get_op(ident_vib.at(nMaxVec[idx2]).first)
+              );
             }
-            
+          }
+          typeCount++;
+          ops.push_back(std::make_pair(local_op_vec, false));
+          meas.push_back(new measurements::local_at<Matrix, U1>(
+              name, lat, pos_local, identities_local, fillings_local, ops
+          ));
         }
-    }
-    
-
-        return meas;
+      }
     }
 
+    return meas;
+  }
 
-private:
-    const Lattice& lat;
-    value_type J_, epsilon_ ;
-    BaseParameters& model;
-    bool only_nn_;
-    std::size_t L_, n_ele_states_, n_vib_states_, n_particles_;
-    std::vector< Index<U1> > phys_indexes;
-    std::shared_ptr<TagHandler<Matrix, U1> > tag_handler;
-    std::unordered_map<int, std::pair<tag_type, value_type> > ident_vib;
-    tag_type ident_ele, count_ele, count_ele_gs, create_ele, destroy_ele;
-    /** Tag for the powers of the position/momentum operators */
-    std::unordered_map<int, std::vector< std::pair<tag_type, value_type> >> positionPowers, momentumPowers;
-    /** Maximum order of many-body coupling */
-    int maxCoupling;
-    std::vector<int> nMaxVec;
-    int n_connectingmodes;
-    int num_vibtypes; //number of different types for vibrational sites
-    int check_maxVibMode;
+ private:
+  const Lattice& lat;
+  value_type J_, epsilon_;
+  BaseParameters& model;
+  bool only_nn_;
+  std::size_t L_, n_ele_states_, n_vib_states_, n_particles_;
+  std::vector<Index<U1>> phys_indexes;
+  std::shared_ptr<TagHandler<Matrix, U1>> tag_handler;
+  std::unordered_map<int, std::pair<tag_type, value_type>> ident_vib;
+  tag_type ident_ele, count_ele, count_ele_gs, create_ele, destroy_ele;
+  /** Tag for the powers of the position/momentum operators */
+  std::unordered_map<int, std::vector<std::pair<tag_type, value_type>>>
+      positionPowers, momentumPowers;
+  /** Maximum order of many-body coupling */
+  int maxCoupling;
+  std::vector<int> nMaxVec;
+  int n_connectingmodes;
+  int num_vibtypes;  // number of different types for vibrational sites
+  int check_maxVibMode;
 };
 
-#endif // DMRG_VIBRONIC
+#endif  // DMRG_VIBRONIC

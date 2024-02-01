@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #ifndef MAQUIS_BLOCK_MATRIX_DEATAIL_ALPS_HPP
@@ -11,34 +11,50 @@
 #include <alps/numeric/matrix.hpp>
 #include <alps/numeric/matrix/algorithms.hpp>
 #include <alps/numeric/diagonal_matrix.hpp>
-#include "dmrg/block_matrix/detail/alps_detail.hpp"
 #include "dmrg/block_matrix/detail/one_matrix.hpp"
 #include "utils/traits.hpp"
 
-namespace maquis { namespace traits {
+namespace maquis {
+namespace traits {
 
-    template <typename T, typename MemoryBlock> 
-    struct transpose_view< alps::numeric::matrix<T, MemoryBlock> > { typedef alps::numeric::transpose_view<alps::numeric::matrix<T, MemoryBlock> > type; }; 
+template <typename T, typename MemoryBlock>
+struct transpose_view<alps::numeric::matrix<T, MemoryBlock>> {
+  using type =
+      alps::numeric::transpose_view<alps::numeric::matrix<T, MemoryBlock>>;
+};
 
-    template <typename T> 
-    struct transpose_view< alps::numeric::diagonal_matrix<T> > { typedef alps::numeric::diagonal_matrix<T> type; };
+template <typename T>
+struct transpose_view<alps::numeric::diagonal_matrix<T>> {
+  using type = alps::numeric::diagonal_matrix<T>;
+};
 
-} }
+}  // namespace traits
+}  // namespace maquis
 
-namespace alps { namespace numeric {
+namespace alps {
+namespace numeric {
 
-    template<class Matrix> struct associated_one_matrix { };
-    template<class Matrix> struct associated_dense_matrix { };
+template <class Matrix>
+struct associated_one_matrix {};
+template <class Matrix>
+struct associated_dense_matrix {};
 
-    template<typename T, typename MemoryBlock>
-    struct associated_one_matrix<alps::numeric::matrix<T, MemoryBlock> > { typedef maquis::dmrg::one_matrix<T> type; };
+template <typename T, typename MemoryBlock>
+struct associated_one_matrix<alps::numeric::matrix<T, MemoryBlock>> {
+  using type = maquis::dmrg::one_matrix<T>;
+};
 
-    template<typename T, class MemoryBlock>
-    struct associated_dense_matrix<alps::numeric::matrix<T, MemoryBlock> > { typedef alps::numeric::matrix<T, MemoryBlock> type; };
+template <typename T, class MemoryBlock>
+struct associated_dense_matrix<alps::numeric::matrix<T, MemoryBlock>> {
+  using type = alps::numeric::matrix<T, MemoryBlock>;
+};
 
-    template<typename T>
-    struct associated_dense_matrix<maquis::dmrg::one_matrix<T> > { typedef alps::numeric::matrix<T> type; };
+template <typename T>
+struct associated_dense_matrix<maquis::dmrg::one_matrix<T>> {
+  using type = alps::numeric::matrix<T>;
+};
 
-} }
+}  // namespace numeric
+}  // namespace alps
 
 #endif

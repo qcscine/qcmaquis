@@ -18,19 +18,19 @@ namespace numeric {
 namespace bindings {
 namespace detail {
 
-template<>
-struct convert_to< bindings::tag::data_order, mtl::tag::row_major > {
-    typedef bindings::tag::row_major type;
+template <>
+struct convert_to<bindings::tag::data_order, mtl::tag::row_major> {
+  typedef bindings::tag::row_major type;
 };
 
-template<>
-struct convert_to< bindings::tag::data_order, mtl::tag::col_major > {
-    typedef bindings::tag::column_major type;
+template <>
+struct convert_to<bindings::tag::data_order, mtl::tag::col_major> {
+  typedef bindings::tag::column_major type;
 };
 
-} // namespace detail
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace detail
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

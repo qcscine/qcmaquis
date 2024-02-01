@@ -1,0 +1,3282 @@
+  SCINE QCMaquis 
+  Quantum Chemical Density Matrix Renormalization group
+  available from https://scine.ethz.ch/download/qcmaquis
+  based on the ALPS MPS codes from http://alps.comp-phys.org
+  copyright (c) 2015-2018 Laboratory of Physical Chemistry, ETH Zurich
+  copyright (c) 2012-2016 by Sebastian Keller
+  copyright (c) 2016-2021 by Alberto Baiardi, Leon Freitag,
+  Stefan Knecht, Yingjin Ma
+  For details on tcDMRG see the following publications:
+   - A. Baiardi, M. Reiher, J. Chem. Phys. 153, 164115 (2020)
+   - A. Baiardi, M. Lesiuk, M. Reiher, J. Chem. Theory Comput. 18, 4203 (2022)
+This binary contains symmetries: 2u1 2u1pg su2u1 su2u1pg 
+DMRG version 2.2.0-35c4c076ecb99bc0d182d46448e1ce85ea28f25d (TranscorrelatedHamiltonian) release-3.1.2-gitlab
+Disk storage of boundaries disabled
+Retrieving integrals from the file FCIDUMP_H2_Conventional
+The hamiltonian will contain 1 terms
+MPO Bond 0: 2/0
+MPO Bond 1: 2/0
+MPO Bond 2: 2/0
+MPO Bond 3: 2/0
+MPO Bond 4: 2/0
+MPO Bond 5: 2/0
+MPO Bond 6: 2/0
+MPO Bond 7: 2/0
+MPO Bond 8: 2/0
+MPO Bond 9: 1/0
+MPS initialization has finished...
+
+ ============================== 
+   STARTING tcDMRG SIMULATION = 
+ ============================== 
+
+ Number of sweeps for the preliminary TI-DMRG step:   10
+ Number of sweeps for the tcDMRG step:  10
+ Energy convergence threshold: -1
+
+
+ == STARTING THE TI-DMRG OPTIMIZATION == 
+
+Retrieving integrals from the file FCIDUMP_H2_Conventional
+The hamiltonian will contain 1 terms
+MPO Bond 0: 2/0
+MPO Bond 1: 2/0
+MPO Bond 2: 2/0
+MPO Bond 3: 2/0
+MPO Bond 4: 2/0
+MPO Bond 5: 2/0
+MPO Bond 6: 2/0
+MPO Bond 7: 2/0
+MPO Bond 8: 2/0
+MPO Bond 9: 1/0
+
++----------------------------------+
+ NEW SwEEP-BASED SIMULATION STARTED
++----------------------------------+
+
+ Simulation settings:
+ - Simulation type: Optimization
+ - Sweep-based modality: Two site
+ - Maximum number of sweeps: 10
+
+ -------------------
+   SWEEP NUMBER 0
+ -------------------
+ - Noise parameter: 0.01
+ - Maximum bond dimension: 100
+ - Truncation parameter: 1e-20
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
+ Jacobi-Davidson diagonalization converged after 2 iterations.
+ Energy = 5.060360174008559e-10
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834363e-40
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834361e-40
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.14528694183437e-40
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834375e-40
+
+ MICROITERATION NUMBER = 5  , forward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834375e-40
+
+ MICROITERATION NUMBER = 6  , forward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834376e-40
+
+ MICROITERATION NUMBER = 7  , forward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834375e-40
+
+ MICROITERATION NUMBER = 8  , forward sweep
+ - Left boundaries taken from index: 8
+ - Right boundaries taken from index: 10
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834377e-40
+
+ MICROITERATION NUMBER = 9  , backward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834375e-40
+
+ MICROITERATION NUMBER = 10  , backward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834376e-40
+
+ MICROITERATION NUMBER = 11  , backward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834376e-40
+
+ MICROITERATION NUMBER = 12  , backward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834375e-40
+
+ MICROITERATION NUMBER = 13  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834371e-40
+
+ MICROITERATION NUMBER = 14  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834364e-40
+
+ MICROITERATION NUMBER = 15  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834368e-40
+
+
+ -------------------
+   SWEEP NUMBER 1
+ -------------------
+ - Noise parameter: 0.01
+ - Maximum bond dimension: 100
+ - Truncation parameter: 9.999999999999999e-21
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834366e-40
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834366e-40
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834361e-40
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.14528694183436e-40
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834358e-40
+
+ MICROITERATION NUMBER = 5  , forward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834354e-40
+
+ MICROITERATION NUMBER = 6  , forward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834354e-40
+
+ MICROITERATION NUMBER = 7  , forward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834352e-40
+
+ MICROITERATION NUMBER = 8  , forward sweep
+ - Left boundaries taken from index: 8
+ - Right boundaries taken from index: 10
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834354e-40
+
+ MICROITERATION NUMBER = 9  , backward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834353e-40
+
+ MICROITERATION NUMBER = 10  , backward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834351e-40
+
+ MICROITERATION NUMBER = 11  , backward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834351e-40
+
+ MICROITERATION NUMBER = 12  , backward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834348e-40
+
+ MICROITERATION NUMBER = 13  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834347e-40
+
+ MICROITERATION NUMBER = 14  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834341e-40
+
+ MICROITERATION NUMBER = 15  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.14528694183434e-40
+
+
+ -------------------
+   SWEEP NUMBER 2
+ -------------------
+ - Noise parameter: 0.01
+ - Maximum bond dimension: 100
+ - Truncation parameter: 9.999999999999999e-21
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834339e-40
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834337e-40
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834335e-40
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834333e-40
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834333e-40
+
+ MICROITERATION NUMBER = 5  , forward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.14528694183433e-40
+
+ MICROITERATION NUMBER = 6  , forward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834333e-40
+
+ MICROITERATION NUMBER = 7  , forward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834331e-40
+
+ MICROITERATION NUMBER = 8  , forward sweep
+ - Left boundaries taken from index: 8
+ - Right boundaries taken from index: 10
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834332e-40
+
+ MICROITERATION NUMBER = 9  , backward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834331e-40
+
+ MICROITERATION NUMBER = 10  , backward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834328e-40
+
+ MICROITERATION NUMBER = 11  , backward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834331e-40
+
+ MICROITERATION NUMBER = 12  , backward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834327e-40
+
+ MICROITERATION NUMBER = 13  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834326e-40
+
+ MICROITERATION NUMBER = 14  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834323e-40
+
+ MICROITERATION NUMBER = 15  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834321e-40
+
+
+ -------------------
+   SWEEP NUMBER 3
+ -------------------
+ - Noise parameter: 0.0001
+ - Maximum bond dimension: 100
+ - Truncation parameter: 9.999999999999999e-21
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834317e-40
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834316e-40
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834315e-40
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834318e-40
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834317e-40
+
+ MICROITERATION NUMBER = 5  , forward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834317e-40
+
+ MICROITERATION NUMBER = 6  , forward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834318e-40
+
+ MICROITERATION NUMBER = 7  , forward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834317e-40
+
+ MICROITERATION NUMBER = 8  , forward sweep
+ - Left boundaries taken from index: 8
+ - Right boundaries taken from index: 10
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834317e-40
+
+ MICROITERATION NUMBER = 9  , backward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834314e-40
+
+ MICROITERATION NUMBER = 10  , backward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834313e-40
+
+ MICROITERATION NUMBER = 11  , backward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834315e-40
+
+ MICROITERATION NUMBER = 12  , backward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834312e-40
+
+ MICROITERATION NUMBER = 13  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834308e-40
+
+ MICROITERATION NUMBER = 14  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834306e-40
+
+ MICROITERATION NUMBER = 15  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834308e-40
+
+
+ -------------------
+   SWEEP NUMBER 4
+ -------------------
+ - Noise parameter: 0.0001
+ - Maximum bond dimension: 100
+ - Truncation parameter: 9.999999999999999e-21
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834304e-40
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834303e-40
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834298e-40
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834299e-40
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834298e-40
+
+ MICROITERATION NUMBER = 5  , forward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834293e-40
+
+ MICROITERATION NUMBER = 6  , forward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834294e-40
+
+ MICROITERATION NUMBER = 7  , forward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834294e-40
+
+ MICROITERATION NUMBER = 8  , forward sweep
+ - Left boundaries taken from index: 8
+ - Right boundaries taken from index: 10
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834294e-40
+
+ MICROITERATION NUMBER = 9  , backward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834292e-40
+
+ MICROITERATION NUMBER = 10  , backward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834291e-40
+
+ MICROITERATION NUMBER = 11  , backward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834295e-40
+
+ MICROITERATION NUMBER = 12  , backward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834293e-40
+
+ MICROITERATION NUMBER = 13  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834291e-40
+
+ MICROITERATION NUMBER = 14  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834289e-40
+
+ MICROITERATION NUMBER = 15  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.14528694183429e-40
+
+
+ -------------------
+   SWEEP NUMBER 5
+ -------------------
+ - Noise parameter: 0.0001
+ - Maximum bond dimension: 100
+ - Truncation parameter: 9.999999999999999e-21
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.14528694183429e-40
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834288e-40
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834287e-40
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834287e-40
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834287e-40
+
+ MICROITERATION NUMBER = 5  , forward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834288e-40
+
+ MICROITERATION NUMBER = 6  , forward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834289e-40
+
+ MICROITERATION NUMBER = 7  , forward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834287e-40
+
+ MICROITERATION NUMBER = 8  , forward sweep
+ - Left boundaries taken from index: 8
+ - Right boundaries taken from index: 10
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834287e-40
+
+ MICROITERATION NUMBER = 9  , backward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834286e-40
+
+ MICROITERATION NUMBER = 10  , backward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834286e-40
+
+ MICROITERATION NUMBER = 11  , backward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834286e-40
+
+ MICROITERATION NUMBER = 12  , backward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834286e-40
+
+ MICROITERATION NUMBER = 13  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834282e-40
+
+ MICROITERATION NUMBER = 14  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834277e-40
+
+ MICROITERATION NUMBER = 15  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834278e-40
+
+
+ -------------------
+   SWEEP NUMBER 6
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 100
+ - Truncation parameter: 9.999999999999999e-21
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834277e-40
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834273e-40
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834272e-40
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834274e-40
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834274e-40
+
+ MICROITERATION NUMBER = 5  , forward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834274e-40
+
+ MICROITERATION NUMBER = 6  , forward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834273e-40
+
+ MICROITERATION NUMBER = 7  , forward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834272e-40
+
+ MICROITERATION NUMBER = 8  , forward sweep
+ - Left boundaries taken from index: 8
+ - Right boundaries taken from index: 10
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834272e-40
+
+ MICROITERATION NUMBER = 9  , backward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834269e-40
+
+ MICROITERATION NUMBER = 10  , backward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.14528694183427e-40
+
+ MICROITERATION NUMBER = 11  , backward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834269e-40
+
+ MICROITERATION NUMBER = 12  , backward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834271e-40
+
+ MICROITERATION NUMBER = 13  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834265e-40
+
+ MICROITERATION NUMBER = 14  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834263e-40
+
+ MICROITERATION NUMBER = 15  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834262e-40
+
+
+ -------------------
+   SWEEP NUMBER 7
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 100
+ - Truncation parameter: 9.999999999999999e-21
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834264e-40
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834262e-40
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.14528694183426e-40
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834262e-40
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.14528694183426e-40
+
+ MICROITERATION NUMBER = 5  , forward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.14528694183426e-40
+
+ MICROITERATION NUMBER = 6  , forward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834261e-40
+
+ MICROITERATION NUMBER = 7  , forward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834258e-40
+
+ MICROITERATION NUMBER = 8  , forward sweep
+ - Left boundaries taken from index: 8
+ - Right boundaries taken from index: 10
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.14528694183426e-40
+
+ MICROITERATION NUMBER = 9  , backward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834256e-40
+
+ MICROITERATION NUMBER = 10  , backward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834255e-40
+
+ MICROITERATION NUMBER = 11  , backward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834258e-40
+
+ MICROITERATION NUMBER = 12  , backward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834256e-40
+
+ MICROITERATION NUMBER = 13  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834251e-40
+
+ MICROITERATION NUMBER = 14  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.14528694183425e-40
+
+ MICROITERATION NUMBER = 15  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834247e-40
+
+
+ -------------------
+   SWEEP NUMBER 8
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 100
+ - Truncation parameter: 9.999999999999999e-21
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834247e-40
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834247e-40
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834243e-40
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834243e-40
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.14528694183424e-40
+
+ MICROITERATION NUMBER = 5  , forward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.14528694183424e-40
+
+ MICROITERATION NUMBER = 6  , forward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834242e-40
+
+ MICROITERATION NUMBER = 7  , forward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.14528694183424e-40
+
+ MICROITERATION NUMBER = 8  , forward sweep
+ - Left boundaries taken from index: 8
+ - Right boundaries taken from index: 10
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834239e-40
+
+ MICROITERATION NUMBER = 9  , backward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834237e-40
+
+ MICROITERATION NUMBER = 10  , backward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834237e-40
+
+ MICROITERATION NUMBER = 11  , backward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.14528694183424e-40
+
+ MICROITERATION NUMBER = 12  , backward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.14528694183424e-40
+
+ MICROITERATION NUMBER = 13  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834233e-40
+
+ MICROITERATION NUMBER = 14  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834233e-40
+
+ MICROITERATION NUMBER = 15  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834233e-40
+
+
+ -------------------
+   SWEEP NUMBER 9
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 100
+ - Truncation parameter: 9.999999999999999e-21
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834231e-40
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834229e-40
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834226e-40
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834227e-40
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834226e-40
+
+ MICROITERATION NUMBER = 5  , forward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834226e-40
+
+ MICROITERATION NUMBER = 6  , forward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834227e-40
+
+ MICROITERATION NUMBER = 7  , forward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834225e-40
+
+ MICROITERATION NUMBER = 8  , forward sweep
+ - Left boundaries taken from index: 8
+ - Right boundaries taken from index: 10
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834227e-40
+
+ MICROITERATION NUMBER = 9  , backward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834225e-40
+
+ MICROITERATION NUMBER = 10  , backward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834225e-40
+
+ MICROITERATION NUMBER = 11  , backward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834226e-40
+
+ MICROITERATION NUMBER = 12  , backward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834226e-40
+
+ MICROITERATION NUMBER = 13  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834225e-40
+
+ MICROITERATION NUMBER = 14  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.14528694183422e-40
+
+ MICROITERATION NUMBER = 15  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 4.145286941834221e-40
+
+
+ == STARTING THE IMAGINARY-TIME TD-DMRG PROPAGATION  == 
+
+ Activating transcorrelated quantum computing format
+Transcorrelated Hamiltonian modality activated
+Retrieving integrals from the file IntegralFile_H2_Transcorrelated_QuantumFormat
+The hamiltonian will contain 3495 terms
+MPO Bond 0: 130/0
+MPO Bond 1: 154/0
+MPO Bond 2: 182/0
+MPO Bond 3: 162/0
+MPO Bond 4: 226/0
+MPO Bond 5: 306/0
+MPO Bond 6: 178/0
+MPO Bond 7: 134/0
+MPO Bond 8: 18/0
+MPO Bond 9: 1/0
+
++------------------------------------------+
+  DETAILS ABOUT SITE-CENTERED TIME EVOLVER
++------------------------------------------+
+
+ - Propagation type: Imaginary-time
+ - Time step: 206.706872878755
+ - Propagation algorithm: yes
+Arnoldi approximation of the propagator
+
+ -------------------
+   SWEEP NUMBER 10
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 100
+ - Truncation parameter: 9.999999999999999e-21
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.7273E-01 
+    2        |  1.3111E-01 
+    3        |  2.7194E-03 
+    4        |  4.2678E-04 
+    5        |  2.2425E-05 
+    6        |  2.7164E-06 
+    7        |  4.6857E-06 
+    8        |  8.8789E-07 
+    9        |  2.7756E-07 
+   10        |  5.7376E-08 
++------------+------------+
+ Energy = -1.089566959107068
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.3878E-01 
+    2        |  6.5363E-03 
+    3        |  2.8836E-03 
+    4        |  8.8902E-04 
+    5        |  3.4699E-04 
+    6        |  1.6126E-04 
+    7        |  3.5903E-05 
+    8        |  2.1108E-05 
+    9        |  7.4413E-06 
+   10        |  7.4587E-07 
++------------+------------+
+ Energy = -1.1159008911753
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.1110E-01 
+    2        |  1.8374E-03 
+    3        |  1.4211E-04 
+    4        |  2.0145E-05 
+    5        |  6.4770E-06 
+    6        |  6.2476E-07 
+    7        |  5.1466E-08 
+    8        |  6.7647E-09 
+    9        |  1.1349E-09 
+   10        |  3.7963E-10 
++------------+------------+
+ Energy = -1.128055058433458
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  6.8698E-02 
+    2        |  9.3060E-05 
+    3        |  2.0683E-06 
+    4        |  2.5872E-07 
+    5        |  1.5346E-08 
+    6        |  9.6773E-10 
+    7        |  9.5847E-11 
++------------+------------+
+ Energy = -1.130778462316328
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  6.6887E-02 
+    2        |  4.5695E-05 
+    3        |  2.1059E-07 
+    4        |  1.5926E-08 
+    5        |  8.0716E-10 
+    6        |  1.6093E-11 
++------------+------------+
+ Energy = -1.133331949121752
+
+ MICROITERATION NUMBER = 5  , forward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.6986E-02 
+    2        |  9.5300E-06 
+    3        |  1.1704E-07 
+    4        |  3.8743E-09 
+    5        |  3.6240E-10 
+    6        |  2.4644E-11 
++------------+------------+
+ Energy = -1.133877000197856
+
+ MICROITERATION NUMBER = 6  , forward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.1599E-03 
+    2        |  5.8235E-07 
+    3        |  3.7744E-09 
+    4        |  8.2354E-11 
++------------+------------+
+ Energy = -1.133940371323485
+
+ MICROITERATION NUMBER = 7  , forward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.6424E-03 
+    2        |  2.0379E-06 
+    3        |  3.0053E-08 
+    4        |  5.2190E-10 
+    5        |  1.6851E-11 
++------------+------------+
+ Energy = -1.134074546726899
+
+ MICROITERATION NUMBER = 8  , forward sweep
+ - Left boundaries taken from index: 8
+ - Right boundaries taken from index: 10
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.6607E-06 
+    2        |  1.5851E-13 
++------------+------------+
+ Energy = -1.134074544075896
+
+ MICROITERATION NUMBER = 9  , backward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.8270E-06 
+    2        |  1.7162E-13 
++------------+------------+
+ Energy = -1.134074557634107
+
+ MICROITERATION NUMBER = 10  , backward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.9730E-04 
+    2        |  1.1366E-09 
+    3        |  3.0071E-11 
++------------+------------+
+ Energy = -1.134070126830858
+
+ MICROITERATION NUMBER = 11  , backward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.9571E-04 
+    2        |  4.7557E-09 
+    3        |  3.3677E-10 
+    4        |  2.4976E-11 
++------------+------------+
+ Energy = -1.134066093908034
+
+ MICROITERATION NUMBER = 12  , backward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.5622E-04 
+    2        |  4.6210E-09 
+    3        |  4.4295E-11 
++------------+------------+
+ Energy = -1.134059305758696
+
+ MICROITERATION NUMBER = 13  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.8936E-03 
+    2        |  1.1124E-06 
+    3        |  4.4069E-08 
+    4        |  1.5788E-09 
+    5        |  3.8309E-11 
++------------+------------+
+ Energy = -1.133969892750652
+
+ MICROITERATION NUMBER = 14  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.8079E-03 
+    2        |  3.0038E-06 
+    3        |  2.3866E-07 
+    4        |  1.1114E-08 
+    5        |  8.3390E-10 
+    6        |  4.5664E-11 
++------------+------------+
+ Energy = -1.133991405266642
+
+ MICROITERATION NUMBER = 15  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  3.7460E-03 
+    2        |  4.4460E-06 
+    3        |  2.1280E-07 
+    4        |  1.6640E-08 
+    5        |  5.3224E-09 
+    6        |  1.6739E-09 
+    7        |  1.8973E-10 
+    8        |  6.7647E-11 
++------------+------------+
+ Energy = -1.133908009133217
+
+
+ -------------------
+   SWEEP NUMBER 11
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 100
+ - Truncation parameter: 9.999999999999999e-21
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  4.5449E-06 
+    2        |  2.6748E-11 
++------------+------------+
+ Energy = -1.133908043138096
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  6.7029E-06 
+    2        |  8.9885E-12 
++------------+------------+
+ Energy = -1.133907995952192
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  7.1659E-05 
+    2        |  5.1037E-10 
+    3        |  2.5863E-11 
++------------+------------+
+ Energy = -1.133907606720923
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  6.0530E-05 
+    2        |  1.4748E-10 
+    3        |  3.2532E-12 
++------------+------------+
+ Energy = -1.133907359043602
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  6.8661E-05 
+    2        |  1.1533E-10 
+    3        |  1.7034E-12 
++------------+------------+
+ Energy = -1.133905789569472
+
+ MICROITERATION NUMBER = 5  , forward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  4.4582E-05 
+    2        |  6.2088E-11 
++------------+------------+
+ Energy = -1.133905353847019
+
+ MICROITERATION NUMBER = 6  , forward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  4.4812E-05 
+    2        |  4.5171E-11 
++------------+------------+
+ Energy = -1.133905508201724
+
+ MICROITERATION NUMBER = 7  , forward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.0672E-04 
+    2        |  4.2674E-10 
+    3        |  2.5389E-12 
++------------+------------+
+ Energy = -1.133905163596383
+
+ MICROITERATION NUMBER = 8  , forward sweep
+ - Left boundaries taken from index: 8
+ - Right boundaries taken from index: 10
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.9451E-07 
+    2        |  1.0170E-14 
++------------+------------+
+ Energy = -1.133905175046518
+
+ MICROITERATION NUMBER = 9  , backward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.5282E-07 
+    2        |  5.2917E-16 
++------------+------------+
+ Energy = -1.13390517681943
+
+ MICROITERATION NUMBER = 10  , backward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.9715E-06 
+    2        |  3.6667E-13 
++------------+------------+
+ Energy = -1.133905124239003
+
+ MICROITERATION NUMBER = 11  , backward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  3.6410E-06 
+    2        |  5.1338E-13 
++------------+------------+
+ Energy = -1.13390519044472
+
+ MICROITERATION NUMBER = 12  , backward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.5774E-06 
+    2        |  1.2262E-13 
++------------+------------+
+ Energy = -1.133905216258713
+
+ MICROITERATION NUMBER = 13  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  3.7228E-06 
+    2        |  2.9870E-12 
++------------+------------+
+ Energy = -1.133905316556553
+
+ MICROITERATION NUMBER = 14  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.7904E-06 
+    2        |  3.4951E-12 
++------------+------------+
+ Energy = -1.133905310759948
+
+ MICROITERATION NUMBER = 15  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.2473E-06 
+    2        |  2.8281E-11 
++------------+------------+
+ Energy = -1.133905175397143
+
+
+ -------------------
+   SWEEP NUMBER 12
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 100
+ - Truncation parameter: 9.999999999999999e-21
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.3230E-06 
+    2        |  4.2509E-12 
++------------+------------+
+ Energy = -1.133905180798308
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.6689E-06 
+    2        |  2.0818E-12 
++------------+------------+
+ Energy = -1.133905232293402
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.0672E-06 
+    2        |  1.4967E-13 
++------------+------------+
+ Energy = -1.133905206327388
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  6.9791E-07 
+    2        |  2.3556E-14 
++------------+------------+
+ Energy = -1.13390520794798
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.0686E-07 
+    2        |  1.5175E-14 
++------------+------------+
+ Energy = -1.133905192212231
+
+ MICROITERATION NUMBER = 5  , forward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.5920E-07 
+    2        |  2.2201E-15 
++------------+------------+
+ Energy = -1.133905191745851
+
+ MICROITERATION NUMBER = 6  , forward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.3263E-07 
+    2        |  4.9223E-16 
++------------+------------+
+ Energy = -1.133905192024027
+
+ MICROITERATION NUMBER = 7  , forward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  3.0099E-07 
+    2        |  3.4322E-15 
++------------+------------+
+ Energy = -1.133905191765599
+
+ MICROITERATION NUMBER = 8  , forward sweep
+ - Left boundaries taken from index: 8
+ - Right boundaries taken from index: 10
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.2102E-08 
+    2        |  1.0237E-16 
++------------+------------+
+ Energy = -1.133905191023792
+
+ MICROITERATION NUMBER = 9  , backward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.0357E-09 
+    2        |  3.3064E-18 
++------------+------------+
+ Energy = -1.133905191032561
+
+ MICROITERATION NUMBER = 10  , backward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.1172E-08 
+    2        |  1.2704E-17 
++------------+------------+
+ Energy = -1.133905190836736
+
+ MICROITERATION NUMBER = 11  , backward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.4439E-08 
+    2        |  3.4115E-17 
++------------+------------+
+ Energy = -1.133905191273303
+
+ MICROITERATION NUMBER = 12  , backward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.5304E-08 
+    2        |  4.1336E-17 
++------------+------------+
+ Energy = -1.133905191533705
+
+ MICROITERATION NUMBER = 13  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.7207E-08 
+    2        |  3.5213E-15 
++------------+------------+
+ Energy = -1.133905190698072
+
+ MICROITERATION NUMBER = 14  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.6869E-07 
+    2        |  2.4814E-14 
++------------+------------+
+ Energy = -1.133905191661151
+
+ MICROITERATION NUMBER = 15  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.7332E-07 
+    2        |  1.7907E-12 
++------------+------------+
+ Energy = -1.133905172037416
+
+
+ -------------------
+   SWEEP NUMBER 13
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 100
+ - Truncation parameter: 9.999999999999999e-21
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  4.9017E-07 
+    2        |  1.6243E-13 
++------------+------------+
+ Energy = -1.133905198168789
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.2502E-07 
+    2        |  6.0369E-14 
++------------+------------+
+ Energy = -1.133905183986188
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.8254E-07 
+    2        |  3.6081E-15 
++------------+------------+
+ Energy = -1.133905186872703
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.2492E-07 
+    2        |  1.1193E-15 
++------------+------------+
+ Energy = -1.133905186559618
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.1696E-07 
+    2        |  2.5140E-16 
++------------+------------+
+ Energy = -1.133905186291724
+
+ MICROITERATION NUMBER = 5  , forward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.0758E-08 
+    2        |  1.3329E-17 
++------------+------------+
+ Energy = -1.133905186314055
+
+ MICROITERATION NUMBER = 6  , forward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.6686E-09 
+    2        |  6.1712E-19 
++------------+------------+
+ Energy = -1.133905186315457
+
+ MICROITERATION NUMBER = 7  , forward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.9959E-10 
+    2        |  1.3520E-20 
++------------+------------+
+ Energy = -1.133905186315468
+
+ MICROITERATION NUMBER = 8  , forward sweep
+ - Left boundaries taken from index: 8
+ - Right boundaries taken from index: 10
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.0279E-10 
+    2        |  4.7598E-22 
++------------+------------+
+ Energy = -1.133905186316921
+
+ MICROITERATION NUMBER = 9  , backward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  3.0729E-11 
++------------+------------+
+ Energy = -1.133905186316921
+
+ MICROITERATION NUMBER = 10  , backward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  6.5041E-10 
+    2        |  3.6841E-20 
++------------+------------+
+ Energy = -1.133905186316017
+
+ MICROITERATION NUMBER = 11  , backward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.0661E-10 
+    2        |  7.1522E-20 
++------------+------------+
+ Energy = -1.1339051863203
+
+ MICROITERATION NUMBER = 12  , backward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.5120E-10 
+    2        |  8.4488E-21 
++------------+------------+
+ Energy = -1.133905186322118
+
+ MICROITERATION NUMBER = 13  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.5863E-08 
+    2        |  2.0956E-16 
++------------+------------+
+ Energy = -1.133905186339764
+
+ MICROITERATION NUMBER = 14  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.9572E-08 
+    2        |  9.6526E-17 
++------------+------------+
+ Energy = -1.133905186176312
+
+ MICROITERATION NUMBER = 15  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.6900E-07 
+    2        |  5.5307E-14 
++------------+------------+
+ Energy = -1.13390518731154
+
+
+ -------------------
+   SWEEP NUMBER 14
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 100
+ - Truncation parameter: 9.999999999999999e-21
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.2869E-08 
+    2        |  2.6946E-15 
++------------+------------+
+ Energy = -1.133905185964712
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  4.7907E-08 
+    2        |  5.9940E-16 
++------------+------------+
+ Energy = -1.133905186492741
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  3.2037E-08 
+    2        |  7.5287E-17 
++------------+------------+
+ Energy = -1.133905186451532
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.0453E-08 
+    2        |  1.7349E-17 
++------------+------------+
+ Energy = -1.133905186453358
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.9660E-08 
+    2        |  3.3729E-18 
++------------+------------+
+ Energy = -1.133905186479972
+
+ MICROITERATION NUMBER = 5  , forward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.3242E-09 
+    2        |  5.9017E-20 
++------------+------------+
+ Energy = -1.133905186475819
+
+ MICROITERATION NUMBER = 6  , forward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.7705E-10 
+    2        |  2.4948E-21 
++------------+------------+
+ Energy = -1.133905186475934
+
+ MICROITERATION NUMBER = 7  , forward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.4089E-10 
+    2        |  7.8083E-22 
++------------+------------+
+ Energy = -1.133905186476031
+
+ MICROITERATION NUMBER = 8  , forward sweep
+ - Left boundaries taken from index: 8
+ - Right boundaries taken from index: 10
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.4770E-11 
++------------+------------+
+ Energy = -1.133905186476032
+
+ MICROITERATION NUMBER = 9  , backward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.4809E-11 
++------------+------------+
+ Energy = -1.133905186476031
+
+ MICROITERATION NUMBER = 10  , backward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.0549E-11 
++------------+------------+
+ Energy = -1.133905186476031
+
+ MICROITERATION NUMBER = 11  , backward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.0854E-10 
+    2        |  1.4719E-21 
++------------+------------+
+ Energy = -1.133905186476421
+
+ MICROITERATION NUMBER = 12  , backward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  3.1124E-11 
++------------+------------+
+ Energy = -1.133905186476422
+
+ MICROITERATION NUMBER = 13  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.4295E-09 
+    2        |  2.0455E-18 
++------------+------------+
+ Energy = -1.133905186480841
+
+ MICROITERATION NUMBER = 14  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.3477E-09 
+    2        |  1.1119E-18 
++------------+------------+
+ Energy = -1.133905186488924
+
+ MICROITERATION NUMBER = 15  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.7658E-08 
+    2        |  5.8212E-16 
++------------+------------+
+ Energy = -1.133905186433043
+
+
+ -------------------
+   SWEEP NUMBER 15
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 100
+ - Truncation parameter: 9.999999999999999e-21
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.3533E-09 
+    2        |  3.1061E-17 
++------------+------------+
+ Energy = -1.133905186492666
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.5260E-09 
+    2        |  7.8593E-18 
++------------+------------+
+ Energy = -1.13390518647674
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  3.4128E-09 
+    2        |  8.9300E-19 
++------------+------------+
+ Energy = -1.133905186475354
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.1559E-09 
+    2        |  1.5748E-19 
++------------+------------+
+ Energy = -1.133905186475232
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.0644E-09 
+    2        |  5.3804E-20 
++------------+------------+
+ Energy = -1.133905186473114
+
+ MICROITERATION NUMBER = 5  , forward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.4912E-10 
+    2        |  1.6204E-21 
++------------+------------+
+ Energy = -1.133905186473306
+
+ MICROITERATION NUMBER = 6  , forward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  3.5277E-11 
++------------+------------+
+ Energy = -1.133905186473305
+
+ MICROITERATION NUMBER = 7  , forward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  3.2973E-11 
++------------+------------+
+ Energy = -1.133905186473305
+
+ MICROITERATION NUMBER = 8  , forward sweep
+ - Left boundaries taken from index: 8
+ - Right boundaries taken from index: 10
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.7225E-11 
++------------+------------+
+ Energy = -1.133905186473307
+
+ MICROITERATION NUMBER = 9  , backward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  3.2973E-11 
++------------+------------+
+ Energy = -1.133905186473305
+
+ MICROITERATION NUMBER = 10  , backward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  3.5277E-11 
++------------+------------+
+ Energy = -1.133905186473305
+
+ MICROITERATION NUMBER = 11  , backward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.7935E-11 
++------------+------------+
+ Energy = -1.133905186473306
+
+ MICROITERATION NUMBER = 12  , backward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.6548E-11 
++------------+------------+
+ Energy = -1.133905186473305
+
+ MICROITERATION NUMBER = 13  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.0836E-10 
+    2        |  1.6233E-20 
++------------+------------+
+ Energy = -1.133905186473274
+
+ MICROITERATION NUMBER = 14  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  3.7983E-10 
+    2        |  2.6782E-20 
++------------+------------+
+ Energy = -1.133905186472436
+
+ MICROITERATION NUMBER = 15  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.0490E-09 
+    2        |  7.4435E-18 
++------------+------------+
+ Energy = -1.133905186473399
+
+
+ -------------------
+   SWEEP NUMBER 16
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 100
+ - Truncation parameter: 9.999999999999999e-21
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4699E-10 
+    2        |  4.3350E-19 
++------------+------------+
+ Energy = -1.13390518647061
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  6.0887E-10 
+    2        |  1.2143E-19 
++------------+------------+
+ Energy = -1.133905186472913
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  4.0702E-10 
+    2        |  1.2266E-20 
++------------+------------+
+ Energy = -1.133905186472432
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.5212E-10 
+    2        |  1.8329E-21 
++------------+------------+
+ Energy = -1.133905186472377
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.5447E-10 
+    2        |  1.0098E-21 
++------------+------------+
+ Energy = -1.133905186472462
+
+ MICROITERATION NUMBER = 5  , forward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  3.8753E-11 
++------------+------------+
+ Energy = -1.133905186472462
+
+ MICROITERATION NUMBER = 6  , forward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  4.4373E-11 
++------------+------------+
+ Energy = -1.133905186472462
+
+ MICROITERATION NUMBER = 7  , forward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.8779E-11 
++------------+------------+
+ Energy = -1.133905186472462
+
+ MICROITERATION NUMBER = 8  , forward sweep
+ - Left boundaries taken from index: 8
+ - Right boundaries taken from index: 10
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.1822E-11 
++------------+------------+
+ Energy = -1.133905186472462
+
+ MICROITERATION NUMBER = 9  , backward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.8779E-11 
++------------+------------+
+ Energy = -1.133905186472462
+
+ MICROITERATION NUMBER = 10  , backward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  4.4373E-11 
++------------+------------+
+ Energy = -1.133905186472462
+
+ MICROITERATION NUMBER = 11  , backward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  3.8753E-11 
++------------+------------+
+ Energy = -1.133905186472462
+
+ MICROITERATION NUMBER = 12  , backward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.2521E-11 
++------------+------------+
+ Energy = -1.133905186472462
+
+ MICROITERATION NUMBER = 13  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.7320E-11 
++------------+------------+
+ Energy = -1.133905186472462
+
+ MICROITERATION NUMBER = 14  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  4.1323E-11 
++------------+------------+
+ Energy = -1.133905186472464
+
+ MICROITERATION NUMBER = 15  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.4386E-10 
+    2        |  1.2459E-19 
++------------+------------+
+ Energy = -1.133905186472243
+
+
+ -------------------
+   SWEEP NUMBER 17
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 100
+ - Truncation parameter: 9.999999999999999e-21
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.3645E-10 
+    2        |  7.6129E-21 
++------------+------------+
+ Energy = -1.133905186472906
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.3487E-10 
+    2        |  3.7895E-21 
++------------+------------+
+ Energy = -1.133905186472508
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.0811E-11 
++------------+------------+
+ Energy = -1.133905186472507
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4225E-11 
++------------+------------+
+ Energy = -1.133905186472508
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  6.3443E-11 
++------------+------------+
+ Energy = -1.133905186472509
+
+ MICROITERATION NUMBER = 5  , forward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  7.2140E-11 
++------------+------------+
+ Energy = -1.133905186472508
+
+ MICROITERATION NUMBER = 6  , forward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  6.7710E-11 
++------------+------------+
+ Energy = -1.133905186472508
+
+ MICROITERATION NUMBER = 7  , forward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.2373E-11 
++------------+------------+
+ Energy = -1.133905186472508
+
+ MICROITERATION NUMBER = 8  , forward sweep
+ - Left boundaries taken from index: 8
+ - Right boundaries taken from index: 10
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  4.1073E-11 
++------------+------------+
+ Energy = -1.133905186472509
+
+ MICROITERATION NUMBER = 9  , backward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.2373E-11 
++------------+------------+
+ Energy = -1.133905186472508
+
+ MICROITERATION NUMBER = 10  , backward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  6.7710E-11 
++------------+------------+
+ Energy = -1.133905186472509
+
+ MICROITERATION NUMBER = 11  , backward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  7.2140E-11 
++------------+------------+
+ Energy = -1.133905186472508
+
+ MICROITERATION NUMBER = 12  , backward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  6.3443E-11 
++------------+------------+
+ Energy = -1.133905186472509
+
+ MICROITERATION NUMBER = 13  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4225E-11 
++------------+------------+
+ Energy = -1.133905186472508
+
+ MICROITERATION NUMBER = 14  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.0811E-11 
++------------+------------+
+ Energy = -1.133905186472506
+
+ MICROITERATION NUMBER = 15  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.1342E-11 
++------------+------------+
+ Energy = -1.133905186472508
+
+
+ -------------------
+   SWEEP NUMBER 18
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 100
+ - Truncation parameter: 9.999999999999999e-21
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  4.6257E-11 
++------------+------------+
+ Energy = -1.133905186472508
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.1342E-11 
++------------+------------+
+ Energy = -1.133905186472508
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.0811E-11 
++------------+------------+
+ Energy = -1.133905186472507
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4225E-11 
++------------+------------+
+ Energy = -1.133905186472508
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  6.3443E-11 
++------------+------------+
+ Energy = -1.133905186472509
+
+ MICROITERATION NUMBER = 5  , forward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  7.2140E-11 
++------------+------------+
+ Energy = -1.133905186472508
+
+ MICROITERATION NUMBER = 6  , forward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  6.7710E-11 
++------------+------------+
+ Energy = -1.133905186472509
+
+ MICROITERATION NUMBER = 7  , forward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.2373E-11 
++------------+------------+
+ Energy = -1.133905186472508
+
+ MICROITERATION NUMBER = 8  , forward sweep
+ - Left boundaries taken from index: 8
+ - Right boundaries taken from index: 10
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  4.1073E-11 
++------------+------------+
+ Energy = -1.133905186472509
+
+ MICROITERATION NUMBER = 9  , backward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.2373E-11 
++------------+------------+
+ Energy = -1.133905186472508
+
+ MICROITERATION NUMBER = 10  , backward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  6.7710E-11 
++------------+------------+
+ Energy = -1.133905186472509
+
+ MICROITERATION NUMBER = 11  , backward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  7.2140E-11 
++------------+------------+
+ Energy = -1.133905186472508
+
+ MICROITERATION NUMBER = 12  , backward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  6.3443E-11 
++------------+------------+
+ Energy = -1.133905186472509
+
+ MICROITERATION NUMBER = 13  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4225E-11 
++------------+------------+
+ Energy = -1.133905186472508
+
+ MICROITERATION NUMBER = 14  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.0811E-11 
++------------+------------+
+ Energy = -1.133905186472507
+
+ MICROITERATION NUMBER = 15  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.1342E-11 
++------------+------------+
+ Energy = -1.133905186472508
+
+
+ -------------------
+   SWEEP NUMBER 19
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 100
+ - Truncation parameter: 9.999999999999999e-21
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  4.6257E-11 
++------------+------------+
+ Energy = -1.133905186472508
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.1342E-11 
++------------+------------+
+ Energy = -1.133905186472508
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.0811E-11 
++------------+------------+
+ Energy = -1.133905186472507
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4225E-11 
++------------+------------+
+ Energy = -1.133905186472508
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  6.3443E-11 
++------------+------------+
+ Energy = -1.133905186472509
+
+ MICROITERATION NUMBER = 5  , forward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  7.2140E-11 
++------------+------------+
+ Energy = -1.133905186472508
+
+ MICROITERATION NUMBER = 6  , forward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  6.7710E-11 
++------------+------------+
+ Energy = -1.133905186472509
+
+ MICROITERATION NUMBER = 7  , forward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.2373E-11 
++------------+------------+
+ Energy = -1.133905186472508
+
+ MICROITERATION NUMBER = 8  , forward sweep
+ - Left boundaries taken from index: 8
+ - Right boundaries taken from index: 10
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  4.1073E-11 
++------------+------------+
+ Energy = -1.133905186472509
+
+ MICROITERATION NUMBER = 9  , backward sweep
+ - Left boundaries taken from index: 7
+ - Right boundaries taken from index: 9
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.2373E-11 
++------------+------------+
+ Energy = -1.133905186472508
+
+ MICROITERATION NUMBER = 10  , backward sweep
+ - Left boundaries taken from index: 6
+ - Right boundaries taken from index: 8
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  6.7710E-11 
++------------+------------+
+ Energy = -1.133905186472508
+
+ MICROITERATION NUMBER = 11  , backward sweep
+ - Left boundaries taken from index: 5
+ - Right boundaries taken from index: 7
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  7.2140E-11 
++------------+------------+
+ Energy = -1.133905186472508
+
+ MICROITERATION NUMBER = 12  , backward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  6.3443E-11 
++------------+------------+
+ Energy = -1.133905186472509
+
+ MICROITERATION NUMBER = 13  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4225E-11 
++------------+------------+
+ Energy = -1.133905186472508
+
+ MICROITERATION NUMBER = 14  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.0811E-11 
++------------+------------+
+ Energy = -1.133905186472507
+
+ MICROITERATION NUMBER = 15  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.1342E-11 
++------------+------------+
+ Energy = -1.133905186472508
+
+Task took 9.886184999999999 seconds.
