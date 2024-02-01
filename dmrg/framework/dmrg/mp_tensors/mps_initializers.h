@@ -50,18 +50,6 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup> {
     if (parms.is_set("seed")) dmrg_random::engine.seed(parms["seed"]);
   }
 
-    /**
-     * @brief Functor operator called to generate the MPS
-     *
-     * Note that fillrand variable is set here to true - so random initialization is done
-     * by default.
-     *
-     * @param mps output MPS
-     */
-    void operator()(MPS<Matrix, SymmGroup> & mps) { init_sectors(mps, this->init_bond_dimension, true); 
-      std::cout << "printing MPS" << std::endl;
-      std::cout << mps << std::endl;
-      }
   /**
    * @brief Functor operator called to generate the MPS
    *
@@ -263,8 +251,6 @@ class basis_mps_init_generic_const : public mps_initializer<Matrix, SymmGroup> {
     for (int i = 0; i < mps.length(); i++) {
       mps[i].divide_by_scalar(mps[i].scalar_norm());
     }
-    std::cout << "printing MPS" << std::endl;
-    std::cout << mps << std::endl;
   }
 
  private:
@@ -333,8 +319,6 @@ class basis_mps_init_generic_default
     for (int i = 0; i < mps.length(); i++) {
       mps[i].divide_by_scalar(mps[i].scalar_norm());
     }
-    std::cout << "printing MPS" << std::endl;
-    std::cout << mps << std::endl;
   }
 
  private:

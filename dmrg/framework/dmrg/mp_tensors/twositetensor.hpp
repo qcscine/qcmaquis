@@ -182,24 +182,33 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_l2r(
   return std::make_tuple(mps_tensor1, mps_tensor2, trunc);
 }
 
-template<class Matrix, class SymmGroup>
-boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
-TwoSiteTensor<Matrix, SymmGroup>::split_mps_r2l(std::size_t Mmax, double cutoff) const
-{
-    make_both_paired();
-    
-    typedef typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type dmt;
-    block_matrix<Matrix, SymmGroup> u, v;
-    block_matrix<dmt, SymmGroup> s;
-    
-    truncation_results trunc = svd_truncate(data_, u, v, s, cutoff, Mmax, false);
-    
-    MPSTensor<Matrix, SymmGroup> mps_tensor2(phys_i_right, v.left_basis(), right_i, v, RightPaired);
-    
-    gemm(u, s, v);
-    MPSTensor<Matrix, SymmGroup> mps_tensor1(phys_i_left, left_i, u.right_basis(), v, LeftPaired);
-    
-    return boost::make_tuple(mps_tensor1, mps_tensor2, trunc);
+template <class Matrix, class SymmGroup>
+std::tuple<
+    MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>,
+    truncation_results>
+TwoSiteTensor<Matrix, SymmGroup>::split_mps_r2l(
+    std::size_t Mmax, double cutoff, bool verbose
+) const {
+  make_both_paired();
+
+  using dmt =
+      typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type;
+  block_matrix<Matrix, SymmGroup> u, v;
+  block_matrix<dmt, SymmGroup> s;
+
+  truncation_results trunc =
+      svd_truncate(data_, u, v, s, cutoff, Mmax, verbose);
+
+  MPSTensor<Matrix, SymmGroup> mps_tensor2(
+      phys_i_right, v.left_basis(), right_i, v, RightPaired
+  );
+
+  gemm(u, s, v);
+  MPSTensor<Matrix, SymmGroup> mps_tensor1(
+      phys_i_left, left_i, u.right_basis(), v, LeftPaired
+  );
+
+  return std::make_tuple(mps_tensor1, mps_tensor2, trunc);
 }
 
 template <class Matrix, class SymmGroup>

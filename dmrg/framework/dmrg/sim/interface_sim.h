@@ -214,7 +214,7 @@ class interface_sim : public sim<Matrix, SymmGroup>,
       }
     }
   }
-  
+
   /**
    * @brief Generic ALS-based optimization.
    * This routine solve a problem (that can be either a propagation, the
@@ -258,9 +258,6 @@ class interface_sim : public sim<Matrix, SymmGroup>,
                    << firstEnergy << std::endl;
     }
     // Run the sweep-based simulation.
-    //start timer here
-    timeval now, then;
-    gettimeofday(&now, NULL);
     try {
       bool converged = false;
       for (int sweep = init_sweep; sweep < nSweeps; ++sweep) {
@@ -305,10 +302,6 @@ class interface_sim : public sim<Matrix, SymmGroup>,
       dumpParametersAndIterResults(e.sweep());
       dumpEnergy(e.sweep());
     }
-    //end timer here
-    gettimeofday(&then, NULL);
-    double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
-    maquis::cout << "Sweep took " << elapsed << " seconds." << std::endl;
   }
 
   /**

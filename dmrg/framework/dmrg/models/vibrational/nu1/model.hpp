@@ -141,23 +141,28 @@ class NMode : public model_impl<Matrix, NU1_template<N>> {
     throw std::runtime_error("update() not yet implemented for this model.");
   }
 
-    void create_terms() override {
-        std::cout << "Parsing integral file" << std::endl;
-        auto Hamiltonian_term = Vibrational::detail::NModeIntegralParser<double>(parameters, lattice);
-        int hamiltonianSize = Hamiltonian_term.first.size();
-        std::cout << "size of vector Hamiltonian_term : " << hamiltonianSize << std::endl;
-        std::cout << "Processing Second-Quantization Hamiltonian" << std::endl;
-        for (int iTerm = 0; iTerm < hamiltonianSize; iTerm++) {
-            positions_type positions;
-            operators_type operators;
-            convertLineToOperators(Hamiltonian_term.first[iTerm], positions, operators);
-            if (positions.size()/2 <= maxCouplingDegree) {
-                auto matrixElement = static_cast<value_type>(Hamiltonian_term.second[iTerm]);
-                modelHelper<Matrix, NU1>::add_term(positions, operators, matrixElement, tag_handler, this->terms_);
-            }
-        }
-        std::cout << "Second-Quantization Hamiltonian processed" << std::endl;
+  void create_terms() override {
+    std::cout << "Parsing integral file" << std::endl;
+    auto Hamiltonian_term =
+        Vibrational::detail::NModeIntegralParser<double>(parameters, lattice);
+    int hamiltonianSize = Hamiltonian_term.first.size();
+    std::cout << "Processing Second-Quantization Hamiltonian" << std::endl;
+    for (int iTerm = 0; iTerm < hamiltonianSize; iTerm++) {
+      positions_type positions;
+      operators_type operators;
+      convertLineToOperators(
+          Hamiltonian_term.first[iTerm], positions, operators
+      );
+      if (positions.size() / 2 <= maxCouplingDegree) {
+        auto matrixElement =
+            static_cast<value_type>(Hamiltonian_term.second[iTerm]);
+        modelHelper<Matrix, NU1>::add_term(
+            positions, operators, matrixElement, tag_handler, this->terms_
+        );
+      }
     }
+    std::cout << "Second-Quantization Hamiltonian processed" << std::endl;
+  }
 
   /** @brief Getter for the physical dimension of a given type */
   Index<NU1> const& phys_dim(size_t type) const { return phys_indexes[type]; }

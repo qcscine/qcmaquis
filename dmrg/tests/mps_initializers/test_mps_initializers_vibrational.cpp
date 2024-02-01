@@ -269,4 +269,4 @@ BOOST_FIXTURE_TEST_CASE(
 #endif  // HAVE_U1
 }
 
-#endif // DMRG_VIBRONIC
+#endif  // DMRG_VIBRONIC
