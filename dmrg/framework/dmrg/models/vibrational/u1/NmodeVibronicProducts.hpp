@@ -5,7 +5,7 @@
 #include "dmrg/models/vibrational/VibronicIntegralParser.hpp"
 
 template<class Matrix>
-class ExcitonicNmodeProducts : public model_impl<Matrix, U1>
+class ExcitonicNmode : public model_impl<Matrix, U1>
 {
 public:
     //Types definition
@@ -26,7 +26,7 @@ public:
     * @param parameters container with the DMRG parameters
     */
 
-    ExcitonicNmodeProducts(const Lattice& lat_, BaseParameters & model_)
+    ExcitonicNmode(const Lattice& lat_, BaseParameters & model_)
             : lat(lat_), model(model_), L_(model["L"]), /*tag_handler(new table_type()),*/ n_ele_states_(model["vibronic_num_elestates"]), 
             n_vib_states_(model["vibronic_num_vibmodes"]), n_particles_(model["vibronic_num_molecules"]), phys_indexes(0), J_(0.),
             epsilon_(1.), only_nn_(false)
@@ -37,7 +37,6 @@ public:
         J_ = model["vibronic_J_coupling"].as<value_type>();
         epsilon_ = model["vibronic_J_excitation"].as<value_type>();
         nMaxVec = model["Nmax"].as<std::vector<int> >();
-        nMaxVecNumElements = nMaxVec.size();
         n_connectingmodes = model["vibronic_num_connectingmodes"].as<int>();
         num_vibtypes = n_vib_states_*n_particles_-n_connectingmodes;
         op_t  ident_ele_op, create_ele_op, destroy_ele_op, count_ele_op, count_ele_op_gs; //Electronic operators:
@@ -90,56 +89,48 @@ public:
         std::cout << "registered electronic count op with tag " << count_ele << std::endl;
         count_ele_gs = tag_handler-> register_op(count_ele_op_gs, tag_detail::bosonic);
         std::cout << "registered electronic ground state count op with tag " << count_ele_gs << std::endl;
-        // Registers the hermitian pairs
-        //modelHelper<Matrix, U1>::registerHermitianConjugates(create, destroy, tag_handler);
 
         // Handle vibrational operators
         std::set<int> nModalsUnique(nMaxVec.begin(), nMaxVec.end());
-        for(const auto& iEl : nModalsUnique) std::cout << "Elements in nModalsUnique " << iEl << std::endl;
         //TODO: SiteTypes?
-        std::vector<op_t> ident_op, count_op, destroy_op, create_op;
+        std::vector<op_t> ident_op, count_op, destroy_op, create_op, paired_op;
         //If modal bases have different number of modals
         for (const auto& nModals_idx: nModalsUnique) {
             int overallDimension = nModals_idx;
             std::cout << "Matrix dimension is " << overallDimension << std::endl;
             Matrix mident(overallDimension, overallDimension, 0.), mcount(overallDimension, overallDimension, 0.);
-            std::vector <Matrix> mcreateVec;
-            std::vector <Matrix> mdestroyVec;
-            mident(0, 0) = 1.;
-            for (int n = 1; n < overallDimension; n++) {
-                    Matrix mcreate(overallDimension, overallDimension, 0.), mdestroy(overallDimension, overallDimension, 0.);
-                    mcreate(0, n) = 1; 
-                    mdestroy(n, 0) = 1;
-                    mcreateVec.push_back(mcreate);
-                    mdestroyVec.push_back(mdestroy);
-                    mident(n, n) = 1.;
-                    mcount(n, n) = value_type(n); //same count operator as in Watson Model
+            std::vector <Matrix> mpairedVec;
+            for (int n = 0; n < overallDimension; n++) {
+                for (int m = 0; m < overallDimension; m++){
+                    Matrix mpaired(overallDimension, overallDimension, 0.);
+                    mpaired(n,m) = 1; 
+                    std::cout << "created a paired operator with the entry 1 in row index " << n << " and column index " << m << std::endl;
+                    mpairedVec.push_back(mpaired);
+                }
+                mident(n, n) = 1.;
+                if (n != 0) mcount(n, n) = value_type(n); //same count operator as in Watson Model
             }
+            //DEBUG
             std::cout << "printing operators" << std::endl;
             std::cout << "identity " << mident << std::endl;
             std::cout << "count " << mcount << std::endl;
-            for(const auto &iEl : mdestroyVec) std::cout << "destroy operator " << iEl << std::endl;
-            for(const auto &iEl : mcreateVec) std::cout << "create operator " << iEl << std::endl;
+            for(const auto &iEl : mpairedVec) std::cout << "paired operator " << iEl << std::endl;
             //local operators
-            std::vector <op_t> create_op_locVec, destroy_op_locVec;
+            std::vector <op_t> paired_op_locVec;
             op_t ident_op_loc, count_op_loc;
             ident_op_loc.insert_block(mident, 0, 0);
             count_op_loc.insert_block(mcount, 0, 0);
-            for (int i = 0; i < mcreateVec.size(); i++){
-                    op_t create_op_loc, destroy_op_loc;
-                    create_op_loc.insert_block(mcreateVec[i], 0, 0);
-                    destroy_op_loc.insert_block(mdestroyVec[i], 0, 0);
-                    create_op_locVec.push_back(create_op_loc);
-                    destroy_op_locVec.push_back(destroy_op_loc);
+            for (int i = 0; i < mpairedVec.size(); i++){
+                op_t paired_op_loc;
+                paired_op_loc.insert_block(mpairedVec[i], 0, 0);
+                paired_op_locVec.push_back(paired_op_loc);
             }
             // Updates the vectors
             ident_op.push_back(ident_op_loc);
             count_op.push_back(count_op_loc);
-            for (int i = 0; i < create_op_locVec.size(); i++){
-                    op_t createToPushBack = create_op_locVec[i];
-                    op_t destroyToPushBack = destroy_op_locVec[i];
-                    create_op.push_back(createToPushBack);
-                    destroy_op.push_back(destroyToPushBack);
+            for (int i = 0; i < paired_op_locVec.size(); i++){
+                op_t pairedToPushBack = paired_op_locVec[i];
+                paired_op.push_back(pairedToPushBack);
             }
         }
         // Creates the final tags and update the table
@@ -149,12 +140,9 @@ public:
         count = modelHelper<Matrix, U1>::register_all_types(count_op, tag_detail::bosonic, tag_handler);
         for(const auto &iEl : count)
             std::cout << "registered a vib count op with tag " << iEl << std::endl;
-        create = modelHelper<Matrix, U1>::register_all_types(create_op, tag_detail::bosonic, tag_handler);
-        for(const auto &iEl : create)
-            std::cout << "registered a vib create op with tag " << iEl << std::endl;
-        destroy = modelHelper<Matrix, U1>::register_all_types(destroy_op, tag_detail::bosonic, tag_handler);
-        for(const auto &iEl : destroy)
-            std::cout << "registered a vib destroy op with tag " << iEl << std::endl;
+        paired = modelHelper<Matrix, U1>::register_all_types(paired_op, tag_detail::bosonic, tag_handler);
+        for(const auto &iEl : paired)
+            std::cout << "registered a vib paired op with tag " << iEl << std::endl;
     }
 
     void create_terms() override {
@@ -198,57 +186,36 @@ public:
                 std::vector<pos_t> positions;
                 std::vector<int> modes;
                 std::vector<int> modals;
-<<<<<<< HEAD
-<<<<<<< HEAD
-                int dimensionError = 0;
-=======
                 bool skip = false;
->>>>>>> c7869a68
-=======
-                bool skip = false;
->>>>>>> c7869a68c235fab5a3d4e7987c18ce6356eeae9b
                 for(int i = 0; i < hamiltonianTerms.first[idx].size(); i++){ //loop over coupled modes and modals in a single integral line
                     if (hamiltonianTerms.first[idx][i] == -1 || hamiltonianTerms.first[idx][i+2] == -1) break;
                     else if (i % 2 == 0) modes.push_back(hamiltonianTerms.first[idx][i]-1); //-1 so that mode index starts at zero
                     else modals.push_back(hamiltonianTerms.first[idx][i]);
                 }
-                /*if (nMaxVecNumElements != 1){
-                    for(int iModal = 0; iModal < modals.size(); iModal++){
-                        if (modals[iModal]+1 >= nMaxVec[i_body*n_vib_states_ + modes[iModal]]) dimensionError = 1;
-                    }
-                }
-                if (dimensionError) std::cout << "broke out of loop" << std::endl;
-                if (dimensionError) continue; // i think this terminates the whole procedure instead of just the integral line -> check!*/
                 for(int i = 0; i < modes.size(); i+=2){
                     vec_jnk[1] = modes[i];
-                    int localDimension = nMaxVec[i_body*n_vib_states_+modes[i]]-1;
+                    int localDimension = nMaxVec[i_body*n_vib_states_+modes[i]];
                     int modalToCreate = modals[i];
                     int modalToDestroy = modals[i+1];
-                    positions.push_back(lat.get_prop<int>("vibindex", vec_jnk));
-                    positions.push_back(lat.get_prop<int>("vibindex", vec_jnk));
-                    int sum = 0;
+                    // Calculating the index of the given operator in the "paired" vector
+                    // Iterate through the set
+                    int sumSquaredSmaller = 1;
                     std::set<int> nModalsUnique(nMaxVec.begin(), nMaxVec.end());
-                    for(const auto& iEl : nModalsUnique){
-                        int compareDimension = iEl -1;
-                        if(compareDimension < localDimension) sum += compareDimension;
+                    for (const auto& element : nModalsUnique) {
+                        // Check if the element is smaller than the given integer
+                        if (element < localDimension) {
+                            int squaredElement = element * element; // Square the element
+                            sumSquaredSmaller += squaredElement; // Add the squared element to the sum
+                        }
                     }
-<<<<<<< HEAD
-<<<<<<< HEAD
-                    operators.push_back(create[sum-1 + modalToCreate]);
-                    operators.push_back(destroy[sum-1 + modalToDestroy]);
-
-=======
-=======
->>>>>>> c7869a68c235fab5a3d4e7987c18ce6356eeae9b
                     if(modalToCreate >= localDimension || modalToDestroy >= localDimension) skip = true;
-                    operators.push_back(create[sum + modalToCreate]);
-                    std::cout << "pushed back vib op : " << create[sum + modalToCreate] << std::endl; 
-                    operators.push_back(destroy[sum + modalToDestroy]);
-                    std::cout << "pushed back vib op : " << destroy[sum + modalToCreate] << std::endl;
-<<<<<<< HEAD
->>>>>>> c7869a68
-=======
->>>>>>> c7869a68c235fab5a3d4e7987c18ce6356eeae9b
+                    int indexOp = (sumSquaredSmaller-1) + modalToCreate*(localDimension) + modalToDestroy;
+                    std::cout << "modalToDestroy " << modalToDestroy << std::endl;
+                    std::cout << "modalToCreate " << modalToCreate << std::endl;
+                    std::cout << "index " << indexOp << std::endl;
+                    operators.push_back(paired[indexOp]); //define ops
+                    positions.push_back(lat.get_prop<int>("vibindex", vec_jnk)); //define pos
+                    std::cout << "pushed back paired operator with tag " << operators[0] << " at position " << positions[0] << std::endl; 
                 }
                 if(skip) continue;
                 // Add electronic contribution
@@ -377,6 +344,22 @@ public:
         return ret;
     }
 
+    /** @brief Count matrix getter */
+    tag_type count_matrix_tag(size_t type) const
+    {
+        tag_type ret ;
+        if(type != 0){
+            std::set<int> nModalsUnique(nMaxVec.begin(), nMaxVec.end());
+            std::set<int>::iterator it = nModalsUnique.find(nMaxVec[type-1]);
+            if(it == nModalsUnique.end()) std::runtime_error("Index of dimension not found in set nModalsUnique");
+            int indexInSet = std::distance(nModalsUnique.begin(), it); // extract index of entry dimension in set
+            return count[indexInSet];
+        }
+        else
+            throw std::runtime_error("No number operator for electronic sites");
+        return ret;
+    }
+
     /** @brief Filling matrix getter */
     tag_type filling_matrix_tag(size_t type) const
     {
@@ -393,22 +376,6 @@ public:
         else
             throw std::runtime_error("Site type not recognized") ;
         return ret ;
-    }
-
-    /** @brief Count matrix getter */
-    tag_type count_matrix_tag(size_t type) const
-    {
-        tag_type ret ;
-        if(type != 0){
-            std::set<int> nModalsUnique(nMaxVec.begin(), nMaxVec.end());
-            std::set<int>::iterator it = nModalsUnique.find(nMaxVec[type-1]);
-            if(it == nModalsUnique.end()) std::runtime_error("Index of dimension not found in set nModalsUnique");
-            int indexInSet = std::distance(nModalsUnique.begin(), it); // extract index of entry dimension in set
-            return count[indexInSet];
-        }
-        else
-            throw std::runtime_error("No number operator for electronic sites");
-        return ret;
     }
 
     /** @brief Charge getter */
@@ -469,6 +436,7 @@ public:
                 meas.push_back(new measurements::local_at<Matrix, U1>(name, lat, pos_local, identities_local, fillings_local, ops));
             }
         }
+
         if (model.is_set("MEASURE[ModeExcitationDegree]")){
             int typeCount = 1;
             for(std::size_t iBody = 0; iBody < n_particles_; iBody++){ //loop over monomers
@@ -502,14 +470,6 @@ public:
                 }
             }
         }
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-
->>>>>>> c7869a68
-=======
-
->>>>>>> c7869a68c235fab5a3d4e7987c18ce6356eeae9b
         return meas;
     }
 
@@ -526,9 +486,8 @@ private:
     std::vector<int> nMaxVec;
     int n_connectingmodes;
     int num_vibtypes;
-    int nMaxVecNumElements;
     //operators
-    operators_type ident, count, create, destroy; //vibrational operators
+    operators_type ident, count, create, destroy, paired; //vibrational operators
     tag_type ident_ele, count_ele, count_ele_gs, create_ele, destroy_ele; //electronic operators
 
 
