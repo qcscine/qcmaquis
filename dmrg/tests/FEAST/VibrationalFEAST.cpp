@@ -231,7 +231,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_FAD_Fingerprint, NModeFixture) {
   parametersFADTwoBodyFingerPrint.set("nsweeps", 20);
   parametersFADTwoBodyFingerPrint.set("init_type", "const");
   parametersFADTwoBodyFingerPrint.set("optimization", "twosite");
-  parametersFADTwoBodyFingerPrint.set("twosite_truncation", "heev_truncate");
+  parametersFADTwoBodyFingerPrint.set("twosite_truncation", "heev");
   parametersFADTwoBodyFingerPrint.set("alpha_initial", 1.0E-8);
   parametersFADTwoBodyFingerPrint.set("alpha_main", 1.0E-15);
   parametersFADTwoBodyFingerPrint.set("alpha_final", 0.);

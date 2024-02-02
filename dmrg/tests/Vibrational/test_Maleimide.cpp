@@ -29,7 +29,7 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_Maleimide, MaleimideFixture) {
   parametersMaleimideOneBody.set("ngrowsweeps", 2);
   parametersMaleimideOneBody.set("nmainsweeps", 2);
   parametersMaleimideOneBody.set("optimize", "twosite");
-  parametersMaleimideOneBody.set("twosite_truncation", "heev_truncate");
+  parametersMaleimideOneBody.set("twosite_truncation", "heev");
   parametersMaleimideOneBody.set("alpha_initial", 1.0E-8);
   parametersMaleimideOneBody.set("alpha_main", 1.0E-15);
   parametersMaleimideOneBody.set("alpha_final", 0.);
