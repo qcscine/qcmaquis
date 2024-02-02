@@ -50,6 +50,24 @@ struct NModeFixture {
     parametersFADTwoBody.set("LATTICE", "nmode lattice");
     parametersFADTwoBody.set("MODEL", "nmode");
     parametersFADTwoBody.set("integral_file", "integral_file_test_TwoBodyFAD");
+    //
+    parametersWater.set("nsweeps", 50);
+    parametersWater.set("ngrowsweeps", 10);
+    parametersWater.set("nmainsweeps", 20);
+    parametersWater.set("max_bond_dimension", 150);
+    parametersWater.set("alpha_initial", 1.0E-8);
+    parametersWater.set("alpha_main", 1.0E-10);
+    parametersWater.set("alpha_final", 0);
+    parametersWater.set("truncation_initial", 0);
+    parametersWater.set("truncation_final", 0);
+    parametersWater.set("eigensolver", "IETL_JCD");
+    parametersWater.set("optimization", "singlesite");
+    parametersWater.set("model_library", "coded");
+    parametersWater.set("lattice_library", "coded");
+    parametersWater.set("integral_cutoff", 1.0E-8);
+    parametersWater.set("nmode_num_modes", 3);
+    parametersWater.set("init_type", "basis_state_generic");
+
     // == INPUT FILE CREATIONS ==
     integralFileOneBodyFAD.open("integral_file_test_OneBodyFAD");
     integralFileOneBodyFAD << "       1 0       1 0  -2.359242429009664e+03\n";
@@ -15130,6 +15148,27 @@ struct NModeFixture {
     integralFileTwoBodyFADFingerPrint
         << "4-3       4-3       5-3       5-3   -2.013327838133568e+00\n";
     integralFileTwoBodyFADFingerPrint.close();
+    //
+    integralFileOneBodyWater.open("integral_file_test_OneBodyWater");
+    integralFileOneBodyWater << "1-0    1-0    822.20658268\n";
+    integralFileOneBodyWater << "1-1    1-1    2458.13980365\n";
+    integralFileOneBodyWater << "1-2    1-2    4080.70800235\n";
+    integralFileOneBodyWater << "1-3    1-3    5695.76754390\n";
+    integralFileOneBodyWater << "1-4    1-4    7322.63669604\n";
+    integralFileOneBodyWater << "1-5    1-5    9004.06198596\n";
+    integralFileOneBodyWater << "2-0    2-0    1907.70566981\n";
+    integralFileOneBodyWater << "2-1    2-1    5657.87641541\n";
+    integralFileOneBodyWater << "2-2    2-2    9339.26135683\n";
+    integralFileOneBodyWater << "2-3    2-3    13037.37641030\n";
+    integralFileOneBodyWater << "2-4    2-4    16951.01097233\n";
+    integralFileOneBodyWater << "2-5    2-5    21255.49635005\n";
+    integralFileOneBodyWater << "3-0    3-0    1995.72280120\n";
+    integralFileOneBodyWater << "3-1    3-1    6033.64526923\n";
+    integralFileOneBodyWater << "3-2    3-2    10163.31053674\n";
+    integralFileOneBodyWater << "3-3    3-3    14383.49653355\n";
+    integralFileOneBodyWater << "3-4    3-4    18697.99018599\n";
+    integralFileOneBodyWater << "3-5    3-5    23132.08260661\n";
+    integralFileOneBodyWater.close();
     // Sets it now because integralsOneBodyFAD has to be populated before
     // passing it to the parameter container.
     parametersFADOneBodyBinary.set("L", 39);
@@ -15165,9 +15204,9 @@ struct NModeFixture {
   // Class members
   DmrgParameters parametersTwoMode, parametersFourMode, parametersFADOneBody,
       parametersFADTwoBody, parametersFADOneBodyBinary,
-      parametersFADTwoBodyFingerPrint;
+      parametersFADTwoBodyFingerPrint, parametersWater;
   std::ofstream integralFileOneBodyFAD, integralFileTwoBodyFADFingerPrint,
-      integralFileTwoBodyFAD;
+      integralFileTwoBodyFAD, integralFileOneBodyWater;
   MaquisIntegralType integralsOneBodyFAD;
 };
 
