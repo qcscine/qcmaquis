@@ -5,6 +5,22 @@ import sys
 from setuptools import Extension, find_packages, setup
 from setuptools.command.build_ext import build_ext
 
+def get_virtualenv_path():
+    """Used to work out path to install compiled binaries to."""
+    if hasattr(sys, 'real_prefix'):
+        return sys.prefix
+
+    if hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix:
+        return sys.prefix
+
+    if 'conda' in sys.prefix:
+        return sys.prefix
+
+    if 'micromamba' in sys.prefix:
+        return sys.prefix
+
+    return None
+
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=""):
@@ -18,8 +34,6 @@ class CMakeBuild(build_ext):
         if not extdir.endswith(os.path.sep):
             extdir += os.path.sep
 
-        print(extdir)
-
         debug = int(os.environ.get("DEBUG", 0)) if self.debug is None else self.debug
         cfg = "Debug" if debug else "Release"
         cmake_args = [
@@ -29,6 +43,7 @@ class CMakeBuild(build_ext):
             "-DBUILD_SYMMETRIES=TwoU1;TwoU1PG;SU2U1;SU2U1PG",
             "-DBUILD_DMRG_EVOLVE=ON",
             "-DPYTHON_BINDINGS=ON",
+            "-DBUILD_TRANSCORRELATED_DMRG=ON",
             "-DENABLE_OMP=ON",
         ]
         if "CMAKE_ARGS" in os.environ:
@@ -38,15 +53,16 @@ class CMakeBuild(build_ext):
         build_args = [f"-j{parallel}"]
 
         build_temp = os.path.join(self.build_temp, ext.name)
-        print(build_temp)
         if not os.path.exists(build_temp):
             os.makedirs(build_temp)
-
-        print(ext.sourcedir)
 
         subprocess.check_call(["cmake", ext.sourcedir] + cmake_args, cwd=build_temp)
         subprocess.check_call(["cmake", "--build", "."] + build_args, cwd=build_temp)
 
+        venv = get_virtualenv_path()
+        if venv is not None:
+            print("Copying compiled binaries to virtual environment.")
+            subprocess.check_call(["cp", "qcmaquis", f"{venv}/bin"], cwd=build_temp)
 
 setup(
     name="dmrg",

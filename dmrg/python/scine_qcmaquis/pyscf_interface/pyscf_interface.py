@@ -93,9 +93,9 @@ class QcMaquis:
         """Max number of sweeps."""
         self.bond_dim = 250
         """Bond dimension."""
-        self.initial_truncation_thresh = 1e-6
+        self.initial_truncation_thresh = 1e-16  # 1e-6
 
-        self.final_truncation_thresh = 1e-10
+        self.final_truncation_thresh = 1e-16  # 1e-10
 
         # Set other parameters directly through qcmaquis parameters
 

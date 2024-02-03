@@ -1,5 +1,4 @@
 import os
-import subprocess
 import sys
 
 from setuptools import Extension, find_packages, setup
