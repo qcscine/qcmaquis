@@ -37,7 +37,7 @@ void checkEnabledSimulationType(const std::string& sim_type) {
   }
 #endif
 #ifndef DMRG_TRANSCORRELATED
-  if (sim_type == "transcorrelation") {
+  if (sim_type == "transcorrelated") {
     std::cerr << "Transcorrelated DMRG not available. Please recompile "
                  "with -DBUILD_TRANSCORRELATED_DMRG=ON\n";
     exit(1);
@@ -48,13 +48,12 @@ void checkEnabledSimulationType(const std::string& sim_type) {
 // @brief Checks that the requested simulation type is valid
 void checkSimulationType(const std::string& sim_type) {
   std::vector<std::string> valid_types = {
-      "optimize", "evolve", "ipi", "feast", "transcorrelation"
-  };
+      "optimize", "evolve", "ipi", "feast", "transcorrelated"};
   if (std::find(valid_types.begin(), valid_types.end(), sim_type) ==
       valid_types.end()) {
     std::cerr << "Unknown simulation type: \"" << sim_type
               << "\". Valid options are: optimize, evolve, ipi, feast, "
-                 "transcorrelation\n";
+                 "transcorrelated\n";
     exit(1);
   }
   checkEnabledSimulationType(sim_type);
@@ -85,8 +84,9 @@ int main(int argc, char** argv) {
       DCOLLECTOR_SET_SIZE(svd_collector, opt.parms["max_bond_dimension"] + 1)
 
       Timer sim_timer(
-          "\n*********************************************************\nQCMAQUIS " + sim_type +
-          " simulation"
+          "\n*********************************************************"
+          "\nQCMAQUIS " +
+          sim_type + " simulation"
       );
       sim_timer.begin();
 

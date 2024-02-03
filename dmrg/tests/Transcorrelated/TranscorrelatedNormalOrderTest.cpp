@@ -76,10 +76,6 @@ BOOST_FIXTURE_TEST_CASE(
   parametersHeTranscorrelated.set(
       "transcorrelated_integral_file", TRANSCORRELATED_HE_FCIDUMP_PATH
   );
-  parametersBeTranscorrelatedTwoBody.set("transcorrelated_3body", "yes");
-
-  // auto energyDMRG = maquis::real(interface.energy());
-
   parametersHeTranscorrelated.set(
       "transcorrelated_3body_normal_ordered", "yes"
   );
