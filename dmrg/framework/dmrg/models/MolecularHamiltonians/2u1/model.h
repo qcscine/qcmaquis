@@ -14,6 +14,7 @@
 #include <iterator>
 #include <boost/tokenizer.hpp>
 #include <regex>
+#include <unordered_set>
 
 #include "dmrg/models/model.h"
 #include "dmrg/models/measurements.h"
@@ -1161,6 +1162,8 @@ class qc_model : public model_impl<Matrix, SymmGroup> {
 
     return ret;
   }
+  void create_terms_not_normal_ordered();
+  void create_terms_normal_ordered();
 };
 
 #include "dmrg/models/MolecularHamiltonians/2u1/model.hpp"

@@ -32,7 +32,8 @@ class DmrgParameters : public BaseParameters {
     add_option(
         "simulation_type",
         "Simulation type can be optimize, evolve,"
-        "ipi," "feast, transcorrelated"
+        "ipi,"
+        "feast, transcorrelated"
     );
     add_option("verbose", "Verbosity level of the DMRG calculation", value(0));
     add_option(
@@ -280,6 +281,19 @@ class DmrgParameters : public BaseParameters {
         "If no, does not add the three-body part of the transcorrelated "
         "Hamiltonian",
         value("yes")
+    );
+    add_option(
+        "transcorrelated_3body_normal_ordered",
+        "Use normal-ordered version of the threebody operator", value("no")
+    );
+    add_option(
+        "normal_ordered_integral_file",
+        "Integral file given is normal ordered.", value("no")
+    );
+    add_option(
+        "normal_ordered_hole_states",
+        "Hole states of the normal ordering, if integral file given in normal "
+        "ordering"
     );
     add_option(
         "transcorrelated_3body_max_coupling",
