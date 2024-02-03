@@ -31,7 +31,7 @@ using std::endl;
 
 namespace entanglement_detail {
 
-std::vector<std::pair<int, int> > get_labels(
+static std::vector<std::pair<int, int> > get_labels(
     const std::vector<std::string>& quant_label
 ) {
   std::vector<std::pair<int, int> > labels;
@@ -47,7 +47,9 @@ std::vector<std::pair<int, int> > get_labels(
   return labels;
 }
 
-std::vector<int> get_labels_vec(const std::vector<std::string>& quant_label) {
+static std::vector<int> get_labels_vec(
+    const std::vector<std::string>& quant_label
+) {
   std::vector<int> labels;
   for (const auto& j : quant_label) {
     boost::tokenizer<> tok(j);
@@ -316,13 +318,16 @@ EntropyData<Matrix> loadData(
 
 template <class Matrix>
 Matrix two_orb_rdm(int p, int q, EntropyData<Matrix>& data) {
+  using value_type = typename Matrix::value_type;
+  using real_type = typename maquis::traits::real_type<value_type>::type;
   Matrix pq_dm_matrix(16, 16);
   pq_dm_matrix(0, 0) =
-      1 + data.Nupdown(p, 0) + data.Nupdown(q, 0) + data.doccdocc(p, q) -
-      data.Ndown(p, 0) - data.ndowndocc(p, q) - data.Ndown(q, 0) -
-      data.doccndown(p, q) + data.ndownndown(p, q) - data.Nup(p, 0) -
-      data.nupdocc(p, q) + data.nupndown(p, q) - data.Nup(q, 0) -
-      data.doccnup(p, q) + data.ndownnup(p, q) + data.nupnup(p, q);
+      static_cast<real_type>(1) + data.Nupdown(p, 0) + data.Nupdown(q, 0) +
+      data.doccdocc(p, q) - data.Ndown(p, 0) - data.ndowndocc(p, q) -
+      data.Ndown(q, 0) - data.doccndown(p, q) + data.ndownndown(p, q) -
+      data.Nup(p, 0) - data.nupdocc(p, q) + data.nupndown(p, q) -
+      data.Nup(q, 0) - data.doccnup(p, q) + data.ndownnup(p, q) +
+      data.nupnup(p, q);
   // O(6)/O(1)
   pq_dm_matrix(1, 1) = -data.Nupdown(p, 0) - data.doccdocc(p, q) +
                        data.Ndown(p, 0) + data.ndowndocc(p, q) +
@@ -448,7 +453,6 @@ class EntanglementData {
 
   void calculateData(entanglement_detail::EntropyData<Matrix>& data) {
     using real_type = typename maquis::traits::real_type<value_type>::type;
-    using real_type = typename maquis::traits::real_type<value_type>::type;
 
     int L = data.L;
     real_type threshold = 1.0e-10;
@@ -460,7 +464,8 @@ class EntanglementData {
       m11(i, 0) = (data.Nup(i, 0) - data.Nupdown(i, 0));    // O(11)
       m22(i, 0) = (data.Ndown(i, 0) - data.Nupdown(i, 0));  // O(6)
       m33(i, 0) =
-          (1 - data.Nup(i, 0) - data.Ndown(i, 0) + data.Nupdown(i, 0));  // O(1)
+          (static_cast<real_type>(1) - data.Nup(i, 0) - data.Ndown(i, 0) +
+           data.Nupdown(i, 0));        // O(1)
       m44(i, 0) = data.Nupdown(i, 0);  // O(16)
       // handle NaNs for very small entanglements
       value_type logm11 = std::abs(m11(i, 0)) > threshold ? log(m11(i, 0)) : 0;
