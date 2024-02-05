@@ -65,11 +65,18 @@ BOOST_FIXTURE_TEST_CASE(Test_ExpVal_None_BraKetHermitian, WatsonFixture) {
 }
 
 BOOST_FIXTURE_TEST_CASE(Test_ExpVal_H2CO_InternalCoords_BraKetHermitian, WatsonFixture) {
-  parametersH2COWatsonInternal.set("init_type", "const");
   auto lattice = Lattice(parametersH2COWatsonInternal);
   auto watsonModel =
       Model<matrix, TrivialGroup>(lattice, parametersH2COWatsonInternal);
-  auto watsonInternalMPO = make_mpo(lattice, watsonModel);
+  auto mpo = make_mpo(lattice, watsonModel);
+  parametersH2COWatsonInternal.set("init_type", "basis_state_generic");
+  parametersH2COWatsonInternal.set("init_basis_state", "1,0,2,0,3,0");
+  auto mpsONV = MPS<matrix, TrivialGroup>(
+      lattice.size(),
+      *(watsonModel.initializer(lattice, parametersH2COWatsonInternal))
+  );
+  //
+  parametersH2COWatsonInternal.set("init_type", "const");
   auto mpsConst = MPS<matrix, TrivialGroup>(
       lattice.size(),
       *(watsonModel.initializer(lattice, parametersH2COWatsonInternal))
@@ -82,9 +89,18 @@ BOOST_FIXTURE_TEST_CASE(Test_ExpVal_H2CO_InternalCoords_BraKetHermitian, WatsonF
       *(watsonModel.initializer(lattice, parametersH2COWatsonInternal))
   );
   //
-  auto energy1 = expval(mpsConst, mpsDefault, watsonInternalMPO);
-  auto energy2 = expval(mpsDefault, mpsConst, watsonInternalMPO);
-  BOOST_CHECK_CLOSE(energy1, energy2, 1.0e-7);
+  // Check 1
+  double expVal1 = expval(mpsDefault, mpsConst, mpo);
+  double expVal2 = expval(mpsConst, mpsDefault, mpo);
+  BOOST_CHECK_CLOSE(expVal1, expVal2, 1.E-10);
+  // Check 2
+  expVal1 = expval(mpsONV, mpsConst, mpo);
+  expVal2 = expval(mpsConst, mpsONV, mpo);
+  BOOST_CHECK_CLOSE(expVal1, expVal2, 1.E-10);
+  // Check 3
+  expVal1 = expval(mpsDefault, mpsONV, mpo);
+  expVal2 = expval(mpsONV, mpsDefault, mpo);
+  BOOST_CHECK_CLOSE(expVal1, expVal2, 1.E-10);
 }
 
 #endif  // HAVE_TrivialGroup
