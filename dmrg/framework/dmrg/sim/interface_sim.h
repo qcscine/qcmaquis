@@ -745,6 +745,8 @@ parms["nsweeps"]) checkpoint_simulation(mps, sweep, -1); if (stopped) break;
       return false;
     }
     auto eDiff = std::abs(*(energies_.end() - 2) - *(energies_.end() - 1));
+    std::cout << "Energy Difference : " << eDiff << std::endl;
+    std::cout << "Convergence Threshold : " << convergenceThreshold << std::endl;
     return (eDiff < convergenceThreshold);
   }
 

@@ -246,6 +246,13 @@ typename maquis::traits::real_type<T>::type gather_real_pred(T const& val) {
   return maquis::real(val);
 }
 
+template <class T>
+bool customCompare(const T a, const T b){
+    // Check if the difference is within the tolerance
+    double tolerance = 1e-40;
+    return a - b > tolerance;
+}
+
 template <class DiagMatrix, class SymmGroup>
 void estimate_truncation(
     block_matrix<DiagMatrix, SymmGroup> const& evals, size_t Mmax,
@@ -279,10 +286,37 @@ void estimate_truncation(
   std::reverse(allevals.begin(), allevals.end());
 
   real_type evalscut = cutoff * allevals[0];
+  std::cout << "--- FACTORS DETERMINIG EVALSCUT ---" << std::endl;
+  std::cout << "cutoff : " << cutoff << std::endl;
+  std::cout << "highest eval : "  << allevals[0] << std::endl;
+  std::cout << " ----------------------------------" << std::endl;
 
   if (allevals.size() > Mmax) {
+    std::cout << "truncated to Max Bond Dim." << std::endl;
     evalscut = std::max(evalscut, allevals[Mmax]);
+    /*
+    if(allevals[Mmax] == 0 && evalscut == 0){
+      auto lastNonZero = std::find_if(allevals.rbegin(), allevals.rend(), [](double val) {
+        return val != 0.0;
+      });
+      evalscut = *lastNonZero;
+      std::cout << "entered if statement 1" << std::endl;
+    }
+    */
   }
+  /*
+  if(evalscut == 0){
+    std::cout << "entered if statement 2" << std::endl;
+    auto lastNonZero = std::find_if(allevals.rbegin(), allevals.rend(), [](double val) {
+        return val != 0.0;
+      });
+      evalscut =*lastNonZero;
+  }
+  */
+  for (const auto& iEl : allevals) std::cout << "eval : " << iEl << std::endl;
+  std::cout << "evalscut : " << evalscut << std::endl;
+
+  
   smallest_ev = evalscut / allevals[0];
 
   truncated_fraction = 0.0;
@@ -332,6 +366,7 @@ truncation_results svd_truncate(
 
   Index<SymmGroup> old_basis = S.left_basis();
   size_t* keeps = new size_t[S.n_blocks()];
+  std::cout << "keep before etimate_truncation() : " << keeps[0] << std::endl;
   double truncated_fraction;
   double truncated_weight;
   double smallest_ev;
@@ -343,6 +378,7 @@ truncation_results svd_truncate(
   estimate_truncation(
       S, Mmax, rel_tol, keeps, truncated_fraction, truncated_weight, smallest_ev
   );
+  std::cout << "keep before etimate_truncation() : " << keeps[0] << std::endl;
 
   for (int k = S.n_blocks() - 1; k >= 0;
        --k)  // C - we reverse faster and safer ! we avoid bug if keeps[k] = 0
@@ -369,9 +405,14 @@ truncation_results svd_truncate(
 #endif
 
       if (keep >= num_rows(S[k])) {
+        std::cout << "keep is larger than num_rows(S[k])" << std::endl;
+        std::cout << "keep : " << keep << std::endl;
+        std::cout << "num_rows(S[k]) : " << num_rows(S[k]) << std::endl;
         continue;
       }
-
+      std::cout << "truncation occured" << std::endl;
+      std::cout << "num_rows(S[k]) : " << num_rows(S[k]) << std::endl; 
+      std::cout << "keep : " << keep << std::endl;
       S.resize_block(
           S.basis().left_charge(k), S.basis().right_charge(k), keep, keep
       );
