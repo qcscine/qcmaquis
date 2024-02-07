@@ -28,6 +28,7 @@
 #ifndef QC_MODEL_HPP
 #define QC_MODEL_HPP
 
+#include "dmrg/models/MolecularHamiltonians/2u1/model.h"
 #include "dmrg/models/JordanWignerManager.h"
 #include "normal_order.h"
 

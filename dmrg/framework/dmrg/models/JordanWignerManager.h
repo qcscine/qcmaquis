@@ -27,6 +27,9 @@
 #ifndef JORDAN_WIGNER_MANAGER_H
 #define JORDAN_WIGNER_MANAGER_H
 
+#include "dmrg/models/OperatorHandlers/TagHandler.h"
+#include "dmrg/models/lattice/lattice.h"
+#include "dmrg/models/term_descriptor.h"
 enum class OperatorType {
   Normal,
   CreateAlpha,

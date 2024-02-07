@@ -28,6 +28,10 @@
 #ifndef QC_TERMMAKER_H
 #define QC_TERMMAKER_H
 
+#include "dmrg/models/OperatorHandlers/TagHandler.h"
+#include "dmrg/models/lattice/lattice.h"
+#include "dmrg/models/term_descriptor.h"
+
 template <class M, class S>
 struct TermMaker {
   // == Types declaration ==

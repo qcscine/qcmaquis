@@ -32,6 +32,7 @@
 #include <algorithm>
 
 #include "dmrg/models/JordanWignerManager.h"
+#include "dmrg/models/MolecularHamiltonians/2u1/model.h"
 
 namespace {
 double calculatePermutationSign(const std::vector<int> &perm) {

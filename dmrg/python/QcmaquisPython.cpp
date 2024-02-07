@@ -144,9 +144,18 @@ PYBIND11_MODULE(_dmrg, module) {
       .def(py::init<DmrgParameters&>())
       .def("optimize", &maquis::DMRGInterface<double>::optimize)
       .def("evolve", &maquis::DMRGInterface<double>::evolve)
-      // py::call_guard<py::scoped_ostream_redirect,
-      // py::scoped_estream_redirect>())
+      .def(
+          "runInversePowerIteration",
+          &maquis::DMRGInterface<double>::runInversePowerIteration
+      )
+      .def("runFEAST", &maquis::DMRGInterface<double>::runFEAST)
       .def("energy", &maquis::DMRGInterface<double>::energy)
+      .def("energyFEAST", &maquis::DMRGInterface<double>::energyFEAST)
+      .def(
+          "getCICoefficient",
+          &maquis::DMRGInterface<
+              double, chem::Hamiltonian::Electronic>::getCICoefficient
+      )
       .def(
           "get_iteration_results",
           &maquis::DMRGInterface<double>::get_iteration_results
@@ -155,6 +164,11 @@ PYBIND11_MODULE(_dmrg, module) {
       .def("run_measure", &maquis::DMRGInterface<double>::run_measure)
       .def("measure", &maquis::DMRGInterface<double>::measure)
       .def("measurements", &maquis::DMRGInterface<double>::measurements)
+      .def(
+          "update_tc_integrals",
+          &maquis::DMRGInterface<
+              double, chem::Hamiltonian::Electronic>::update_tc_integrals
+      )
       .def(
           "update_integrals",
           py::overload_cast<std::string>(
@@ -167,17 +181,13 @@ PYBIND11_MODULE(_dmrg, module) {
               &maquis::DMRGInterface<double>::update_integrals
           )
       )
-      .def(
-          "update_tc_integrals",
-          &maquis::DMRGInterface<
-              double, chem::Hamiltonian::Electronic>::update_tc_integrals
-      )
-      // .def("fiedler_order", &maquis::DMRGInterface<double>::fiedler_order)
+      .def("fiedler_order", &maquis::DMRGInterface<double>::fiedler_order)
       .def("onerdm", &maquis::DMRGInterface<double>::onerdm)
       .def("onespdm", &maquis::DMRGInterface<double>::onespdm)
       .def("twordm", &maquis::DMRGInterface<double>::twordm)
       .def("threerdm", &maquis::DMRGInterface<double>::threerdm)
       .def("fourrdm", &maquis::DMRGInterface<double>::fourrdm)
+      .def("getMeasurement", &maquis::DMRGInterface<double>::getMeasurement)
       .def(
           "measure_and_save_3drm",
           &maquis::DMRGInterface<
@@ -188,34 +198,35 @@ PYBIND11_MODULE(_dmrg, module) {
           &maquis::DMRGInterface<
               double, chem::Hamiltonian::Electronic>::measure_and_save_4rdm
       )
-      // mutinf is not stored in measurements yet
-      // .def("mutinf", &maquis::DMRGInterface<double>::mutinf)
+      .def("mutinf", &maquis::DMRGInterface<double>::mutinf)
       .def(
           "measure_and_save_trans3rdm",
           &maquis::DMRGInterface<double>::measure_and_save_trans3rdm
       )
       .def("overlap", &maquis::DMRGInterface<double>::overlap)
-      // .def("getCICoefficients", &maquis::DMRGInterface<double,
-      // chem::Hamiltonian::Electronic>::getCICoefficients)
-      .def(
-          "getCICoefficient",
-          &maquis::DMRGInterface<
-              double, chem::Hamiltonian::Electronic>::getCICoefficient
-      )
       .def("dump_parameters", &maquis::DMRGInterface<double>::dump_parameters);
 
   // Dmrg complex
   py::class_<maquis::DMRGInterface<std::complex<double>>>(module, "DmrgComplex")
       .def(py::init<DmrgParameters&>())
       .def("optimize", &maquis::DMRGInterface<std::complex<double>>::optimize)
-      // .def("runFEAST",
-      // &maquis::DMRGInterface<std::complex<double>>::runFEAST)
       .def("evolve", &maquis::DMRGInterface<std::complex<double>>::evolve)
-      // py::call_guard<py::scoped_ostream_redirect,
-      // py::scoped_estream_redirect>())
+      .def(
+          "runInversePowerIteration",
+          &maquis::DMRGInterface<std::complex<double>>::runInversePowerIteration
+      )
+      .def("runFEAST", &maquis::DMRGInterface<std::complex<double>>::runFEAST)
       .def("energy", &maquis::DMRGInterface<std::complex<double>>::energy)
-      // .def("energyFEAST",
-      // &maquis::DMRGInterface<std::complex<double>>::energyFEAST)
+      .def(
+          "energyFEAST",
+          &maquis::DMRGInterface<std::complex<double>>::energyFEAST
+      )
+      .def(
+          "getCICoefficient",
+          &maquis::DMRGInterface<
+              std::complex<double>,
+              chem::Hamiltonian::Electronic>::getCICoefficient
+      )
       .def(
           "get_iteration_results",
           &maquis::DMRGInterface<std::complex<double>>::get_iteration_results
@@ -234,6 +245,12 @@ PYBIND11_MODULE(_dmrg, module) {
           &maquis::DMRGInterface<std::complex<double>>::measurements
       )
       .def(
+          "update_tc_integrals",
+          &maquis::DMRGInterface<
+              std::complex<double>,
+              chem::Hamiltonian::Electronic>::update_tc_integrals
+      )
+      .def(
           "update_integrals",
           py::overload_cast<std::string>(
               &maquis::DMRGInterface<std::complex<double>>::update_integrals
@@ -246,47 +263,39 @@ PYBIND11_MODULE(_dmrg, module) {
           )
       )
       .def(
-          "update_tc_integrals",
-          &maquis::DMRGInterface<
-              std::complex<double>,
-              chem::Hamiltonian::Electronic>::update_tc_integrals
+          "fiedler_order",
+          &maquis::DMRGInterface<std::complex<double>>::fiedler_order
       )
-      // .def("fiedler_order",
-      // &maquis::DMRGInterface<std::complex<double>>::fiedler_order)
       .def("onerdm", &maquis::DMRGInterface<std::complex<double>>::onerdm)
       .def("onespdm", &maquis::DMRGInterface<std::complex<double>>::onespdm)
       .def("twordm", &maquis::DMRGInterface<std::complex<double>>::twordm)
       .def("threerdm", &maquis::DMRGInterface<std::complex<double>>::threerdm)
       .def("fourrdm", &maquis::DMRGInterface<std::complex<double>>::fourrdm)
-      // .def("measure_and_save_3drm",
-      // &maquis::DMRGInterface<std::complex<double>,
-      // chem::Hamiltonian::Electronic>::measure_and_save_3rdm)
-      // .def("measure_and_save_4drm",
-      // &maquis::DMRGInterface<std::complex<double>,
-      // chem::Hamiltonian::Electronic>::measure_and_save_4rdm) mutinf is not
-      // stored in measurements yet .def("mutinf",
-      // &maquis::DMRGInterface<std::complex<double>>::mutinf)
+      .def(
+          "getMeasurement",
+          &maquis::DMRGInterface<std::complex<double>>::getMeasurement
+      )
+      .def(
+          "measure_and_save_3drm",
+          &maquis::DMRGInterface<
+              std::complex<double>,
+              chem::Hamiltonian::Electronic>::measure_and_save_3rdm
+      )
+      .def(
+          "measure_and_save_4drm",
+          &maquis::DMRGInterface<
+              std::complex<double>,
+              chem::Hamiltonian::Electronic>::measure_and_save_4rdm
+      )
+      .def("mutinf", &maquis::DMRGInterface<std::complex<double>>::mutinf)
       .def(
           "measure_and_save_trans3rdm",
           &maquis::DMRGInterface<
               std::complex<double>>::measure_and_save_trans3rdm
       )
       .def("overlap", &maquis::DMRGInterface<std::complex<double>>::overlap)
-      // .def("getCICoefficients", &maquis::DMRGInterface<std::complex<double>,
-      // chem::Hamiltonian::Electronic>::getCICoefficients)
-      .def(
-          "getCICoefficient",
-          &maquis::DMRGInterface<
-              std::complex<double>,
-              chem::Hamiltonian::Electronic>::getCICoefficient
-      )
       .def(
           "dump_parameters",
           &maquis::DMRGInterface<std::complex<double>>::dump_parameters
       );
-
-  // py::class_<maquis::FiedlerGenerator<double>>(module, "FiedlerGenerator")
-  //     .def(py::init<DmrgParameters&, std::vector<std::vector<int>>, int>())
-  //     .def("get_fiedler_order",
-  //     &maquis::FiedlerGenerator<double>::getFiedlerOrder);
 }

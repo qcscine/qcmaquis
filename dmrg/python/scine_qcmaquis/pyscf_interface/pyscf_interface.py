@@ -116,9 +116,12 @@ class QcMaquis:
         self.log.info('bond dimension   = %s', str(self.bond_dim))
         self.log.info('fiedler ordering = %s', str(self.fiedler))
         self.log.info('entropies        = %s', str(self.measure_entropies))
-        self.log.info('checkpoint name  = %s', str(self.checkpoint_name))
-        self.log.info('checkpoint path  = %s', str(self.file_path))
-        self.log.info('results name     = %s', str(self.results_name))
+        if self.file_path:
+            self.log.info('checkpoint path  = %s', str(self.file_path))
+            self.log.info('checkpoint name  = %s', str(self.checkpoint_name))
+            self.log.info('results name     = %s', str(self.results_name))
+        else:
+            self.log.info('skipping checkpoints')
 
     def _get_rdm2(self, norb):
         """Getter for 2 rdm.

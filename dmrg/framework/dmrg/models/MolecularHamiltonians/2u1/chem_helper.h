@@ -28,8 +28,10 @@
 #ifndef QC_CHEM_DETAIL_H
 #define QC_CHEM_DETAIL_H
 
+#include "dmrg/models/term_descriptor.h"
 #include "dmrg/models/MolecularHamiltonians/parse_integrals.h"
 #include "dmrg/models/MolecularHamiltonians/2u1/term_maker.h"
+#include "dmrg/models/OperatorHandlers/TagHandler.h"
 
 namespace chem {
 namespace detail {
