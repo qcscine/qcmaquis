@@ -250,34 +250,6 @@ WatsonIntegralParser(
           else if (tmp[idx] < 0)
             tmp[idx] = -inv_order[-tmp[idx] - 1] - 1;
         ret.push_back(std::make_pair(tmp, static_cast<T>(coefficient)));
-        // Internal coordinates
-        // NINA potentially remove this part!
-        if (coordinateType == WatsonCoordinateType::InternalNormalModes) {
-          auto numberOfMomenta = std::count_if(
-              tmp.begin(), tmp.end(), [](int input) { return input < 0; }
-          );
-          if (numberOfMomenta == 2) {
-            auto posFirst = std::distance(
-                tmp.begin(),
-                std::find_if(
-                    tmp.begin(), tmp.end(), [](int input) { return input < 0; }
-                )
-            );
-            auto posSecond = std::distance(
-                tmp.begin(), std::find_if(
-                                 tmp.begin() + posFirst + 1, tmp.end(),
-                                 [](int input) { return input < 0; }
-                             )
-            );
-            assert(posFirst < tmp.size() && posSecond < tmp.size());
-            // Off-diagonal term
-            if (tmp[posFirst] != tmp[posSecond]) {
-              auto tmp2 = tmp;
-              std::swap(tmp2[posFirst], tmp2[posSecond]);
-              ret.push_back(std::make_pair(tmp2, static_cast<T>(coefficient)));
-            }
-          }
-        }
       } else {
         ++it;
       }
