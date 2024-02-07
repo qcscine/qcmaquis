@@ -122,6 +122,12 @@ class DmrgWrapper:
         else:
             self._dmrg.update_integrals(integral_map.get())
 
+    def get_dmrg(self):
+        """Get base dmrg object."""
+        if self._dmrg is None:
+            raise ValueError("Set parameters before running dmrg!")
+        return self._dmrg
+
     def run(self):
         """Run Dmrg Calculation."""
         if self._dmrg is None:

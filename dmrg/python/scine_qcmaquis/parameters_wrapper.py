@@ -333,9 +333,10 @@ class ParametersWrapper:
             verbosity option
         """
         if parameter_name in self._parameter_dict and verbose is True:
-            message = f"{parameter_name} already set with value"
-            message += f" {self._parameter_dict[parameter_name]}; new value {parameter_value}"
-            print(message)
+            if self._parameter_dict[parameter_name] != parameter_value:
+                message = f"{parameter_name} already set with value"
+                message += f" {self._parameter_dict[parameter_name]}; new value {parameter_value}"
+                print(message)
 
         self._parameter_dict[parameter_name] = parameter_value
         self._parameters.set(parameter_name, parameter_value)

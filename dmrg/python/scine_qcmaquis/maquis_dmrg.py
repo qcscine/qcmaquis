@@ -161,7 +161,7 @@ class MaquisDmrg:
             The mutual information
         """
         self._dmrg.measure()
-        self._entropy_builder.make_diagnostics(self._dmrg._dmrg)
+        self._entropy_builder.make_diagnostics(self._dmrg.get_dmrg())
         return (
             self._entropy_builder.s1_entropy,
             self._entropy_builder.s2_entropy,
