@@ -238,16 +238,7 @@ class NormalOrderingHelper {
                 if (!idxToMatrixElement.count(matrixElementStrings[n]))
                   continue;
 
-                if (p == 8 && q == 11 && r == 11 && s == 6)
-                  std::cout
-                      << "adding contribtion for " << matrixElementStrings[n]
-                      << ": "
-                      << coeffs[n] *
-                             matrix_elements
-                                 [idxToMatrixElement[matrixElementStrings[n]]]
-                      << std::endl;
-
-                idxToCoefficient[{p, s, q, r}] +=
+                idxToCoefficient[{p, q, r, s}] +=
                     coeffs[n] *
                     matrix_elements
                         [idxToMatrixElement[matrixElementStrings[n]]];
