@@ -283,7 +283,7 @@ void estimate_truncation(
   if (allevals.size() > Mmax) {
     evalscut = std::max(evalscut, allevals[Mmax]);
   }
-  smallest_ev = evalscut / allevals[0];
+  smallest_ev = evalscut;
 
   truncated_fraction = 0.0;
   truncated_weight = 0.0;
