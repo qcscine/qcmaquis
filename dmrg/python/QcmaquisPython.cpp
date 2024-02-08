@@ -149,6 +149,10 @@ PYBIND11_MODULE(_dmrg, module) {
           &maquis::DMRGInterface<double>::runInversePowerIteration
       )
       .def("runFEAST", &maquis::DMRGInterface<double>::runFEAST)
+      .def(
+          "runTranscorrelated",
+          &maquis::DMRGInterface<double>::runTranscorrelated
+      )
       .def("energy", &maquis::DMRGInterface<double>::energy)
       .def("energyFEAST", &maquis::DMRGInterface<double>::energyFEAST)
       .def(

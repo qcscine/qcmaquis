@@ -18,6 +18,8 @@ class RunOptions(Enum):
     """For time dependent DMRG."""
     FEAST = "feast"
     """For FEAST calculations."""
+    TC = "transcorrelated"
+    """For transcorrelated calculations."""
 
 
 class DmrgWrapper:
@@ -63,7 +65,7 @@ class DmrgWrapper:
         # in case new measurements appear in parameters
         self._measure_flag = False
         if "transcorrelated_hamiltonian" in parameters.get_parameters_dict():
-            self._run_option = RunOptions.EVOLVE
+            self._run_option = RunOptions.TC
             self._dmrg = DmrgReal(parameters.get_parameters())
         elif "feast_num_states" in parameters.get_parameters_dict():
             self._run_option = RunOptions.FEAST
@@ -139,6 +141,8 @@ class DmrgWrapper:
             self._dmrg.evolve()
         elif self._run_option == RunOptions.FEAST:
             self._dmrg.runFEAST()
+        elif self._run_option == RunOptions.TC:
+            self._dmrg.runTranscorrelated()
 
         self._run_flag = True
 
