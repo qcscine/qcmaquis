@@ -363,13 +363,23 @@ class GenericSweepSimulation {
 
   /** @brief Method to get the truncation threshold for a given sweep */
   double get_cutoff(int sweep) const {
-    return (sweep >= parms_.template get<int>("ngrowsweeps"))
-               ? parms_.template get<double>("truncation_main")
-               : log_interpolate(
+    double trunc;
+    int ngs = parms_.template get<int>("ngrowsweeps");
+    int nms = parms_.template get<int>("nmainsweeps");
+    if (sweep >= ngs + nms) {
+      trunc = parms_.template get<double>("truncation_final");
+    } else if (sweep < ngs) {
+      trunc = log_interpolate(
                      parms_.template get<double>("truncation_initial"),
                      parms_.template get<double>("truncation_main"),
-                     parms_.template get<int>("ngrowsweeps"), sweep
-                 );
+                     parms_.template get<int>("ngrowsweeps"), sweep);
+    } else {
+      trunc = log_interpolate(
+                     parms_.template get<double>("truncation_main"),
+                     parms_.template get<double>("truncation_final"),
+                     nms, sweep - ngs);
+    }
+    return trunc;
   }
 
   /** @brief Method to get the proper noise parameter */
