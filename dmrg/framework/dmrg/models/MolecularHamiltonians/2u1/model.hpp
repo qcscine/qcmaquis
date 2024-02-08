@@ -227,10 +227,10 @@ template <
     HamiltonianTransformation Transcorrelated>
 void qc_model<
     Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms() {
-  bool is_normal_ordered =
-      (parms["transcorrelated_3body_normal_ordered"] == "yes");
+  bool do_normal_ordering =
+      (parms["transcorrelated_3body_normal_ordering"] == true);
 
-  if (isTranscorrelated_ && is_normal_ordered) {
+  if (isTranscorrelated_ && do_normal_ordering) {
     create_terms_normal_ordered();
   } else {
     create_terms_not_normal_ordered();
@@ -275,7 +275,7 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::
       twoBodyVec1, twoBodyVec2, twoBodyVec3, twoBodyVec4};
 
   bool normal_ordered_integral =
-      (parms["normal_ordered_integral_file"] == "yes") && isTranscorrelated_;
+      (parms["normal_ordered_integral_file"] == true) && isTranscorrelated_;
   std::unordered_set<std::size_t> hole_states;
   if (normal_ordered_integral) {
     std::vector<std::size_t> hole_state_vec =
@@ -312,9 +312,8 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::
 
       this->terms_.push_back(term);
 
-    }
-    // One-body contribution
-    else if (k == -1 && l == -1 && m == -1 && n == -1) {
+    } else if (k == -1 && l == -1 && m == -1 && n == -1) {
+      // One-body contribution
       std::vector<std::array<int, 2>> posVector =
           isTranscorrelated_
               ? std::vector<std::array<int, 2>>({std::array<int, 2>({i, j})})
@@ -340,9 +339,8 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::
           }
         }
       }
-    }
-    // Two-body contribution
-    else if (m == -1 && n == -1) {
+    } else if (m == -1 && n == -1) {
+      // Two-body contribution
       std::vector<std::array<int, 4>> tmp =
           isTranscorrelated_
               ? TermMaker<Matrix, SymmGroup>::generateTwofoldSymmetricIndex(
@@ -373,12 +371,11 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::
           }
         }
       }
-    }
-    // Three-body contribution
-    else {
+    } else {
+      // Three-body contribution
       if (isTranscorrelated_) {
         // No normal ordering
-        if (parms["transcorrelated_3body"] == "yes") {
+        if (parms["transcorrelated_3body"] == true) {
           std::set<int> nonEqualIndices{i, j, k, l, m, n};
           int couplingDegree = nonEqualIndices.size();
           int maxDegree = parms["transcorrelated_3body_max_coupling"];
@@ -587,8 +584,9 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::
     return a.second < b.second;
   });
   for (auto it = diagonals.begin(); it < diagonals.begin() + n_hole_states;
-       ++it)
+       ++it) {
     hole_states.insert(term_assistant.idx(it->first, 0));
+  }
 
   std::cout << "Normal ordering according to hole states ";
   for (auto h : hole_states) {
@@ -666,7 +664,7 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::
       }
     } else {
       // Normal ordered 3B contribution of 3B operator
-      if (parms["transcorrelated_3body"] == "yes") {
+      if (parms["transcorrelated_3body"] == true) {
         std::vector<std::array<int, 6>> tmp =
             TermMaker<Matrix, SymmGroup>::generateThreeBodySymmetricIndex(
                 i, j, k, l, m, n

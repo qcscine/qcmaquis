@@ -40,14 +40,15 @@ class StartingGuess<V>::Impl {
     if (do_cideas_) {
       // Make sure HF occupations are provided, or if we have only 1 state
       // hf_occ is set before running CI-DEAS
-      if (!hf_occupations.empty())
+      if (!hf_occupations.empty()) {
         assert(hf_occupations.size() == nstates);
-      else if (!(nstates == 1 && parms_.is_set("hf_occ")
-               ))  // if we have only 1 state and provided the occupation in
-                   // hf_occ, do nothing
+      } else if (nstates != 1 || !parms_.is_set("hf_occ")) {
+        // if we have only 1 state and provided the occupation in
+        // hf_occ, do nothing
         throw std::runtime_error(
             "CI-DEAS option requires the HF occupation to be set manually!"
         );
+      }
     }
 
     if (do_fiedler_) {
@@ -71,12 +72,13 @@ class StartingGuess<V>::Impl {
       int init_bond_dimension = parms_["init_bond_dimension"];
       parms_.set("max_bond_dimension", init_bond_dimension);
     } else {
-      if (parms_.is_set("L"))
+      if (parms_.is_set("L")) {
         parms_.set("max_bond_dimension", parms_["L"] > 24 ? 256 : 128);
-      else
+      } else {
         throw std::runtime_error(
             "L not defined for a starting guess calculation!"
         );
+      }
     }
 
     for (int i = 0; i < nstates; i++) {
@@ -85,15 +87,17 @@ class StartingGuess<V>::Impl {
       parms_.set("chkpfile", chkpfile);
 
       // set HF occupation
-      if (!hf_occupations.empty())
+      if (!hf_occupations.empty()) {
         parms_.set("hf_occ", vector_tostring(hf_occupations[i]));
+      }
 
       if (i > 0) {
         parms_.set("n_ortho_states", i - 1);
         std::string all_ortho_states;
-        for (int j = 0; j < i; j++)
+        for (int j = 0; j < i; j++) {
           all_ortho_states +=
               checkpoint_name(pname_guess_, j) + ((j < i - 1) ? " " : "");
+        }
         parms_.set("ortho_states", all_ortho_states);
       }
 
@@ -109,22 +113,32 @@ class StartingGuess<V>::Impl {
 
     // Calculate S1 only if CI-DEAS is requested and mutual information only if
     // Fiedler ordering is requested
-    if (do_cideas) s1_.reserve(nstates_);
-    if (do_fiedler) mutI.reserve(nstates_);
+    if (do_cideas) {
+      s1_.reserve(nstates_);
+    }
+    if (do_fiedler) {
+      mutI.reserve(nstates_);
+    }
 
     for (int i = 0; i < nstates_; i++) {
       // get the entropy data
       EntanglementData<Matrix> em(get_measurements()[i]);
 
       // store data
-      if (do_cideas) s1_.emplace_back(std::move(em.s1()));
-      if (do_fiedler) mutI.emplace_back(std::move(em.I()));
+      if (do_cideas) {
+        s1_.emplace_back(std::move(em.s1()));
+      }
+      if (do_fiedler) {
+        mutI.emplace_back(std::move(em.I()));
+      }
     }
 
     // Calculate average mutual information
     if (do_fiedler) {
       Matrix SAmutI(mutI[0].num_rows(), mutI[0].num_cols(), 0.0);
-      for (auto& n : mutI) SAmutI += n;
+      for (auto& n : mutI) {
+        SAmutI += n;
+      }
 
       // Divide mutual information by the number of states: irrelevant for
       // Fiedler ordering but let's still do it for the consistency
@@ -137,27 +151,30 @@ class StartingGuess<V>::Impl {
     // Delete checkpoint files
     for (int i = 0; i < nstates_; i++) {
       std::string chkpfile = checkpoint_name(pname_guess_, i);
-      if (std::filesystem::exists(chkpfile))
+      if (std::filesystem::exists(chkpfile)) {
         std::filesystem::remove_all(chkpfile);
+      }
     }
   }
 
   // Get single-orbital entropy for state i
   const Matrix& SA_s1(int i) const {
-    if (do_cideas_)
+    if (do_cideas_) {
       return s1_[i];
-    else
+    } else {
       throw std::runtime_error("Please enable CI-DEAS to calculate S1");
+    }
   }
 
   // Get state-average mutual information
   const Matrix& SA_mutI() const {
-    if (do_fiedler_)
+    if (do_fiedler_) {
       return SA_mutI_;
-    else
+    } else {
       throw std::runtime_error(
           "Please enable Fiedler ordering to calculate mutual information"
       );
+    }
   }
 
   // calculate Fiedler order
@@ -167,10 +184,11 @@ class StartingGuess<V>::Impl {
     // get Laplacian of the average mutual information
     Matrix L = get_laplacian(SA_mutI());
 
-    if (L.num_rows() < 2)
+    if (L.num_rows() < 2) {
       throw std::runtime_error(
           "Fiedler vector orbital ordering doesn't work for only one orbital!"
       );
+    }
 
     // get eigenvectors and eigenvalues of the Laplacian
     Matrix evecs(L.num_rows(), L.num_cols());
@@ -199,7 +217,9 @@ class StartingGuess<V>::Impl {
 
     // add 1 to each element because in the parameters our counting starts with
     // 1
-    for (auto&& n : order) n++;
+    for (auto&& n : order) {
+      n++;
+    }
 
     // convert the ordering into a string
     return vector_tostring(order);
@@ -207,10 +227,11 @@ class StartingGuess<V>::Impl {
 
   // perform CI-DEAS and save the resulting MPS as "pname.checkpoint_state.X.h5"
   void cideas() {
-    if (!do_cideas_)
+    if (!do_cideas_) {
       throw std::runtime_error(
           "do_cideas option must be enabled to perform CI-DEAS"
       );
+    }
 
     for (int i = 0; i < nstates_; i++) {
       MPS<Matrix, SymmGroup> mps =
@@ -249,8 +270,11 @@ class StartingGuess<V>::Impl {
 
     Matrix laplacian(mutI.num_rows(), mutI.num_cols(), 0.0);
 
-    for (int i = 0; i < mutI.num_rows(); i++)
-      for (int j = 0; j < mutI.num_cols(); j++) laplacian(i, i) += mutI(i, j);
+    for (int i = 0; i < mutI.num_rows(); i++) {
+      for (int j = 0; j < mutI.num_cols(); j++) {
+        laplacian(i, i) += mutI(i, j);
+      }
+    }
 
     laplacian -= mutI;
     return laplacian;
@@ -260,8 +284,9 @@ class StartingGuess<V>::Impl {
   inline std::string vector_tostring(const std::vector<K>& v) const {
     std::string s;
 
-    for (int i = 0; i < v.size(); i++)
+    for (int i = 0; i < v.size(); i++) {
       s += std::to_string(v[i]) + ((i < v.size() - 1) ? "," : "");
+    }
     return s;
   }
 

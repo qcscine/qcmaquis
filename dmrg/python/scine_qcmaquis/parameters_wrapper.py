@@ -155,6 +155,7 @@ class ParametersWrapper:
         Note
         ----
         "simulation_type" = "TD"
+        "transcorrelated_hamiltonian" = "yes"
         "propagator_accuracy" = 1.0E-10
         "propagator_maxiter" = 10
         "hamiltonian_units" = "Hartree"
@@ -167,6 +168,7 @@ class ParametersWrapper:
         """
 
         self.set("simulation_type", "TD")
+        self.set("transcorrelated_hamiltonian", "yes")
         self.set("propagator_accuracy", 1.0E-10)
         self.set("propagator_maxiter", 10)
         self.set("hamiltonian_units", "Hartree")

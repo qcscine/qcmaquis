@@ -262,7 +262,7 @@ class FermiHubbardMomentumTwoU1 : public model_impl<Matrix, TwoU1> {
       }
     }
     // Three-body operator
-    if (isTranscorrelated && parms["transcorrelated_3body"] == "yes") {
+    if (isTranscorrelated && parms["transcorrelated_3body"] == true) {
       for (int iSite = 0; iSite < height * width; iSite++) {
         for (int jSite = 0; jSite < height * width; jSite++) {
           for (int kSite = 0; kSite < height * width; kSite++) {

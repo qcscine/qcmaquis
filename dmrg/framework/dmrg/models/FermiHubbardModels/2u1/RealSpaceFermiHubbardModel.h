@@ -368,7 +368,7 @@ class FermiHubbardRealTwoU1 : public model_impl<Matrix, TwoU1> {
           nonHermitianNorm += std::norm(coeffy);
         }
         // TC operator 3
-        if (parms["transcorrelated_3body"] == "yes") {
+        if (parms["transcorrelated_3body"] == true) {
           coeffx = 2. * tx * (std::cosh(J) - 1.);
           coeffy = 2. * ty * (std::cosh(J) - 1.);
           if (std::abs(coeffx) > 1.0E-10) {

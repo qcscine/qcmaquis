@@ -29,7 +29,7 @@ chkpfile                      = 'H2_TCDMRG_ConventionalFormat_TS.checkpoint_stat
 resultfile                    = 'H2_TCDMRG_ConventionalFormat_TS.results_state.0.h5'
 
 // -- Transcorrelated-specific parameters --
-transcorrelated_3body         = 'yes'
+transcorrelated_3body         = 1
 transcorrelated_nsweeps_TI    = 10
 transcorrelated_nsweeps_TC    = 10
 transcorrelated_integral_file = "IntegralFile_H2_Transcorrelated"

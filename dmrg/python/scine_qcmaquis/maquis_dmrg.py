@@ -3,7 +3,7 @@ from typing import Any, List, Tuple, Union
 import numpy as np
 
 # pylint: disable=import-error
-from .dmrg_wrapper import DmrgWrapper
+from .dmrg_wrapper import DmrgWrapper, RunOptions
 from .entropy_builder import EntropyBuilder
 from .integral_wrapper import ComplexTCIntegralMap, IntegralMap, IntegralMapWrapper, IntegralType, TCIntegralMap
 from .parameters_wrapper import ExcitedStates, ParametersWrapper
@@ -146,6 +146,7 @@ class MaquisDmrg:
         """
         self._transcorrelated = True
         self._parameters.set_transcorrelation_values()
+        self._dmrg._run_option = RunOptions.TRANSCORRELATED
         self._integral_map.set_type(IntegralType.TRANSCORRLEATED)
 
     def get_entropies(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -619,7 +620,6 @@ class MaquisDmrg:
     # this_dmrg._parameters.set("max_bond_dimension", 1000)
     # this_dmrg._parameters.set("integral_file", "/home/max/Programs/coupled_wick_scf/scripts/test/cc-pvdz/trans/0.0/He_cc-pvdz.FCIDUMP")
     # this_dmrg._parameters.set("optimization", "singlesite")
-    # this_dmrg._parameters.set("simulation_type", "TD")
     # this_dmrg._parameters.set("propagator_accuracy", 1.0E-10)
     # this_dmrg._parameters.set("propagator_maxiter", 10)
     # this_dmrg._parameters.set("time_step", "0.2")
@@ -627,7 +627,7 @@ class MaquisDmrg:
     # this_dmrg._parameters.set("time_units", "fs")
     # this_dmrg._parameters.set("imaginary_time", "yes")
     # this_dmrg._parameters.set("TD_backpropagation", "no")
-    # this_dmrg._parameters.set("transcorrelated_hamiltonian", "yes")
+    # this_dmrg._parameters.set("transcorrelated_hamiltonian", True)
 
     # this_dmrg._parameters.set("chh", 1000)
     # this_dmrg._parameters.set("chkpfile", "/home/max/Programs/coupled_wick_scf/maquis-dmrg_python/dmrg/python/checkpoint")

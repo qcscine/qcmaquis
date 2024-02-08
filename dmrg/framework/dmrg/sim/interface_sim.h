@@ -413,7 +413,7 @@ class interface_sim : public sim<Matrix, SymmGroup>,
       // Generates the transcorrelated model
       auto transcorrelatedParametersContainer = parms;
       transcorrelatedParametersContainer.set(
-          "transcorrelated_hamiltonian", "yes"
+          "transcorrelated_hamiltonian", true
       );
       transcorrelatedParametersContainer.set("imaginary_time", "yes");
       auto transcorrelatedModel =

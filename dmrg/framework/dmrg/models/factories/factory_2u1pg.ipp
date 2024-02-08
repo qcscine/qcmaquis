@@ -19,7 +19,7 @@ public:
             if (parms.is_set("LATTICE") && parms["LATTICE"] != std::string("orbitals"))
                 throw std::runtime_error("Please use \"LATTICE = orbitals\" for quantum_chemistry\n");
             if (parms.is_set("transcorrelated_hamiltonian"))
-                return (parms["transcorrelated_hamiltonian"] == "yes") ?
+                return (parms["transcorrelated_hamiltonian"] == true) ?
                         impl_ptr( new qc_model<Matrix, TwoU1PG, Hamiltonian::Electronic, HamiltonianTransformation::Transcorrelated>(lattice, parms) ) :
                         impl_ptr( new qc_model<Matrix, TwoU1PG, Hamiltonian::Electronic, HamiltonianTransformation::Conventional>(lattice, parms) );
             else

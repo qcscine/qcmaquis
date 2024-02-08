@@ -268,7 +268,7 @@ class DmrgParameters : public BaseParameters {
     // Parameters related to the transcorrelation
     add_option(
         "transcorrelated_hamiltonian",
-        "If yes, transcorrelates (if possible) the Hamiltonian", value("no")
+        "If yes, transcorrelates (if possible) the Hamiltonian", false
     );
     add_option(
         "J_Transcorrelated",
@@ -278,17 +278,17 @@ class DmrgParameters : public BaseParameters {
     );
     add_option(
         "transcorrelated_3body",
-        "If no, does not add the three-body part of the transcorrelated "
+        "If no, omits the three-body part of the transcorrelated "
         "Hamiltonian",
-        value("yes")
+        true
     );
     add_option(
-        "transcorrelated_3body_normal_ordered",
-        "Use normal-ordered version of the threebody operator", value("no")
+        "transcorrelated_3body_normal_ordering",
+        "Perform normal-ordering on the threebody operator", false
     );
     add_option(
         "normal_ordered_integral_file",
-        "Integral file given is normal ordered.", value("no")
+        "Integral file given is normal ordered.", false
     );
     add_option(
         "normal_ordered_hole_states",

@@ -142,6 +142,7 @@ PYBIND11_MODULE(_dmrg, module) {
   // Dmrg real
   py::class_<maquis::DMRGInterface<double>>(module, "DmrgReal")
       .def(py::init<DmrgParameters&>())
+      .def("run", &maquis::DMRGInterface<double>::run)
       .def("optimize", &maquis::DMRGInterface<double>::optimize)
       .def("evolve", &maquis::DMRGInterface<double>::evolve)
       .def(
@@ -213,6 +214,7 @@ PYBIND11_MODULE(_dmrg, module) {
   // Dmrg complex
   py::class_<maquis::DMRGInterface<std::complex<double>>>(module, "DmrgComplex")
       .def(py::init<DmrgParameters&>())
+      .def("run", &maquis::DMRGInterface<std::complex<double>>::run)
       .def("optimize", &maquis::DMRGInterface<std::complex<double>>::optimize)
       .def("evolve", &maquis::DMRGInterface<std::complex<double>>::evolve)
       .def(
