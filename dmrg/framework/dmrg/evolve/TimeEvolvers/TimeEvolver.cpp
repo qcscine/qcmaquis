@@ -93,7 +93,7 @@ TimeEvolver<Matrix, SymmGroup, ParameterType>::TimeEvolver(ParameterType& parms)
       throw std::runtime_error("TD integration algorithm not recognized");
     }
   } else {
-    if (parms["transcorrelated_hamiltonian"] == true) {
+    if (parms["transcorrelated_hamiltonian"] == 1) {
       time_evolution_algorithm_ = std::make_unique<ArnoldiEvolverType>(
           time_step_, has_td_part_, is_imag_, accuracy_, max_iterations_,
           verbose

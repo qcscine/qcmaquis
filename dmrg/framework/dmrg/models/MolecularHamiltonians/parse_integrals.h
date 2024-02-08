@@ -111,6 +111,22 @@ void updateIndices(
   }
 }
 
+static void skip_fcidump_header(std::istream& is) {
+  std::string line;
+  int i = 0;
+  int max_lines = 10;
+  while (std::getline(is, line)) {
+    if (i > max_lines) {
+      throw std::runtime_error("FCIDUMP header ill-formatted. Cannot find &END");
+    }
+    if (line.find("&END") != std::string::npos) {
+      break;
+    }
+    ++i;
+  }
+
+}
+
 /**
  * @brief Integral parser.
  * @tparam T type associated with the sclar values.
@@ -170,7 +186,7 @@ parse_integrals(
   }
   // The order starts with 1, so we remove 1 for coherence with C++ standards
   std::transform(
-      order.begin(), order.end(), order.begin(), boost::lambda::_1 - 1
+      order.begin(), order.end(), order.begin(), [](pos_t p) { return p - 1; }
   );
   inv_order.resize(order.size());
   for (int p = 0; p < order.size(); ++p) {
@@ -198,9 +214,7 @@ parse_integrals(
     }
     orb_string = std::make_unique<std::ifstream>(integral_file.c_str());
     // Ignore the FCIDUMP file header -- 1st four lines
-    for (int i = 0; i < 4; ++i) {
-      orb_string->ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    }
+    skip_fcidump_header(*orb_string);
   }
   // Integrals provided as a binary file
   else if (parms.is_set("integrals_binary")) {

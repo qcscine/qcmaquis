@@ -228,7 +228,7 @@ template <
 void qc_model<
     Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms() {
   bool do_normal_ordering =
-      (parms["transcorrelated_3body_normal_ordering"] == true);
+      (parms["transcorrelated_3body_normal_ordering"] == 1);
 
   if (isTranscorrelated_ && do_normal_ordering) {
     create_terms_normal_ordered();
@@ -275,7 +275,7 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::
       twoBodyVec1, twoBodyVec2, twoBodyVec3, twoBodyVec4};
 
   bool normal_ordered_integral =
-      (parms["normal_ordered_integral_file"] == true) && isTranscorrelated_;
+      (parms["normal_ordered_integral_file"] == 1) && isTranscorrelated_;
   std::unordered_set<std::size_t> hole_states;
   if (normal_ordered_integral) {
     std::vector<std::size_t> hole_state_vec =

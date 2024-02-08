@@ -413,8 +413,9 @@ class interface_sim : public sim<Matrix, SymmGroup>,
       // Generates the transcorrelated model
       auto transcorrelatedParametersContainer = parms;
       transcorrelatedParametersContainer.set(
-          "transcorrelated_hamiltonian", true
+          "transcorrelated_hamiltonian", 1
       );
+      std::cout << "SUCESS" << std::endl;
       transcorrelatedParametersContainer.set("imaginary_time", "yes");
       auto transcorrelatedModel =
           ModelType(lat, transcorrelatedParametersContainer);

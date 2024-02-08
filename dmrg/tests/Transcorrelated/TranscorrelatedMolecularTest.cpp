@@ -143,7 +143,7 @@ BOOST_FIXTURE_TEST_CASE(
       // Setting this keyword to "yes" enables constructing the MPO with the
       // transcorrelated code
       parametersH2Conventional_TranscorrelatedFormat.set(
-          "transcorrelated_hamiltonian", true
+          "transcorrelated_hamiltonian", 1
       );
       std::string integralFileName =
           parametersH2Conventional_TranscorrelatedFormat
@@ -197,7 +197,7 @@ BOOST_FIXTURE_TEST_CASE(
   interface.runTranscorrelated();
   auto energyDMRG = maquis::real(interface.energy());
   // Hand-made Full-CI
-  parametersH2Transcorrelated.set("transcorrelated_hamiltonian", true);
+  parametersH2Transcorrelated.set("transcorrelated_hamiltonian", 1);
   auto lattice = Lattice(parametersH2Transcorrelated);
   auto model = Model<matrix, TwoU1>(lattice, parametersH2Transcorrelated);
   auto mpo = make_mpo(lattice, model);
@@ -295,7 +295,7 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_QuantumFormat, H2Fixture) {
   // Generates the transcorrelatedMPO
   auto transcorrelatedParametersContainer =
       parametersH2QuantumFormatTranscorrelated;
-  transcorrelatedParametersContainer.set("transcorrelated_hamiltonian", true);
+  transcorrelatedParametersContainer.set("transcorrelated_hamiltonian", 1);
   transcorrelatedParametersContainer.set("imaginary_time", "yes");
   auto transcorrelatedModel =
       ModelType(lattice, transcorrelatedParametersContainer);
@@ -332,14 +332,14 @@ BOOST_FIXTURE_TEST_CASE(
   );
   // Generates the transcorrelatedMPO with the conventional format
   auto transcorrelatedParametersContainer = parametersH2Transcorrelated;
-  transcorrelatedParametersContainer.set("transcorrelated_hamiltonian", true);
+  transcorrelatedParametersContainer.set("transcorrelated_hamiltonian", 1);
   transcorrelatedParametersContainer.set("imaginary_time", "yes");
   auto transcorrelatedModel =
       ModelType(lattice, transcorrelatedParametersContainer);
   auto transcorrelatedMpo = make_mpo(lattice, transcorrelatedModel);
   // Generates the transcorrelatedMPO in the quantum format
   transcorrelatedParametersContainer = parametersH2TranscorrelatedQuantumFormat;
-  transcorrelatedParametersContainer.set("transcorrelated_hamiltonian", true);
+  transcorrelatedParametersContainer.set("transcorrelated_hamiltonian", 1);
   transcorrelatedParametersContainer.set("imaginary_time", "yes");
   auto transcorrelatedModelQF =
       ModelType(lattice, transcorrelatedParametersContainer);

@@ -21,7 +21,7 @@ struct coded_model_factory<Matrix, TwoU1>
         using impl_ptr = std::shared_ptr<model_impl<Matrix, TwoU1> >;
         if (parms["MODEL"] == std::string("quantum_chemistry")) {
             if (parms.is_set("transcorrelated_hamiltonian")) {
-                return (parms["transcorrelated_hamiltonian"] == true) ?
+                return (parms["transcorrelated_hamiltonian"] == 1) ?
                         impl_ptr( new qc_model<Matrix, TwoU1, Hamiltonian::Electronic, HamiltonianTransformation::Transcorrelated>(lattice, parms) ) :
                         impl_ptr( new qc_model<Matrix, TwoU1, Hamiltonian::Electronic, HamiltonianTransformation::Conventional>(lattice, parms) );
             }
@@ -30,11 +30,11 @@ struct coded_model_factory<Matrix, TwoU1>
             }
         }
         else if (parms["MODEL"] == std::string("fermi_hubbard_real")) {
-            return (parms["transcorrelated_hamiltonian"] == true) ?
+            return (parms["transcorrelated_hamiltonian"] == 1) ?
                     impl_ptr(new FermiHubbardRealTwoU1<Matrix>(lattice, parms, true)) :
                     impl_ptr(new FermiHubbardRealTwoU1<Matrix>(lattice, parms, false));
         } else if (parms["MODEL"] == std::string("fermi_hubbard_momentum")) {
-            return (parms["transcorrelated_hamiltonian"] == true) ?
+            return (parms["transcorrelated_hamiltonian"] == 1) ?
                     impl_ptr(new FermiHubbardMomentumTwoU1<Matrix>(lattice, parms, true)) :
                     impl_ptr(new FermiHubbardMomentumTwoU1<Matrix>(lattice, parms, false));
 #if defined(HAVE_NU1) && defined(DMRG_PREBO)
