@@ -109,6 +109,10 @@ void BaseParameters::set(std::string const& key, const char value[]) {
   impl_->operator[](key) = std::string(value);
 }
 
+void BaseParameters::set(std::string const& key, const bool value) {
+  set(key, static_cast<int>(value));
+}
+
 void BaseParameters::erase(std::string const& key) {
   if (this->is_set(key))  // if parameter is not set, do nothing
     impl_->erase(key);

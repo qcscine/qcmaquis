@@ -92,9 +92,17 @@ int main(int argc, char** argv) {
 
       if (!opt.parms["COMPLEX"]) {
         maquis::DMRGInterface<double> interface(opt.parms);
+        if (opt.parms["fiedler"]) {
+          opt.parms["orbital_order"] =
+              interface.fiedler_order(1, std::vector<std::vector<int>>{}, "");
+        }
         interface.run(sim_type);
       } else {
         maquis::DMRGInterface<std::complex<double>> interface(opt.parms);
+        if (opt.parms["fiedler"]) {
+          opt.parms["orbital_order"] =
+              interface.fiedler_order(1, std::vector<std::vector<int>>{}, "");
+        }
         interface.run(sim_type);
       }
 

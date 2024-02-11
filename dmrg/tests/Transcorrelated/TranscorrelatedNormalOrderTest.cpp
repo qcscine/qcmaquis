@@ -127,12 +127,12 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_Be_VersusCCNO, TranscorrelatedFixture) {
   parametersBeTranscorrelatedTwoBody.set(
       "transcorrelated_3body_normal_ordering", 1
   );
-  parametersBeTranscorrelatedTwoBody.set("transcorrelated_3body", true);
+  parametersBeTranscorrelatedTwoBody.set("transcorrelated_3body", 1);
   maquis::DMRGInterface<double> interface(parametersBeTranscorrelatedTwoBody);
   interface.runTranscorrelated();
   auto energyDMRG = maquis::real(interface.energy());
 
-  parametersBeTranscorrelatedTwoBody.set("transcorrelated_3body", false);
+  parametersBeTranscorrelatedTwoBody.set("transcorrelated_3body", 1);
   maquis::DMRGInterface<double> approxInterface(
       parametersBeTranscorrelatedTwoBody
   );
@@ -142,7 +142,7 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_Be_VersusCCNO, TranscorrelatedFixture) {
   parametersBeTranscorrelatedTwoBody.set(
       "transcorrelated_3body_normal_ordering", 1
   );
-  parametersBeTranscorrelatedTwoBody.set("transcorrelated_3body", true);
+  parametersBeTranscorrelatedTwoBody.set("transcorrelated_3body", 1);
   maquis::DMRGInterface<double> tcInterface(parametersBeTranscorrelatedTwoBody);
   tcInterface.runTranscorrelated();
   auto energytcDMRG = maquis::real(tcInterface.energy());

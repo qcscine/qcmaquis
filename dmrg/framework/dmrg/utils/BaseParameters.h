@@ -71,6 +71,7 @@ class BaseParameters {
   template <class T>
   void set(std::string const& key, T const& value);
   void set(std::string const& key, const char value[]);
+  void set(std::string const& key, const bool);
   void erase(std::string const& key);
 
   // Erase all keys containing a substring

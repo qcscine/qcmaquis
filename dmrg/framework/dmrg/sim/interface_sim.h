@@ -152,19 +152,6 @@ class interface_sim : public sim<Matrix, SymmGroup>,
   void run(const std::string& simulationType) override {
     Timer timer(simulationType);
     timer.begin();
-    if (parms["fiedler"] == 1) {
-      int n_states = 1;
-      if (simulationType == "feast") {
-        n_states = parms["feast_num_states"];
-      }
-      results_map_type tmp_measurements = measurements_;
-      DmrgParameters tmp_parms = parms;
-      std::string ordering = get_fiedler_order(
-          n_states, std::vector<std::vector<int>>{}, "fiedler"
-      );
-      measurements_ = tmp_measurements;
-      parms = tmp_parms;
-    }
     if (simulationType == "optimize") {
       this->runAlternatingLeastSquares(
           "optimize", parms["nsweeps"].template as<int>(),

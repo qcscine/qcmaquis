@@ -228,7 +228,7 @@ template <
 void qc_model<
     Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms() {
   bool do_normal_ordering =
-      (parms["transcorrelated_3body_normal_ordering"] == 1);
+      (parms["transcorrelated_3body_normal_ordering"] == true);
 
   if (isTranscorrelated_ && do_normal_ordering) {
     create_terms_normal_ordered();
