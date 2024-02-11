@@ -35,6 +35,10 @@ class DmrgParameters : public BaseParameters {
         "ipi,"
         "feast, transcorrelated"
     );
+    add_option(
+        "fiedler", "If yes, calculates the Fiedler vector of the Hamiltonian",
+        value(true)
+    );
     add_option("verbose", "Verbosity level of the DMRG calculation", value(0));
     add_option(
         "seed",

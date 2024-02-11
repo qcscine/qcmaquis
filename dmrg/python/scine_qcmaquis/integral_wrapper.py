@@ -99,6 +99,16 @@ class IntegralMapWrapper:
         self._parser.parse_two_body(two_body, norb)
         self._update_from_parsing()
 
+    def fill_from_emu(self, integral_map):
+        """Fill IntegralMap from a EMU program.
+
+        Parameters
+        ----------
+        integral_map : 
+            integral_map from EMU program
+        """
+        self._integral_map = integral_map
+
     def get(self) -> IntegralMap:
         """Get IntegralMap Python Interface.
 
