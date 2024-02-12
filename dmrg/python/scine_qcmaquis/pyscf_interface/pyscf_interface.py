@@ -69,6 +69,8 @@ class QcMaquis:
         """Number of states."""
         self.fiedler = False
         """Enable fiedler ordering"""
+        self.orb_opt = True
+        """Enable optimization in CASSCF calculation"""
         # self.entropies = None
 
         self.log = None
@@ -219,7 +221,10 @@ class QcMaquis:
             self.dmrg._parameters.set_result_path(self.file_path + "/" + self.results_name)
 
         # enable 1 and 2 rdm
-        self.dmrg.set_orbital_optimization()
+        if self.orb_opt is True:
+            print("Enabling Orbital Optimization")
+            self.dmrg.set_orbital_optimization()
+
         self._set_parameters()
 
         # enable chementropy measurement
