@@ -412,10 +412,7 @@ class interface_sim : public sim<Matrix, SymmGroup>,
       maquis::cout << std::endl;
       // Generates the transcorrelated model
       auto transcorrelatedParametersContainer = parms;
-      transcorrelatedParametersContainer.set(
-          "transcorrelated_hamiltonian", 1
-      );
-      std::cout << "SUCESS" << std::endl;
+      transcorrelatedParametersContainer.set("transcorrelated_hamiltonian", 1);
       transcorrelatedParametersContainer.set("imaginary_time", "yes");
       auto transcorrelatedModel =
           ModelType(lat, transcorrelatedParametersContainer);
