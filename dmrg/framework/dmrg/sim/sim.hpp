@@ -172,9 +172,9 @@ void sim<Matrix, SymmGroup>::loadMPSAndParams(
                    << init_sweep << std::endl;
     }
     // load checkpoint
-    maquis::cout << "\n!! WARNING: Checkpoint found. !!"
-                 << "              Continuing calculation from checkpoint "
-                 << p.c_str() << "\n\n";
+    maquis::cout << "\n!! WARNING: Checkpoint found. !!\n"
+                 << "Continuing calculation from checkpoint " << p.c_str()
+                 << "\n\n";
     maquis::checks::symmetry_check(parms, chkpfile);
     load(chkpfile, mps);
 
@@ -192,8 +192,7 @@ void sim<Matrix, SymmGroup>::loadParams(
     const bool hasPG
 ) const {
   std::vector<std::string> parms_toload{
-      "L", "site_types", "orbital_order", "symmetry"
-  };
+      "L", "site_types", "orbital_order", "symmetry"};
   if (hasSU2) {
     parms_toload.emplace_back("nelec");
     parms_toload.emplace_back("spin");
