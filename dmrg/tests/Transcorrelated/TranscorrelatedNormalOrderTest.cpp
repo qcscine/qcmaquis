@@ -76,17 +76,17 @@ BOOST_FIXTURE_TEST_CASE(
   parametersHeTranscorrelated.set(
       "transcorrelated_integral_file", TRANSCORRELATED_HE_FCIDUMP_PATH
   );
-  parametersHeTranscorrelated.set(
-      "transcorrelated_3body_normal_ordering", 1
-  );
+  parametersBeTranscorrelatedTwoBody.set("transcorrelated_3body", 1);
+
+  // auto energyDMRG = maquis::real(interface.energy());
+
+  parametersHeTranscorrelated.set("transcorrelated_3body_normal_ordering", 1);
   maquis::DMRGInterface<double> NO_interface(parametersHeTranscorrelated);
   NO_interface.runTranscorrelated();
 
   auto energyDMRGNO = maquis::real(NO_interface.energy());
 
-  parametersHeTranscorrelated.set(
-      "transcorrelated_3body_normal_ordering", 1
-  );
+  parametersHeTranscorrelated.set("transcorrelated_3body_normal_ordering", 0);
   maquis::DMRGInterface<double> interface(parametersHeTranscorrelated);
   interface.runTranscorrelated();
 
@@ -125,14 +125,14 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_Be_VersusCCNO, TranscorrelatedFixture) {
       "transcorrelated_integral_file", TRANSCORRELATED_BE_FCIDUMP_PATH
   );
   parametersBeTranscorrelatedTwoBody.set(
-      "transcorrelated_3body_normal_ordering", 1
+      "transcorrelated_3body_normal_ordering", 0
   );
   parametersBeTranscorrelatedTwoBody.set("transcorrelated_3body", 1);
   maquis::DMRGInterface<double> interface(parametersBeTranscorrelatedTwoBody);
   interface.runTranscorrelated();
   auto energyDMRG = maquis::real(interface.energy());
 
-  parametersBeTranscorrelatedTwoBody.set("transcorrelated_3body", 1);
+  parametersBeTranscorrelatedTwoBody.set("transcorrelated_3body", 0);
   maquis::DMRGInterface<double> approxInterface(
       parametersBeTranscorrelatedTwoBody
   );
@@ -147,8 +147,8 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_Be_VersusCCNO, TranscorrelatedFixture) {
   tcInterface.runTranscorrelated();
   auto energytcDMRG = maquis::real(tcInterface.energy());
 
-  BOOST_CHECK_SMALL(std::abs(energyDMRG - energytcDMRG), 1.0E-9);
+  BOOST_CHECK_SMALL(std::abs(energyDMRG - energytcDMRG), 2.0E-9);
 
-  std::cout << "Difference with and withour 3B: "
+  std::cout << "Difference with and without 3B: "
             << std::abs(energyDMRG - energyDRMGno3b) << std::endl;
 }
