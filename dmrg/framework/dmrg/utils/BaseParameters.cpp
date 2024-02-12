@@ -80,9 +80,7 @@ bool BaseParameters::empty() const { return impl_->empty(); }
 
 parameters::proxy BaseParameters::operator[](std::string const& key) {
   if (!is_set(key)) {
-    std::map<std::string, std::string>::const_iterator match =
-        defaults.find(key);
-    if (match != defaults.end()) {
+    if (auto match = defaults.find(key); match != defaults.end()) {
       impl_->operator[](key) = match->second;
     } else {
       boost::throw_exception(
@@ -91,6 +89,20 @@ parameters::proxy BaseParameters::operator[](std::string const& key) {
     }
   }
   return {impl_->operator[](key)};
+}
+
+parameters::proxy BaseParameters::operator[](std::string const& key) const {
+  if (!is_set(key)) {
+    if (auto match = defaults.find(key); match != defaults.end()) {
+      impl_->operator[](key) = match->second;
+    } else {
+      boost::throw_exception(
+          std::runtime_error("parameter " + key + " not defined")
+      );
+    }
+  }
+  parameters::proxy ret = impl_->operator[](key);
+  return ret;
 }
 
 template <class T>

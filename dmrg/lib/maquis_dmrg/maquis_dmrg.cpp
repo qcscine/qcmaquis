@@ -196,6 +196,7 @@ std::string DMRGInterface<ScalarType, HamiltonianType>::fiedler_order(
       impl_->sim->get_fiedler_order(n_states, hf_occupations, checkpoint_name);
   measurements_ = tmp_measurements;
   parms = tmp_parms;
+  std::cout << "Fiedler order: " << ordering << "\n";
   return ordering;
 }
 

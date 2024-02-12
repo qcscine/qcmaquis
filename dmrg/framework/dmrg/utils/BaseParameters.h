@@ -64,6 +64,7 @@ class BaseParameters {
   bool empty() const;
 
   parameters::proxy operator[](std::string const& key);
+  parameters::proxy operator[](std::string const& key) const;
 
   template <class T>
   T get(std::string const& key);
