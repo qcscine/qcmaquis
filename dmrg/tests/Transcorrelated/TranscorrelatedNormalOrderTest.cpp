@@ -112,10 +112,7 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_Be_VersusCCNO, TranscorrelatedFixture) {
   parametersBeTranscorrelatedTwoBody.set("time_units", "fs");
   parametersBeTranscorrelatedTwoBody.set("TD_backpropagation", "no");
   parametersBeTranscorrelatedTwoBody.set("symmetry", "2u1");
-  parametersBeTranscorrelatedTwoBody.set("time_step", 0.1);
-  parametersBeTranscorrelatedTwoBody.set(
-      "chkpfile", "Be.tcDMRGNO.checkpoint.h5"
-  );
+  parametersBeTranscorrelatedTwoBody.set("time_step", 1);
   parametersBeTranscorrelatedTwoBody.set("transcorrelated_nsweeps_TI", 0);
   parametersBeTranscorrelatedTwoBody.set("transcorrelated_nsweeps_TC", 10);
   parametersBeTranscorrelatedTwoBody.set(
