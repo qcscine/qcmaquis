@@ -143,7 +143,7 @@ class ss_optimize : public optimizer_base<Matrix, SymmGroup, Storage> {
           nms = parms.template get<int>("nmainsweeps");
       if (sweep < ngs)
         alpha = parms.template get<double>("alpha_initial");
-      else if (sweep < ngs + nms)
+      else if (sweep < (ngs + nms))
         alpha = parms.template get<double>("alpha_main");
       else
         alpha = parms.template get<double>("alpha_final");

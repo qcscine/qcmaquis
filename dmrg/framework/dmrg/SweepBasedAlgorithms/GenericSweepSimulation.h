@@ -366,7 +366,7 @@ class GenericSweepSimulation {
     double trunc;
     int ngs = parms_.template get<int>("ngrowsweeps");
     int nms = parms_.template get<int>("nmainsweeps");
-    if (sweep >= ngs + nms) {
+    if (sweep >= (ngs + nms)) {
       trunc = parms_.template get<double>("truncation_final");
     } else if (sweep < ngs) {
       trunc = log_interpolate(
