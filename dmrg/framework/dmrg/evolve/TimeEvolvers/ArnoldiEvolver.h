@@ -42,8 +42,8 @@
 #ifdef DMRG_TD
 
 #include <vector>
-//#include <Eigen/Core>
-//#include <unsupported/Eigen/MatrixFunctions>
+// #include <Eigen/Core>
+// #include <unsupported/Eigen/MatrixFunctions>
 #include "TimeEvolutionAlgorithm.h"
 
 template <class Matrix, class SymmGroup>
@@ -110,34 +110,33 @@ class ArnoldiEvolver : public TimeEvolutionAlgorithm<Matrix, SymmGroup> {
 
   /* Real --> Complex conversion routines */
   template <
-      class ArgType, typename std::enable_if<
-                         std::is_same<double, ArgType>::value>::type* = nullptr>
+      class ArgType,
+      std::enable_if_t<std::is_same_v<double, ArgType>>* = nullptr>
   complex_type initial_convert(const ArgType& input) const {
     return std::complex<double>(input, 0.);
   };
   template <
-      class ArgType,
-      typename std::enable_if<std::is_same<
-          typename std::complex<double>, ArgType>::value>::type* = nullptr>
+      class ArgType, std::enable_if_t<std::is_same_v<
+                         typename std::complex<double>, ArgType>>* = nullptr>
   complex_type initial_convert(const ArgType& input) const {
     return input;
   };
   template <
-      class ArgType, typename std::enable_if<
-                         std::is_same<double, ArgType>::value>::type* = nullptr>
+      class ArgType,
+      std::enable_if_t<std::is_same_v<double, ArgType>>* = nullptr>
   ArgType final_convert(const complex_type& input) const {
     return std::real(input);
   };
   template <
-      class ArgType,
-      typename std::enable_if<std::is_same<
-          typename std::complex<double>, ArgType>::value>::type* = nullptr>
+      class ArgType, std::enable_if_t<std::is_same_v<
+                         typename std::complex<double>, ArgType>>* = nullptr>
   ArgType final_convert(const complex_type& input) const {
     return input;
   };
 
   /* Methods to print the results of the Arnoldi algorithm. */
   void print_header() const {
+    std::cout << '\n';
     print_line();
     std::cout << "  ITERATION  |   ERROR " << std::endl;
     print_line();

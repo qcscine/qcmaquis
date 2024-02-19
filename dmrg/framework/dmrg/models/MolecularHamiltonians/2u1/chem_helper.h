@@ -33,8 +33,7 @@
 #include "dmrg/models/MolecularHamiltonians/2u1/term_maker.h"
 #include "dmrg/models/OperatorHandlers/TagHandler.h"
 
-namespace chem {
-namespace detail {
+namespace chem::detail {
 
 template <
     typename Matrix, class SymmGroup, Hamiltonian HamiltonianType,
@@ -58,7 +57,7 @@ class ChemHelper {
       bool doRealign = true
   )
       : lat(lat_), ident(ident_), fill(fill_), tag_handler(tag_handler_) {
-    boost::tie(idx_, matrix_elements) = parse_integrals<
+    std::tie(idx_, matrix_elements) = parse_integrals<
         value_type, SymmGroup, HamiltonianType, Transcorrelated>(
         parms, lat, doRealign
     );
@@ -87,7 +86,6 @@ class ChemHelper {
   std::map<IndexTuple<SymmGroup, numberOfIntegers>, value_type> coefficients;
 };
 
-}  // namespace detail
-}  // namespace chem
+}  // namespace chem::detail
 
 #endif

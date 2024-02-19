@@ -237,7 +237,8 @@ class interface_sim : public sim<Matrix, SymmGroup>,
     auto mpsBackup = this->mps;
     // IPI macroiteration
     while (!convergedOuter) {
-      double nextEnergy, energyDifference;
+      double nextEnergy;
+      double energyDifference;
       this->runAlternatingLeastSquares(
           "linear_system", numberOfSweepsPerSystem, convThreshOfLinSystem,
           model, parms
@@ -381,16 +382,25 @@ class interface_sim : public sim<Matrix, SymmGroup>,
     int nSweepsTI = parms["transcorrelated_nsweeps_TI"];
     int nSweepsTC = parms["transcorrelated_nsweeps_TC"];
     double energyThreshold = parms["conv_thresh"];
+    bool use_3body = parms["transcorrelated_3body"];
+    bool perform_normal_ordering =
+        parms["transcorrelated_3body_normal_ordering"];
+    bool normal_ordered_int_file = parms["normal_ordered_integral_file"];
     // Prints header
     maquis::cout << std::endl;
-    maquis::cout << " ============================== " << std::endl;
-    maquis::cout << "   STARTING tcDMRG SIMULATION = " << std::endl;
-    maquis::cout << " ============================== " << std::endl;
-    maquis::cout << " Preliminary TI-DMRG Sweeps: " << nSweepsTI << std::endl;
-    maquis::cout << " tcDMRG Sweeps: " << nSweepsTC << std::endl;
+    maquis::cout << " ============================== \n";
+    maquis::cout << "   STARTING tcDMRG SIMULATION = \n";
+    maquis::cout << " ============================== \n";
+    maquis::cout << " Use Three Body: " << (use_3body ? "true" : "false")
+                 << '\n';
+    maquis::cout << " Perform Normal Ording of Integrals : "
+                 << (perform_normal_ordering ? "true" : "false") << '\n';
+    maquis::cout << " Normal Ordered Integral File: "
+                 << (normal_ordered_int_file ? "true" : "false") << '\n';
+    maquis::cout << " Preliminary TI-DMRG Sweeps: " << nSweepsTI << '\n';
+    maquis::cout << " tcDMRG Sweeps: " << nSweepsTC << '\n';
     maquis::cout << " Energy Convergence Threshold: " << energyThreshold
-                 << std::endl;
-    maquis::cout << std::endl;
+                 << "\n\n";
     // Preliminary TI calculation
     if (nSweepsTI > 0) {
       maquis::cout << " == STARTING THE TI-DMRG OPTIMIZATION == " << std::endl;
@@ -947,9 +957,9 @@ parms["nsweeps"]) checkpoint_simulation(mps, sweep, -1); if (stopped) break;
     std::vector<int> order = detail::sort_vector(fiedler_vector);
 
     // add 1 to each element because in the parameters our counting starts with
-    // 1 This is not used right? for (auto&& n: order) n++;
-    // std::transform(order.begin(), order.end(), order.begin(), [](int i){
-    // return i+1; });
+    std::transform(order.begin(), order.end(), order.begin(), [](int i) {
+      return i + 1;
+    });
 
     // convert the ordering into a string
     maquis::cout

@@ -111,20 +111,35 @@ void updateIndices(
   }
 }
 
-static void skip_fcidump_header(std::istream& is) {
+struct FcidumpHeaderInfo {
+  int norb;
+  int nelec;
+  int ms2;
+};
+
+static FcidumpHeaderInfo parse_header(std::istream& is) {
+  int nelec;
+  int norb;
+  int ms2;
+
+  std::string token;
   std::string line;
-  int i = 0;
-  int max_lines = 10;
   while (std::getline(is, line)) {
-    if (i > max_lines) {
-      throw std::runtime_error("FCIDUMP header ill-formatted. Cannot find &END");
+    std::istringstream line_stream(line);
+    while (std::getline(line_stream, token, '=')) {
+      if (token.find("NORB") != std::string::npos) {
+        line_stream >> norb;
+      } else if (token.find("NELEC") != std::string::npos) {
+        line_stream >> nelec;
+      } else if (token.find("MS2") != std::string::npos) {
+        line_stream >> ms2;
+      }
     }
-    if (line.find("&END") != std::string::npos) {
+    if (token.find("&END") != std::string::npos) {
       break;
     }
-    ++i;
   }
-
+  return {norb, nelec, ms2};
 }
 
 /**
@@ -213,8 +228,20 @@ parse_integrals(
       );
     }
     orb_string = std::make_unique<std::ifstream>(integral_file.c_str());
-    // Ignore the FCIDUMP file header -- 1st four lines
-    skip_fcidump_header(*orb_string);
+    auto [norb, nelec, ms2] = parse_header(*orb_string);
+    if (norb != lat.size()) {
+      throw std::runtime_error(
+          "The number of orbitals in the FCIDUMP (" + std::to_string(norb) +
+          ") does not match the "
+          "input file (" +
+          std::to_string(lat.size()) + ")\n"
+      );
+    }
+    if (nelec != parms["nelec"]) {
+      std::cout << "!! WARNING: The number of electrons in the FCIDUMP ("
+                << nelec << ") does not match the input file ("
+                << parms["nelec"] << ") !!\n";
+    }
   }
   // Integrals provided as a binary file
   else if (parms.is_set("integrals_binary")) {

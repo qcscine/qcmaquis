@@ -59,10 +59,10 @@ class CMakeBuild(build_ext):
         subprocess.check_call(["cmake", ext.sourcedir] + cmake_args, cwd=build_temp)
         subprocess.check_call(["cmake", "--build", "."] + build_args, cwd=build_temp)
 
-        # venv = get_virtualenv_path()
-        # if venv is not None:
-        #     print("Copying compiled binaries to virtual environment.")
-        #     subprocess.check_call(["cp", "qcmaquis", f"{venv}/bin"], cwd=build_temp)
+        venv = get_virtualenv_path()
+        if venv is not None:
+            print("Copying compiled binaries to virtual environment.")
+            subprocess.check_call(["cp", "qcmaquis", f"{venv}/bin"], cwd=build_temp)
 
 setup(
     name="dmrg",

@@ -235,8 +235,8 @@ class GenericSweepSimulation {
     this->finalizeSweep();
     printSweepEnergy();
     maquis::cout << "[Sweep " << iSweep + 1 << " took " << std::setprecision(2)
-                 << duriation_sweep.count() << std::setprecision(6)
-                 << " s]\n\n";
+                 << duriation_sweep.count() << std::setprecision(6) << " s]\n"
+                 << std::endl;
   }
 
   /** @brief Gets the container with the results of each iteration */

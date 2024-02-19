@@ -93,9 +93,6 @@ BOOST_FIXTURE_TEST_CASE(
   auto energyDMRG = maquis::real(interface.energy());
 
   BOOST_CHECK_SMALL(std::abs(energyDMRG - energyDMRGNO), 1.0E-10);
-
-  maquis::cout << "Energies: " << energyDMRG << " " << energyDMRGNO
-               << std::endl;
 }
 //
 ///**
