@@ -791,7 +791,7 @@ parms["nsweeps"]) checkpoint_simulation(mps, sweep, -1); if (stopped) break;
   // double>::value>::type>
   std::string get_fiedler_order(
       int n_states, const std::vector<std::vector<int>>& hf_occupations,
-      std::string checkpoint_name
+      std::string checkpoint_name, bool zero_based = false
   ) {
     maquis::cout
         << "-----------------------------------------------------------------"
@@ -957,9 +957,11 @@ parms["nsweeps"]) checkpoint_simulation(mps, sweep, -1); if (stopped) break;
     std::vector<int> order = detail::sort_vector(fiedler_vector);
 
     // add 1 to each element because in the parameters our counting starts with
-    std::transform(order.begin(), order.end(), order.begin(), [](int i) {
-      return i + 1;
-    });
+    if (!zero_based) {
+      std::transform(order.begin(), order.end(), order.begin(), [](int i) {
+        return i + 1;
+      });
+    }
 
     // convert the ordering into a string
     maquis::cout

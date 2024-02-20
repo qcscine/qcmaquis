@@ -64,7 +64,7 @@ class abstract_interface_sim {
   ) = 0;
   virtual std::string get_fiedler_order(
       int n_states, const std::vector<std::vector<int>>& hf_occupations,
-      std::string checkpoint_name
+      std::string checkpoint_name, bool zero_based = false
   ) = 0;
 };
 

@@ -98,12 +98,7 @@ class DmrgWrapper:
             hf_occupations = []
 
         # fiedler_calculator = self._dmrg
-        zero_based_fiedler_string = self._dmrg.fiedler_order(n_states, hf_occupations, "fiedler")
-        fiedler_string = ""
-        for i in zero_based_fiedler_string.split(","):
-            fiedler_string += str(int(i) + 1) + ","
-
-        fiedler_string = fiedler_string[:-1]
+        fiedler_string = self._dmrg.fiedler_order(n_states, hf_occupations, "fiedler")
 
         self._dmrg = None
         return fiedler_string
