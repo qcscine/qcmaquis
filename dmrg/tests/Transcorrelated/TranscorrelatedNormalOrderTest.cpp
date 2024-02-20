@@ -124,14 +124,7 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_Be_VersusCCNO, TranscorrelatedFixture) {
   parametersBeTranscorrelatedTwoBody.set("transcorrelated_3body", 1);
   maquis::DMRGInterface<double> interface(parametersBeTranscorrelatedTwoBody);
   interface.runTranscorrelated();
-  auto energyDMRG = maquis::real(interface.energy());
-
-  parametersBeTranscorrelatedTwoBody.set("transcorrelated_3body", 0);
-  maquis::DMRGInterface<double> approxInterface(
-      parametersBeTranscorrelatedTwoBody
-  );
-  approxInterface.runTranscorrelated();
-  auto energyDRMGno3b = maquis::real(approxInterface.energy());
+  auto energyDMRG_3body = maquis::real(interface.energy());
 
   parametersBeTranscorrelatedTwoBody.set(
       "transcorrelated_3body_normal_ordering", 1
@@ -139,10 +132,23 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_Be_VersusCCNO, TranscorrelatedFixture) {
   parametersBeTranscorrelatedTwoBody.set("transcorrelated_3body", 1);
   maquis::DMRGInterface<double> tcInterface(parametersBeTranscorrelatedTwoBody);
   tcInterface.runTranscorrelated();
-  auto energytcDMRG = maquis::real(tcInterface.energy());
+  auto energyDMRG_NO3body = maquis::real(tcInterface.energy());
 
-  BOOST_CHECK_SMALL(std::abs(energyDMRG - energytcDMRG), 2.0E-9);
+  parametersBeTranscorrelatedTwoBody.set(
+      "transcorrelated_3body_normal_ordering", 1
+  );
+  parametersBeTranscorrelatedTwoBody.set("transcorrelated_3body", 0);
+  maquis::DMRGInterface<double> approxInterface(
+      parametersBeTranscorrelatedTwoBody
+  );
+  approxInterface.runTranscorrelated();
+  auto energyDMRG_NO = maquis::real(approxInterface.energy());
 
-  std::cout << "Difference with and without 3B: "
-            << std::abs(energyDMRG - energyDRMGno3b) << std::endl;
+  BOOST_CHECK_CLOSE(energyDMRG_3body, energyDMRG_NO3body, 2.0E-9);
+
+  double energyOwlCC_3body = -14.656823;
+  double energyOwlCC_NO = -14.656806;
+
+  BOOST_CHECK_CLOSE(energyDMRG_3body, energyOwlCC_3body, 1.0E-6);
+  BOOST_CHECK_CLOSE(energyDMRG_NO, energyOwlCC_NO, 1.0E-6);
 }
