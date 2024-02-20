@@ -256,6 +256,19 @@ class MaquisDmrg:
         self._parameters.set_system(n_orbitals, n_electrons, spin)
 
         if fiedler is True:
+
+            # don't dump anything for fiedler
+            try:
+                tmp_chkpfile = self._parameters.get_parameters_dict()["chkpfile"]
+            except KeyError:
+                tmp_chkpfile = ""
+            try:
+                tmp_result_file = self._parameters.get_parameters_dict()["resultfile"]
+            except KeyError:
+                tmp_result_file = ""
+            self._parameters.erase("chkpfile")
+            self._parameters.erase("resultfile")
+
             fiedler_orderer = DmrgWrapper()
             fiedler_orderer.set_parameters(self._parameters)
             if "integral_file" not in self._parameters._parameter_dict:
@@ -263,6 +276,13 @@ class MaquisDmrg:
             orbital_order = fiedler_orderer.get_fiedler()
             self._parameters.set("orbital_order", orbital_order)
             self._entropy_builder = EntropyBuilder(n_orbitals, orbital_order)
+
+            # but enable dumping for real calc
+            if tmp_chkpfile:
+                self._parameters.set_checkpoint_path(tmp_chkpfile)
+            if tmp_result_file:
+                self._parameters.set_result_path(tmp_result_file)
+
         else:
             self._entropy_builder = EntropyBuilder(n_orbitals)
 
