@@ -330,7 +330,6 @@ class interface_sim : public sim<Matrix, SymmGroup>,
         storage::disk::sync();
         if ((sweep + 1) % meas_each == 0 || (sweep + 1) == nSweeps) {
           dumpParametersAndIterResults(sweep);
-          dumpEnergy(sweep);
           if (!rfile().empty() && always_measurements.size() > 0) {
             this->measure(
                 this->results_archive_path(sweep) + "/results/",
@@ -364,7 +363,6 @@ class interface_sim : public sim<Matrix, SymmGroup>,
       maquis::cout << e.what() << " checkpointing partial result." << std::endl;
       checkpoint_simulation(mps, e.sweep(), e.site());
       dumpParametersAndIterResults(e.sweep());
-      dumpEnergy(e.sweep());
     }
     dumpEnergies();
   }
