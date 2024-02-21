@@ -289,7 +289,8 @@ class interface_sim : public sim<Matrix, SymmGroup>,
       std::string simulationType, int nSweeps, double energyThreshold,
       const ModelType& inputModel, DmrgParameters& inputParameters
   ) {
-    bool verbose = inputParameters["verbose"] > 0;
+    bool verbose = (inputParameters["verbose"] > 0);
+
     // Reads in input parameters
     int meas_each = parms["measure_each"];
     int chkp_each = parms["chkp_each"];
@@ -324,7 +325,7 @@ class interface_sim : public sim<Matrix, SymmGroup>,
     try {
       bool converged = false;
       for (int sweep = init_sweep; sweep < nSweeps; ++sweep) {
-        factory_->runSingleSweep(sweep);
+        auto sweepEnergy = factory_->runSingleSweep(sweep);
         energies_.push_back(this->get_energy());
         storage::disk::sync();
         if ((sweep + 1) % meas_each == 0 || (sweep + 1) == nSweeps) {
@@ -365,6 +366,7 @@ class interface_sim : public sim<Matrix, SymmGroup>,
       dumpParametersAndIterResults(e.sweep());
       dumpEnergy(e.sweep());
     }
+    dumpEnergies();
   }
 
   /**
@@ -1010,6 +1012,17 @@ parms["nsweeps"]) checkpoint_simulation(mps, sweep, -1); if (stopped) break;
       storage::archive ar(rfile(), "w");
       ar[this->results_archive_path(iSweep) + "/results/Energy/mean/value"]
           << std::vector<double>(1, energy);
+    }
+  }
+
+  /** @brief Dumps the energy of each sweep */
+  void dumpEnergies() {
+    std::cout << "Dumping energies to the result file\n";
+    if (!rfile().empty()) {
+      storage::archive ar(rfile(), "w");
+      // Skip first energy, as it is the initial energy
+      ar["/summary/Energies"]
+          << std::vector<double>(energies_.begin() + 1, energies_.end());
     }
   }
 

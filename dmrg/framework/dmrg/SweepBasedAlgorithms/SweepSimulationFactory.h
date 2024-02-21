@@ -50,6 +50,7 @@ class SweepSimulationFactory {
   using MPSType = MPS<Matrix, SymmGroup>;
   using MPOType = MPO<Matrix, SymmGroup>;
   using ModelType = Model<Matrix, SymmGroup>;
+  using ValueType = typename MPSType::value_type::value_type;
 
  public:
   SweepSimulationFactory(
@@ -118,12 +119,14 @@ class SweepSimulationFactory {
   }
 
   /** @brief Runs a single sweep (back and forth) */
-  void runSingleSweep(int iSweep) {
+  ValueType runSingleSweep(int iSweep) {
+    ValueType energy;
     if (ssSimulator_) {
-      ssSimulator_->runSingleSweep(iSweep);
+      energy = ssSimulator_->runSingleSweep(iSweep);
     } else {
-      tsSimulator_->runSingleSweep(iSweep);
+      energy = tsSimulator_->runSingleSweep(iSweep);
     }
+    return energy;
   }
 
   /** @brief Retrieves simulation results */

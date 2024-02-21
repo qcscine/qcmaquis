@@ -60,6 +60,7 @@ class GenericSweepSimulation {
       SweepMPSUpdater<Matrix, SymmGroup, Storage, SweepType>;
   using BoundaryPropagatorType = BoundaryPropagator<Matrix, SymmGroup, Storage>;
   using SweepTraitClass = SweepOptimizationTypeTrait<SweepType>;
+  using ValueType = typename MPSTensorType::value_type;
 
   /** @brief Class constructor */
   GenericSweepSimulation(
@@ -79,7 +80,7 @@ class GenericSweepSimulation {
         simulationName_(std::move(simulationName)),
         model_(model),
         lattice_(lattice),
-        verbose_(verbose) {
+        verbose_(parms["verbose"] > 0) {
     mps_.normalize_right();
     nSweeps_ = parms_["nsweeps"];
     boundaryPropagator_ =
@@ -102,12 +103,13 @@ class GenericSweepSimulation {
   void runSweepSimulation() {
     // == LOOP OVER THE SWEEPS ==
     for (int iSweep = 0; iSweep < nSweeps_; iSweep++) {
-      this->runSingleSweep(iSweep);
+      auto energy = this->runSingleSweep(iSweep);
     }
   }
 
   /** @brief Runs a single sweep of a sweep-based optimization */
-  void runSingleSweep(int iSweep) {
+  ValueType runSingleSweep(int iSweep) {
+    ValueType sweep_energy;
     // Prints header
     if (iSweep == 0) {
       printGenericInfo();
@@ -184,7 +186,8 @@ class GenericSweepSimulation {
       }
       // == SOLUTION OF THE LOCAL PROBLEM ==
       this->prepareMicroiteration();
-      auto outputTensor = this->solveLocalProblem();
+      auto [energy, outputTensor] = this->solveLocalProblem();
+      sweep_energy = energy;
       // == MPS UPDATE ==
       auto boundaryGrowthModality =
           (sweepType == SweepDirectionType::Forward && !changeDirection)
@@ -237,6 +240,7 @@ class GenericSweepSimulation {
     maquis::cout << "[Sweep " << iSweep + 1 << " took " << std::setprecision(2)
                  << duriation_sweep.count() << std::setprecision(6) << " s]\n"
                  << std::endl;
+    return sweep_energy;
   }
 
   /** @brief Gets the container with the results of each iteration */
@@ -299,7 +303,7 @@ class GenericSweepSimulation {
   virtual void prepareMicroiteration() = 0;
 
   /** @brief Runs the actual sweep simulation */
-  virtual MPSTensorType solveLocalProblem() = 0;
+  virtual std::pair<ValueType, MPSTensorType> solveLocalProblem() = 0;
 
   /** @brief Whether the MPS should be normalized at the end of a sweep */
   virtual bool normalizeAtEnd() = 0;

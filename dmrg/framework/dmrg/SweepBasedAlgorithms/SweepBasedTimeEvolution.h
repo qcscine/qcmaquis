@@ -114,8 +114,8 @@ class SweepBasedTimeEvolution
   }
 
   /** @brief Propagation of the MPS for a given site */
-  MPSTensorType solveLocalProblem() final {
-    bool verbose = parms_["verbose"];
+  std::pair<ValueType, MPSTensorType> solveLocalProblem() final {
+    bool verbose = (parms_["verbose"] > 0);
     MPSTensorType mpsToPropagate = mpsContainer_.getMPSTensor(siteLeft_);
     timeEvolver_->evolve(
         *(siteProblem_.get()), mpsToPropagate, true, isTerminal()
@@ -140,7 +140,7 @@ class SweepBasedTimeEvolution
     }
     iterationResults_["Energy"] << resultOfLocalSiteProblem_.first;
     resultOfLocalSiteProblem_.second = mpsToPropagate;
-    return resultOfLocalSiteProblem_.second;
+    return resultOfLocalSiteProblem_;
     // // Loads the final results
     // auto energy = resultOfLocalSiteProblem_.first +
     // mpoContainer_.getMPO().getCoreEnergy(); maquis::cout <<

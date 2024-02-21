@@ -120,7 +120,7 @@ class SweepBasedLinearSystem
   }
 
   /** @brief Solution of the site-centered problem */
-  MPSTensorType solveLocalProblem() final {
+  std::pair<ValueType, MPSTensorType> solveLocalProblem() final {
     auto coreEnergy = maquis::real(mpoContainer_.getMPO().getCoreEnergy());
     auto& mpsToOptimize = mpsContainer_.getMPSTensor(siteLeft_);
     LinearSolverType ls(
@@ -132,7 +132,7 @@ class SweepBasedLinearSystem
     iterationResults_["Energy"] << energyInclCore;
     energyPerMicroIter_.push_back(energyInclCore);
     errorPerMicroIter_.push_back(std::get<1>(resultOfLocalSiteProblem));
-    return std::get<2>(resultOfLocalSiteProblem);
+    return {energyInclCore, std::get<2>(resultOfLocalSiteProblem)};
   }
 
   /** @brief Propagates the orthogonal vector */

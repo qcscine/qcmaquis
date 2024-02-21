@@ -109,7 +109,7 @@ class TwoSiteTimeEvolution
    * them.
    */
   void evolve_sweep(int sweep) {
-    bool verbose = parms_["verbose"];
+    bool verbose = (parms_["verbose"] > 1);
     // Initialization
     typename MPSTensor<Matrix, SymmGroup>::scalar_type dipole;
     std::chrono::high_resolution_clock::time_point sweep_now =

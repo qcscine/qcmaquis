@@ -65,8 +65,8 @@ class SweepBasedEnergyMinimization
       const ModelType& model, const Lattice& lattice, bool verbose
   )
       : Base(
-            mps, mpo, parms, model, lattice, verbose,
-            std::string("Optimization")
+            mps, mpo, parms, model, lattice, (parms["verbose"] > 0),
+            "Optimization"
         ),
         nOrtho_(0) {
     if (parms_.is_set("ortho_states") && parms_["ortho_states"] != "") {
@@ -115,7 +115,8 @@ class SweepBasedEnergyMinimization
   }
 
   /** @brief Solution of the site-centered problem */
-  MPSTensorType solveLocalProblem() final {
+  std::pair<ValueType, MPSTensorType> solveLocalProblem() final {
+    // Kalman: vebosity must be set to false ot avoid bug?
     bool verbose = (parms_["verbose"] > 0);
     double thresholdForCompleteness = 1.0E-10;
     auto& mpsToOptimize = mpsContainer_.getMPSTensor(siteLeft_);
@@ -143,7 +144,7 @@ class SweepBasedEnergyMinimization
                    << " Energy = " << std::setprecision(16) << energy << "  ";
     }
     iterationResults_["Energy"] << energy;
-    return resultOfLocalSiteProblem_.second;
+    return resultOfLocalSiteProblem_;
   }
 
   /** @brief Propagates the boundaries */
