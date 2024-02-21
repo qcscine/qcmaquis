@@ -1017,7 +1017,6 @@ parms["nsweeps"]) checkpoint_simulation(mps, sweep, -1); if (stopped) break;
 
   /** @brief Dumps the energy of each sweep */
   void dumpEnergies() {
-    std::cout << "Dumping energies to the result file\n";
     if (!rfile().empty()) {
       storage::archive ar(rfile(), "w");
       // Skip first energy, as it is the initial energy
