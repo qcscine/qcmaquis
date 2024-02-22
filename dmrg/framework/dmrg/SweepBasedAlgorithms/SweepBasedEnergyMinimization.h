@@ -116,7 +116,6 @@ class SweepBasedEnergyMinimization
 
   /** @brief Solution of the site-centered problem */
   std::pair<ValueType, MPSTensorType> solveLocalProblem() final {
-    // Kalman: vebosity must be set to false ot avoid bug?
     bool verbose = (parms_["verbose"] > 0);
     double thresholdForCompleteness = 1.0E-10;
     auto& mpsToOptimize = mpsContainer_.getMPSTensor(siteLeft_);
