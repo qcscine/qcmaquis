@@ -390,7 +390,7 @@ truncation_results svd_truncate(
 
   std::size_t bond_dimension = S.basis().sum_of_left_sizes();
   if (verbose) {
-    maquis::cout << "\n           SVD Bond Dim Truncation: "
+    maquis::cout << "            SVD Bond Dim Truncation: "
                  << old_basis.sum_of_sizes() << " -> " << bond_dimension
                  << std::endl;
   }

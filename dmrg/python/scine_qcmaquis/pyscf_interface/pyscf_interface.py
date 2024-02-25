@@ -203,6 +203,7 @@ class QcMaquis:
         self.dmrg.set_parameter("nsweeps", self.nsweeps)
         self.dmrg.set_parameter("truncation_initial", self.initial_truncation_thresh)
         self.dmrg.set_parameter("truncation_final", self.final_truncation_thresh)
+        self.dmrg.set_parameter("verbose", self.verbose)
 
     def kernel(self, h1e, eri, norb, nelec, ci0=None, ecore=0, **kwargs):
         """Kernel function for pyscf.

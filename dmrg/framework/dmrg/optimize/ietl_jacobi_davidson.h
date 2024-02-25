@@ -100,15 +100,13 @@ solve_ietl_jcd(
   std::chrono::duration<double, std::milli> duration_milisec = stop - start;
   if (verbose) {
     bool has_converged = iter.has_converged();
-    if (has_converged){
-      maquis::cout << " JD diagonalization converged after "
-        << iter.iterations() << " iterations."
-        << " [" << duration_milisec.count() << " ms]\n";
+    std::cout << "\n            ";
+    if (has_converged) {
+      maquis::cout << "JD conv";
     } else {
-      maquis::cout << " Warning: JD diagonalization did not converge after "
-        << iter.iterations() << " iterations."
-        << " [" << duration_milisec.count() << " ms]\n";
+      maquis::cout << "!Warn: JD NOT conv";
     }
+    std::cout << " in " << iter.iterations() << " iters.";
   }
   return r0;
 }

@@ -138,12 +138,8 @@ class SweepBasedEnergyMinimization
     // Loads the final results
     auto energy = resultOfLocalSiteProblem_.first +
                   mpoContainer_.getMPO().getCoreEnergy();
-    if (verbose) {
-      maquis::cout << std::setprecision(10)
-                   << " Energy = " << std::setprecision(16) << energy << "  ";
-    }
     iterationResults_["Energy"] << energy;
-    return resultOfLocalSiteProblem_;
+    return {energy, resultOfLocalSiteProblem_.second};
   }
 
   /** @brief Propagates the boundaries */

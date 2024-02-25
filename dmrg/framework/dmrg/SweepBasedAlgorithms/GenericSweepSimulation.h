@@ -225,7 +225,10 @@ class GenericSweepSimulation {
           stop - start
       );
       if (verbose_) {
-        maquis::cout << "           [Time: " << std::setprecision(2)
+        maquis::cout << std::setprecision(10)
+                     << "            Energy = " << std::setprecision(16)
+                     << energy << "  ";
+        maquis::cout << " [Time: " << std::defaultfloat << std::setprecision(2)
                      << duration.count() << std::defaultfloat << " s]\n";
       }
     }
