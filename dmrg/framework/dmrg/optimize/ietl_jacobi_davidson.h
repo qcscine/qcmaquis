@@ -106,7 +106,7 @@ solve_ietl_jcd(
     } else {
       maquis::cout << "!Warn: JD NOT conv";
     }
-    std::cout << " in " << iter.iterations() << " iters.";
+    std::cout << " in " << iter.iterations() << " iters.\n";
   }
   return r0;
 }
