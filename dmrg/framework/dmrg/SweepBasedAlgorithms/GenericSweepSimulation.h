@@ -240,7 +240,8 @@ class GenericSweepSimulation {
     this->finalizeSweep();
     printSweepEnergy();
     maquis::cout << "[Sweep " << iSweep + 1 << " took " << std::setprecision(2)
-                 << duriation_sweep.count() << std::setprecision(6) << " s]\n"
+                 << std::fixed << duriation_sweep.count() << std::defaultfloat
+                 << " s]\n"
                  << std::endl;
     return sweep_energy;
   }
