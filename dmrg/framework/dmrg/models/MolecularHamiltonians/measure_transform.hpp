@@ -30,19 +30,7 @@ struct measure_transform {
       BaseParameters const& measurement_parms = BaseParameters(),
       const std::string& rfile = "", const std::string& result_path = ""
   ) {
-    results_map_type ret;
-    BaseParameters parms_tmp(measurement_parms);
-    parms_tmp.set("lattice_library", "coded");
-    parms_tmp.set("LATTICE", "orbitals");
-    parms_tmp.set("model_library", "coded");
-    parms_tmp.set("MODEL", "quantum_chemistry");
-    Model<Matrix, SymmOut> model_tmp(lat, parms_tmp);
-    for (auto&& meas : model_tmp.measurements()) {
-      ret[meas.name()] =
-          measure_and_save<Matrix, SymmOut>(rfile, result_path, mps)
-              .meas_out(meas);
-    }
-    return ret;
+    return results_map_type();
   };
 };
 
@@ -98,11 +86,10 @@ struct measure_transform<
     std::tie(mps_tmp, transformed_measurements) =
         prepare_measurements(lat, mps, measurement_parms);
 
-    for (auto&& meas : transformed_measurements) {
+    for (auto&& meas : transformed_measurements)
       ret[meas.name()] =
           measure_and_save<Matrix, SymmOut>(rfile, result_path, mps_tmp)
               .meas_out(meas);
-    }
 
     return ret;
   }
