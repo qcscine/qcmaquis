@@ -237,7 +237,7 @@ parse_integrals(
           std::to_string(lat.size()) + ")\n"
       );
     }
-    if (nelec != parms["nelec"]) {
+    if (parms.is_set("nelec") && nelec != parms["nelec"]) {
       std::cout << "!! WARNING: The number of electrons in the FCIDUMP ("
                 << nelec << ") does not match the input file ("
                 << parms["nelec"] << ") !!\n";
