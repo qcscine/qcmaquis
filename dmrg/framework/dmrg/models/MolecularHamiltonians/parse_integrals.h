@@ -228,7 +228,7 @@ parse_integrals(
       );
     }
     orb_string = std::make_unique<std::ifstream>(integral_file.c_str());
-    bool has_header = (*orb_string >> std::ws).peek() == '&';
+    bool has_header = orb_string->peek() == '&';
     if (has_header) {
       auto [norb, nelec, ms2] = parse_header(*orb_string);
       if (norb != lat.size()) {
