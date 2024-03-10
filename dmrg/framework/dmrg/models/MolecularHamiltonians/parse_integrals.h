@@ -227,9 +227,9 @@ parse_integrals(
           "integral_file " + integral_file + " does not exist\n"
       );
     }
-    bool has_header = orb_string->peek() == '&';
+    orb_string = std::make_unique<std::ifstream>(integral_file.c_str());
+    bool has_header = (*orb_string >> std::ws).peek() == '&';
     if (has_header) {
-      orb_string = std::make_unique<std::ifstream>(integral_file.c_str());
       auto [norb, nelec, ms2] = parse_header(*orb_string);
       if (norb != lat.size()) {
         throw std::runtime_error(
