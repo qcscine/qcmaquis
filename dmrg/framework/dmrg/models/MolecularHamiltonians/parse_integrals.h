@@ -227,20 +227,23 @@ parse_integrals(
           "integral_file " + integral_file + " does not exist\n"
       );
     }
-    orb_string = std::make_unique<std::ifstream>(integral_file.c_str());
-    auto [norb, nelec, ms2] = parse_header(*orb_string);
-    if (norb != lat.size()) {
-      throw std::runtime_error(
-          "The number of orbitals in the FCIDUMP (" + std::to_string(norb) +
-          ") does not match the "
-          "input file (" +
-          std::to_string(lat.size()) + ")\n"
-      );
-    }
-    if (parms.is_set("nelec") && nelec != parms["nelec"]) {
-      std::cout << "!! WARNING: The number of electrons in the FCIDUMP ("
-                << nelec << ") does not match the input file ("
-                << parms["nelec"] << ") !!\n";
+    bool has_header = orb_string->peek() == '&';
+    if (has_header) {
+      orb_string = std::make_unique<std::ifstream>(integral_file.c_str());
+      auto [norb, nelec, ms2] = parse_header(*orb_string);
+      if (norb != lat.size()) {
+        throw std::runtime_error(
+            "The number of orbitals in the FCIDUMP (" + std::to_string(norb) +
+            ") does not match the "
+            "input file (" +
+            std::to_string(lat.size()) + ")\n"
+        );
+      }
+      if (parms.is_set("nelec") && nelec != parms["nelec"]) {
+        std::cout << "!! WARNING: The number of electrons in the FCIDUMP ("
+                  << nelec << ") does not match the input file ("
+                  << parms["nelec"] << ") !!\n";
+      }
     }
   }
   // Integrals provided as a binary file
