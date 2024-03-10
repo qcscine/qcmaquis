@@ -221,9 +221,10 @@ inline std::vector<std::string> label_strings(const std::vector<std::vector<Latt
 template <class T>
 inline std::vector<T> order_labels(const Lattice& lat, const std::vector<T> & labels)
 {
-    std::vector<T> ret(labels.size());
-    std::transform(labels.begin(), labels.end(), ret.begin(), [&](T i){return lat.get_prop<T>("label_int", i);});
-    return ret;
+    // std::vector<T> ret(labels.size());
+    // std::transform(labels.begin(), labels.end(), ret.begin(), [&](T i){return lat.get_prop<T>("label_int", i);});
+    // return ret;
+    return labels;
 }
 
 
