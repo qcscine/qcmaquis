@@ -256,7 +256,6 @@ class MaquisDmrg:
         self._parameters.set_system(n_orbitals, n_electrons, spin)
 
         if fiedler is True:
-
             # don't dump anything for fiedler
             try:
                 tmp_chkpfile = self._parameters.get_parameters_dict()["chkpfile"]
@@ -266,12 +265,13 @@ class MaquisDmrg:
                 tmp_result_file = self._parameters.get_parameters_dict()["resultfile"]
             except KeyError:
                 tmp_result_file = ""
-            self._parameters.erase("chkpfile")
-            self._parameters.erase("resultfile")
+
+            self._parameters.erase("chkpfile", verbose=False)
+            self._parameters.erase("resultfile", verbose=False)
 
             fiedler_orderer = DmrgWrapper()
             fiedler_orderer.set_parameters(self._parameters)
-            if "integral_file" not in self._parameters._parameter_dict:
+            if "integral_file" not in self._parameters.get_parameters_dict():
                 fiedler_orderer.set_integrals(self._integral_map)
             orbital_order = fiedler_orderer.get_fiedler()
             self._parameters.set("orbital_order", orbital_order)
@@ -288,11 +288,11 @@ class MaquisDmrg:
 
         self._dmrg.set_parameters(self._parameters)
 
-        if "integral_file" not in self._parameters._parameter_dict:
+        if "integral_file" not in self._parameters.get_parameters_dict():
             self._dmrg.set_integrals(self._integral_map)
 
-        for i in self._parameters._parameter_dict:
-            print(i, self._parameters._parameter_dict[i])
+        for i in self._parameters.get_parameters_dict():
+            print(i, self._parameters.get_parameters_dict()[i])
 
         self._dmrg.run()
         # excited states
@@ -302,7 +302,7 @@ class MaquisDmrg:
                 self._parameters.set_system(n_orbitals, n_electrons, spin)
                 self._parameters.set_excited_states_ortho(i)
                 self._dmrg.set_parameters(self._parameters)
-                if "integral_file" not in self._parameters._parameter_dict:
+                if "integral_file" not in self._parameters.get_parameters_dict():
                     self._dmrg.set_integrals(self._integral_map)
                 self._dmrg.run()
                 self._energy.append(self._dmrg.get_energy())

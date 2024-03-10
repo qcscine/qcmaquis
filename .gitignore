@@ -2,7 +2,7 @@
 *.pyc*
 *.swp*
 .vscode/
-build*/
+*build*/
 my*
 .vscode
 **check*

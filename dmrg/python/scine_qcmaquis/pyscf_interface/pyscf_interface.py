@@ -108,20 +108,20 @@ class QcMaquis:
 
     def dump_flags(self, verbose=None):
         """Log settings for pyscf logger."""
-        self.log = pyscf.lib.logger.new_logger(self, verbose)
-        self.log.info('************** QcMaquis flags **************')
-        self.log.info('method           = %s', str(self.method))
-        self.log.info('energy_threshold = %s', str(self.energy_threshold))
-        self.log.info('n sweeps         = %s', str(self.nsweeps))
-        self.log.info('bond dimension   = %s', str(self.bond_dim))
-        self.log.info('fiedler ordering = %s', str(self.fiedler))
-        self.log.info('entropies        = %s', str(self.measure_entropies))
-        if self.file_path:
-            self.log.info('checkpoint path  = %s', str(self.file_path))
-            self.log.info('checkpoint name  = %s', str(self.checkpoint_name))
-            self.log.info('results name     = %s', str(self.results_name))
-        else:
-            self.log.info('skipping checkpoints')
+        # self.log = pyscf.lib.logger.new_logger(self, verbose)
+        # self.log.info('************** QcMaquis flags **************')
+        # self.log.info('method           = %s', str(self.method))
+        # self.log.info('energy_threshold = %s', str(self.energy_threshold))
+        # self.log.info('n sweeps         = %s', str(self.nsweeps))
+        # self.log.info('bond dimension   = %s', str(self.bond_dim))
+        # self.log.info('fiedler ordering = %s', str(self.fiedler))
+        # self.log.info('entropies        = %s', str(self.measure_entropies))
+        # if self.file_path:
+        #     self.log.info('checkpoint path  = %s', str(self.file_path))
+        #     self.log.info('checkpoint name  = %s', str(self.checkpoint_name))
+        #     self.log.info('results name     = %s', str(self.results_name))
+        # else:
+        #     self.log.info('skipping checkpoints')
 
     def _get_rdm2(self, norb):
         """Getter for 2 rdm.

@@ -678,7 +678,7 @@ public:
     parms.erase_measurements();
 
     if (!hf_occupations.empty()) {
-      assert(hf_occupations.size() == nstates);
+      assert(hf_occupations.size() == n_states);
     }
 
     if (parms.is_set("orbital_order")) {
