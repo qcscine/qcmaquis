@@ -115,19 +115,22 @@ class SweepBasedEnergyMinimization
   }
 
   /** @brief Solution of the site-centered problem */
-  MPSTensorType solveLocalProblem() final {
+  std::pair<ValueType, MPSTensorType> solveLocalProblem() final {
     bool verbose = (parms_["verbose"] > 0);
+    double thresholdForCompleteness = 1.0E-10;
     auto& mpsToOptimize = mpsContainer_.getMPSTensor(siteLeft_);
     if (parms_["eigensolver"] == std::string("IETL")) {
       resultOfLocalSiteProblem_ =
           solve_ietl_lanczos(*(siteProblem_.get()), mpsToOptimize, parms_);
     } else if (parms_["eigensolver"] == std::string("IETL_JCD")) {
       resultOfLocalSiteProblem_ = solve_ietl_jcd(
-          *(siteProblem_.get()), mpsToOptimize, parms_, orthoLocal_, verbose
+          *(siteProblem_.get()), mpsToOptimize, parms_, orthoLocal_,
+          thresholdForCompleteness, verbose
       );
     } else if (parms_["eigensolver"] == std::string("IETL_DAVIDSON")) {
       resultOfLocalSiteProblem_ = solve_ietl_jcd(
-          *(siteProblem_.get()), mpsToOptimize, parms_, orthoLocal_, verbose
+          *(siteProblem_.get()), mpsToOptimize, parms_, orthoLocal_,
+          thresholdForCompleteness, verbose
       );
     } else {
       throw std::runtime_error("I don't know this eigensolver.");
@@ -140,7 +143,7 @@ class SweepBasedEnergyMinimization
                    << " Energy = " << std::setprecision(16) << energy << "  ";
     }
     iterationResults_["Energy"] << energy;
-    return resultOfLocalSiteProblem_.second;
+    return resultOfLocalSiteProblem_;
   }
 
   /** @brief Propagates the boundaries */
