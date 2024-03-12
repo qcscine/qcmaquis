@@ -115,7 +115,7 @@ class SweepBasedEnergyMinimization
   }
 
   /** @brief Solution of the site-centered problem */
-  std::pair<ValueType, MPSTensorType> solveLocalProblem() final {
+  MPSTensorType solveLocalProblem() final {
     bool verbose = (parms_["verbose"] > 0);
     double thresholdForCompleteness = 1.0E-10;
     auto& mpsToOptimize = mpsContainer_.getMPSTensor(siteLeft_);
@@ -143,7 +143,7 @@ class SweepBasedEnergyMinimization
                    << " Energy = " << std::setprecision(16) << energy << "  ";
     }
     iterationResults_["Energy"] << energy;
-    return resultOfLocalSiteProblem_;
+    return resultOfLocalSiteProblem_.second;
   }
 
   /** @brief Propagates the boundaries */
