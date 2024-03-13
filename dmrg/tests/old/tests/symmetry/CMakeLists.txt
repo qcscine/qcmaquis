@@ -1,4 +1,3 @@
-
 set(DMRG_APP_LIBRARIES dmrg_utils dmrg_models ${DMRG_LIBRARIES})
 
 add_executable(symmetry_u1 symmetry_u1.cpp)

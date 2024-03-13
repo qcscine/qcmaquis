@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.16.3)
 
-######################################################################
+# ##############################################################################
 # Machine Config
-######################################################################
+# ##############################################################################
 if(MACHINE_CONFIG)
   if(EXISTS ${MACHINE_CONFIG})
     message(STATUS "Loading config in " ${MACHINE_CONFIG})
@@ -13,21 +13,21 @@ if(MACHINE_CONFIG)
 endif(MACHINE_CONFIG)
 
 if(NOT DEFAULT_BLAS_LAPACK)
-    set(DEFAULT_BLAS_LAPACK auto)
+  set(DEFAULT_BLAS_LAPACK auto)
 endif(NOT DEFAULT_BLAS_LAPACK)
 
-######################################################################
+# ##############################################################################
 # Project START
-######################################################################
-project (MAQUIS_DMRG)
+# ##############################################################################
+project(MAQUIS_DMRG)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
-# set proper rpath for installed binaries
-# @stknecht: make sure this works also for OS X with MACOS_RPATH
+# set proper rpath for installed binaries @stknecht: make sure this works also
+# for OS X with MACOS_RPATH
 set(CMAKE_INSTALL_RPATH "\$ORIGIN/../lib:${CMAKE_INSTALL_PREFIX}/lib")
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
@@ -42,21 +42,27 @@ endif()
 
 find_program(MOLD_PROGRAM mold)
 if(MOLD_PROGRAM)
-  if ((CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-       OR (CMAKE_CXX_COMPILER_ID MATCHES "GNU"
-           AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 12))
-  message(STATUS "Found mold linker in ${MOLD_PROGRAM}")
-  add_link_options(-fuse-ld=mold)
+  if((CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+     OR (CMAKE_CXX_COMPILER_ID MATCHES "GNU" AND CMAKE_CXX_COMPILER_VERSION
+                                                 VERSION_GREATER_EQUAL 12))
+    message(STATUS "Found mold linker in ${MOLD_PROGRAM}")
+    add_link_options(-fuse-ld=mold)
   endif()
 endif()
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  set(CMAKE_INSTALL_PREFIX "/opt/maquis" CACHE PATH "MAQUIS install prefix" FORCE)
+  set(CMAKE_INSTALL_PREFIX
+      "/opt/maquis"
+      CACHE PATH "MAQUIS install prefix" FORCE)
 endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
-set (ALPS_SOURCE_DIR "alps")
+set(ALPS_SOURCE_DIR "alps")
 
-set(BUILD_SYMMETRIES "TwoU1PG;SU2U1PG" CACHE STRING "List of symmetries to include in the build objects. \
+set(BUILD_SYMMETRIES
+    "TwoU1PG;SU2U1PG"
+    CACHE
+      STRING
+      "List of symmetries to include in the build objects. \
 U1, TwoU1, TwoU1PG, NU1, Z2, SU2U1, SU2U1PG, U1DG and NONE are currently available. \
 TwoU1PG and SU2U1PG are built in any case.")
 option(ENABLE_OMP "Enable OpenMP" ON)
@@ -64,31 +70,59 @@ option(ENABLE_OMP "Enable OpenMP" ON)
 option(LAPACK_64_BIT "Build for 64-bit LAPACK library" ON)
 
 # Flags for vibrational calculations
-set(DMRG_NUMSYMM 6 CACHE STRING "Number of U1 symmetries for NU1 calculations.")
-set(DMRG_ORDERNONE 6 CACHE STRING "Maximum order of integral terms for NONE symmetry.")
+set(DMRG_NUMSYMM
+    6
+    CACHE STRING "Number of U1 symmetries for NU1 calculations.")
+set(DMRG_ORDERNONE
+    6
+    CACHE STRING "Maximum order of integral terms for NONE symmetry.")
 add_definitions(-DORDER_NONE=${DMRG_ORDERNONE})
 add_definitions(-DDMRG_NUMSYMM=${DMRG_NUMSYMM})
-# The upper bound for NU1 symmetry is DMRG_NUMSYMM+1 (BOOST does not include in the macro the upper bound)
+# The upper bound for NU1 symmetry is DMRG_NUMSYMM+1 (BOOST does not include in
+# the macro the upper bound)
 math(EXPR DMRG_UPPER_BOUND "${DMRG_NUMSYMM}+1")
 
 # DMRG-related flags
-option (BUILD_INIT "Build dmrg_init binary (deprecated)" OFF)
-option (BUILD_CIDEAS "Build CIDEAS binary (deprecated)" OFF)
-option (BUILD_GUTZWILLER "Build a tool for applying a Gutzwiller correlator onto the wave function" OFF)
-option (BUILD_MPS_ROTATE "Build mps_rotate binary for RASSI counterrotation (deprecated)" OFF)
-option (BUILD_MPS_COMPRESS "Build mps_compress binary for MPS compression (not working currently)" OFF)
-option (BUILD_MPS_OVERLAP "Build MPS Overlap calculator" OFF)
-option (BUILD_ONETDM_DIAG "Build 1-TDM diagonal elements calculator (deprecated by dmrg_meas and the binary interface)" OFF)
-option (BUILD_MPS2CI "Build CI coefficient reconstruction facilities" OFF)
-option (BUILD_SRCAS "Build SRCAS tool for vibrational and/or electronic symmetries" OFF)
-option (BUILD_DEAS "Build s1 and I printer tool" OFF)
-option (BUILD_MPS_TRANSFORM "Build MPS SU2->2U1 symmetry group transformation tool" OFF)
-option (BUILD_DMRG_EVOLVE "Build the time-evolution DMRG module" OFF)
-option (BUILD_DMRG_FEAST "Build the application for DMRG[FEAST] calculations" OFF)
-option (BUILD_PREBO "Build PreBO model" OFF)
-option (BUILD_TRANSCORRELATED_DMRG "Build the application for tcDMRG calculations" OFF)
-option (BUILD_VIBRATIONAL "Build the vDMRG code" OFF)
-option (BUILD_VIBRONIC "Activates the support for vibronic Hamiltonians" OFF)
+option(BUILD_INIT "Build dmrg_init binary (deprecated)" OFF)
+option(BUILD_CIDEAS "Build CIDEAS binary (deprecated)" OFF)
+option(
+  BUILD_GUTZWILLER
+  "Build a tool for applying a Gutzwiller correlator onto the wave function"
+  OFF)
+option(BUILD_MPS_ROTATE
+       "Build mps_rotate binary for RASSI counterrotation (deprecated)" OFF)
+option(BUILD_MPS_COMPRESS
+       "Build mps_compress binary for MPS compression (not working currently)"
+       OFF)
+option(BUILD_MPS_OVERLAP "Build MPS Overlap calculator" OFF)
+option(
+  BUILD_ONETDM_DIAG
+  "Build 1-TDM diagonal elements calculator (deprecated by dmrg_meas and the binary interface)"
+  OFF)
+option(BUILD_MPS2CI "Build CI coefficient reconstruction facilities" OFF)
+option(BUILD_SRCAS
+       "Build SRCAS tool for vibrational and/or electronic symmetries" OFF)
+option(BUILD_DEAS "Build s1 and I printer tool" OFF)
+option(BUILD_MPS_TRANSFORM
+       "Build MPS SU2->2U1 symmetry group transformation tool" OFF)
+option(BUILD_DMRG_EVOLVE "Build the time-evolution DMRG module" OFF)
+option(BUILD_DMRG_FEAST "Build the application for DMRG[FEAST] calculations"
+       OFF)
+option(BUILD_PREBO "Build PreBO model" OFF)
+option(BUILD_TRANSCORRELATED_DMRG
+       "Build the application for tcDMRG calculations" OFF)
+option(BUILD_VIBRATIONAL "Build the vDMRG code" OFF)
+option(BUILD_VIBRONIC "Activates the support for vibronic Hamiltonians" OFF)
+
+# tcDMRG
+if(BUILD_TRANSCORRELATED_DMRG)
+  if(NOT BUILD_DMRG_EVOLVE)
+    message(STATUS "Enabling time-evolution DMRG for tcDMRG")
+    set(BUILD_DMRG_EVOLVE ON)
+  endif()
+  list(APPEND DMRG_DEFINITIONS -DDMRG_TRANSCORRELATED)
+  set(DMRG_TRANSCORRELATED TRUE)
+endif(BUILD_TRANSCORRELATED_DMRG)
 
 # Time-evolution TD-DMRG
 if(BUILD_DMRG_EVOLVE)
@@ -102,85 +136,100 @@ if(BUILD_DMRG_FEAST)
   set(DMRG_FEAST TRUE)
 endif(BUILD_DMRG_FEAST)
 
-# tcDMRG
-if(BUILD_TRANSCORRELATED_DMRG)
-  if (NOT BUILD_DMRG_EVOLVE)
-    message(FATAL_ERROR "The [BUILD_DMRG_EVOLVE] flag should be set to ON in order to compile the tcDMRG code")
-  endif()
-  list(APPEND DMRG_DEFINITIONS -DDMRG_TRANSCORRELATED)
-  set(DMRG_TRANSCORRELATED TRUE)
-endif(BUILD_TRANSCORRELATED_DMRG)
-
-option (ENABLE_COLLECTOR "Enable profiling through DataCollector object" OFF)
+option(ENABLE_COLLECTOR "Enable profiling through DataCollector object" OFF)
 mark_as_advanced(ENABLE_COLLECTOR)
 
-option (BUILD_MANUAL "Enable pdf manual building. Requires pdflatex" OFF)
-set(BENCHMARKS_DIR "../../benchmarks" CACHE PATH "Location of benchmarks directory.")
+option(BUILD_MANUAL "Enable pdf manual building. Requires pdflatex" OFF)
+set(BENCHMARKS_DIR
+    "../../benchmarks"
+    CACHE PATH "Location of benchmarks directory.")
 option(QCMAQUIS_TESTS "Build and run tests" OFF)
 
 # OpenMOLCAS interface
-option (BUILD_OPENMOLCAS_INTERFACE "Build OpenMOLCAS interface" OFF)
-if (BUILD_OPENMOLCAS_INTERFACE)
-    include(CMakeDependentOption)
-    cmake_dependent_option(BUILD_OPENMOLCAS_MPI "Build with OpenMOLCAS MPI support" OFF "BUILD_OPENMOLCAS_INTERFACE" OFF)
-    mark_as_advanced(BUILD_OPENMOLCAS_MPI)
-    if (BUILD_OPENMOLCAS_MPI)
-        if (NOT GA_INCLUDE_DIR)
-            message(FATAL_ERROR "Compilation with OpenMOLCAS MPI support requires Global Arrays include directory")
-        endif ()
-        # if (NOT MPI_LIBRARIES)
-        #     message(FATAL_ERROR "Compilation with OpenMOLCAS MPI support requires specifying MPI libraries")
-        # endif ()
-        if (NOT GA_LIBRARIES)
-            message(FATAL_ERROR "Compilation with OpenMOLCAS MPI support requires specifying Global Arrays libraries")
-        endif ()
+option(BUILD_OPENMOLCAS_INTERFACE "Build OpenMOLCAS interface" OFF)
+if(BUILD_OPENMOLCAS_INTERFACE)
+  include(CMakeDependentOption)
+  cmake_dependent_option(
+    BUILD_OPENMOLCAS_MPI "Build with OpenMOLCAS MPI support" OFF
+    "BUILD_OPENMOLCAS_INTERFACE" OFF)
+  mark_as_advanced(BUILD_OPENMOLCAS_MPI)
+  if(BUILD_OPENMOLCAS_MPI)
+    if(NOT GA_INCLUDE_DIR)
+      message(
+        FATAL_ERROR
+          "Compilation with OpenMOLCAS MPI support requires Global Arrays include directory"
+      )
     endif()
+    # if (NOT MPI_LIBRARIES) message(FATAL_ERROR "Compilation with OpenMOLCAS
+    # MPI support requires specifying MPI libraries") endif ()
+    if(NOT GA_LIBRARIES)
+      message(
+        FATAL_ERROR
+          "Compilation with OpenMOLCAS MPI support requires specifying Global Arrays libraries"
+      )
+    endif()
+  endif()
 endif()
 
-set(BLAS_LAPACK_SELECTOR "auto" CACHE STRING "Linear algebra library selector")
-set_property(CACHE BLAS_LAPACK_SELECTOR PROPERTY STRINGS auto manual mkl_sequential mkl_parallel veclib openblas)
+set(BLAS_LAPACK_SELECTOR
+    "auto"
+    CACHE STRING "Linear algebra library selector")
+set_property(
+  CACHE BLAS_LAPACK_SELECTOR
+  PROPERTY STRINGS
+           auto
+           manual
+           mkl_sequential
+           mkl_parallel
+           veclib
+           openblas)
 include(BlasLapack)
 
 # QCMaquis manual
-if (BUILD_MANUAL)
-    find_package(LATEX)
-    set (DOC_INSTALL_PATH ${CMAKE_INSTALL_PREFIX}/share/doc/qcmaquis CACHE PATH "QCMaquis documentation path" )
-    add_subdirectory(doc)
+if(BUILD_MANUAL)
+  find_package(LATEX)
+  set(DOC_INSTALL_PATH
+      ${CMAKE_INSTALL_PREFIX}/share/doc/qcmaquis
+      CACHE PATH "QCMaquis documentation path")
+  add_subdirectory(doc)
 endif()
 
-######################################################################
+# ##############################################################################
 # How to build
-######################################################################
+# ##############################################################################
 
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-    include("cmake/clang_fixes.cmake")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+  include("cmake/clang_fixes.cmake")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 endif(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
 
 # Set a default build type if none was specified
 set(default_build_type "Release")
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-    message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
-    set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
-            STRING "Choose the type of build." FORCE)
+  message(
+    STATUS
+      "Setting build type to '${default_build_type}' as none was specified.")
+  set(CMAKE_BUILD_TYPE
+      "${default_build_type}"
+      CACHE STRING "Choose the type of build." FORCE)
 endif()
 
-if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
-  # message(STATUS "Debug build: Adding Address Sanitizer")
-  # message(STATUS "Debug warnings = ${COMPILER_WARNING_FLAGS}")
-  # add_compile_options(-g3 -fsanitize=address,leak,undefined)
-  # add_link_options(-g3 -fsanitize=address,leak,undefined)
+if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
+  # message(STATUS "Debug build: Adding Address Sanitizer") message(STATUS
+  # "Debug warnings = ${COMPILER_WARNING_FLAGS}") add_compile_options(-g3
+  # -fsanitize=address,leak,undefined) add_link_options(-g3
+  # -fsanitize=address,leak,undefined)
 endif()
-######################################################################
+# ##############################################################################
 # Symmetries management
-######################################################################
+# ##############################################################################
 
 macro(get_symm_suffix RET SYMM)
   set(${RET} ${SYMM})
   string(REGEX REPLACE "^U1$" "u1" ${RET} ${${RET}})
   string(REGEX REPLACE "^TWOU1$" "2u1" ${RET} ${${RET}})
   string(REGEX REPLACE "^TwoU1$" "2u1" ${RET} ${${RET}})
-  string(REGEX REPLACE "^NU1$"  "nu1" ${RET} ${${RET}})
+  string(REGEX REPLACE "^NU1$" "nu1" ${RET} ${${RET}})
   string(REGEX REPLACE "^TWOU1PG$" "2u1pg" ${RET} ${${RET}})
   string(REGEX REPLACE "^TwoU1PG$" "2u1pg" ${RET} ${${RET}})
   string(REGEX REPLACE "^NONE$" "none" ${RET} ${${RET}})
@@ -195,7 +244,7 @@ macro(get_symm_group_name RET SYMM)
   string(REGEX REPLACE "^U1$" "U1" ${RET} ${${RET}})
   string(REGEX REPLACE "^TWOU1$" "TwoU1" ${RET} ${${RET}})
   string(REGEX REPLACE "^TwoU1$" "TwoU1" ${RET} ${${RET}})
-  string(REGEX REPLACE "^NU1$"  "NU1" ${RET} ${${RET}})
+  string(REGEX REPLACE "^NU1$" "NU1" ${RET} ${${RET}})
   string(REGEX REPLACE "^TWOU1PG$" "TwoU1PG" ${RET} ${${RET}})
   string(REGEX REPLACE "^TwoU1PG$" "TwoU1PG" ${RET} ${${RET}})
   string(REGEX REPLACE "^NONE$" "TrivialGroup" ${RET} ${${RET}})
@@ -219,7 +268,7 @@ endmacro(get_symm_files)
 # Note that here we assume that NU1 is managed with a special treatment
 macro(configure_symm_file INPUT OUTBASE VARNAME)
   foreach(SYMM ${BUILD_SYMMETRIES})
-    if (NOT "${SYMM}" STREQUAL "NU1")
+    if(NOT "${SYMM}" STREQUAL "NU1")
       get_symm_suffix(SYMM_SUFFIX ${SYMM})
       get_symm_group_name(${VARNAME} ${SYMM})
       string(REPLACE "{SYMM}" ${SYMM_SUFFIX} SYMM_FILE ${OUTBASE})
@@ -228,7 +277,8 @@ macro(configure_symm_file INPUT OUTBASE VARNAME)
   endforeach(SYMM)
 endmacro(configure_symm_file)
 
-# Adding symmetries definitions, TwoU1PG and SU2U1PG are needed in any case for smooth compilation/testing
+# Adding symmetries definitions, TwoU1PG and SU2U1PG are needed in any case for
+# smooth compilation/testing
 list(APPEND BUILD_SYMMETRIES "TwoU1PG" "SU2U1PG")
 foreach(SYMM ${BUILD_SYMMETRIES})
   get_symm_group_name(SYMM_NAME ${SYMM})
@@ -251,12 +301,15 @@ endif()
 # Vibrational-specific flag
 if((BUILD_VIBRATIONAL))
   if((NOT DMRG_HAS_NU1) AND (NOT DMRG_HAS_TrivialGroup))
-    message(FATAL_ERROR "At least one between the NONE and NU1 symmetries should be activated for vibrational calculations")
+    message(
+      FATAL_ERROR
+        "At least one between the NONE and NU1 symmetries should be activated for vibrational calculations"
+    )
   else()
     list(APPEND DMRG_DEFINITIONS -DDMRG_VIBRATIONAL)
     set(DMRG_VIBRATIONAL TRUE)
   endif()
-  if (DMRG_VIBRATIONAL AND DMRG_HAS_TrivialGroup)
+  if(DMRG_VIBRATIONAL AND DMRG_HAS_TrivialGroup)
     message(STATUS "vDMRG ORDERNONE is: ${DMRG_ORDERNONE}")
   endif()
   if(DMRG_VIBRATIONAL AND DMRG_HAS_NU1)
@@ -271,24 +324,22 @@ endif()
 
 # Vibronic-specific flag
 if(BUILD_VIBRONIC)
-  if (NOT DMRG_HAS_U1)
-    message(FATAL_ERROR "U1 symmetry should be activated for vibronic calculations")
+  if(NOT DMRG_HAS_U1)
+    message(
+      FATAL_ERROR "U1 symmetry should be activated for vibronic calculations")
   else()
     list(APPEND DMRG_DEFINITIONS -DDMRG_VIBRONIC)
     set(DMRG_VIBRONIC TRUE)
   endif()
 endif(BUILD_VIBRONIC)
 
-##### Dependencies #####
-# GSL
-# find GNU Scientific Library if using SU2 Groups
+# Dependencies ##### GSL find GNU Scientific Library if using SU2 Groups
 if((DMRG_HAS_SU2U1) OR (DMRG_HAS_SU2U1PG))
   find_package(GSL REQUIRED)
   list(APPEND DMRG_LIBRARIES ${GSL_LIBRARIES})
 endif()
 
-# BLAS/LAPACK selector
-# find_package(MAQUISLapack)
+# BLAS/LAPACK selector find_package(MAQUISLapack)
 set(MAQUISLapack_LIBRARIES ${LAPACK_LIBRARIES})
 message(STATUS "Lapack include:  ${MAQUISLapack_INCLUDE_DIRS}")
 message(STATUS "Lapack lib dirs: ${MAQUISLapack_LIB_DIRS}")
@@ -312,18 +363,20 @@ set(Boost_NO_BOOST_CMAKE ON)
 
 find_package(Boost 1.56 COMPONENTS ${Boost_requirements})
 if(Boost_FOUND)
-    include_directories(SYSTEM ${Boost_INCLUDE_DIRS}) # Silence warning coming from boost headers
-    list(APPEND DMRG_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
-    list(APPEND DMRG_LIBRARY_DIRS ${Boost_LIBRARY_DIRS})
-    list(APPEND DMRG_LIBRARIES ${Boost_LIBRARIES})
-    if(${Boost_MINOR_VERSION} VERSION_LESS 60)
-        add_definitions(-DLEGACY_BOOST)
-    endif()
-    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION GREATER 9)
-      add_definitions(-DBOOST_BIND_GLOBAL_PLACEHOLDERS)
-    endif()
+  include_directories(SYSTEM ${Boost_INCLUDE_DIRS}) # Silence warning coming
+                                                    # from boost headers
+  list(APPEND DMRG_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
+  list(APPEND DMRG_LIBRARY_DIRS ${Boost_LIBRARY_DIRS})
+  list(APPEND DMRG_LIBRARIES ${Boost_LIBRARIES})
+  if(${Boost_MINOR_VERSION} VERSION_LESS 60)
+    add_definitions(-DLEGACY_BOOST)
+  endif()
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION
+                                              GREATER 9)
+    add_definitions(-DBOOST_BIND_GLOBAL_PLACEHOLDERS)
+  endif()
 else(Boost_FOUND)
-    message(FATAL_ERROR "Boost libraries are required for QCMaquis")
+  message(FATAL_ERROR "Boost libraries are required for QCMaquis")
 endif(Boost_FOUND)
 
 # ALPS
@@ -331,58 +384,59 @@ add_subdirectory(${ALPS_SOURCE_DIR})
 list(APPEND DMRG_LIBRARIES alps)
 
 # Add warning flags
-if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
   message(STATUS "Adding CLANG warning flags")
   set(COMPILER_WARNING_FLAGS
-    -Wall -Wextra
-    -Wno-unused-variable
-    -Wno-unused-parameter
-    -Wno-unused-local-typedef
-    -Wno-return-type-c-linkage      # boost ublas bug
-    -Wno-sign-compare               # TODO: These should be fixed
-    -Wno-reorder-ctor               # TODO: This as well
-    )
-elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+      -Wall
+      -Wextra
+      -Wno-unused-variable
+      -Wno-unused-parameter
+      -Wno-unused-local-typedef
+      -Wno-return-type-c-linkage # boost ublas bug
+      -Wno-sign-compare # TODO: These should be fixed
+      -Wno-reorder-ctor # TODO: This as well
+  )
+elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
   message(STATUS "Adding GNU warning flags")
   set(COMPILER_WARNING_FLAGS
-    -Wall -Wextra
-    -Wno-int-in-bool-context        # TODO: This should also be fixed
-    -Wno-unused-variable
-    -Wno-unused-but-set-variable
-    -Wno-unused-parameter
-    -Wno-unused-local-typedefs
-    -Wno-sign-compare               # TODO: These should be fixed
-    -Wno-deprecated-copy            # TODO: Fix this as well
-    -Wno-reorder                    # TODO: This as well
-    -Wno-maybe-uninitialized        # TODO: This as well
-    -Wno-switch                     # TODO: This as well
-    )
+      -Wall
+      -Wextra
+      -Wno-int-in-bool-context # TODO: This should also be fixed
+      -Wno-unused-variable
+      -Wno-unused-but-set-variable
+      -Wno-unused-parameter
+      -Wno-unused-local-typedefs
+      -Wno-sign-compare # TODO: These should be fixed
+      -Wno-deprecated-copy # TODO: Fix this as well
+      -Wno-reorder # TODO: This as well
+      -Wno-maybe-uninitialized # TODO: This as well
+      -Wno-switch # TODO: This as well
+  )
 endif()
 add_compile_options(${COMPILER_WARNING_FLAGS})
 add_link_options(${COMPILER_WARNING_FLAGS})
 
-
 # Eigen
 find_package(Eigen3 3.2 NO_MODULE)
-if (NOT TARGET Eigen3::Eigen)
-    find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+if(NOT TARGET Eigen3::Eigen)
+  find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 endif(NOT TARGET Eigen3::Eigen)
-if (TARGET Eigen3::Eigen)
-    include_directories(${EIGEN3_INCLUDE_DIR})
-    MESSAGE(STATUS "EIGEN include path: " ${EIGEN3_INCLUDE_DIR})
+if(TARGET Eigen3::Eigen)
+  include_directories(${EIGEN3_INCLUDE_DIR})
+  message(STATUS "EIGEN include path: " ${EIGEN3_INCLUDE_DIR})
 else(TARGET Eigen3::Eigen)
-    message(FATAL_ERROR "Eigen3 not found! Required for compilation of QCMaquis.")
-endif (TARGET Eigen3::Eigen)
+  message(FATAL_ERROR "Eigen3 not found! Required for compilation of QCMaquis.")
+endif(TARGET Eigen3::Eigen)
 
 # OpenMolcas interface
-if (BUILD_OPENMOLCAS_INTERFACE)
-    project (MAQUIS_DMRG CXX C Fortran)
-    add_subdirectory(lib/interfaces/openmolcas)
+if(BUILD_OPENMOLCAS_INTERFACE)
+  project(MAQUIS_DMRG CXX C Fortran)
+  add_subdirectory(lib/interfaces/openmolcas)
 endif()
 
-######################################################################
+# ##############################################################################
 # Version information
-######################################################################
+# ##############################################################################
 set(DMRG_YEAR 2023)
 set(DMRG_VERSION_MAJOR 3)
 set(DMRG_VERSION_MINOR 1)
@@ -390,69 +444,69 @@ set(DMRG_VERSION_PATCH 3)
 set(DMRG_VERSION_BUILD "")
 
 if(NOT DMRG_VERSION_BUILD AND EXISTS ${PROJECT_SOURCE_DIR}/.svn)
-  FIND_PACKAGE(Subversion)
-  IF(Subversion_FOUND)
+  find_package(Subversion)
+  if(Subversion_FOUND)
     Subversion_WC_INFO(${PROJECT_SOURCE_DIR} DMRG)
     string(REPLACE ${DMRG_WC_ROOT} "" DMRG_BRANCH ${DMRG_WC_URL})
     set(DMRG_VERSION_BUILD "r${DMRG_WC_REVISION} (${DMRG_BRANCH})")
-  ENDIF(Subversion_FOUND)
+  endif(Subversion_FOUND)
 endif(NOT DMRG_VERSION_BUILD AND EXISTS ${PROJECT_SOURCE_DIR}/.svn)
 
 if(EXISTS ${PROJECT_SOURCE_DIR}/../.git)
-    find_package(Git)
-    if(GIT_FOUND)
-        execute_process(
-            COMMAND ${GIT_EXECUTABLE} rev-list --max-count=1 HEAD
-            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-            OUTPUT_VARIABLE GIT_REVISION
-            ERROR_QUIET
-            )
-        if(NOT ${GIT_REVISION} STREQUAL "")
-            string(STRIP ${GIT_REVISION} GIT_REVISION)
-        endif()
-
-        execute_process(
-            COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
-            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-            OUTPUT_VARIABLE GIT_BRANCH
-            ERROR_QUIET
-            )
-        if(NOT ${GIT_BRANCH} STREQUAL "")
-            string(STRIP ${GIT_BRANCH} GIT_BRANCH)
-        endif()
-
-        execute_process(
-            COMMAND ${GIT_EXECUTABLE} describe --abbrev=0 --tags
-            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-            OUTPUT_VARIABLE SVN_REV
-            ERROR_QUIET
-            )
-
-        if(NOT ${SVN_REV} STREQUAL "")
-            string(STRIP ${SVN_REV} SVN_REV)
-        endif()
-
-        set(DMRG_VERSION_BUILD "${GIT_REVISION} (${GIT_BRANCH}) ${SVN_REV}")
+  find_package(Git)
+  if(GIT_FOUND)
+    execute_process(
+      COMMAND ${GIT_EXECUTABLE} rev-list --max-count=1 HEAD
+      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+      OUTPUT_VARIABLE GIT_REVISION
+      ERROR_QUIET)
+    if(NOT ${GIT_REVISION} STREQUAL "")
+      string(STRIP ${GIT_REVISION} GIT_REVISION)
     endif()
+
+    execute_process(
+      COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
+      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+      OUTPUT_VARIABLE GIT_BRANCH
+      ERROR_QUIET)
+    if(NOT ${GIT_BRANCH} STREQUAL "")
+      string(STRIP ${GIT_BRANCH} GIT_BRANCH)
+    endif()
+
+    execute_process(
+      COMMAND ${GIT_EXECUTABLE} describe --abbrev=0 --tags
+      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+      OUTPUT_VARIABLE SVN_REV
+      ERROR_QUIET)
+
+    if(NOT ${SVN_REV} STREQUAL "")
+      string(STRIP ${SVN_REV} SVN_REV)
+    endif()
+
+    set(DMRG_VERSION_BUILD "${GIT_REVISION} (${GIT_BRANCH}) ${SVN_REV}")
+  endif()
 endif(EXISTS ${PROJECT_SOURCE_DIR}/../.git)
 
 if(DMRG_VERSION_BUILD)
-  set(DMRG_VERSION "${DMRG_VERSION_MAJOR}.${DMRG_VERSION_MINOR}.${DMRG_VERSION_PATCH}-${DMRG_VERSION_BUILD}")
+  set(DMRG_VERSION
+      "${DMRG_VERSION_MAJOR}.${DMRG_VERSION_MINOR}.${DMRG_VERSION_PATCH}-${DMRG_VERSION_BUILD}"
+  )
 else(DMRG_VERSION_BUILD)
-  set(DMRG_VERSION "${DMRG_VERSION_MAJOR}.${DMRG_VERSION_MINOR}.${DMRG_VERSION_PATCH}")
+  set(DMRG_VERSION
+      "${DMRG_VERSION_MAJOR}.${DMRG_VERSION_MINOR}.${DMRG_VERSION_PATCH}")
 endif(DMRG_VERSION_BUILD)
 set(DMRG_VERSION_STRING "DMRG version ${DMRG_VERSION}")
-MESSAGE(STATUS "DMRG version: ${DMRG_VERSION}")
+message(STATUS "DMRG version: ${DMRG_VERSION}")
 
 # OpenMP
 
 if(APPLE)
-    if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
-        set(OpenMP_C_FLAG "-fopenmp=libomp -Wno-unused-command-line-argument")
-    endif()
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-        set(OpenMP_CXX_FLAG "-fopenmp=libomp -Wno-unused-command-line-argument")
-    endif()
+  if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
+    set(OpenMP_C_FLAG "-fopenmp=libomp -Wno-unused-command-line-argument")
+  endif()
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    set(OpenMP_CXX_FLAG "-fopenmp=libomp -Wno-unused-command-line-argument")
+  endif()
 endif()
 
 if(ENABLE_OMP)
@@ -461,7 +515,8 @@ if(ENABLE_OMP)
     add_definitions(-DMAQUIS_OPENMP)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+    set(CMAKE_EXE_LINKER_FLAGS
+        "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
     list(APPEND DMRG_INCLUDE_DIRS ${OpenMP_CXX_INCLUDE_DIRS})
     list(APPEND DMRG_LIBRARIES OpenMP::OpenMP_CXX)
   else(OPENMP_FOUND)
@@ -469,35 +524,39 @@ if(ENABLE_OMP)
   endif(OPENMP_FOUND)
 endif(ENABLE_OMP)
 
-
-######################################################################
+# ##############################################################################
 # Include / link directories
-######################################################################
-set (ALPS_INCLUDE_DIRS ${ALPS_SOURCE_DIR}/src ${PROJECT_BINARY_DIR}/${ALPS_SOURCE_DIR}/src)
-list(APPEND DMRG_INCLUDE_DIRS ${MATRICES_DIR} ${HDF5_INCLUDE_DIR} ${ALPS_INCLUDE_DIRS})
+# ##############################################################################
+set(ALPS_INCLUDE_DIRS ${ALPS_SOURCE_DIR}/src
+                      ${PROJECT_BINARY_DIR}/${ALPS_SOURCE_DIR}/src)
+list(APPEND DMRG_INCLUDE_DIRS ${MATRICES_DIR} ${HDF5_INCLUDE_DIR}
+     ${ALPS_INCLUDE_DIRS})
 list(APPEND DMRG_LIBRARY_DIRS ${ALPS_LIBRARY_DIRS})
 
-include_directories(${PROJECT_SOURCE_DIR}/framework ${PROJECT_BINARY_DIR}/framework ${PROJECT_SOURCE_DIR}/lib/maquis_dmrg ${PROJECT_BINARY_DIR}/lib/maquis_dmrg ${DMRG_INCLUDE_DIRS})
+include_directories(
+  ${PROJECT_SOURCE_DIR}/framework ${PROJECT_BINARY_DIR}/framework
+  ${PROJECT_SOURCE_DIR}/lib/maquis_dmrg ${PROJECT_BINARY_DIR}/lib/maquis_dmrg
+  ${DMRG_INCLUDE_DIRS})
 link_directories(${DMRG_LIBRARY_DIRS})
 add_definitions(${DMRG_DEFINITIONS})
 
 set(DMRG_FRAMEWORK_DIR ${PROJECT_SOURCE_DIR}/framework)
 if(CMAKE_EXE_LINKER_FLAGS MATCHES "^ $")
-    set(CMAKE_EXE_LINKER_FLAGS ${MAQUISLapack_LINKER_FLAGS})
+  set(CMAKE_EXE_LINKER_FLAGS ${MAQUISLapack_LINKER_FLAGS})
 else(CMAKE_EXE_LINKER_FLAGS MATCHES "^ $")
-    list(APPEND CMAKE_EXE_LINKER_FLAGS ${MAQUISLapack_LINKER_FLAGS})
+  list(APPEND CMAKE_EXE_LINKER_FLAGS ${MAQUISLapack_LINKER_FLAGS})
 endif(CMAKE_EXE_LINKER_FLAGS MATCHES "^ $")
 
-
-######################################################################
+# ##############################################################################
 # Configure files
-######################################################################
+# ##############################################################################
 
-configure_file(framework/dmrg/version.h.in ${PROJECT_BINARY_DIR}/framework/dmrg/version.h)
+configure_file(framework/dmrg/version.h.in
+               ${PROJECT_BINARY_DIR}/framework/dmrg/version.h)
 
-######################################################################
+# ##############################################################################
 # Targets
-######################################################################
+# ##############################################################################
 
 # DataCollector
 if(ENABLE_COLLECTOR)
@@ -510,13 +569,13 @@ endif(ENABLE_COLLECTOR)
 add_subdirectory(framework/dmrg)
 
 # ================
-#  SHARED LIBRARY
+# SHARED LIBRARY
 # ================
 
 add_subdirectory(lib/maquis_dmrg)
 
 # ==============
-#  APPLICATIONS
+# APPLICATIONS
 # ==============
 
 add_subdirectory(applications)
@@ -527,30 +586,29 @@ add_subdirectory(applications)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 option(PYTHON_BINDINGS "Build python interface" OFF)
 if(PYTHON_BINDINGS)
-    include(ImportPybind11)
-    import_pybind11()
-    pybind11_add_module(_dmrg ${CMAKE_CURRENT_SOURCE_DIR}/python/QcmaquisPython.cpp)
-    target_link_libraries(_dmrg PUBLIC maquis_dmrg)
-    set_target_properties(_dmrg PROPERTIES LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/python_module)
+  include(ImportPybind11)
+  import_pybind11()
+  pybind11_add_module(_dmrg
+                      ${CMAKE_CURRENT_SOURCE_DIR}/python/QcmaquisPython.cpp)
+  target_link_libraries(_dmrg PUBLIC maquis_dmrg)
+  set_target_properties(
+    _dmrg PROPERTIES LIBRARY_OUTPUT_PATH
+                     ${CMAKE_CURRENT_BINARY_DIR}/python_module)
 
-    # copy files
-    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/python/scine_qcmaquis DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/python_module)
-    # add_custom_command(TARGET _dmrg POST_BUILD
-    #     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:UtilsOSModule> ${CMAKE_CURRENT_BINARY_DIR}/scine_utilities
-    #     COMMENT "Copying UtilsOS module into python package directory"
-    # )
-    # pip install
-    # install(CODE
-    #   "execute_process(COMMAND ${PYTHON_EXECUTABLE} -m pip install --prefix=${CMAKE_INSTALL_PREFIX} --upgrade ${CMAKE_CURRENT_BINARY_DIR}
-    #                    RESULT_VARIABLE retcode)
-    #    if(NOT \$\{retcode\} EQUAL 0)
-    #      message(FATAL_ERROR \"Fatal error when installing Python module using PIP.\")
-    #    endif()"
-    # )
+  # copy files
+  file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/python/scine_qcmaquis
+       DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/python_module)
+  # add_custom_command(TARGET _dmrg POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
+  # $<TARGET_FILE:UtilsOSModule> ${CMAKE_CURRENT_BINARY_DIR}/scine_utilities
+  # COMMENT "Copying UtilsOS module into python package directory" ) pip install
+  # install(CODE "execute_process(COMMAND ${PYTHON_EXECUTABLE} -m pip install
+  # --prefix=${CMAKE_INSTALL_PREFIX} --upgrade ${CMAKE_CURRENT_BINARY_DIR}
+  # RESULT_VARIABLE retcode) if(NOT \$\{retcode\} EQUAL 0) message(FATAL_ERROR
+  # \"Fatal error when installing Python module using PIP.\") endif()" )
 endif()
 
 # =======
-#  TESTS
+# TESTS
 # =======
 
 if(QCMAQUIS_TESTS)
@@ -560,10 +618,16 @@ if(QCMAQUIS_TESTS)
   enable_testing()
 
   # Generate the files required by the tests
-  configure_file(tests/Transcorrelated/data/IntegralFile_H2_Transcorrelated IntegralFile_H2_Transcorrelated COPYONLY)
-  configure_file(tests/Transcorrelated/data/IntegralFile_H2_Transcorrelated_QuantumFormat IntegralFile_H2_Transcorrelated_QuantumFormat COPYONLY)
-  configure_file(tests/Transcorrelated/data/IntegralFile_Be_Conventional IntegralFile_Be_Conventional COPYONLY)
-  configure_file(tests/Transcorrelated/data/IntegralFile_Be_Transcorrelated_TwoBody IntegralFile_Be_Transcorrelated_TwoBody COPYONLY)
+  configure_file(tests/Transcorrelated/data/IntegralFile_H2_Transcorrelated
+                 IntegralFile_H2_Transcorrelated COPYONLY)
+  configure_file(
+    tests/Transcorrelated/data/IntegralFile_H2_Transcorrelated_QuantumFormat
+    IntegralFile_H2_Transcorrelated_QuantumFormat COPYONLY)
+  configure_file(tests/Transcorrelated/data/IntegralFile_Be_Conventional
+                 IntegralFile_Be_Conventional COPYONLY)
+  configure_file(
+    tests/Transcorrelated/data/IntegralFile_Be_Transcorrelated_TwoBody
+    IntegralFile_Be_Transcorrelated_TwoBody COPYONLY)
 
   # Adds the tests
   add_subdirectory(tests)
@@ -572,8 +636,10 @@ if(QCMAQUIS_TESTS)
   add_test(NAME FermiHubbard_RealSpace COMMAND test_FH_RealSpace)
   add_test(NAME FermiHubbard_MomentumSpace COMMAND test_FH_MomentumSpace)
   if(BUILD_TRANSCORRELATED_DMRG)
-    add_test(NAME TranscorrelatedMolecular COMMAND test_transcorrelated_molecular)
-    add_test(NAME TranscorrelatedNormalOrder COMMAND test_transcorrelated_normal_order)
+    add_test(NAME TranscorrelatedMolecular
+             COMMAND test_transcorrelated_molecular)
+    add_test(NAME TranscorrelatedNormalOrder
+             COMMAND test_transcorrelated_normal_order)
   endif(BUILD_TRANSCORRELATED_DMRG)
   add_test(NAME Relativistic COMMAND test_Relativistic)
   add_test(NAME Integral_Map COMMAND test_integral_map)
@@ -583,21 +649,26 @@ if(QCMAQUIS_TESTS)
   add_test(NAME Electronic_MPS_MPO_Ops COMMAND test_mps_mpo_ops_electronic)
   add_test(NAME Electronic_MPS_Overlap COMMAND test_mps_overlap_electronic)
   add_test(NAME SiteProblem COMMAND test_siteproblem)
-  add_test(NAME Electronic_OverlapPropagator COMMAND test_overlap_propagator_electronic)
-  add_test(NAME Electronic_BoundaryPropagator COMMAND test_boundary_propagator_electronic)
+  add_test(NAME Electronic_OverlapPropagator
+           COMMAND test_overlap_propagator_electronic)
+  add_test(NAME Electronic_BoundaryPropagator
+           COMMAND test_boundary_propagator_electronic)
   add_test(NAME MPS_Join COMMAND test_mpsjoin)
   add_test(NAME Wigner COMMAND test_wigner)
   add_test(NAME Block_Matrix COMMAND test_block_matrix)
   add_test(NAME MPS_Tensor COMMAND test_mps_tensor)
-  add_test(NAME Electronic_MPS_Initializers COMMAND test_mps_initializers_electronic)
+  add_test(NAME Electronic_MPS_Initializers
+           COMMAND test_mps_initializers_electronic)
   add_test(NAME Electronic_1DMPO COMMAND test_1D_mpo_electronic)
   # Alps-related tests
   add_test(NAME Alps_Diagonalization COMMAND test_alps_diagonalization)
-  add_test(NAME GeneralizedEigenvalue COMMAND test_generalized_eigenvalue_problem)
+  add_test(NAME GeneralizedEigenvalue
+           COMMAND test_generalized_eigenvalue_problem)
   add_test(NAME SweepOptimization_Traits COMMAND test_sweep_optimization_traits)
   add_test(NAME DMRG_LiH COMMAND testLiH)
   add_test(NAME MPO_times_MPS_TwoU1 COMMAND test_mpo_times_mps_TwoU1)
-  add_test(NAME Electronic_SweepBasedLinearSystem COMMAND test_sweep_based_linear_system_electronic)
+  add_test(NAME Electronic_SweepBasedLinearSystem
+           COMMAND test_sweep_based_linear_system_electronic)
   if(BUILD_DMRG_FEAST)
     add_test(NAME Electronic_FEAST COMMAND test_FEAST_electronic)
   endif(BUILD_DMRG_FEAST)
@@ -607,12 +678,16 @@ if(QCMAQUIS_TESTS)
     add_test(NAME Site_Shifter COMMAND test_site_shifter)
     add_test(NAME Time_Evolution_Sweep COMMAND test_time_evolution_sweep)
     add_test(NAME RealTime_Evolution COMMAND test_realtime)
-    add_test(NAME Electronic_ImaginaryTime_Evolution COMMAND test_imaginarytime_Electronic)
+    add_test(NAME Electronic_ImaginaryTime_Evolution
+             COMMAND test_imaginarytime_Electronic)
     if(BUILD_PREBO)
-      add_test(NAME PreBO_ImaginaryTime_Evolution COMMAND test_imaginarytime_PreBO)
+      add_test(NAME PreBO_ImaginaryTime_Evolution
+               COMMAND test_imaginarytime_PreBO)
     endif(BUILD_PREBO)
-    add_test(NAME Relativistic_ImaginaryTime_Evolution COMMAND test_imaginarytime_Relativistic)
-    add_test(NAME FermiHubbard_ImaginaryTime_Evolution COMMAND test_imaginarytime_FermiHubbard)
+    add_test(NAME Relativistic_ImaginaryTime_Evolution
+             COMMAND test_imaginarytime_Relativistic)
+    add_test(NAME FermiHubbard_ImaginaryTime_Evolution
+             COMMAND test_imaginarytime_FermiHubbard)
   endif(BUILD_DMRG_EVOLVE)
   # PreBO tests
   if(BUILD_PREBO)
@@ -620,7 +695,8 @@ if(QCMAQUIS_TESTS)
     add_test(NAME PreBO_HeHHe COMMAND testPreBOHeHHe)
     add_test(NAME PreBO_Model COMMAND testPreBOModel)
     add_test(NAME PreBO_SymbolicOperator COMMAND testPreBOSymbolicOperator)
-    add_test(NAME PreBO_SymbolicJordanWigner COMMAND testPreBOSymbolicJordanWigner)
+    add_test(NAME PreBO_SymbolicJordanWigner
+             COMMAND testPreBOSymbolicJordanWigner)
   endif(BUILD_PREBO)
   # Vibrational tests
   if(BUILD_VIBRATIONAL)
@@ -628,15 +704,22 @@ if(QCMAQUIS_TESTS)
     add_test(NAME Vibrational_MPS COMMAND test_mps_vibrational)
     add_test(NAME Vibrational_Lattice COMMAND test_vibrational_lattice)
     add_test(NAME Vibrational_Model_NU1 COMMAND test_vibrational_nu1_model)
-    add_test(NAME Vibrational_Model_Watson COMMAND test_vibrational_watson_model)
+    add_test(NAME Vibrational_Model_Watson
+             COMMAND test_vibrational_watson_model)
     add_test(NAME Vibrational_MPS_MPO_Ops COMMAND test_mps_mpo_ops_vibrational)
-    add_test(NAME Vibrational_MPO_Times_MPS COMMAND test_mpo_times_mps_vibrational)
+    add_test(NAME Vibrational_MPO_Times_MPS
+             COMMAND test_mpo_times_mps_vibrational)
     add_test(NAME Vibrational_MPS_Overlap COMMAND test_mps_overlap_vibrational)
-    add_test(NAME Vibrational_OverlapPropagator COMMAND test_overlap_propagator_vibrational)
-    add_test(NAME Vibrational_BoundaryPropagator COMMAND test_boundary_propagator_vibrational)
-    add_test(NAME Vibrational_Linear_System_Solver COMMAND test_linear_system_solver_vibrational)
-    add_test(NAME Vibrational_SweepEnergyMinimization COMMAND test_sweep_based_energy_minimization_vibrational)
-    add_test(NAME Vibrational_SweepBasedLinearSystem COMMAND test_sweep_based_linear_system_vibrational)
+    add_test(NAME Vibrational_OverlapPropagator
+             COMMAND test_overlap_propagator_vibrational)
+    add_test(NAME Vibrational_BoundaryPropagator
+             COMMAND test_boundary_propagator_vibrational)
+    add_test(NAME Vibrational_Linear_System_Solver
+             COMMAND test_linear_system_solver_vibrational)
+    add_test(NAME Vibrational_SweepEnergyMinimization
+             COMMAND test_sweep_based_energy_minimization_vibrational)
+    add_test(NAME Vibrational_SweepBasedLinearSystem
+             COMMAND test_sweep_based_linear_system_vibrational)
     if(BUILD_DMRG_FEAST)
       add_test(NAME Vibrational_FEAST COMMAND test_FEAST_vibrational)
     endif(BUILD_DMRG_FEAST)
@@ -659,62 +742,75 @@ if(QCMAQUIS_TESTS)
     add_test(NAME Vibronic_Optimization COMMAND test_Vibronic)
   endif(BUILD_VIBRONIC)
   if((BUILD_VIBRATIONAL) OR (BUILD_VIBRONIC))
-    add_test(NAME Vibrational_MPS_Initializers COMMAND test_mps_initializers_vibrational)    
+    add_test(NAME Vibrational_MPS_Initializers
+             COMMAND test_mps_initializers_vibrational)
   endif((BUILD_VIBRATIONAL) OR (BUILD_VIBRONIC))
-  if (BUILD_SRCAS)
+  if(BUILD_SRCAS)
     add_test(NAME SRCAS COMMAND test_srcas)
   endif(BUILD_SRCAS)
 endif(QCMAQUIS_TESTS)
 
-######################################################################
+# ##############################################################################
 # DMRG exports
-######################################################################
+# ##############################################################################
 
-## For build tree
-set(CONF_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/framework ${PROJECT_BINARY_DIR}/framework ${DMRG_INCLUDE_DIRS})
-configure_file(MAQUIS_DMRGConfig.cmake.in ${PROJECT_BINARY_DIR}/MAQUIS_DMRGConfig.cmake @ONLY)
+# For build tree
+set(CONF_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/framework
+                      ${PROJECT_BINARY_DIR}/framework ${DMRG_INCLUDE_DIRS})
+configure_file(MAQUIS_DMRGConfig.cmake.in
+               ${PROJECT_BINARY_DIR}/MAQUIS_DMRGConfig.cmake @ONLY)
 
-## For install
+# For install
 set(CONF_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/include ${DMRG_INCLUDE_DIRS})
-configure_file(MAQUIS_DMRGConfig.cmake.in ${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/MAQUIS_DMRGConfig.cmake @ONLY)
+configure_file(
+  MAQUIS_DMRGConfig.cmake.in
+  ${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/MAQUIS_DMRGConfig.cmake @ONLY)
 
-install(FILES ${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/MAQUIS_DMRGConfig.cmake DESTINATION share/cmake  COMPONENT dev)
-install(EXPORT DMRGTargets DESTINATION share/cmake COMPONENT dev)
+install(
+  FILES ${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/MAQUIS_DMRGConfig.cmake
+  DESTINATION share/cmake
+  COMPONENT dev)
+install(
+  EXPORT DMRGTargets
+  DESTINATION share/cmake
+  COMPONENT dev)
 
-
-######################################################################
+# ##############################################################################
 # Install
-######################################################################
+# ##############################################################################
 
-install(FILES ${PROJECT_BINARY_DIR}/framework/dmrg/version.h
-        DESTINATION include/framework/dmrg COMPONENT headers)
+install(
+  FILES ${PROJECT_BINARY_DIR}/framework/dmrg/version.h
+  DESTINATION include/framework/dmrg
+  COMPONENT headers)
 
-install(FILES
-            lib/maquis_dmrg/maquis_dmrg.h
-            lib/maquis_dmrg/mpssi_interface.h
-            lib/maquis_dmrg/maquis_dmrg_detail.h
-            lib/maquis_dmrg/integral_interface.h
-            lib/maquis_dmrg/maquis_cinterface.h
-            lib/maquis_dmrg/mpssi_cinterface.h
-            lib/maquis_dmrg/starting_guess.h
-        DESTINATION include
-        COMPONENT headers
-        )
+install(
+  FILES lib/maquis_dmrg/maquis_dmrg.h
+        lib/maquis_dmrg/mpssi_interface.h
+        lib/maquis_dmrg/maquis_dmrg_detail.h
+        lib/maquis_dmrg/integral_interface.h
+        lib/maquis_dmrg/maquis_cinterface.h
+        lib/maquis_dmrg/mpssi_cinterface.h
+        lib/maquis_dmrg/starting_guess.h
+  DESTINATION include
+  COMPONENT headers)
 
-install(FILES
-            framework/dmrg/utils/align.h
-            framework/dmrg/utils/DmrgParameters.h
-            framework/dmrg/utils/DmrgOptions.h
-            framework/dmrg/utils/BaseParameters.h
-            framework/dmrg/utils/results_collector.h
+install(
+  FILES framework/dmrg/utils/align.h
+        framework/dmrg/utils/DmrgParameters.h
+        framework/dmrg/utils/DmrgOptions.h
+        framework/dmrg/utils/BaseParameters.h
+        framework/dmrg/utils/results_collector.h
         framework/dmrg/utils/parameter_proxy.h
-        DESTINATION include/framework/dmrg/utils
-        COMPONENT headers
-    )
+  DESTINATION include/framework/dmrg/utils
+  COMPONENT headers)
 
-
-
-install(DIRECTORY lib/python DESTINATION lib  COMPONENT python
-        USE_SOURCE_PERMISSIONS
-        FILES_MATCHING PATTERN "*.py" PATTERN "*.pyc" EXCLUDE
-        PATTERN ".svn" EXCLUDE PATTERN "CVS" EXCLUDE)
+install(
+  DIRECTORY lib/python
+  DESTINATION lib
+  COMPONENT python
+  USE_SOURCE_PERMISSIONS FILES_MATCHING
+  PATTERN "*.py"
+  PATTERN "*.pyc" EXCLUDE
+  PATTERN ".svn" EXCLUDE
+  PATTERN "CVS" EXCLUDE)

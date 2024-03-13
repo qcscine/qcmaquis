@@ -48,7 +48,8 @@ void checkEnabledSimulationType(const std::string& sim_type) {
 // @brief Checks that the requested simulation type is valid
 void checkSimulationType(const std::string& sim_type) {
   std::vector<std::string> valid_types = {
-      "optimize", "evolve", "ipi", "feast", "transcorrelated"};
+      "optimize", "evolve", "ipi", "feast", "transcorrelated"
+  };
   if (std::find(valid_types.begin(), valid_types.end(), sim_type) ==
       valid_types.end()) {
     std::cerr << "Unknown simulation type: \"" << sim_type
