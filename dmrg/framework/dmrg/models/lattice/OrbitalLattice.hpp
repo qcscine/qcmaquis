@@ -29,6 +29,7 @@ class Orbitals : public lattice_impl {
     order = LatticeHelperClass::getOrbitalOrder(parms, "orbital_order", true);
     if (parms.is_set("integral_file")) {
       std::string integral_file = parms["integral_file"];
+      std::cout << "Reading orbital irreps from " << integral_file << "\n";
       if (!std::filesystem::exists(integral_file)) {
         throw std::runtime_error(
             "integral_file " + integral_file + " does not exist\n"
@@ -36,15 +37,24 @@ class Orbitals : public lattice_impl {
       }
       std::ifstream orb_file;
       orb_file.open(parms["integral_file"].c_str());
-      orb_file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-      std::string line;
-      std::getline(orb_file, line);
-      orb_file.close();
-      std::vector<std::string> split_line;
-      boost::split(split_line, line, boost::is_any_of("="));
-      // record the site_types in parameters
-      parms.set("site_types", split_line[1]);
-      irreps = parse_irreps(split_line[1]);
+      bool has_header = (orb_file >> std::ws).peek() == '&';
+      if (has_header) {
+        std::string token;
+        while (std::getline(orb_file, token, '=')) {
+          if (token.find("ORBSYM") != std::string::npos) {
+            std::getline(orb_file, token, ' ');
+            parms.set("site_types", token);
+            // record the site_types in parameters
+            irreps = parse_irreps(token);
+          }
+        }
+      } else {
+        std::cout
+            << "FCIDUMP header not found setting. All orbital types set to 0\n";
+        for (subcharge p = 0; p < L; ++p) {
+          irreps[p] = order[0];
+        }
+      }
     } else if (parms.is_set("site_types")) {
       std::vector<subcharge> symm_vec = parms["site_types"];
       assert(L == symm_vec.size());
