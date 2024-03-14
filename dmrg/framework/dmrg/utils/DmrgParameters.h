@@ -569,6 +569,11 @@ class DmrgParameters : public BaseParameters {
         "ortho_states",
         "Comma-separated list of checkpoint names to which to orthogonalize to"
     );
+    add_option(
+        "completeness_threshold",
+        "Threshold for the completeness of the Gram-Schmidt orthogonalization",
+        value(1e-10)
+    );
 
     // Solution of linear systems
     add_option(

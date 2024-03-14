@@ -75,7 +75,9 @@ Matrix load_vector(storage::archive& ar, const std::string& path) {
   ar[path + "/mean/value"] >> y;
   Matrix ret(num_rows(y), 1);
 
-  for (int i = 0; i < num_rows(y); ++i) ret(labels[i], 0) = y(i, 0);
+  for (int i = 0; i < num_rows(y); ++i) {
+    ret(labels[i], 0) = y(i, 0);
+  }
 
   return ret;
 }
@@ -95,7 +97,9 @@ Matrix load_vector(
   int L = labels.size();
   Matrix ret(L, 1);
 
-  for (int i = 0; i < L; ++i) ret(labels[i][0], 0) = values[i];
+  for (int i = 0; i < L; ++i) {
+    ret(labels[i][0], 0) = values[i];
+  }
 
   return ret;
 }
@@ -158,7 +162,8 @@ Matrix merge_transform(
   assert(lstr1.size() == lstr2.size());
 
   // output observable = input1 + transpose(input2)
-  std::vector<std::pair<int, int> > labels1, labels2;
+  std::vector<std::pair<int, int> > labels1;
+  std::vector<std::pair<int, int> > labels2;
   labels1 = get_labels(lstr1);
   labels2 = get_labels(lstr2);
 
@@ -176,8 +181,10 @@ Matrix load_matrix_pair(
     storage::archive& ar, const std::string& path1, const std::string& path2,
     int L
 ) {
-  std::vector<std::string> x1, x2;
-  Matrix y1, y2;
+  std::vector<std::string> x1;
+  std::vector<std::string> x2;
+  Matrix y1;
+  Matrix y2;
 
   ar[path1 + "/labels"] >> x1;
   ar[path1 + "/mean/value"] >> y1;
@@ -301,11 +308,18 @@ template <class Matrix>
 EntropyData<Matrix> loadData(
     const maquis::results_map_type<typename Matrix::value_type>& ar
 ) {
-  const std::string rpath = "";
+  const std::string rpath;
 
   // collect all in EntropyData => get as e.g. data.Nup etc.
   EntropyData<Matrix> data;
-  int L = ar.at("Nup").second.size();  // TODO: make sure this exists!
+  int L;
+  if (ar.count("Nup")) {
+    L = ar.at("Nup").second.size();
+  } else {
+    throw std::runtime_error(
+        "Nup is not found in the results_map for chementropy"
+    );
+  }
   data.L = L;
 
   LOAD_ALL()
@@ -459,7 +473,10 @@ class EntanglementData {
 
     //  calculate s1:
     s1_.resize(1, L);
-    Matrix m11(L, 1), m22(L, 1), m33(L, 1), m44(L, 1);
+    Matrix m11(L, 1);
+    Matrix m22(L, 1);
+    Matrix m33(L, 1);
+    Matrix m44(L, 1);
     for (int i = 0; i < L; ++i) {
       m11(i, 0) = (data.Nup(i, 0) - data.Nupdown(i, 0));    // O(11)
       m22(i, 0) = (data.Ndown(i, 0) - data.Nupdown(i, 0));  // O(6)

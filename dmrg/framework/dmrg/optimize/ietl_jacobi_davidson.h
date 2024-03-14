@@ -22,9 +22,11 @@ solve_ietl_jcd(
     SiteProblem<Matrix, SymmGroup>& sp,
     MPSTensor<Matrix, SymmGroup> const& initial, BaseParameters& params,
     std::vector<MPSTensor<Matrix, SymmGroup>> ortho_vecs =
-        std::vector<MPSTensor<Matrix, SymmGroup>>(),
-    double thresholdForCompleteness = 1.0E-10, bool verbose = false
+        std::vector<MPSTensor<Matrix, SymmGroup>>()
 ) {
+  bool verbose = (params["verbose"] > 0);
+  double completenessThreshold = params["completeness_threshold"];
+
   auto start = std::chrono::high_resolution_clock::now();
   // Variables initialization
   using ValueType = typename MPSTensor<Matrix, SymmGroup>::value_type;
@@ -39,7 +41,7 @@ solve_ietl_jcd(
     for (const auto& iLocal : ortho_vecs_local) {
       ortho_vecs[n] -= ietl::dot(iLocal, ortho_vecs[n]) * iLocal;
     }
-    if (ortho_vecs[n].scalar_norm() > thresholdForCompleteness) {
+    if (ortho_vecs[n].scalar_norm() > completenessThreshold) {
       ortho_vecs[n] /= ietl::two_norm(ortho_vecs[n]);
       ortho_vecs_local.push_back(ortho_vecs[n]);
     } else {
@@ -55,7 +57,7 @@ solve_ietl_jcd(
   for (std::size_t idx = 0; idx < ortho_vecs_local.size(); idx++) {
     tmp -= ietl::dot(tmp, ortho_vecs_local[idx]) * ortho_vecs_local[idx];
   }
-  if (tmp.scalar_norm() < thresholdForCompleteness) {
+  if (tmp.scalar_norm() < completenessThreshold) {
     skipOptimization = true;
   }
   // Actual Jacobi-Davidson diagonalization
