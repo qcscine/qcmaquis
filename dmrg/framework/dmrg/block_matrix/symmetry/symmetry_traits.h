@@ -41,10 +41,10 @@ struct HasU1DG<U1DG> : public std::true_type {};
 
 template <class SymmGroup, class T = void>
 using enable_if_u1dg_t =
-    typename std::enable_if<symm_traits::HasU1DG<SymmGroup>::value, T>::type;
+    std::enable_if_t<symm_traits::HasU1DG<SymmGroup>::value, T>;
 template <class SymmGroup, class T = void>
 using disable_if_u1dg_t =
-    typename std::enable_if<!symm_traits::HasU1DG<SymmGroup>::value, T>::type;
+    std::enable_if_t<!symm_traits::HasU1DG<SymmGroup>::value, T>;
 
 template <class SymmGroup>
 struct Has2U1 : public std::false_type {};
@@ -64,10 +64,10 @@ struct HasSU2<SU2U1PG> : public std::true_type {};
 
 template <class SymmGroup, class T = void>
 using enable_if_su2_t =
-    typename std::enable_if<symm_traits::HasSU2<SymmGroup>::value, T>::type;
+    std::enable_if_t<symm_traits::HasSU2<SymmGroup>::value, T>;
 template <class SymmGroup, class T = void>
 using disable_if_su2_t =
-    typename std::enable_if<!symm_traits::HasSU2<SymmGroup>::value, T>::type;
+    std::enable_if_t<!symm_traits::HasSU2<SymmGroup>::value, T>;
 
 // point group vs. no point group
 
@@ -83,10 +83,10 @@ struct HasPG<U1DG> : public std::true_type {};
 
 template <class SymmGroup, class T = void>
 using enable_if_pg_t =
-    typename std::enable_if<symm_traits::HasPG<SymmGroup>::value, T>::type;
+    std::enable_if_t<symm_traits::HasPG<SymmGroup>::value, T>;
 template <class SymmGroup, class T = void>
 using disable_if_pg_t =
-    typename std::enable_if<!symm_traits::HasPG<SymmGroup>::value, T>::type;
+    std::enable_if_t<!symm_traits::HasPG<SymmGroup>::value, T>;
 
 // chemistry model implemented or not
 
@@ -105,11 +105,11 @@ template <>
 struct HasChemModel<U1DG> : public std::true_type {};
 
 template <class SymmGroup, class T = void>
-using enable_if_chemmodel_t = typename std::enable_if<
-    symm_traits::HasChemModel<SymmGroup>::value, T>::type;
+using enable_if_chemmodel_t =
+    std::enable_if_t<symm_traits::HasChemModel<SymmGroup>::value, T>;
 template <class SymmGroup, class T = void>
-using disable_if_chemmodel_t = typename std::enable_if<
-    !symm_traits::HasChemModel<SymmGroup>::value, T>::type;
+using disable_if_chemmodel_t =
+    std::enable_if_t<!symm_traits::HasChemModel<SymmGroup>::value, T>;
 
 /** @brief Trait class containing the symmetry name */
 template <class SymmGroup>

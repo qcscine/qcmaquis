@@ -577,18 +577,29 @@ parms["nsweeps"]) checkpoint_simulation(mps, sweep, -1); if (stopped) break;
           measure_and_save<Matrix, SymmGroup>(rfile(), "/spectrum/results", mps)
               .meas_out(meas);
     }
-    // Measurements that require SU2U1->2U1 transformation
+    // Measurements that require SU2U1->2U1 transformation for spin-adapted
 #if defined(HAVE_TwoU1) || defined(HAVE_TwoU1PG)
-    BaseParameters parms_meas;
-    parms_meas = parms.twou1_measurements();
-    if (!parms_meas.empty()) {
-      // Obtain a map with transformed measurements
-      results_map_type transformed_meas =
-          measure_transform<Matrix, SymmGroup>().meas_out(
-              base::lat, mps, parms_meas, rfile(), "/spectrum/results"
-          );
-      // Merge transformed measurements with the remaining results
-      ret.insert(transformed_meas.begin(), transformed_meas.end());
+    bool is_spin_adapted =
+        (parms["symmetry"] == "su2u1" || parms["symmetry"] == "su2u1pg");
+    if (is_spin_adapted) {
+      BaseParameters parms_meas;
+      parms_meas = parms.twou1_measurements();
+      if (!parms_meas.empty()) {
+        // Obtain a map with transformed measurements
+        results_map_type transformed_meas =
+            measure_transform<Matrix, SymmGroup>().meas_out(
+                base::lat, mps, parms_meas, rfile(), "/spectrum/results"
+            );
+        // Merge transformed measurements with the remaining results
+        ret.insert(transformed_meas.begin(), transformed_meas.end());
+      }
+    } else {
+      for (auto&& meas : model.measurements()) {
+        ret[meas.name()] = measure_and_save<Matrix, SymmGroup>(
+                               rfile(), "/spectrum/results", mps
+        )
+                               .meas_out(meas);
+      }
     }
 #endif
     return ret;
