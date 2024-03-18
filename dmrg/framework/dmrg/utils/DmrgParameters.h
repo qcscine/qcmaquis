@@ -32,7 +32,8 @@ class DmrgParameters : public BaseParameters {
     add_option(
         "simulation_type",
         "Simulation type can be optimize, evolve,"
-        "ipi," "feast, transcorrelated"
+        "ipi,"
+        "feast, transcorrelated"
     );
     add_option("verbose", "Verbosity level of the DMRG calculation", value(0));
     add_option(
@@ -550,6 +551,11 @@ class DmrgParameters : public BaseParameters {
     add_option(
         "ortho_states",
         "Comma-separated list of checkpoint names to which to orthogonalize to"
+    );
+    add_option(
+        "completeness_threshold",
+        "Threshold for the completeness of the Gram-Schmidt orthogonalization",
+        value(1e-10)
     );
 
     // Solution of linear systems

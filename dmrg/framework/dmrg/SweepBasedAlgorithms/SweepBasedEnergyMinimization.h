@@ -116,21 +116,17 @@ class SweepBasedEnergyMinimization
 
   /** @brief Solution of the site-centered problem */
   MPSTensorType solveLocalProblem() final {
-    bool verbose = (parms_["verbose"] > 0);
-    double thresholdForCompleteness = 1.0E-10;
     auto& mpsToOptimize = mpsContainer_.getMPSTensor(siteLeft_);
     if (parms_["eigensolver"] == std::string("IETL")) {
       resultOfLocalSiteProblem_ =
           solve_ietl_lanczos(*(siteProblem_.get()), mpsToOptimize, parms_);
     } else if (parms_["eigensolver"] == std::string("IETL_JCD")) {
       resultOfLocalSiteProblem_ = solve_ietl_jcd(
-          *(siteProblem_.get()), mpsToOptimize, parms_, orthoLocal_,
-          thresholdForCompleteness, verbose
+          *(siteProblem_.get()), mpsToOptimize, parms_, orthoLocal_
       );
     } else if (parms_["eigensolver"] == std::string("IETL_DAVIDSON")) {
       resultOfLocalSiteProblem_ = solve_ietl_jcd(
-          *(siteProblem_.get()), mpsToOptimize, parms_, orthoLocal_,
-          thresholdForCompleteness, verbose
+          *(siteProblem_.get()), mpsToOptimize, parms_, orthoLocal_
       );
     } else {
       throw std::runtime_error("I don't know this eigensolver.");
@@ -138,7 +134,7 @@ class SweepBasedEnergyMinimization
     // Loads the final results
     auto energy = resultOfLocalSiteProblem_.first +
                   mpoContainer_.getMPO().getCoreEnergy();
-    if (verbose) {
+    if (parms_["verbose"] > 0) {
       maquis::cout << std::setprecision(10)
                    << " Energy = " << std::setprecision(16) << energy << "  ";
     }
