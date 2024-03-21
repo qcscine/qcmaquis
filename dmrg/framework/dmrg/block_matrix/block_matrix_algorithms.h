@@ -286,13 +286,13 @@ void estimate_truncation(
   std::reverse(allevals.begin(), allevals.end());
 
   real_type evalscut = cutoff * allevals[0];
-  std::cout << "--- FACTORS DETERMINIG EVALSCUT ---" << std::endl;
-  std::cout << "cutoff : " << cutoff << std::endl;
-  std::cout << "highest eval : "  << allevals[0] << std::endl;
-  std::cout << " ----------------------------------" << std::endl;
+  //std::cout << "--- FACTORS DETERMINIG EVALSCUT ---" << std::endl;
+  //std::cout << "cutoff : " << cutoff << std::endl;
+  //std::cout << "highest eval : "  << allevals[0] << std::endl;
+  //std::cout << " ----------------------------------" << std::endl;
 
   if (allevals.size() > Mmax) {
-    std::cout << "truncated to Max Bond Dim." << std::endl;
+    //std::cout << "truncated to Max Bond Dim." << std::endl;
     evalscut = std::max(evalscut, allevals[Mmax]);
     /*
     if(allevals[Mmax] == 0 && evalscut == 0){
@@ -313,8 +313,8 @@ void estimate_truncation(
       evalscut =*lastNonZero;
   }
   */
-  for (const auto& iEl : allevals) std::cout << "eval : " << iEl << std::endl;
-  std::cout << "evalscut : " << evalscut << std::endl;
+  //for (const auto& iEl : allevals) std::cout << "eval : " << iEl << std::endl;
+  //std::cout << "evalscut : " << evalscut << std::endl;
 
   
   smallest_ev = evalscut / allevals[0];
