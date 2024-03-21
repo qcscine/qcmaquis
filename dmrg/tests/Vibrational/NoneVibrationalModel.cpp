@@ -37,7 +37,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Integral_Parser_OneBody_Paired, NModeFixture) {
 #endif  // TrivialGroup
 }
 
-#ifdef HAVE_NU1
+#ifdef HAVE_TrivialGroup
 /** Test for the integral parser with the two-body Hamiltonian */
 BOOST_FIXTURE_TEST_CASE(Test_Integral_Parser_TwoBody_Paired, NModeFixture) {
   auto integrals = Vibrational::detail::NModeIntegralParser<double>(
@@ -90,5 +90,14 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_Create_Terms_Paired, NModeFixture) {
   BOOST_CHECK_EQUAL(sizeAfter, 78);
 }
 
+/** Checks consistency for the physical dimensions for a 1-mode system */
+BOOST_FIXTURE_TEST_CASE(Test_Model_PhysDim_OneMode_Paired, NModeFixture) {
+  auto lattice = Lattice(parametersFADOneBodyPaired);
+  auto nModeModel =
+      NModeModelPaired<tmatrix<double>>(lattice, parametersFADOneBodyPaired, false);
+  const auto& physicalDimensions0 = nModeModel.phys_dim(0);
+  BOOST_CHECK_EQUAL(physicalDimensions0.sum_of_sizes(), 39);
+}
 
-#endif  // HAVE_NU1
+
+#endif  // HAVE_TrivialGroup
