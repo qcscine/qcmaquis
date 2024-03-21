@@ -42,6 +42,15 @@ struct NModeFixture {
     parametersFADOneBody.set("MODEL", "nmode");
     parametersFADOneBody.set("integral_file", "integral_file_test_OneBodyFAD");
     //
+    parametersFADOneBodyPaired.set("L", 1);
+    parametersFADOneBodyPaired.set("nmode_num_modes", 1);
+    parametersFADOneBodyPaired.set("nmode_max_coupling", 1);
+    parametersFADOneBodyPaired.set("nmode_num_basis", "39");
+    parametersFADOneBodyPaired.set("symmetry", "none");
+    parametersFADOneBodyPaired.set("LATTICE", "watson lattice");
+    parametersFADOneBodyPaired.set("MODEL", "nmodecompactpaired");
+    parametersFADOneBodyPaired.set("integral_file", "integral_file_test_OneBodyFAD");
+    //
     parametersFADTwoBody.set("L", 22);
     parametersFADTwoBody.set("nmode_num_modes", 2);
     parametersFADTwoBody.set("nmode_max_coupling", 2);
@@ -15202,7 +15211,7 @@ struct NModeFixture {
   }
 
   // Class members
-  DmrgParameters parametersTwoMode, parametersFourMode, parametersFADOneBody,
+  DmrgParameters parametersTwoMode, parametersFourMode, parametersFADOneBody, parametersFADOneBodyPaired,
       parametersFADTwoBody, parametersFADOneBodyBinary,
       parametersFADTwoBodyFingerPrint, parametersWater;
   std::ofstream integralFileOneBodyFAD, integralFileTwoBodyFADFingerPrint,
