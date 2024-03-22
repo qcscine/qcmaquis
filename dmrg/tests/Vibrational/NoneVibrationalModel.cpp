@@ -99,5 +99,49 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_PhysDim_OneMode_Paired, NModeFixture) {
   BOOST_CHECK_EQUAL(physicalDimensions0.sum_of_sizes(), 39);
 }
 
+/** Simple check on tags */
+BOOST_FIXTURE_TEST_CASE(Test_Model_Tag_SimpleCheck_OneMode_Paired, NModeFixture) {
+  auto lattice = Lattice(parametersFADOneBodyPaired);
+  auto nModeModel =
+      NModeModelPaired<tmatrix<double>>(lattice, parametersFADOneBodyPaired, false);
+  auto identityTag = nModeModel.identity_matrix_tag(0);
+  auto fillingTag = nModeModel.filling_matrix_tag(0);
+  // The nMode Hamiltonian is bosonic, so the tag should be the same
+  BOOST_CHECK(identityTag == fillingTag);
+}
+
+/** Simple check on tags for the two-mode Hamiltonian */
+BOOST_FIXTURE_TEST_CASE(Test_Model_Tag_SimpleCheck_TwoMode_Paired, NModeFixture) {
+  auto lattice = Lattice(parametersFADTwoBodyPaired);
+  auto nModeModel =
+      NModeModelPaired<tmatrix<double>>(lattice, parametersFADTwoBodyPaired, false);
+  auto identityTag = nModeModel.filling_matrix_tag(0);
+  auto fillingTag = nModeModel.filling_matrix_tag(1);
+  BOOST_CHECK(identityTag == fillingTag);
+}
+
+/** Check on symbolic operator getter */
+BOOST_FIXTURE_TEST_CASE(Test_Model_Symbolic_Operator_OneMode_Paired, NModeFixture) {
+  auto lattice = Lattice(parametersFADOneBodyPaired);
+  auto nModeModel =
+      NModeModelPaired<tmatrix<double>>(lattice, parametersFADOneBodyPaired, false);
+  BOOST_CHECK(
+      nModeModel.filling_matrix_tag(0) == nModeModel.get_operator_tag("fill", 0)
+  );
+}
+
+/** Check on symbolic operator getter for a two-mode Hamiltonian */
+BOOST_FIXTURE_TEST_CASE(Test_Model_Symbolic_Operator_TwoMode_Paired, NModeFixture) {
+  auto lattice = Lattice(parametersFADOneBodyPaired);
+  auto nModeModel =
+      NModeModelPaired<tmatrix<double>>(lattice, parametersFADOneBodyPaired, false);
+  BOOST_CHECK(
+      nModeModel.filling_matrix_tag(0) == nModeModel.get_operator_tag("fill", 0)
+  );
+  BOOST_CHECK(
+      nModeModel.identity_matrix_tag(1) == nModeModel.get_operator_tag("id", 1)
+  );
+}
+
 
 #endif  // HAVE_TrivialGroup
