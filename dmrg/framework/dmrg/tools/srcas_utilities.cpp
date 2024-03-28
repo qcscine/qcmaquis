@@ -36,6 +36,9 @@
 #include <math.h>
 #include <string>
 
+namespace maquis {
+namespace srcas {
+
 template <typename ScalarType> // real or complex
 SRCAS<ScalarType>::SRCAS(DmrgParameters &parameters,
                          std::shared_ptr<InterfaceType> interface)
@@ -441,3 +444,5 @@ double SRCAS<ScalarType>::getCompleteness() {
 // Explicit template instantiation
 template class SRCAS<double>;
 template class SRCAS<std::complex<double>>;
+} // namespace srcas
+} // namespace maquis

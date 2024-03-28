@@ -24,8 +24,8 @@
  *
  *****************************************************************************/
 
-#ifndef SAMPLING_VIB_H
-#define SAMPLING_VIB_H
+#ifndef SRCAS_UTILITIES_H
+#define SRCAS_UTILITIES_H
 
 #include "dmrg/utils/DmrgParameters.h"
 #include "maquis_dmrg.h"
@@ -34,22 +34,48 @@
 #include <memory>
 #include <string>
 
+namespace maquis {
+namespace srcas {
+
+/**
+ * @brief SRCAS class responsible for the sampling of an MPS
+ *
+ * @tparam ScalarType double or complex
+ */
 template <typename ScalarType> // real or complex
 class SRCAS {
   using InterfaceType = maquis::DMRGInterface<ScalarType>;
 
 public:
+  /**
+   * @brief Constructor
+   *
+   * @param parameters qcmaquis parameter object
+   * @param interface qcmaquis dmrg interface
+   */
   SRCAS(DmrgParameters &parameters, std::shared_ptr<InterfaceType> interface);
+  /** @brief Run SRCAS sampling */
   void run();
+  /** @brief Print SRCAS settings */
   void printSRCASSettings();
+  /** @brief Print SRCAS results */
   void printResults();
-
+  /** @brief get last determinant queen */
   std::vector<int> getCurrentQueen();
+  /** @brief get map with all sampled determinants above the threshold */
   std::map<std::vector<int>, ScalarType> getDetTable();
+  /**
+   * @brief get achieved completeness
+   *
+   * @return double the completeness
+   */
   double getCompleteness();
 
 private:
+  /** @brief generate a new determinant form current queen */
   std::vector<int> generateNewDet();
+
+  /** @brief Evaluate the current completeness */
   double calculateCompleteness();
   void quicksort(std::string dets[], ScalarType b[], int left, int right);
 
@@ -79,5 +105,7 @@ private:
   std::map<std::vector<int>, ScalarType> hashTable_;
   typename std::map<std::vector<int>, ScalarType>::iterator iter_;
 };
+} // namespace srcas
+} // namespace maquis
 
 #endif

@@ -10,9 +10,11 @@
 // #include <pybind11/stl_bind.h>
 
 namespace py = pybind11;
+template <typename T> using SRCAS = maquis::srcas::SRCAS<T>;
 
 // TODO: bind results_collector meas_with_results_type
 PYBIND11_MODULE(_dmrg, module) {
+
   // py::bind_map<std::unordered_map<std::pair<std::string, std::string>,
   // double, boost::hash<std::pair<std::string, std::string>>>>(
   //     m, "CIMap");

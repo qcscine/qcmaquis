@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
       using InterfaceType = maquis::DMRGInterface<ScalarType>;
       std::shared_ptr<InterfaceType> interface =
           std::make_shared<InterfaceType>(opt.parms);
-      SRCAS<ScalarType> srcas(opt.parms, interface);
+      maquis::srcas::SRCAS<ScalarType> srcas(opt.parms, interface);
       srcas.printSRCASSettings();
       srcas.run();
       srcas.printResults();
@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
       using InterfaceType = maquis::DMRGInterface<ScalarType>;
       std::shared_ptr<InterfaceType> interface =
           std::make_shared<InterfaceType>(opt.parms);
-      SRCAS<ScalarType> srcas(opt.parms, interface);
+      maquis::srcas::SRCAS<ScalarType> srcas(opt.parms, interface);
       srcas.printSRCASSettings();
       srcas.run();
       srcas.printResults();
