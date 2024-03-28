@@ -1,26 +1,42 @@
+from typing import Any
+
 from _dmrg import SRCASReal
 
 from scine_qcmaquis import MaquisDmrg
 
 
 class Srcas:
-    def __init__(self, interface: MaquisDmrg):
-        self._srcas = SRCASReal(interface._parameters.get_parameters(), interface._dmrg.get_dmrg())
+    """SRCAS wrapper"""
 
-    def run(self):
+    def __init__(self, interface: MaquisDmrg):
+        """Create SRCAS wrapper
+
+        Parameters
+        ----------
+        interface : MaquisDmrg
+            wrapper around the qcmaquis interface
+        """
+        self._srcas = SRCASReal(interface._parameters.get_parameters(), interface._dmrg.get_dmrg())
+        self._srcas.printSRCASSettings()
+
+    def run(self) -> None:
+        """Run SRCAS"""
         self._srcas.run()
 
-    def print(self):
-        self._srcas.printSRCASSettings()
+    def print(self) -> None:
+        """Print SRCAS results"""
         self._srcas.printResults()
 
+    def get_srcas_obj(self) -> Any:
+        """Get srcas object
 
-if __name__ == "__main__":
-    dmrg = MaquisDmrg()
-    dmrg.set_parameter("symmetry", "2u1pg")
-    dmrg.init_dmrg("checkpoint_n2_triplet.2.2.h5", 6, 6, 2)
+        Returns
+        -------
+        _srcas : Any
+            The srcas object
+        """
+        return self._srcas
 
-    print("hihi")
-    srcas = Srcas(dmrg)
-    srcas.run()
-    srcas.print()
+    # TODO: srcas class has to be modified to make this work
+    # def results(self):
+    #     return self._srcas.getDetTable()
