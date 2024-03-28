@@ -40,7 +40,6 @@ class SRCAS {
 
 public:
   SRCAS(DmrgParameters &parameters, std::shared_ptr<InterfaceType> interface);
-  // SRCAS(DmrgParameters &parameters, InterfaceType &interface);
   void run();
   void printSRCASSettings();
   void printResults();
@@ -70,7 +69,6 @@ private:
 
   DmrgParameters &parms_;
   std::shared_ptr<InterfaceType> interface_;
-  // InterfaceType& interface_;
 
   std::string startingDet_, maxDetStr_, detTmpStr_;
   std::vector<int> detQueen_, detTmp_, detSpace_;
