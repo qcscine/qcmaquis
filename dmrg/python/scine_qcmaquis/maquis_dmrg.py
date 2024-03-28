@@ -1,4 +1,4 @@
-from typing import Any, List, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 
 import numpy as np
 
@@ -44,7 +44,7 @@ class MaquisDmrg:
         "_entropy_builder",
     )
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Construct Wrapper.
 
         Note
@@ -66,8 +66,18 @@ class MaquisDmrg:
         """Flag for excited states."""
         self._energy: Union[float, List[float]] = 0.0
         """Final energy of the system."""
-        self._entropy_builder: EntropyBuilder = None
+        self._entropy_builder: Optional[EntropyBuilder] = None
         """Assembly s1, s2 and mut inf from qcmaquis"""
+
+    def replace_parameters(self, parameters_wrapper: ParametersWrapper):
+        """Replace existing parameters wrapper with new parameters.
+
+        Parameters
+        ----------
+        parameters_wrapper : ParametersWrapper
+            parameter object
+        """
+        self._parameters = parameters_wrapper
 
     def set_parameter(self, parameter_name: str, parameter_value: Any):
         """Set any parameter in DmrgParameters.
@@ -97,9 +107,9 @@ class MaquisDmrg:
 
     def set_excited_states(
         self,
+        n_excited_states: int,
         method: ExcitedStates = ExcitedStates.ORTHO,
-        n_excited_states: int = None,
-        feast_window: List[float] = None
+        feast_window: Optional[List[float]] = None
     ):
         """Enable Excited States.
 
@@ -161,6 +171,8 @@ class MaquisDmrg:
             The mutual information
         """
         self._dmrg.measure()
+        if self._entropy_builder is None:
+            raise AssertionError("Initialize entropy builder before extracting entropies")
         self._entropy_builder.make_diagnostics(self._dmrg.get_dmrg())
         return (
             self._entropy_builder.s1_entropy,
@@ -198,6 +210,11 @@ class MaquisDmrg:
         energy : Union[float, List[float]]
             the final energies
         """
+        # try:
+        self._dmrg._run_flag = True
+        self._energy = self._dmrg.get_energy()
+        # except:
+
         if self._energy == 0.0:
             raise RuntimeWarning("Run DMRG before requesting energies")
 
@@ -225,7 +242,14 @@ class MaquisDmrg:
         """
         self._parameters.set_integral_file(fcidump)
 
-    def run(self, n_orbitals: int, n_electrons: int, spin: int = 0, n_states: int = None, fiedler: bool = False):
+    def run(
+        self,
+        n_orbitals: int,
+        n_electrons: int,
+        spin: int = 0,
+        n_states: Optional[int] = None,
+        fiedler: bool = False
+    ):
         """Run Dmrg.
 
         Note
@@ -250,12 +274,12 @@ class MaquisDmrg:
 
         # excited states
         if n_states is not None:
-            self._energy = []
+            # start with ground state
             self._parameters.set_excited_states_ortho(0)
 
         self._parameters.set_system(n_orbitals, n_electrons, spin)
 
-        if fiedler is True:
+        if fiedler is True and "orbital_order" not in self._parameters.get_parameters_dict():
             # don't dump anything for fiedler
             try:
                 tmp_chkpfile = self._parameters.get_parameters_dict()["chkpfile"]
@@ -283,6 +307,10 @@ class MaquisDmrg:
             if tmp_result_file:
                 self._parameters.set_result_path(tmp_result_file)
 
+        elif "orbital_order" in self._parameters.get_parameters_dict():
+            orbital_order = self._parameters.get("orbital_order")
+            self._entropy_builder = EntropyBuilder(n_orbitals, orbital_order)
+
         else:
             self._entropy_builder = EntropyBuilder(n_orbitals)
 
@@ -296,11 +324,13 @@ class MaquisDmrg:
 
         self._dmrg.run()
         # excited states
+        # TODO: test this for feast
         if n_states is not None:
+            self._energy = []
             self._energy.append(self._dmrg.get_energy())
-            for i in range(1, n_states):
+            for state in range(1, n_states):
                 self._parameters.set_system(n_orbitals, n_electrons, spin)
-                self._parameters.set_excited_states_ortho(i)
+                self._parameters.set_excited_states_ortho(state)
                 self._dmrg.set_parameters(self._parameters)
                 if "integral_file" not in self._parameters.get_parameters_dict():
                     self._dmrg.set_integrals(self._integral_map)
@@ -352,8 +382,11 @@ class MaquisDmrg:
             Total spin of the system (2S)
         """
         self._parameters.set_system(norb, nelec, spin)
+        print(checkpoint)
         self._parameters.set_checkpoint_path(checkpoint)
         self._dmrg.set_parameters(self._parameters)
+        self._dmrg.set_integrals(self._integral_map)
+        # self._dmrg.run()
 
     def get_ci_coefficient(self, determinant_string: str) -> float:
         """Get CI coefficient from determinant string.
@@ -363,8 +396,8 @@ class MaquisDmrg:
         determinant_string : str
             a qcmaquis compatible determinant string
 
-        Return
-        ------
+        Returns
+        -------
         ci_coeff : float
             The corresponding ci coefficient
         """
@@ -380,8 +413,8 @@ class MaquisDmrg:
         norb : int
             number of orbitals
 
-        Return
-        ------
+        Returns
+        -------
         coeff_hf : float
             coefficient of mean field determinant
         singles : np.ndarray
@@ -423,269 +456,3 @@ class MaquisDmrg:
                         doubles[i * 2, j * 2 + 1, a * 2, b * 2 + 1] = coeff_ab.real
                         doubles[i * 2 + 1, j * 2, a * 2 + 1, b * 2] = coeff_ab.real
         return coeff_hf, singles, doubles
-
-# if __name__ == "__main__":
-    # test_current_path = str(Path.cwd()) + "/python_tests"
-    # integrals = ComplexTCIntegralMap()
-    # integrals.set((1, 1, 0, 0, 0, 0), -1.9410228773342559e+00)
-    # integrals.set((1, 2, 0, 0, 0, 0), -3.1641663736652514e-01)
-    # integrals.set((2, 1, 0, 0, 0, 0), -3.1641663736652437e-01)
-    # integrals.set((2, 2, 0, 0, 0, 0), -9.0227670561564222e-02)
-    # integrals.set((3, 3, 0, 0, 0, 0), 7.8499729043522848e-01)
-    # integrals.set((4, 4, 0, 0, 0, 0), 7.8499729043522848e-01)
-    # integrals.set((5, 5, 0, 0, 0, 0), 7.8499729043522892e-01)
-    # integrals.set((1, 1, 1, 1, 0, 0), 1.0183556583001547e+00)
-    # integrals.set((1, 1, 2, 1, 0, 0), 3.2114288110690942e-01)
-    # integrals.set((1, 1, 2, 2, 0, 0), 8.5366263969801692e-01)
-    # integrals.set((1, 1, 3, 3, 0, 0), 9.5116233984037879e-01)
-    # integrals.set((1, 1, 4, 4, 0, 0), 9.5116233984037879e-01)
-    # integrals.set((1, 1, 5, 5, 0, 0), 9.5116233984037879e-01)
-    # integrals.set((1, 2, 1, 1, 0, 0), 3.0476675403355274e-01)
-    # integrals.set((1, 2, 1, 2, 0, 0), 2.5174364834784085e-01)
-    # integrals.set((1, 2, 2, 1, 0, 0), 2.2385496280331504e-01)
-    # integrals.set((1, 2, 2, 2, 0, 0), 2.4714874264182368e-01)
-    # integrals.set((1, 2, 3, 3, 0, 0), 2.1082535928181162e-01)
-    # integrals.set((1, 2, 4, 4, 0, 0), 2.1082535928181162e-01)
-    # integrals.set((1, 2, 5, 5, 0, 0), 2.1082535928181179e-01)
-    # integrals.set((1, 3, 1, 3, 0, 0), 1.8330678004452328e-01)
-    # integrals.set((1, 3, 2, 3, 0, 0), 2.5134760449013423e-02)
-    # integrals.set((1, 3, 3, 1, 0, 0), 1.8098179143498977e-01)
-    # integrals.set((1, 3, 3, 2, 0, 0), 4.4024363522944421e-02)
-    # integrals.set((1, 4, 1, 4, 0, 0), 1.8330678004452328e-01)
-    # integrals.set((1, 4, 2, 4, 0, 0), 2.5134760449013416e-02)
-    # integrals.set((1, 4, 4, 1, 0, 0), 1.8098179143498977e-01)
-    # integrals.set((1, 4, 4, 2, 0, 0), 4.4024363522944407e-02)
-    # integrals.set((1, 5, 1, 5, 0, 0), 1.8330678004452333e-01)
-    # integrals.set((1, 5, 2, 5, 0, 0), 2.5134760449013447e-02)
-    # integrals.set((1, 5, 5, 1, 0, 0), 1.8098179143498982e-01)
-    # integrals.set((1, 5, 5, 2, 0, 0), 4.4024363522944449e-02)
-    # integrals.set((2, 1, 2, 1, 0, 0), 1.9596627725878948e-01)
-    # integrals.set((2, 1, 3, 3, 0, 0), 2.4775473575494533e-01)
-    # integrals.set((2, 1, 4, 4, 0, 0), 2.4775473575494533e-01)
-    # integrals.set((2, 1, 5, 5, 0, 0), 2.4775473575494544e-01)
-    # integrals.set((2, 2, 2, 1, 0, 0), 2.5546841384748981e-01)
-    # integrals.set((2, 2, 2, 2, 0, 0), 7.4940475756065872e-01)
-    # integrals.set((2, 2, 3, 3, 0, 0), 7.8286400008585233e-01)
-    # integrals.set((2, 2, 4, 4, 0, 0), 7.8286400008585233e-01)
-    # integrals.set((2, 2, 5, 5, 0, 0), 7.8286400008585233e-01)
-    # integrals.set((2, 3, 2, 3, 0, 0), 3.6676840894247775e-02)
-    # integrals.set((2, 3, 3, 1, 0, 0), 4.7410516610267971e-03)
-    # integrals.set((2, 3, 3, 2, 0, 0), 2.5466242990294468e-02)
-    # integrals.set((2, 4, 2, 4, 0, 0), 3.6676840894247768e-02)
-    # integrals.set((2, 4, 4, 1, 0, 0), 4.7410516610267971e-03)
-    # integrals.set((2, 4, 4, 2, 0, 0), 2.5466242990294475e-02)
-    # integrals.set((2, 5, 2, 5, 0, 0), 3.6676840894247782e-02)
-    # integrals.set((2, 5, 5, 1, 0, 0), 4.7410516610267902e-03)
-    # integrals.set((2, 5, 5, 2, 0, 0), 2.5466242990294482e-02)
-    # integrals.set((3, 1, 3, 1, 0, 0), 1.7865680282545626e-01)
-    # integrals.set((3, 2, 3, 1, 0, 0), 2.3630654734957762e-02)
-    # integrals.set((3, 2, 3, 2, 0, 0), 1.4255645086341169e-02)
-    # integrals.set((3, 3, 3, 3, 0, 0), 9.3158111092842422e-01)
-    # integrals.set((3, 3, 4, 4, 0, 0), 9.3158111092842422e-01)
-    # integrals.set((3, 3, 5, 5, 0, 0), 9.3158111092842444e-01)
-    # integrals.set((4, 1, 4, 1, 0, 0), 1.7865680282545626e-01)
-    # integrals.set((4, 2, 4, 1, 0, 0), 2.3630654734957766e-02)
-    # integrals.set((4, 2, 4, 2, 0, 0), 1.4255645086341169e-02)
-    # integrals.set((4, 4, 4, 4, 0, 0), 9.3158111092842422e-01)
-    # integrals.set((4, 4, 5, 5, 0, 0), 9.3158111092842444e-01)
-    # integrals.set((5, 1, 5, 1, 0, 0), 1.7865680282545632e-01)
-    # integrals.set((5, 2, 5, 1, 0, 0), 2.3630654734957790e-02)
-    # integrals.set((5, 2, 5, 2, 0, 0), 1.4255645086341176e-02)
-    # integrals.set((5, 5, 5, 5, 0, 0), 9.3158111092842388e-01)
-    # integrals.set((1, 1, 1, 1, 1, 1), 1.9115381141742809e-03)
-    # integrals.set((1, 1, 1, 1, 1, 2), -2.5509485850552923e-04)
-    # integrals.set((1, 1, 1, 1, 2, 2), 2.7878203188368704e-03)
-    # integrals.set((1, 1, 1, 1, 3, 3), 1.3963811163335059e-03)
-    # integrals.set((1, 1, 1, 1, 4, 4), 1.3963811163335059e-03)
-    # integrals.set((1, 1, 1, 1, 5, 5), 1.3963811163335066e-03)
-    # integrals.set((1, 1, 1, 2, 1, 2), 5.5178136572181643e-04)
-    # integrals.set((1, 1, 1, 2, 2, 2), 2.7868471658280803e-04)
-    # integrals.set((1, 1, 1, 2, 3, 3), -9.4939835529712555e-04)
-    # integrals.set((1, 1, 1, 2, 4, 4), -9.4939835529712566e-04)
-    # integrals.set((1, 1, 1, 2, 5, 5), -9.4939835529712501e-04)
-    # integrals.set((1, 1, 1, 3, 1, 3), -7.3106461867098875e-05)
-    # integrals.set((1, 1, 1, 3, 2, 3), 1.9549001030377992e-04)
-    # integrals.set((1, 1, 1, 4, 1, 4), -7.3106461867098740e-05)
-    # integrals.set((1, 1, 1, 4, 2, 4), 1.9549001030377946e-04)
-    # integrals.set((1, 1, 1, 5, 1, 5), -7.3106461867098631e-05)
-    # integrals.set((1, 1, 1, 5, 2, 5), 1.9549001030377946e-04)
-    # integrals.set((1, 1, 2, 2, 2, 2), 3.3096558215331652e-03)
-    # integrals.set((1, 1, 2, 2, 3, 3), 2.2226209281468959e-03)
-    # integrals.set((1, 1, 2, 2, 4, 4), 2.2226209281468959e-03)
-    # integrals.set((1, 1, 2, 2, 5, 5), 2.2226209281468973e-03)
-    # integrals.set((1, 1, 2, 3, 2, 3), 1.2063223168393608e-04)
-    # integrals.set((1, 1, 2, 4, 2, 4), 1.2063223168393637e-04)
-    # integrals.set((1, 1, 2, 5, 2, 5), 1.2063223168393584e-04)
-    # integrals.set((1, 1, 3, 3, 3, 3), 1.3115851469828498e-03)
-    # integrals.set((1, 1, 3, 3, 4, 4), 1.3115851469828498e-03)
-    # integrals.set((1, 1, 3, 3, 5, 5), 1.3115851469828502e-03)
-    # integrals.set((1, 1, 4, 4, 4, 4), 1.3115851469828502e-03)
-    # integrals.set((1, 1, 4, 4, 5, 5), 1.3115851469828502e-03)
-    # integrals.set((1, 1, 5, 5, 5, 5), 1.3115851469828492e-03)
-    # integrals.set((1, 2, 1, 2, 1, 2), 1.0902359255668213e-03)
-    # integrals.set((1, 2, 1, 2, 2, 2), 7.2073724685171848e-04)
-    # integrals.set((1, 2, 1, 2, 3, 3), -1.8874709287954700e-04)
-    # integrals.set((1, 2, 1, 2, 4, 4), -1.8874709287954776e-04)
-    # integrals.set((1, 2, 1, 2, 5, 5), -1.8874709287954603e-04)
-    # integrals.set((1, 2, 1, 3, 1, 3), 2.9814078664790850e-04)
-    # integrals.set((1, 2, 1, 3, 2, 3), 1.8134560599690198e-04)
-    # integrals.set((1, 2, 1, 4, 1, 4), 2.9814078664790818e-04)
-    # integrals.set((1, 2, 1, 4, 2, 4), 1.8134560599690182e-04)
-    # integrals.set((1, 2, 1, 5, 1, 5), 2.9814078664790867e-04)
-    # integrals.set((1, 2, 1, 5, 2, 5), 1.8134560599690163e-04)
-    # integrals.set((1, 2, 2, 2, 2, 2), 6.4345903846134921e-04)
-    # integrals.set((1, 2, 2, 2, 3, 3), -3.9185982211398463e-04)
-    # integrals.set((1, 2, 2, 2, 4, 4), -3.9185982211398555e-04)
-    # integrals.set((1, 2, 2, 2, 5, 5), -3.9185982211398360e-04)
-    # integrals.set((1, 2, 2, 3, 2, 3), 1.0680638237659020e-04)
-    # integrals.set((1, 2, 2, 4, 2, 4), 1.0680638237659016e-04)
-    # integrals.set((1, 2, 2, 5, 2, 5), 1.0680638237659009e-04)
-    # integrals.set((1, 2, 3, 3, 3, 3), -1.2390840425682437e-03)
-    # integrals.set((1, 2, 3, 3, 4, 4), -1.2390840425682435e-03)
-    # integrals.set((1, 2, 3, 3, 5, 5), -1.2390840425682446e-03)
-    # integrals.set((1, 2, 4, 4, 4, 4), -1.2390840425682433e-03)
-    # integrals.set((1, 2, 4, 4, 5, 5), -1.2390840425682442e-03)
-    # integrals.set((1, 2, 5, 5, 5, 5), -1.2390840425682450e-03)
-    # integrals.set((1, 3, 1, 3, 2, 2), -1.1571371462836206e-04)
-    # integrals.set((1, 3, 1, 3, 3, 3), 2.3764355447230526e-05)
-    # integrals.set((1, 3, 1, 3, 4, 4), -3.2866895450366616e-04)
-    # integrals.set((1, 3, 1, 3, 5, 5), -3.2866895450366605e-04)
-    # integrals.set((1, 3, 1, 4, 3, 4), 1.7621665497544853e-04)
-    # integrals.set((1, 3, 1, 5, 3, 5), 1.7621665497544859e-04)
-    # integrals.set((1, 3, 2, 2, 2, 3), 1.7274800027940331e-04)
-    # integrals.set((1, 3, 2, 3, 3, 3), 2.0044058066931485e-04)
-    # integrals.set((1, 3, 2, 3, 4, 4), 5.7447590338582306e-05)
-    # integrals.set((1, 3, 2, 3, 5, 5), 5.7447590338582225e-05)
-    # integrals.set((1, 3, 2, 4, 3, 4), 7.1496495165366387e-05)
-    # integrals.set((1, 3, 2, 5, 3, 5), 7.1496495165366319e-05)
-    # integrals.set((1, 4, 1, 4, 2, 2), -1.1571371462836227e-04)
-    # integrals.set((1, 4, 1, 4, 3, 3), -3.2866895450366616e-04)
-    # integrals.set((1, 4, 1, 4, 4, 4), 2.3764355447231122e-05)
-    # integrals.set((1, 4, 1, 4, 5, 5), -3.2866895450366600e-04)
-    # integrals.set((1, 4, 1, 5, 4, 5), 1.7621665497544859e-04)
-    # integrals.set((1, 4, 2, 2, 2, 4), 1.7274800027940299e-04)
-    # integrals.set((1, 4, 2, 3, 3, 4), 7.1496495165366387e-05)
-    # integrals.set((1, 4, 2, 4, 3, 3), 5.7447590338581601e-05)
-    # integrals.set((1, 4, 2, 4, 4, 4), 2.0044058066931458e-04)
-    # integrals.set((1, 4, 2, 4, 5, 5), 5.7447590338581954e-05)
-    # integrals.set((1, 4, 2, 5, 4, 5), 7.1496495165366332e-05)
-    # integrals.set((1, 5, 1, 5, 2, 2), -1.1571371462836157e-04)
-    # integrals.set((1, 5, 1, 5, 3, 3), -3.2866895450366573e-04)
-    # integrals.set((1, 5, 1, 5, 4, 4), -3.2866895450366567e-04)
-    # integrals.set((1, 5, 1, 5, 5, 5), 2.3764355447231285e-05)
-    # integrals.set((1, 5, 2, 2, 2, 5), 1.7274800027940299e-04)
-    # integrals.set((1, 5, 2, 3, 3, 5), 7.1496495165366305e-05)
-    # integrals.set((1, 5, 2, 4, 4, 5), 7.1496495165366373e-05)
-    # integrals.set((1, 5, 2, 5, 3, 3), 5.7447590338581683e-05)
-    # integrals.set((1, 5, 2, 5, 4, 4), 5.7447590338581872e-05)
-    # integrals.set((1, 5, 2, 5, 5, 5), 2.0044058066931436e-04)
-    # integrals.set((2, 2, 2, 2, 2, 2), 3.5462315265775328e-03)
-    # integrals.set((2, 2, 2, 2, 3, 3), 2.7438361990735384e-03)
-    # integrals.set((2, 2, 2, 2, 4, 4), 2.7438361990735375e-03)
-    # integrals.set((2, 2, 2, 2, 5, 5), 2.7438361990735388e-03)
-    # integrals.set((2, 2, 2, 3, 2, 3), 1.1536186423993642e-04)
-    # integrals.set((2, 2, 2, 4, 2, 4), 1.1536186423993647e-04)
-    # integrals.set((2, 2, 2, 5, 2, 5), 1.1536186423993645e-04)
-    # integrals.set((2, 2, 3, 3, 3, 3), 2.0381744505766700e-03)
-    # integrals.set((2, 2, 3, 3, 4, 4), 2.0381744505766700e-03)
-    # integrals.set((2, 2, 3, 3, 5, 5), 2.0381744505766682e-03)
-    # integrals.set((2, 2, 4, 4, 4, 4), 2.0381744505766700e-03)
-    # integrals.set((2, 2, 4, 4, 5, 5), 2.0381744505766682e-03)
-    # integrals.set((2, 2, 5, 5, 5, 5), 2.0381744505766687e-03)
-    # integrals.set((2, 3, 2, 3, 3, 3), 1.1958381178876656e-04)
-    # integrals.set((2, 3, 2, 3, 4, 4), 3.4062460360147071e-05)
-    # integrals.set((2, 3, 2, 3, 5, 5), 3.4062460360147139e-05)
-    # integrals.set((2, 3, 2, 4, 3, 4), 4.2760675714310064e-05)
-    # integrals.set((2, 3, 2, 5, 3, 5), 4.2760675714309895e-05)
-    # integrals.set((2, 4, 2, 4, 3, 3), 3.4062460360147179e-05)
-    # integrals.set((2, 4, 2, 4, 4, 4), 1.1958381178876691e-04)
-    # integrals.set((2, 4, 2, 4, 5, 5), 3.4062460360147220e-05)
-    # integrals.set((2, 4, 2, 5, 4, 5), 4.2760675714309969e-05)
-    # integrals.set((2, 5, 2, 5, 3, 3), 3.4062460360146949e-05)
-    # integrals.set((2, 5, 2, 5, 4, 4), 3.4062460360146922e-05)
-    # integrals.set((2, 5, 2, 5, 5, 5), 1.1958381178876591e-04)
-    # integrals.set((3, 3, 3, 3, 3, 3), 1.4624785379663617e-03)
-    # integrals.set((3, 3, 3, 3, 4, 4), 1.4624785379663613e-03)
-    # integrals.set((3, 3, 3, 3, 5, 5), 1.4624785379663634e-03)
-    # integrals.set((3, 3, 4, 4, 4, 4), 1.4624785379663608e-03)
-    # integrals.set((3, 3, 4, 4, 5, 5), 1.4624785379663634e-03)
-    # integrals.set((3, 3, 5, 5, 5, 5), 1.4624785379663639e-03)
-    # integrals.set((4, 4, 4, 4, 4, 4), 1.4624785379663600e-03)
-    # integrals.set((4, 4, 4, 4, 5, 5), 1.4624785379663626e-03)
-    # integrals.set((4, 4, 5, 5, 5, 5), 1.4624785379663639e-03)
-    # integrals.set((5, 5, 5, 5, 5, 5), 1.4624785379663643e-03)
-
-    # integrals = IntegralMap()
-    # integrals.set((1, 1, 1, 1), 0.354237848011)
-    # integrals.set((1, 1, 2, 1), -0.821703816101E-13)
-    # integrals.set((2, 1, 2, 1), 0.185125251547)
-    # integrals.set((2, 2, 2, 1), 0.782984788117E-13)
-    # integrals.set((1, 1, 2, 2), 0.361001163519)
-    # integrals.set((2, 2, 2, 2), 0.371320200119)
-    # integrals.set((1, 1, 0, 0), -0.678487901790)
-    # integrals.set((2, 1, 0, 0), -0.539801158857E-14)
-    # integrals.set((2, 2, 0, 0), -0.653221638776)
-    # integrals.set((0, 0, 0, 0), 0.176392403557)
-
-    # blub = []
-    # this_dmrg = MaquisDmrg()
-    # this_dmrg.set_transcorrelation()
-    # this_dmrg.update_integrals(integrals)
-    # this_dmrg._parameters.erase("integrals")
-    # this_dmrg.
-    # _parameters.set("integral_file", "/home/max/Programs/coupled_wick_scf/maquis-dmrg_python/dmrg/IntegralFile_H2_Transcorrelated")
-    # this_dmrg._parameters.erase("integrals")
-    # this_dmrg._parameters.set("nsweeps", 1)
-    # this_dmrg._parameters.set("max_bond_dimension", 1000)
-    # this_dmrg._parameters.set("integral_file", "/home/max/Programs/coupled_wick_scf/scripts/test/cc-pvdz/trans/0.0/He_cc-pvdz.FCIDUMP")
-    # this_dmrg._parameters.set("optimization", "singlesite")
-    # this_dmrg._parameters.set("simulation_type", "TD")
-    # this_dmrg._parameters.set("propagator_accuracy", 1.0E-10)
-    # this_dmrg._parameters.set("propagator_maxiter", 10)
-    # this_dmrg._parameters.set("time_step", "0.2")
-    # this_dmrg._parameters.set("hamiltonian_units", "Hartree")
-    # this_dmrg._parameters.set("time_units", "fs")
-    # this_dmrg._parameters.set("imaginary_time", "yes")
-    # this_dmrg._parameters.set("TD_backpropagation", "no")
-    # this_dmrg._parameters.set("transcorrelated_hamiltonian", "yes")
-
-    # this_dmrg._parameters.set("chh", 1000)
-    # this_dmrg._parameters.set("chkpfile", "/home/max/Programs/coupled_wick_scf/maquis-dmrg_python/dmrg/python/checkpoint")
-    # this_dmrg.run(28, 14, fiedler=False)
-    # this_dmrg.run(2, 2, fiedler=True)
-    # blub.append(this_dmrg.get_energy())
-    # this_dmrg.run(2, 2, fiedler=False)
-    # this_dmrg.run(28, 14, fiedler=False, n_states=2)
-    # blub.append(this_dmrg.get_energy())
-    # print("------------ FIEDLER --------------------")
-    # this_dmrg.run(2, 2, fiedler=True, n_states=2)
-    # this_dmrg._parameters._checkpoint_path = "blub_gs"
-    #
-    # this_dmrg.run(28, 14, fiedler=True, n_states=4)
-    # [-108.8661510547466, -108.7528692473976, -108.74233988457854, -108.71384766020647]
-    # this_dmrg.set_feast((-108.75, -108.74,), 4)
-    # this_dmrg.run(28, 14, fiedler=True)
-    # this_dmrg.set_feast((-0.7, -0.5,), 8)
-    # this_dmrg.run(5, 2, fiedler=False)
-    # print(this_dmrg._dmrg.get_ci_coefficients("3,2,1,1,1"))
-    # print("--------------------")
-    # this_dmrg.get_singles_and_doubles(1, 2)
-    # print(this_dmrg._dmrg._dmrg.getCICoefficients(2))
-    # print("0000000000")
-    # blub.append(this_dmrg.get_energy())
-    # -3.882045755
-    # """
-    # this_dmrg_2 = MaquisDmrg()
-    # this_dmrg_2.set_feast((-0.7, -0.5,), 8)
-    # this_dmrg_2.update_integrals(integrals)
-    # this_dmrg_2.run(2, 2)
-    # this_dmrg_3 = MaquisDmrg()
-    # this_dmrg_3.update_integrals(integrals)
-    # this_dmrg_3.run(2, 2, n_states=2, fiedler=False)
-    # print(this_dmrg.get_energy())
-    # print(this_dmrg_2.get_energy())
-    # print(this_dmrg_3.get_energy())
-    # """
-    # for i in blub:
-    #     print(i)
-    #     print(i)

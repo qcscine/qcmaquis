@@ -31,7 +31,7 @@ class ParametersWrapper:
     ----------
     _parameters : DmrgParameters
         dmrg parameters map
-    _parameter_dict: Dict[str, Any] = {}
+    _parameter_dict: Dict[str, Any]
         for reference, same as dmrg parameters but native python
     _checkpoint_path : str, default = "checkpoint_gs"
         name and path to store the checkpoint file.
@@ -47,22 +47,54 @@ class ParametersWrapper:
         "_checkpoint_path",
         "_results_path",
         "_excited_state_name",
+        "_storage_dir",
     )
 
-    def __init__(self):
-        """Constructor."""
+    def __init__(self, set_defaults: bool = True) -> None:
+        """Constructor.
+
+        Parameters
+        ----------
+        set_defaults : bool, default = True
+            disable default parameters and use empty parameters
+        """
         self._parameters = DmrgParameters()
         """dmrg parameters map"""
         self._parameter_dict: Dict[str, Any] = {}
         """for reference, same as dmrg parameters but native python"""
-        self._checkpoint_path = "checkpoint_gs"
+        self._checkpoint_path: str = "checkpoint_gs.h5"
         """name and path to store the checkpoint file."""
-        self._results_path = "results_file.h5"
+        self._results_path: str = "results_file.h5"
         """name and path to store the results file."""
-        self._excited_state_name = self._checkpoint_path[:-3] + "ex0"
+        self._storage_dir: str = "qcmaquis_storage_dir"
+        """name and path to store the results file."""
+        self._excited_state_name: str = self._checkpoint_path[:-3] + "ex0"
         """name for excited states checkpoint files."""
+
         # set default parameters
-        self._set_defaults()
+        if set_defaults:
+            self._set_defaults()
+
+    def set_storage_dir(self, path: str):
+        """Set path and name of storagedir.
+
+        Parameters
+        ----------
+        path : str
+            the path
+        """
+        self._storage_dir = path
+        self.set("storagedir", path)
+
+    def get_result_path(self) -> str:
+        """Return current result path.
+
+        Returns
+        -------
+        self.result_path : str
+            Path to the result file
+        """
+        return self._results_path
 
     def set_result_path(self, path: str):
         """Set path and name to checkpoint file.
@@ -73,10 +105,20 @@ class ParametersWrapper:
             the path
         """
         if not path.endswith(".h5"):
-            raise ValueError("result_path has to point to <.h5> file")
-
+            path += ".h5"
+            # raise ValueError("result_path has to point to <.h5> file")
         self._results_path = path
-        self.set("resultfile", path)
+        self.set("resultfile", path, verbose=False)
+
+    def get_checkpoint_path(self) -> str:
+        """Return current checkpoint path.
+
+        Returns
+        -------
+        self.checkpoint_path : str
+            Path to the checkpoint file
+        """
+        return self._checkpoint_path
 
     def set_checkpoint_path(self, path: str):
         """Set path and name to checkpoint file.
@@ -86,8 +128,10 @@ class ParametersWrapper:
         path : str
             the path
         """
+        if not path.endswith(".h5"):
+            path += ".h5"
         self._checkpoint_path = path
-        self.set("chkpfile", self._checkpoint_path)
+        self.set("chkpfile", self._checkpoint_path, verbose=False)
 
     def _set_defaults(self):
         """Set default parameters.
@@ -278,6 +322,12 @@ class ParametersWrapper:
         self.set("nelec", n_electrons)
         self.set("L", n_orbitals)
 
+        if n_orbitals > 50 and self._storage_dir:
+            print("More than 50 orbitals detected")
+            print(f"Dumping boundaries to {self._storage_dir}")
+            print("If you want to disable automatic dumping, call <dmrg_object>.parameter.disable_storage_dir()")
+            self.set("storagedir", self._storage_dir, verbose=False)
+
         self._make_hf_occupation(n_orbitals, n_electrons, spin)
         self._make_site_types(n_orbitals)
 
@@ -319,6 +369,25 @@ class ParametersWrapper:
             else:
                 occupation += "1,"
         self.set("hf_occ", occupation[:-1])
+
+    def get(self, parameter_name: str) -> Any:
+        """Set any parameter in DmrgParameters.
+
+        Parameters
+        ----------
+        parameter_name : str
+            name of the parameter
+        verbose : bool, default = True
+            verbosity option
+
+        Returns
+        -------
+        prameter_val : Any
+            value of the parameter
+        """
+        if parameter_name in self._parameter_dict:
+            return self._parameter_dict[parameter_name]
+        return None
 
     def set(self, parameter_name: str, parameter_value: Any, verbose: bool = True):
         """Set any parameter in DmrgParameters.
