@@ -23,16 +23,14 @@ def test_srcas_with_interface():
     mc = mcscf.CASCI(m, 6, 6)
     mc.fcisolver = QcMaquis(mol)
     mc.fcisolver.file_path = os.path.dirname(os.path.abspath(__file__))
+    mc.fcisolver.parameters.set("symmetry", "2u1pg")
     mc.fcisolver.parameters.set_orbital_optimization()
     mc.casci()
     dmrg = mc.fcisolver.dmrg
 
     srcas = Srcas(dmrg)
     srcas.run()
-    srcas.print()
-    # results = srcas.results()
-    # for i in results:
-    #     print(i)
+    srcas.print_results()
 
     path = os.path.dirname(os.path.abspath(__file__))
     os.chdir(path)
@@ -44,23 +42,13 @@ def test_srcas():
 
     dmrg = MaquisDmrg()
     dmrg.set_parameter("symmetry", "2u1pg")
-    dmrg.init_dmrg("checkpoint_n2_triplet.2.2.h5", 6, 6, 2)
+    dmrg.init_dmrg("files/checkpoint_n2_triplet.2.2.h5", 6, 6, 2)
 
     srcas = Srcas(dmrg)
-    # srcas.run(dmrg, "4,4,3,3,1,1")
     srcas.run()
-    srcas.print()
-    # results = srcas.results()
-    # for i in results:
-    #     print(i, results[i])
+    srcas.print_results()
 
 
 if __name__ == "__main__":
-    test_srcas()
     test_srcas_with_interface()
-    # setup()
-    # try:
-    # test_srcas(dmrg)
-    # except:
-    #     pass
-    # remove_checkpoint_and_results_file()
+    test_srcas()

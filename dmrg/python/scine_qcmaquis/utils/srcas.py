@@ -23,7 +23,7 @@ class Srcas:
         """Run SRCAS"""
         self._srcas.run()
 
-    def print(self) -> None:
+    def print_results(self) -> None:
         """Print SRCAS results"""
         self._srcas.printResults()
 
