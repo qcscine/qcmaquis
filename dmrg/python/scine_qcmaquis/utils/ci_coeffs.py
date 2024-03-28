@@ -1,5 +1,54 @@
 from typing import List, Tuple
 
+# # TODO: this is not needed here, but maybe important somewhere else -> move it to better place
+# def make_cas_hamil(mf: Any, norb: int, nelecs: int) -> Tuple[float, np.ndarray, np.ndarray]:
+#     """Create the CAS Hamiltonian for n orbitals and n electrons from a HF wave function.
+#
+#     Note
+#     ----
+#     This is not tested or used.
+#
+#     Parameters
+#     ----------
+#     mf : Any
+#         Pyscf wave function
+#     norb : int
+#         Number of orbitals
+#     nelecs : int
+#         Number of electrons
+#
+#     Returns
+#     -------
+#     Tuple(float, np.ndarray, np.ndarray)
+#         core energy, effective one body operator, eris
+#     """
+#     mo_coeff = mf.mo_coeff
+#     nocc_tot = int(sum(mf.mo_occ) / 2)
+#     ncore = int(nocc_tot - nelecs / 2)
+#     # pylint: disable = W0212
+#     eris = mf._eri
+#     # pylint: enable = W0212
+#     ncas = norb
+#
+#     # 2e
+#     if mo_coeff.shape[1] != ncas:
+#         mo_coeff_tmp = mo_coeff[:, ncore:ncore + ncas]
+#     eri = ao2mo.full(eris, mo_coeff_tmp)
+#     eri = ao2mo.restore(1, eri, norb)
+#
+#     # 1e
+#     mo_core = mo_coeff[:, :ncore]
+#     mo_cas = mo_coeff[:, ncore:ncore + ncas]
+#     hcore = mf.get_hcore()
+#     energy_core = mf.energy_nuc()
+#
+#     core_dm = np.dot(mo_core, mo_core.conj().T) * 2
+#     corevhf = mf.get_veff(None, core_dm)
+#     energy_core += np.einsum('ij,ji', core_dm, hcore).real
+#     energy_core += np.einsum('ij,ji', core_dm, corevhf).real * .5
+#     h1eff = reduce(np.dot, (mo_cas.conj().T, hcore + corevhf, mo_cas))
+#
+#     return energy_core, h1eff, eri
 
 def make_hf_occ(norb: int, nocc: int) -> List[int]:
     """
