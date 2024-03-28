@@ -34,3 +34,5 @@ ip64test
 compile_commands.json
 
 *TODO*
+.coverage
+*pytest*

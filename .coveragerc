@@ -1,0 +1,12 @@
+[run]
+source =
+    scine_qcmaquis
+[report]
+omit =
+    */tests/*
+    *__main__*
+    *_bck*
+
+exclude_lines =
+    if __name__ == '__main__':
+
