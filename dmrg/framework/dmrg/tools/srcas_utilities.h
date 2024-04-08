@@ -83,7 +83,9 @@ public:
 
 private:
   /** @brief setup SRCAS for different models */
-  void setupModel();
+  void setupModel_();
+  /** @brief setup SRCAS init state for different models */
+  void setupInitState_();
   /** @brief generate a new determinant form current queen */
   std::vector<int> generateNewDet_();
   /** @brief Evaluate the current completeness */

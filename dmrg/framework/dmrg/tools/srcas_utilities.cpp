@@ -37,122 +37,25 @@
 namespace maquis {
 namespace srcas {
 
-template<typename ScalarType>
-void SRCAS<ScalarType>::setupModel() {
-  // Setup for different models
-  if (parms_["MODEL"] == "nmode") {
-    // Get the number of modes and the maximum occupation of each one
-    numParticles_ = parms_["nmode_num_modes"];
-    maxDetStr_ = parms_["nmode_num_basis"].str();
-    detSpace_ = parms_["nmode_num_basis"].as<std::vector<int>>();
-
-  } else if (parms_["MODEL"] == "watson") {
-    numParticles_ = parms_["L"];
-    maxDetStr_ = parms_["Nmax"].str();
-    detSpace_ = parms_["Nmax"].as<std::vector<int>>();
-    if (detSpace_.size() != numParticles_ && detSpace_.size() != 1) {
-      throw std::runtime_error("The Nmax parameter must be either a single integer, or a vector of lenght L");
-    }
-    if (detSpace_.size() != numParticles_) {
-      for (int i = 1; i < numParticles_; i++) {
-        maxDetStr_ += ",";
-        maxDetStr_ += parms_["Nmax"].str();
-      }
-      std::vector<int> tmpVec(numParticles_, std::stoi(parms_["Nmax"].str()));
-      detSpace_ = std::move(tmpVec);
-    }
-
-  // TODO: better default for sampling speed
-  } else if (parms_["MODEL"] == "quantum_chemistry") {
-    if (parms_["symmetry"] == "su2u1" || parms_["symmetry"] == "su2u1pg") {
-      numParticles_ = parms_["nelec"];
-    } else {
-      numParticles_ = int(parms_["u1_total_charge1"]) + int(parms_["u1_total_charge2"]);
-    }
-    maxDetStr_ = "4";
-    for (int i = 1; i < parms_["L"]; i++) {
-      maxDetStr_ += ",4";
-    }
-    std::vector<int> tmpVec(parms_["L"], 4);
-    detSpace_ = std::move(tmpVec);
-
-  } else {
-    throw std::runtime_error("The SRCAS class supports only vibrational and electronic Hamiltonians so far");
-  }
-}
-
 template <typename ScalarType> // real or complex
-SRCAS<ScalarType>::SRCAS(DmrgParameters &parameters, std::shared_ptr<InterfaceType> interface)
-    : interface_(interface), 
-      uniformDist_(0., 1.),
-      uniformRandomNumber_(generator_, uniformDist_),
-      geomDist_(1.0 - parameters["srcas_samplingSpeed"]),
-      geometricRandomNumber_(generator_, geomDist_),
-      parms_(parameters) 
-{
-  generator_.seed(parms_["seed"]);
-  
-  this->setupModel();
-
-  // If user set a starting det, use this, otherwise use the HF/VSCF ground state
-  if (parms_.is_set("init_basis_state")) {
-    startingDet_ = parms_["init_basis_state"].str();
-    detQueen_ = parms_["init_basis_state"].as<std::vector<int>>();
-
-  } else {
-    if (parms_["MODEL"] == "nmode" || parms_["MODEL"] == "watson") {
-      startingDet_ = "0";
-      for (int i = 1; i < numParticles_; i++) {
-        startingDet_ += ",0";
+double SRCAS<ScalarType>::calculateCompleteness_() {
+  double sum_ci2 = 0.0;
+  for (iter_ = hashTable_.begin(); iter_ != hashTable_.end(); iter_++) {
+    double factor = 1.0;
+    if (parms_["symmetry"] == "su2u1" || parms_["symmetry"] == "su2u1pg") {
+      std::vector<int> det = iter_->first;
+      int nUnpaired = 0;
+      for (int i = 0; i < det.size(); i++) {
+        if (det[i] == 3 || det[i] == 2)
+          nUnpaired++;
       }
-      std::vector<int> tmpVec(numParticles_, 0);
-      detQueen_ = std::move(tmpVec);
-
-    } else {
-      int numDoubleOcc = numParticles_ / 2;
-      startingDet_ = "";
-      detQueen_.resize(parms_["L"]);
-      for (int i = 0; i < numDoubleOcc; i++) {
-        startingDet_ += "4,";
-        detQueen_[i] = 4;
-      }
-      if (numParticles_ % 2) {
-        startingDet_ += "3,";
-        detQueen_[numDoubleOcc] = 3;
-      }
-      for (int i = numDoubleOcc + (numParticles_ % 2); i < parms_["L"]; i++) {
-        startingDet_ += "1,";
-        detQueen_[i] = 1;
-      }
-      startingDet_.pop_back();
-    }
-
-  }
-  if (parms_["MODEL"] == "quantum_chemistry") {
-    if (!symmetriesFulfilled_(detQueen_)) {
-      detQueen_ = generateNewDet_();
-      startingDet_ = std::to_string(detQueen_[0]);
-      for (int i = 1; i < detQueen_.size(); i++) {
-        startingDet_ += ",";
-        startingDet_ += std::to_string(detQueen_[i]);
+      if (nUnpaired > 0) {
+        factor /= pow(2.0, nUnpaired);
       }
     }
+    sum_ci2 += factor * pow(std::abs(iter_->second), 2.0);
   }
-  detTmp_ = detQueen_;
-}
-
-template <typename ScalarType> // real or complex, nmode or canonical (watson)
-void SRCAS<ScalarType>::printSRCASSettings() {
-  maquis::cout << std::endl << "----- SRCAS SETTINGS -----" << std::endl;
-  maquis::cout << "MPS taken from:                             " << parms_["chkpfile"].str() << std::endl;
-  maquis::cout << "Determinant space is:                       " << maxDetStr_ << std::endl;
-  maquis::cout << "Starting determinant is:                    " << startingDet_ << std::endl;
-  maquis::cout << "CI coeff (overlap) threshold is:            " << parms_["srcas_overlapThreshold"] << std::endl;
-  maquis::cout << "SRCAS target completeness is:               " << parms_["srcas_targetCompleteness"] << std::endl;
-  maquis::cout << "Maximum number of iterations is:            " << parms_["srcas_maxNumIterations"] << std::endl;
-  maquis::cout << "Number of samples per iteration is:         " << parms_["srcas_numSamples"] << std::endl;
-  maquis::cout << "Random number seed is:                      " << parms_["seed"] << std::endl;
-  maquis::cout << "Sampling speed for simultaneous updates is: " << parms_["srcas_samplingSpeed"] << std::endl;
+  return sum_ci2;
 }
 
 template <typename ScalarType> // real or complex, nmode or canonical (watson)
@@ -178,7 +81,6 @@ void SRCAS<ScalarType>::quicksort_(std::string dets[], ScalarType b[], int left,
       r--;
     }
   };
-  // Calls the routine defined above
   if (left < r) {
     quicksort_(dets, b, left, r);
   }
@@ -289,6 +191,128 @@ std::vector<int> SRCAS<ScalarType>::generateNewDet_() {
   return detTmp_;
 }
 
+template<typename ScalarType>
+void SRCAS<ScalarType>::setupModel_() {
+  // Setup for different models
+  if (parms_["MODEL"] == "nmode") {
+    // Get the number of modes and the maximum occupation of each one
+    numParticles_ = parms_["nmode_num_modes"];
+    maxDetStr_ = parms_["nmode_num_basis"].str();
+    detSpace_ = parms_["nmode_num_basis"].as<std::vector<int>>();
+
+  } else if (parms_["MODEL"] == "watson") {
+    numParticles_ = parms_["L"];
+    maxDetStr_ = parms_["Nmax"].str();
+    detSpace_ = parms_["Nmax"].as<std::vector<int>>();
+    if (detSpace_.size() != numParticles_ && detSpace_.size() != 1) {
+      throw std::runtime_error("The Nmax parameter must be either a single integer, or a vector of lenght L");
+    }
+    if (detSpace_.size() != numParticles_) {
+      for (int i = 1; i < numParticles_; i++) {
+        maxDetStr_ += ",";
+        maxDetStr_ += parms_["Nmax"].str();
+      }
+      std::vector<int> tmpVec(numParticles_, std::stoi(parms_["Nmax"].str()));
+      detSpace_ = std::move(tmpVec);
+    }
+
+  // TODO: better default for sampling speed
+  } else if (parms_["MODEL"] == "quantum_chemistry") {
+    if (parms_["symmetry"] == "su2u1" || parms_["symmetry"] == "su2u1pg") {
+      numParticles_ = parms_["nelec"];
+    } else {
+      numParticles_ = int(parms_["u1_total_charge1"]) + int(parms_["u1_total_charge2"]);
+    }
+    maxDetStr_ = "4";
+    for (int i = 1; i < parms_["L"]; i++) {
+      maxDetStr_ += ",4";
+    }
+    std::vector<int> tmpVec(parms_["L"], 4);
+    detSpace_ = std::move(tmpVec);
+
+  } else {
+    throw std::runtime_error("The SRCAS class supports only vibrational and electronic Hamiltonians so far");
+  }
+}
+
+template<typename ScalarType>
+void SRCAS<ScalarType>::setupInitState_() {
+  // If user set a starting det, use this, otherwise use the HF/VSCF ground state
+  if (parms_.is_set("init_basis_state")) {
+    startingDet_ = parms_["init_basis_state"].str();
+    detQueen_ = parms_["init_basis_state"].as<std::vector<int>>();
+
+  } else {
+    if (parms_["MODEL"] == "nmode" || parms_["MODEL"] == "watson") {
+      startingDet_ = "0";
+      for (int i = 1; i < numParticles_; i++) {
+        startingDet_ += ",0";
+      }
+      std::vector<int> tmpVec(numParticles_, 0);
+      detQueen_ = std::move(tmpVec);
+
+    } else {
+      int numDoubleOcc = numParticles_ / 2;
+      startingDet_ = "";
+      detQueen_.resize(parms_["L"]);
+      for (int i = 0; i < numDoubleOcc; i++) {
+        startingDet_ += "4,";
+        detQueen_[i] = 4;
+      }
+      if (numParticles_ % 2) {
+        startingDet_ += "3,";
+        detQueen_[numDoubleOcc] = 3;
+      }
+      for (int i = numDoubleOcc + (numParticles_ % 2); i < parms_["L"]; i++) {
+        startingDet_ += "1,";
+        detQueen_[i] = 1;
+      }
+      startingDet_.pop_back();
+    }
+
+  }
+  if (parms_["MODEL"] == "quantum_chemistry") {
+    if (!symmetriesFulfilled_(detQueen_)) {
+      detQueen_ = generateNewDet_();
+      startingDet_ = std::to_string(detQueen_[0]);
+      for (int i = 1; i < detQueen_.size(); i++) {
+        startingDet_ += ",";
+        startingDet_ += std::to_string(detQueen_[i]);
+      }
+    }
+  }
+  detTmp_ = detQueen_;
+}
+
+template <typename ScalarType> // real or complex
+SRCAS<ScalarType>::SRCAS(DmrgParameters &parameters, std::shared_ptr<InterfaceType> interface)
+    : interface_(interface), 
+      uniformDist_(0., 1.),
+      uniformRandomNumber_(generator_, uniformDist_),
+      geomDist_(1.0 - parameters["srcas_samplingSpeed"]),
+      geometricRandomNumber_(generator_, geomDist_),
+      parms_(parameters) 
+{
+  generator_.seed(parms_["seed"]);
+  this->setupModel_();
+  this->setupInitState_();
+}
+
+template <typename ScalarType> // real or complex, nmode or canonical (watson)
+void SRCAS<ScalarType>::printSRCASSettings() {
+  maquis::cout << std::endl << "----- SRCAS SETTINGS -----" << std::endl;
+  maquis::cout << "MPS taken from:                             " << parms_["chkpfile"].str() << std::endl;
+  maquis::cout << "Determinant space is:                       " << maxDetStr_ << std::endl;
+  maquis::cout << "Starting determinant is:                    " << startingDet_ << std::endl;
+  maquis::cout << "CI coeff (overlap) threshold is:            " << parms_["srcas_overlapThreshold"] << std::endl;
+  maquis::cout << "SRCAS target completeness is:               " << parms_["srcas_targetCompleteness"] << std::endl;
+  maquis::cout << "Maximum number of iterations is:            " << parms_["srcas_maxNumIterations"] << std::endl;
+  maquis::cout << "Number of samples per iteration is:         " << parms_["srcas_numSamples"] << std::endl;
+  maquis::cout << "Random number seed is:                      " << parms_["seed"] << std::endl;
+  maquis::cout << "Sampling speed for simultaneous updates is: " << parms_["srcas_samplingSpeed"] << std::endl;
+}
+
+
 template <typename ScalarType> // real or complex
 void SRCAS<ScalarType>::run() {
   maquis::cout << std::endl << "----- Starting SRCAS -----" << std::endl << std::endl;
@@ -356,26 +380,7 @@ void SRCAS<ScalarType>::run() {
   completeness_ = sum_ci2;
 }
 
-template <typename ScalarType> // real or complex
-double SRCAS<ScalarType>::calculateCompleteness_() {
-  double sum_ci2 = 0.0;
-  for (iter_ = hashTable_.begin(); iter_ != hashTable_.end(); iter_++) {
-    double factor = 1.0;
-    if (parms_["symmetry"] == "su2u1" || parms_["symmetry"] == "su2u1pg") {
-      std::vector<int> det = iter_->first;
-      int nUnpaired = 0;
-      for (int i = 0; i < det.size(); i++) {
-        if (det[i] == 3 || det[i] == 2)
-          nUnpaired++;
-      }
-      if (nUnpaired > 0) {
-        factor /= pow(2.0, nUnpaired);
-      }
-    }
-    sum_ci2 += factor * pow(std::abs(iter_->second), 2.0);
-  }
-  return sum_ci2;
-}
+
 
 // +---------------+
 //   FINAL PRINTING
