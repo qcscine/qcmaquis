@@ -40,9 +40,9 @@ namespace maquis {
 namespace srcas {
 
 template <typename ScalarType> // real or complex
-SRCAS<ScalarType>::SRCAS(DmrgParameters &parameters,
-                         std::shared_ptr<InterfaceType> interface)
-    : interface_(interface), uniformDist_(0., 1.),
+SRCAS<ScalarType>::SRCAS(DmrgParameters &parameters, std::shared_ptr<InterfaceType> interface)
+    : interface_(interface), 
+      uniformDist_(0., 1.),
       uniformRandomNumber_(generator_, uniformDist_),
       geomDist_(1.0 - parameters["srcas_samplingSpeed"]),
       geometricRandomNumber_(generator_, geomDist_), parms_(parameters) {
@@ -57,8 +57,7 @@ SRCAS<ScalarType>::SRCAS(DmrgParameters &parameters,
     maxDetStr_ = parms_["Nmax"].str();
     detSpace_ = parms_["Nmax"].as<std::vector<int>>();
     if (detSpace_.size() != numParticles_ && detSpace_.size() != 1) {
-      throw std::runtime_error("The Nmax parameter must be either a single "
-                               "integer, or a vector of lenght L");
+      throw std::runtime_error("The Nmax parameter must be either a single integer, or a vector of lenght L");
     }
     if (detSpace_.size() != numParticles_) {
       for (int i = 1; i < numParticles_; i++) {
@@ -70,11 +69,11 @@ SRCAS<ScalarType>::SRCAS(DmrgParameters &parameters,
     }
     // TODO: better default for sampling speed
   } else if (parms_["MODEL"] == "quantum_chemistry") {
-    if (parms_["symmetry"] == "su2u1" || parms_["symmetry"] == "su2u1pg")
+    if (parms_["symmetry"] == "su2u1" || parms_["symmetry"] == "su2u1pg") {
       numParticles_ = parms_["nelec"];
-    else
-      numParticles_ =
-          int(parms_["u1_total_charge1"]) + int(parms_["u1_total_charge2"]);
+    } else {
+      numParticles_ = int(parms_["u1_total_charge1"]) + int(parms_["u1_total_charge2"]);
+    }
     maxDetStr_ = "4";
     for (int i = 1; i < parms_["L"]; i++) {
       maxDetStr_ += ",4";
@@ -82,20 +81,19 @@ SRCAS<ScalarType>::SRCAS(DmrgParameters &parameters,
     std::vector<int> tmpVec(parms_["L"], 4);
     detSpace_ = std::move(tmpVec);
   } else {
-    throw std::runtime_error("The SRCAS class supports only vibrational and "
-                             "electronic Hamiltonians so far");
+    throw std::runtime_error("The SRCAS class supports only vibrational and electronic Hamiltonians so far");
   }
 
-  // If user set a starting det, use this, otherwise use the HF/VSCF ground
-  // state
+  // If user set a starting det, use this, otherwise use the HF/VSCF ground state
   if (parms_.is_set("init_basis_state")) {
     startingDet_ = parms_["init_basis_state"].str();
     detQueen_ = parms_["init_basis_state"].as<std::vector<int>>();
   } else {
     if (parms_["MODEL"] == "nmode" || parms_["MODEL"] == "watson") {
       startingDet_ = "0";
-      for (int i = 1; i < numParticles_; i++)
+      for (int i = 1; i < numParticles_; i++) {
         startingDet_ += ",0";
+      }
       std::vector<int> tmpVec(numParticles_, 0);
       detQueen_ = std::move(tmpVec);
     } else {
@@ -133,37 +131,29 @@ SRCAS<ScalarType>::SRCAS(DmrgParameters &parameters,
 template <typename ScalarType> // real or complex, nmode or canonical (watson)
 void SRCAS<ScalarType>::printSRCASSettings() {
   maquis::cout << std::endl << "----- SRCAS SETTINGS -----" << std::endl;
-  maquis::cout << "MPS taken from:                             "
-               << parms_["chkpfile"].str() << std::endl;
-  maquis::cout << "Determinant space is:                       " << maxDetStr_
-               << std::endl;
-  maquis::cout << "Starting determinant is:                    " << startingDet_
-               << std::endl;
-  maquis::cout << "CI coeff (overlap) threshold is:            "
-               << parms_["srcas_overlapThreshold"] << std::endl;
-  maquis::cout << "SRCAS target completeness is:               "
-               << parms_["srcas_targetCompleteness"] << std::endl;
-  maquis::cout << "Maximum number of iterations is:            "
-               << parms_["srcas_maxNumIterations"] << std::endl;
-  maquis::cout << "Number of samples per iteration is:         "
-               << parms_["srcas_numSamples"] << std::endl;
-  maquis::cout << "Random number seed is:                      "
-               << parms_["seed"] << std::endl;
-  maquis::cout << "Sampling speed for simultaneous updates is: "
-               << parms_["srcas_samplingSpeed"] << std::endl;
+  maquis::cout << "MPS taken from:                             " << parms_["chkpfile"].str() << std::endl;
+  maquis::cout << "Determinant space is:                       " << maxDetStr_ << std::endl;
+  maquis::cout << "Starting determinant is:                    " << startingDet_ << std::endl;
+  maquis::cout << "CI coeff (overlap) threshold is:            " << parms_["srcas_overlapThreshold"] << std::endl;
+  maquis::cout << "SRCAS target completeness is:               " << parms_["srcas_targetCompleteness"] << std::endl;
+  maquis::cout << "Maximum number of iterations is:            " << parms_["srcas_maxNumIterations"] << std::endl;
+  maquis::cout << "Number of samples per iteration is:         " << parms_["srcas_numSamples"] << std::endl;
+  maquis::cout << "Random number seed is:                      " << parms_["seed"] << std::endl;
+  maquis::cout << "Sampling speed for simultaneous updates is: " << parms_["srcas_samplingSpeed"] << std::endl;
 }
 
 template <typename ScalarType> // real or complex, nmode or canonical (watson)
-void SRCAS<ScalarType>::quicksort(std::string dets[], ScalarType b[], int left,
-                                  int right) {
+void SRCAS<ScalarType>::quicksort(std::string dets[], ScalarType b[], int left, int right) {
   double pivot = std::abs(b[(left + right) / 2]);
   int l = left;
   int r = right;
   while (l <= r) {
-    while (std::abs(b[l]) < pivot)
+    while (std::abs(b[l]) < pivot) {
       l++;
-    while (std::abs(b[r]) > pivot)
+    }
+    while (std::abs(b[r]) > pivot) {
       r--;
+    }
     if (l <= r) {
       // Variable definition
       ScalarType tmp;
@@ -179,10 +169,12 @@ void SRCAS<ScalarType>::quicksort(std::string dets[], ScalarType b[], int left,
     }
   };
   // Calls the routine defined above
-  if (left < r)
+  if (left < r) {
     quicksort(dets, b, left, r);
-  if (l < right)
+  }
+  if (l < right) {
     quicksort(dets, b, l, right);
+  }
 }
 
 template <typename ScalarType> // real or complex
@@ -236,11 +228,12 @@ bool SRCAS<ScalarType>::symmetriesFulfilled(std::vector<int> det) {
       nUnpaired++;
     }
   }
-  if (parms_["symmetry"] == "su2u1" || parms_["symmetry"] == "su2u1pg")
+  if (parms_["symmetry"] == "su2u1" || parms_["symmetry"] == "su2u1pg") {
     return (nUnpaired >= parms_["spin"]);
-  else
+  } else {
     return ((nAlpha == parms_["u1_total_charge1"]) &&
             (nBeta == parms_["u1_total_charge2"]));
+  }
 }
 
 // TODO: smarter creation of determinants (e.g. separate alpha und beta
@@ -288,9 +281,7 @@ std::vector<int> SRCAS<ScalarType>::generateNewDet() {
 
 template <typename ScalarType> // real or complex
 void SRCAS<ScalarType>::run() {
-  maquis::cout << std::endl
-               << "----- Starting SRCAS -----" << std::endl
-               << std::endl;
+  maquis::cout << std::endl << "----- Starting SRCAS -----" << std::endl << std::endl;
 
   // Starting det should always be added to the list
   ScalarType overlap = interface_->getCICoefficient(startingDet_);
@@ -343,17 +334,11 @@ void SRCAS<ScalarType>::run() {
     nMacroIter++;
 
     // Prints results
-    maquis::cout
-        << "----------------------------------------------------------------"
-        << std::endl;
-    maquis::cout << "Macroiteration number:                       "
-                 << nMacroIter << std::endl;
-    maquis::cout << "Determinants sampled above the CI threshold: " << nSampled
-                 << std::endl;
-    maquis::cout << "Determinants accepted as queens:             "
-                 << nAcceptedQueen << std::endl;
-    maquis::cout << "Current completeness (\\sum(ci^2)):           " << sum_ci2
-                 << std::endl;
+    maquis::cout << "----------------------------------------------------------------" << std::endl;
+    maquis::cout << "Macroiteration number:                       " << nMacroIter << std::endl;
+    maquis::cout << "Determinants sampled above the CI threshold: " << nSampled << std::endl;
+    maquis::cout << "Determinants accepted as queens:             " << nAcceptedQueen << std::endl;
+    maquis::cout << "Current completeness (\\sum(ci^2)):           " << sum_ci2 << std::endl;
 
   } while ((sum_ci2 < parms_["srcas_targetCompleteness"]) &&
            (nMacroIter < parms_["srcas_maxNumIterations"]));
@@ -373,8 +358,9 @@ double SRCAS<ScalarType>::calculateCompleteness() {
         if (det[i] == 3 || det[i] == 2)
           nUnpaired++;
       }
-      if (nUnpaired > 0)
+      if (nUnpaired > 0) {
         factor /= pow(2.0, nUnpaired);
+      }
     }
     sum_ci2 += factor * pow(std::abs(iter_->second), 2.0);
   }
@@ -386,30 +372,23 @@ double SRCAS<ScalarType>::calculateCompleteness() {
 // +---------------+
 template <typename ScalarType> // real or complex, nmode or canonical (watson)
 void SRCAS<ScalarType>::printResults() {
-  maquis::cout
-      << "----------------------------------------------------------------"
-      << std::endl;
+  maquis::cout << "----------------------------------------------------------------" << std::endl;
   maquis::cout << std::endl << "--- Finished SRCAS ---" << std::endl;
-  maquis::cout << "Final completeness is:                " << completeness_
-               << std::endl;
-  maquis::cout << "# of stored determinants is:          " << hashTable_.size()
-               << std::endl;
+  maquis::cout << "Final completeness is:                " << completeness_ << std::endl;
+  maquis::cout << "# of stored determinants is:          " << hashTable_.size() << std::endl;
 
   ScalarType CIs_show[hashTable_.size()];   // CI value
   std::string dets_show[hashTable_.size()]; // dets represent
   int i = 0;
   int det_length = hashTable_.begin()->first.size();
-  maquis::cout
-      << std::endl
-      << "-------------DETERMINANTS ABOVE OVERLAP THRESHOLD--------------------"
-      << std::endl
-      << std::endl;
+  maquis::cout << std::endl << "-------------DETERMINANTS ABOVE OVERLAP THRESHOLD--------------------" << std::endl << std::endl;
   for (iter_ = hashTable_.begin(); iter_ != hashTable_.end(); iter_++) {
     // Local initialization that is later used for sorting
     std::string ctmp;
     CIs_show[i] = iter_->second;
-    for (int p = 0; p < det_length; p++)
+    for (int p = 0; p < det_length; p++) {
       ctmp = ctmp + boost::lexical_cast<std::string>(iter_->first[p]);
+    }
     dets_show[i] = ctmp;
     i++;
   }
@@ -418,11 +397,9 @@ void SRCAS<ScalarType>::printResults() {
   // Output the entire ordered list
   maquis::cout << std::fixed << std::setprecision(10);
   for (int i = 0; i < hashTable_.size(); i++) {
-    maquis::cout << " Determinant " << dets_show[hashTable_.size() - i - 1]
-                 << " with ";
+    maquis::cout << " Determinant " << dets_show[hashTable_.size() - i - 1] << " with ";
     // if (CIs_show[hashTable_.size()-i-1]>0) maquis::cout << " ";
-    maquis::cout << CIs_show[hashTable_.size() - i - 1] << " is number "
-                 << i + 1 << std::endl;
+    maquis::cout << CIs_show[hashTable_.size() - i - 1] << " is number " << i + 1 << std::endl;
   }
 }
 
