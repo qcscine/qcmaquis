@@ -34,6 +34,8 @@
 #include <memory>
 #include <string>
 
+
+// TODO: change key of map for python bindings
 namespace maquis {
 namespace srcas {
 
@@ -60,9 +62,17 @@ public:
   void printSRCASSettings();
   /** @brief Print SRCAS results */
   void printResults();
-  /** @brief get last determinant queen */
+  /**
+   * @brief get last determinant queen 
+   *
+   * @return vector representation of current queen 
+   **/ 
   std::vector<int> getCurrentQueen();
-  /** @brief get map with all sampled determinants above the threshold */
+  /**
+   * @brief getter map with all sampled determinants above the threshold 
+   *
+   * @retrun map with vector representation as key and correpsonding value
+   **/
   std::map<std::vector<int>, ScalarType> getDetTable();
   /**
    * @brief get achieved completeness
@@ -74,36 +84,69 @@ public:
 private:
   /** @brief generate a new determinant form current queen */
   std::vector<int> generateNewDet();
-
   /** @brief Evaluate the current completeness */
   double calculateCompleteness();
+  /** @brief a simple quicksort 
+   *
+   * @param dets 
+   * @param b 
+   * @param left  
+   * @param right
+   **/
   void quicksort(std::string dets[], ScalarType b[], int left, int right);
 
-  // For electronic case
+  /** @brief get a random occupied orbital for det
+   *
+   * @param det vector representation of a Determinant
+   **/
   int getARandomOccSpinOrb(std::vector<int> det);
+  /** @brief get a random virtual orbital for det
+   *
+   * @param det vector representation of a Determinant
+   **/
   int getARandomUnoccSpinOrb(std::vector<int> det);
+  /** @brief get a random virtual orbital for det
+   *
+   * @param det vector representation of a Determinant
+   **/
   bool symmetriesFulfilled(std::vector<int> det);
-
+  
+  /** @brief boost random number generator **/
   boost::mt19937 generator_;
+  /** @brief boost uniform distribution **/
   boost::uniform_real<> uniformDist_;
+  /** @brief boost geometric distribution **/
   boost::geometric_distribution<double> geomDist_;
-  boost::variate_generator<boost::mt19937 &, boost::uniform_real<double>>
-      uniformRandomNumber_;
-  boost::variate_generator<boost::mt19937 &,
-                           boost::geometric_distribution<double>>
-      geometricRandomNumber_;
-
+  /** @brief boost uniform distribution generator **/
+  boost::variate_generator<boost::mt19937 &, boost::uniform_real<double>> uniformRandomNumber_;
+  /** @brief boost geometric distribution generator **/
+  boost::variate_generator<boost::mt19937 &, boost::geometric_distribution<double>> geometricRandomNumber_;
+  
+  /** @brief all DMRG parameters **/
   DmrgParameters &parms_;
+  /** @brief DMRG interface **/
   std::shared_ptr<InterfaceType> interface_;
-
-  std::string startingDet_, maxDetStr_, detTmpStr_;
-  std::vector<int> detQueen_, detTmp_, detSpace_;
-  int numParticles_; // this is either modes or electrons, for the vibrational
-                     // or the electronic case, respectively
+  /** @brief string representation of initial determinant **/
+  std::string startingDet_;
+  /** @brief string representation of maximal determinant ?? **/
+  std::string maxDetStr_;
+  /** @brief string representation of current determinant **/
+  std::string detTmpStr_;
+  /** @brief current queen **/
+  std::vector<int> detQueen_;
+  /** @brief current determinant **/
+  std::vector<int> detTmp_;
+  /** @brief determines the possible space for each determinant **/
+  std::vector<int> detSpace_;
+  /** @brief modes or electrons **/
+  int numParticles_; 
+  /** @brief current completeness **/
   double completeness_;
-
+  /** @brief all sampled coeffs above threshold **/
   std::map<std::vector<int>, ScalarType> hashTable_;
+  
   typename std::map<std::vector<int>, ScalarType>::iterator iter_;
+
 };
 } // namespace srcas
 } // namespace maquis

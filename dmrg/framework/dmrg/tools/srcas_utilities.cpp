@@ -45,13 +45,17 @@ SRCAS<ScalarType>::SRCAS(DmrgParameters &parameters, std::shared_ptr<InterfaceTy
       uniformDist_(0., 1.),
       uniformRandomNumber_(generator_, uniformDist_),
       geomDist_(1.0 - parameters["srcas_samplingSpeed"]),
-      geometricRandomNumber_(generator_, geomDist_), parms_(parameters) {
+      geometricRandomNumber_(generator_, geomDist_), parms_(parameters) 
+{
   generator_.seed(parms_["seed"]);
-  // Get the number of modes and the maximum occupation of each one
+
+  // Setup for different models
   if (parms_["MODEL"] == "nmode") {
+    // Get the number of modes and the maximum occupation of each one
     numParticles_ = parms_["nmode_num_modes"];
     maxDetStr_ = parms_["nmode_num_basis"].str();
     detSpace_ = parms_["nmode_num_basis"].as<std::vector<int>>();
+
   } else if (parms_["MODEL"] == "watson") {
     numParticles_ = parms_["L"];
     maxDetStr_ = parms_["Nmax"].str();
@@ -67,7 +71,8 @@ SRCAS<ScalarType>::SRCAS(DmrgParameters &parameters, std::shared_ptr<InterfaceTy
       std::vector<int> tmpVec(numParticles_, std::stoi(parms_["Nmax"].str()));
       detSpace_ = std::move(tmpVec);
     }
-    // TODO: better default for sampling speed
+
+  // TODO: better default for sampling speed
   } else if (parms_["MODEL"] == "quantum_chemistry") {
     if (parms_["symmetry"] == "su2u1" || parms_["symmetry"] == "su2u1pg") {
       numParticles_ = parms_["nelec"];
@@ -80,6 +85,7 @@ SRCAS<ScalarType>::SRCAS(DmrgParameters &parameters, std::shared_ptr<InterfaceTy
     }
     std::vector<int> tmpVec(parms_["L"], 4);
     detSpace_ = std::move(tmpVec);
+
   } else {
     throw std::runtime_error("The SRCAS class supports only vibrational and electronic Hamiltonians so far");
   }
@@ -88,6 +94,7 @@ SRCAS<ScalarType>::SRCAS(DmrgParameters &parameters, std::shared_ptr<InterfaceTy
   if (parms_.is_set("init_basis_state")) {
     startingDet_ = parms_["init_basis_state"].str();
     detQueen_ = parms_["init_basis_state"].as<std::vector<int>>();
+
   } else {
     if (parms_["MODEL"] == "nmode" || parms_["MODEL"] == "watson") {
       startingDet_ = "0";
@@ -96,6 +103,7 @@ SRCAS<ScalarType>::SRCAS(DmrgParameters &parameters, std::shared_ptr<InterfaceTy
       }
       std::vector<int> tmpVec(numParticles_, 0);
       detQueen_ = std::move(tmpVec);
+
     } else {
       int numDoubleOcc = numParticles_ / 2;
       startingDet_ = "";
@@ -114,6 +122,7 @@ SRCAS<ScalarType>::SRCAS(DmrgParameters &parameters, std::shared_ptr<InterfaceTy
       }
       startingDet_.pop_back();
     }
+
   }
   if (parms_["MODEL"] == "quantum_chemistry") {
     if (!symmetriesFulfilled(detQueen_)) {
