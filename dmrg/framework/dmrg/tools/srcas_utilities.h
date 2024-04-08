@@ -88,8 +88,6 @@ private:
   void setupInitState_();
   /** @brief generate a new determinant form current queen */
   std::vector<int> generateNewDet_();
-  /** @brief Evaluate the current completeness */
-  double calculateCompleteness_();
   /** @brief a simple quicksort 
    *
    * @param dets 

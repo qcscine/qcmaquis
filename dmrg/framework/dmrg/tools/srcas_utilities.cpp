@@ -37,27 +37,6 @@
 namespace maquis {
 namespace srcas {
 
-template <typename ScalarType> // real or complex
-double SRCAS<ScalarType>::calculateCompleteness_() {
-  double sum_ci2 = 0.0;
-  for (iter_ = hashTable_.begin(); iter_ != hashTable_.end(); iter_++) {
-    double factor = 1.0;
-    if (parms_["symmetry"] == "su2u1" || parms_["symmetry"] == "su2u1pg") {
-      std::vector<int> det = iter_->first;
-      int nUnpaired = 0;
-      for (int i = 0; i < det.size(); i++) {
-        if (det[i] == 3 || det[i] == 2)
-          nUnpaired++;
-      }
-      if (nUnpaired > 0) {
-        factor /= pow(2.0, nUnpaired);
-      }
-    }
-    sum_ci2 += factor * pow(std::abs(iter_->second), 2.0);
-  }
-  return sum_ci2;
-}
-
 template <typename ScalarType> // real or complex, nmode or canonical (watson)
 void SRCAS<ScalarType>::quicksort_(std::string dets[], ScalarType b[], int left, int right) {
   double pivot = std::abs(b[(left + right) / 2]);
@@ -157,19 +136,17 @@ std::vector<int> SRCAS<ScalarType>::generateNewDet_() {
   if (parms_["MODEL"] == "nmode" || parms_["MODEL"] == "watson") {
     // Loop over the modes
     for (int i = 0; i < detTmp_.size(); i++) {
-      boost::poisson_distribution<> poissonDist(
-          detTmp_[i] +
-          0.5); // poisson distribution centered on the current modal
-      boost::variate_generator<boost::mt19937 &, boost::poisson_distribution<>>
-          poissonRandomNumber(generator_, poissonDist);
+      // poisson distribution centered on the current modal
+      boost::poisson_distribution<> poissonDist( detTmp_[i] + 0.5); 
+      boost::variate_generator<boost::mt19937 &, boost::poisson_distribution<>> poissonRandomNumber(generator_, poissonDist);
       do {
-        if (uniformRandomNumber_() <
-            parms_["srcas_samplingSpeed"]) // Only accept a fraction of the
-                                           // proposed updates to stay closer to
-                                           // reference det
+        // Only accept a fraction of the proposed updates to stay closer to reference det
+        if (uniformRandomNumber_() < parms_["srcas_samplingSpeed"]) {
           detTmp_[i] = poissonRandomNumber();
+        }
       } while (!(detTmp_[i] < detSpace_[i])); // Only accept valid occupations
     }
+
   } else if (parms_["MODEL"] == "quantum_chemistry") {
     do {
       detTmp_ = detQueen_;
@@ -183,9 +160,7 @@ std::vector<int> SRCAS<ScalarType>::generateNewDet_() {
       }
     } while (!symmetriesFulfilled_(detTmp_)); // Only accept valid occupations
   } else {
-    maquis::cout << "SRCAS determinant generation NYI for calculations other "
-                    "than vibrational or electronic! Abort!"
-                 << std::endl;
+    maquis::cout << "SRCAS determinant generation NYI for calculations other than vibrational or electronic! Abort!" << std::endl;
     exit(1);
   }
   return detTmp_;
@@ -193,7 +168,6 @@ std::vector<int> SRCAS<ScalarType>::generateNewDet_() {
 
 template<typename ScalarType>
 void SRCAS<ScalarType>::setupModel_() {
-  // Setup for different models
   if (parms_["MODEL"] == "nmode") {
     // Get the number of modes and the maximum occupation of each one
     numParticles_ = parms_["nmode_num_modes"];
@@ -312,7 +286,6 @@ void SRCAS<ScalarType>::printSRCASSettings() {
   maquis::cout << "Sampling speed for simultaneous updates is: " << parms_["srcas_samplingSpeed"] << std::endl;
 }
 
-
 template <typename ScalarType> // real or complex
 void SRCAS<ScalarType>::run() {
   maquis::cout << std::endl << "----- Starting SRCAS -----" << std::endl << std::endl;
@@ -320,23 +293,27 @@ void SRCAS<ScalarType>::run() {
   // Starting det should always be added to the list
   ScalarType overlap = interface_->getCICoefficient(startingDet_);
   hashTable_[detQueen_] = overlap;
-
+  completeness_ += pow(std::abs(overlap), 2);
   // Initialize variables that are used during the sampling
-  double x, ci_ratio, sum_ci2 = 0.0;
-  ScalarType ci_tmp, ci0 = overlap;
+  // double sum_ci2 = 0.0;
+  ScalarType ci0 = overlap;
+  int nMacroIter = 0;
+  int nSampled = 0;
+  int nAcceptedQueen = 0;
 
-  int nMacroIter = 0, nSampled = 1, nAcceptedQueen = 0;
+  maquis::cout << std::setw(7) << "Iter." << std::setw(12) << "Mic. Iter." << std::setw(12) << "# Sample" 
+    << std::setw(numParticles_*2 + 2) << "Det." << std::setw(20) << "Coeff." << std::setw(20) << "Completeness" << std::endl;
+  maquis::cout << std::setw(7) << nMacroIter << std::setw(12) << 0
+    << std::setw(12) << nSampled << std::setw(numParticles_*2+2) << startingDet_
+    << std::setw(20) << std::setprecision(14) << std::fixed << overlap
+    << std::setw(20) << std::setprecision(14) << std::fixed << completeness_ << std::endl;
 
-  // +-----------+
-  //   MAIN LOOP
-  // +-----------+
   do {
     // For every macroiteration generate N determinants
     for (int isample = 0; isample < parms_["srcas_numSamples"]; isample++) {
-      // Get new determinant
       detTmp_ = generateNewDet_();
 
-      // Updates the data if the determinant has not been visited yet.
+      // Updates the data if the determinant not in map
       iter_ = hashTable_.find(detTmp_);
       if (iter_ == hashTable_.end()) {
         detTmpStr_ = std::to_string(detTmp_[0]);
@@ -345,26 +322,32 @@ void SRCAS<ScalarType>::run() {
           detTmpStr_ += std::to_string(detTmp_[i]);
         }
         overlap = interface_->getCICoefficient(detTmpStr_);
-        // The data are stored based on the CI_threshold parameter
         if (std::abs(overlap) >= parms_["srcas_overlapThreshold"]) {
           hashTable_[detTmp_] = overlap;
           nSampled++;
+          completeness_ += pow(std::abs(overlap), 2.0);
+
+          maquis::cout << std::setw(7) << nMacroIter << std::setw(12) << isample 
+            << std::setw(12) << nSampled << std::setw(numParticles_*2+2) << detTmpStr_
+            << std::setw(20) << std::setprecision(14) << std::fixed << overlap
+            << std::setw(20) << std::setprecision(14) << std::fixed << completeness_ << std::endl;
         }
       } else {
         overlap = iter_->second;
       }
+
       // Determinant update (regardless of being in the hash table or not to
       // avoid getting stuck in the Markov chain) Selection criterion based on
       // CI coeff^2 in analogy to the completeness measure
-      ci_ratio = pow(std::abs(overlap), 2.0) / pow(std::abs(ci0), 2);
-      x = uniformRandomNumber_();
+      double ci_ratio = pow(std::abs(overlap), 2.0) / pow(std::abs(ci0), 2);
+      double x = uniformRandomNumber_();
       if (ci_ratio > x) {
         detQueen_ = detTmp_;
         ci0 = overlap;
         nAcceptedQueen++;
       }
     }
-    sum_ci2 = calculateCompleteness_();
+    // sum_ci2 = calculateCompleteness_();
     nMacroIter++;
 
     // Prints results
@@ -372,15 +355,13 @@ void SRCAS<ScalarType>::run() {
     maquis::cout << "Macroiteration number:                       " << nMacroIter << std::endl;
     maquis::cout << "Determinants sampled above the CI threshold: " << nSampled << std::endl;
     maquis::cout << "Determinants accepted as queens:             " << nAcceptedQueen << std::endl;
-    maquis::cout << "Current completeness (\\sum(ci^2)):           " << sum_ci2 << std::endl;
+    maquis::cout << "Current completeness (\\sum(ci^2)):           " << completeness_ << std::endl;
 
-  } while ((sum_ci2 < parms_["srcas_targetCompleteness"]) &&
+  } while ((completeness_ < parms_["srcas_targetCompleteness"]) && 
            (nMacroIter < parms_["srcas_maxNumIterations"]));
   // Final completeness
-  completeness_ = sum_ci2;
+  // completeness_ = sum_ci2;
 }
-
-
 
 // +---------------+
 //   FINAL PRINTING
