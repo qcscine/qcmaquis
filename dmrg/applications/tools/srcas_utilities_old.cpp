@@ -81,6 +81,7 @@ template <typename ScalarType> // real or complex, nmode or canonical (watson)
 void SRCAS<ScalarType>::printSRCASSettings() {
     maquis::cout << std::endl << "----- SRCAS SETTINGS -----" << std::endl;
     maquis::cout << "MPS taken from:                            " << parms_["chkpfile"].str() << std::endl;
+    maquis::cout << "blabla:                            " << parms_["chkpfile"].str() << std::endl;
     maquis::cout << "Determinant space is:                      " << maxDetStr_ << std::endl;
     maquis::cout << "Starting determinant is:                   " << startingDet_ << std::endl;
     maquis::cout << "CI coeff (overlap) threshold is:           " << parms_["srcas_overlapThreshold"] << std::endl;
