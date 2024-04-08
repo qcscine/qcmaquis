@@ -82,10 +82,12 @@ public:
   double getCompleteness();
 
 private:
+  /** @brief setup SRCAS for different models */
+  void setupModel();
   /** @brief generate a new determinant form current queen */
-  std::vector<int> generateNewDet();
+  std::vector<int> generateNewDet_();
   /** @brief Evaluate the current completeness */
-  double calculateCompleteness();
+  double calculateCompleteness_();
   /** @brief a simple quicksort 
    *
    * @param dets 
@@ -93,24 +95,22 @@ private:
    * @param left  
    * @param right
    **/
-  void quicksort(std::string dets[], ScalarType b[], int left, int right);
-
+  void quicksort_(std::string dets[], ScalarType b[], int left, int right);
   /** @brief get a random occupied orbital for det
    *
    * @param det vector representation of a Determinant
    **/
-  int getARandomOccSpinOrb(std::vector<int> det);
+  int getARandomOccSpinOrb_(std::vector<int> det);
   /** @brief get a random virtual orbital for det
    *
    * @param det vector representation of a Determinant
    **/
-  int getARandomUnoccSpinOrb(std::vector<int> det);
+  int getARandomUnoccSpinOrb_(std::vector<int> det);
   /** @brief get a random virtual orbital for det
    *
    * @param det vector representation of a Determinant
    **/
-  bool symmetriesFulfilled(std::vector<int> det);
-  
+  bool symmetriesFulfilled_(std::vector<int> det);
   /** @brief boost random number generator **/
   boost::mt19937 generator_;
   /** @brief boost uniform distribution **/
@@ -121,7 +121,6 @@ private:
   boost::variate_generator<boost::mt19937 &, boost::uniform_real<double>> uniformRandomNumber_;
   /** @brief boost geometric distribution generator **/
   boost::variate_generator<boost::mt19937 &, boost::geometric_distribution<double>> geometricRandomNumber_;
-  
   /** @brief all DMRG parameters **/
   DmrgParameters &parms_;
   /** @brief DMRG interface **/

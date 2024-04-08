@@ -25,9 +25,7 @@
  *****************************************************************************/
 
 #include "srcas_utilities.h"
-
 #include "dmrg/utils/DmrgParameters.h"
-#include "maquis_dmrg.h"
 
 #include <boost/lexical_cast.hpp>
 #include <boost/random.hpp>
@@ -39,16 +37,8 @@
 namespace maquis {
 namespace srcas {
 
-template <typename ScalarType> // real or complex
-SRCAS<ScalarType>::SRCAS(DmrgParameters &parameters, std::shared_ptr<InterfaceType> interface)
-    : interface_(interface), 
-      uniformDist_(0., 1.),
-      uniformRandomNumber_(generator_, uniformDist_),
-      geomDist_(1.0 - parameters["srcas_samplingSpeed"]),
-      geometricRandomNumber_(generator_, geomDist_), parms_(parameters) 
-{
-  generator_.seed(parms_["seed"]);
-
+template<typename ScalarType>
+void SRCAS<ScalarType>::setupModel() {
   // Setup for different models
   if (parms_["MODEL"] == "nmode") {
     // Get the number of modes and the maximum occupation of each one
@@ -89,6 +79,20 @@ SRCAS<ScalarType>::SRCAS(DmrgParameters &parameters, std::shared_ptr<InterfaceTy
   } else {
     throw std::runtime_error("The SRCAS class supports only vibrational and electronic Hamiltonians so far");
   }
+}
+
+template <typename ScalarType> // real or complex
+SRCAS<ScalarType>::SRCAS(DmrgParameters &parameters, std::shared_ptr<InterfaceType> interface)
+    : interface_(interface), 
+      uniformDist_(0., 1.),
+      uniformRandomNumber_(generator_, uniformDist_),
+      geomDist_(1.0 - parameters["srcas_samplingSpeed"]),
+      geometricRandomNumber_(generator_, geomDist_),
+      parms_(parameters) 
+{
+  generator_.seed(parms_["seed"]);
+  
+  this->setupModel();
 
   // If user set a starting det, use this, otherwise use the HF/VSCF ground state
   if (parms_.is_set("init_basis_state")) {
@@ -125,8 +129,8 @@ SRCAS<ScalarType>::SRCAS(DmrgParameters &parameters, std::shared_ptr<InterfaceTy
 
   }
   if (parms_["MODEL"] == "quantum_chemistry") {
-    if (!symmetriesFulfilled(detQueen_)) {
-      detQueen_ = generateNewDet();
+    if (!symmetriesFulfilled_(detQueen_)) {
+      detQueen_ = generateNewDet_();
       startingDet_ = std::to_string(detQueen_[0]);
       for (int i = 1; i < detQueen_.size(); i++) {
         startingDet_ += ",";
@@ -152,7 +156,7 @@ void SRCAS<ScalarType>::printSRCASSettings() {
 }
 
 template <typename ScalarType> // real or complex, nmode or canonical (watson)
-void SRCAS<ScalarType>::quicksort(std::string dets[], ScalarType b[], int left, int right) {
+void SRCAS<ScalarType>::quicksort_(std::string dets[], ScalarType b[], int left, int right) {
   double pivot = std::abs(b[(left + right) / 2]);
   int l = left;
   int r = right;
@@ -164,13 +168,10 @@ void SRCAS<ScalarType>::quicksort(std::string dets[], ScalarType b[], int left, 
       r--;
     }
     if (l <= r) {
-      // Variable definition
-      ScalarType tmp;
-      tmp = b[l];
+      ScalarType tmp = b[l];
       b[l] = b[r];
       b[r] = tmp;
-      std::string ctmp;
-      ctmp = dets[l];
+      std::string ctmp = dets[l];
       dets[l] = dets[r];
       dets[r] = ctmp;
       l++;
@@ -179,15 +180,15 @@ void SRCAS<ScalarType>::quicksort(std::string dets[], ScalarType b[], int left, 
   };
   // Calls the routine defined above
   if (left < r) {
-    quicksort(dets, b, left, r);
+    quicksort_(dets, b, left, r);
   }
   if (l < right) {
-    quicksort(dets, b, l, right);
+    quicksort_(dets, b, l, right);
   }
 }
 
 template <typename ScalarType> // real or complex
-int SRCAS<ScalarType>::getARandomOccSpinOrb(std::vector<int> det) {
+int SRCAS<ScalarType>::getARandomOccSpinOrb_(std::vector<int> det) {
   std::vector<int> indices;
   for (int i = 1; i <= det.size(); i++) {
     if (det[i - 1] == 4) {
@@ -204,7 +205,7 @@ int SRCAS<ScalarType>::getARandomOccSpinOrb(std::vector<int> det) {
 }
 
 template <typename ScalarType> // real or complex
-int SRCAS<ScalarType>::getARandomUnoccSpinOrb(std::vector<int> det) {
+int SRCAS<ScalarType>::getARandomUnoccSpinOrb_(std::vector<int> det) {
   std::vector<int> indices;
   for (int i = 1; i <= det.size(); i++) {
     if (det[i - 1] == 1) {
@@ -221,7 +222,7 @@ int SRCAS<ScalarType>::getARandomUnoccSpinOrb(std::vector<int> det) {
 }
 
 template <typename ScalarType> // real or complex
-bool SRCAS<ScalarType>::symmetriesFulfilled(std::vector<int> det) {
+bool SRCAS<ScalarType>::symmetriesFulfilled_(std::vector<int> det) {
   int nUnpaired = 0;
   int nAlpha = 0;
   int nBeta = 0;
@@ -248,7 +249,7 @@ bool SRCAS<ScalarType>::symmetriesFulfilled(std::vector<int> det) {
 // TODO: smarter creation of determinants (e.g. separate alpha und beta
 // orbitals, create spin flipped determinant the same time)
 template <typename ScalarType> // real or complex
-std::vector<int> SRCAS<ScalarType>::generateNewDet() {
+std::vector<int> SRCAS<ScalarType>::generateNewDet_() {
   // Start from queen
   detTmp_ = detQueen_;
   if (parms_["MODEL"] == "nmode" || parms_["MODEL"] == "watson") {
@@ -273,12 +274,12 @@ std::vector<int> SRCAS<ScalarType>::generateNewDet() {
       // Get the number of excited electrons
       int nele_excited = geometricRandomNumber_();
       for (int i = 0; i < nele_excited; i++) {
-        int annihilate = this->getARandomOccSpinOrb(detTmp_);
-        int create = this->getARandomUnoccSpinOrb(detTmp_);
+        int annihilate = this->getARandomOccSpinOrb_(detTmp_);
+        int create = this->getARandomUnoccSpinOrb_(detTmp_);
         detTmp_[abs(annihilate) - 1] -= (annihilate < 0) ? 1 : 2;
         detTmp_[abs(create) - 1] += (create < 0) ? 1 : 2;
       }
-    } while (!symmetriesFulfilled(detTmp_)); // Only accept valid occupations
+    } while (!symmetriesFulfilled_(detTmp_)); // Only accept valid occupations
   } else {
     maquis::cout << "SRCAS determinant generation NYI for calculations other "
                     "than vibrational or electronic! Abort!"
@@ -309,7 +310,7 @@ void SRCAS<ScalarType>::run() {
     // For every macroiteration generate N determinants
     for (int isample = 0; isample < parms_["srcas_numSamples"]; isample++) {
       // Get new determinant
-      detTmp_ = generateNewDet();
+      detTmp_ = generateNewDet_();
 
       // Updates the data if the determinant has not been visited yet.
       iter_ = hashTable_.find(detTmp_);
@@ -339,7 +340,7 @@ void SRCAS<ScalarType>::run() {
         nAcceptedQueen++;
       }
     }
-    sum_ci2 = calculateCompleteness();
+    sum_ci2 = calculateCompleteness_();
     nMacroIter++;
 
     // Prints results
@@ -356,7 +357,7 @@ void SRCAS<ScalarType>::run() {
 }
 
 template <typename ScalarType> // real or complex
-double SRCAS<ScalarType>::calculateCompleteness() {
+double SRCAS<ScalarType>::calculateCompleteness_() {
   double sum_ci2 = 0.0;
   for (iter_ = hashTable_.begin(); iter_ != hashTable_.end(); iter_++) {
     double factor = 1.0;
@@ -402,7 +403,7 @@ void SRCAS<ScalarType>::printResults() {
     i++;
   }
   // Final sorting
-  quicksort(dets_show, CIs_show, 0, hashTable_.size() - 1);
+  quicksort_(dets_show, CIs_show, 0, hashTable_.size() - 1);
   // Output the entire ordered list
   maquis::cout << std::fixed << std::setprecision(10);
   for (int i = 0; i < hashTable_.size(); i++) {
