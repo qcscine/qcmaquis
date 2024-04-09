@@ -137,6 +137,8 @@ if(BUILD_VIBRONIC)
     target_link_libraries(test_mps_mpo_ops_vibronic ${DMRG_APP_LIBRARIES})
     add_executable(test_mps_overlap_vibronic test_mps_mpo_ops/test_mps_overlap_vibronic.cpp)
     target_link_libraries(test_mps_overlap_vibronic ${DMRG_APP_LIBRARIES})
+    add_executable(test_excitonic_nmode_model Vibronic/NmodeExcitonicModel.cpp)
+    target_link_libraries(test_excitonic_nmode_model ${DMRG_APP_LIBRARIES})
     # Executable test
     add_executable(test_Excitonic Vibronic/test_ExcitonicCoupling.cpp)
     target_link_libraries(test_Excitonic ${DMRG_APP_LIBRARIES})

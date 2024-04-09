@@ -194,6 +194,28 @@ struct VibronicFixture {
     parametersSimpleCoherentConnecting.set("vibronic_num_connectingmodes", 1);
     parametersSimpleCoherentConnecting.set("L", 8);
     //
+    parametersNmodeThiopheneOneBody.set("nsweeps", 1);
+    parametersNmodeThiopheneOneBody.set("max_bond_dimension", 1);
+    parametersNmodeThiopheneOneBody.set("model_library", "coded");
+    parametersNmodeThiopheneOneBody.set("lattice_library", "coded");
+    parametersNmodeThiopheneOneBody.set("optimization", "twosite");
+    parametersNmodeThiopheneOneBody.set("integral_file", "integral_file_NmodeThiopheneOneBody");
+    parametersNmodeThiopheneOneBody.set("Nmax", 6);
+    parametersNmodeThiopheneOneBody.set("symmetry", "u1");
+    parametersNmodeThiopheneOneBody.set("LATTICE", "vibronic lattice");
+    parametersNmodeThiopheneOneBody.set("MODEL", "excitonicnmode");
+    parametersNmodeThiopheneOneBody.set("vibronic_j_coupling", 0.);
+    parametersNmodeThiopheneOneBody.set("vibronic_sorting", "intertwined");
+    parametersNmodeThiopheneOneBody.set("vibronic_num_elestates", 1);
+    parametersNmodeThiopheneOneBody.set("vibronic_num_vibmodes", 3);
+    parametersNmodeThiopheneOneBody.set("vibronic_num_molecules", 10);
+    parametersNmodeThiopheneOneBody.set("vibronic_num_excitons", 1);
+    parametersNmodeThiopheneOneBody.set("vibronic_num_connectingmodes", 2);
+    parametersNmodeThiopheneOneBody.set("L", 38);
+    parametersNmodeThiopheneOneBody.set("init_type", "basis_state_generic");
+    parametersNmodeThiopheneOneBody.set("init_basis_state", "1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0");
+    parametersNmodeThiopheneOneBody.set("vibronic_max_coupling_nmode", 1);
+    //
     integralFileFakeVibronic.open("integral_file_VibronicFile");
     integralFileFakeVibronic << "EL_ST 0 0 " << std::endl;
     integralFileFakeVibronic << " 1.0000   1   1  " << std::endl;
@@ -478,6 +500,45 @@ struct VibronicFixture {
         IntegralFileSimpleCoherentConnecting << "1. 0 1 2 2" << std::endl;
         IntegralFileSimpleCoherentConnecting << "3. 1 1 2 2" << std::endl;
         IntegralFileSimpleCoherentConnecting.close();
+    //
+    integralFileNmodeThiopheneOneBody.open("integral_file_NmodeThiopheneOneBody");
+    integralFileNmodeThiopheneOneBody << "1-0 1-0 0 0 0.0024695226597438247" << std::endl;
+    integralFileNmodeThiopheneOneBody << "1-1 1-1 0 0 0.0074041535374397074" << std::endl;
+    integralFileNmodeThiopheneOneBody << "1-2 1-2 0 0 0.012332781742559487" << std::endl;
+    integralFileNmodeThiopheneOneBody << "1-3 1-3 0 0 0.01725540926093563" << std::endl;
+    integralFileNmodeThiopheneOneBody << "1-4 1-4 0 0 0.02217203807483142" << std::endl;
+    integralFileNmodeThiopheneOneBody << "1-5 1-5 0 0 0.02708267016294182" << std::endl;
+    integralFileNmodeThiopheneOneBody << "1-0 1-0 0 1 0.16924647028417006" << std::endl;
+    integralFileNmodeThiopheneOneBody << "1-1 1-1 0 1 0.1761473222364848" << std::endl;
+    integralFileNmodeThiopheneOneBody << "1-2 1-2 0 1 0.18279205365870574" << std::endl;
+    integralFileNmodeThiopheneOneBody << "1-3 1-3 0 1 0.18918066649230939" << std::endl;
+    integralFileNmodeThiopheneOneBody << "1-4 1-4 0 1 0.19531316255323344" << std::endl;
+    integralFileNmodeThiopheneOneBody << "1-5 1-5 0 1 0.20118954353188565" << std::endl;
+    integralFileNmodeThiopheneOneBody << "2-0 2-0 1 0 0.0007978743559850753" << std::endl;
+    integralFileNmodeThiopheneOneBody << "2-1 2-1 1 0 0.0023843970092003275" << std::endl;
+    integralFileNmodeThiopheneOneBody << "2-2 2-2 1 0 0.003958612739923099" << std::endl;
+    integralFileNmodeThiopheneOneBody << "2-3 2-3 1 0 0.00552052223246975" << std::endl;
+    integralFileNmodeThiopheneOneBody << "2-4 2-4 1 0 0.007070126162533611" << std::endl;
+    integralFileNmodeThiopheneOneBody << "2-5 2-5 1 0 0.008607425197185091" << std::endl;
+    integralFileNmodeThiopheneOneBody << "2-0 2-0 1 1 0.19183739943728595" << std::endl;
+    integralFileNmodeThiopheneOneBody << "2-1 2-1 1 1 0.19410099787740723" << std::endl;
+    integralFileNmodeThiopheneOneBody << "2-2 2-2 1 1 0.19634965522994724" << std::endl;
+    integralFileNmodeThiopheneOneBody << "2-3 2-3 1 1 0.19858337224515338" << std::endl;
+    integralFileNmodeThiopheneOneBody << "2-4 2-4 1 1 0.20080214966525123" << std::endl;
+    integralFileNmodeThiopheneOneBody << "2-5 2-5 1 1 0.20300598822444332" << std::endl;
+    integralFileNmodeThiopheneOneBody << "3-0 3-0 1 0 5.8623829606151595e-05" << std::endl;
+    integralFileNmodeThiopheneOneBody << "3-1 3-1 1 0 0.00018948539056790688" << std::endl;
+    integralFileNmodeThiopheneOneBody << "3-2 3-2 1 0 0.00034960590483998095" << std::endl;
+    integralFileNmodeThiopheneOneBody << "3-3 3-3 1 0 0.0004048709098722345" << std::endl;
+    integralFileNmodeThiopheneOneBody << "3-4 3-4 1 0 0.000525625275277624" << std::endl;
+    integralFileNmodeThiopheneOneBody << "3-5 3-5 1 0 0.0005279377622841062" << std::endl;
+    integralFileNmodeThiopheneOneBody << "3-0 3-0 1 1 0.1946748359451256" << std::endl;
+    integralFileNmodeThiopheneOneBody << "3-1 3-1 1 1 0.1954465394882818" << std::endl;
+    integralFileNmodeThiopheneOneBody << "3-2 3-2 1 1 0.1957090420358867" << std::endl;
+    integralFileNmodeThiopheneOneBody << "3-3 3-3 1 1 0.1962307810160739" << std::endl;
+    integralFileNmodeThiopheneOneBody << "3-4 3-4 1 1 0.19679482816770608" << std::endl;
+    integralFileNmodeThiopheneOneBody << "3-5 3-5 1 1 0.19702658069219867" << std::endl;
+    integralFileNmodeThiopheneOneBody.close();
   }
 
   /** @brief Class destructor */
@@ -492,9 +553,9 @@ struct VibronicFixture {
     // Class members
     DmrgParameters parametersVibronic, parametersFakeVibronic, parametersExcitonicAggregate,
         parametersExcitonicAggregateTwoSites, parametersVibronicPyrazineRedDim, parametersVibronicPyrazineRedDimFull, parametersVibronicThiopheneDimer,
-        parametersExcitonicExtendedAggregate, parametersTestNmax, parametersSimpleCoherent, parametersSimpleCoherentConnecting;
+        parametersExcitonicExtendedAggregate, parametersTestNmax, parametersSimpleCoherent, parametersSimpleCoherentConnecting, parametersNmodeThiopheneOneBody;
     std::ofstream integralFileFakeVibronic, integralFileExcitonic, integralFileExcitonicHarmonic,
-        integralFilePyrazineRedDim, integralFilePyrazineRedDimFull, integralFileThiopheneDimer, integralFileExcitonicExtended, integralFileTestNmax, IntegralFileSimpleCoherent, IntegralFileSimpleCoherentConnecting;
+        integralFilePyrazineRedDim, integralFilePyrazineRedDimFull, integralFileThiopheneDimer, integralFileExcitonicExtended, integralFileTestNmax, IntegralFileSimpleCoherent, IntegralFileSimpleCoherentConnecting, integralFileNmodeThiopheneOneBody;
 };
 
 #endif
