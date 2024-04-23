@@ -1,3 +1,6 @@
+.clang-tidy
+.clang-format
+
 *.svn*
 *.pyc*
 *.swp*
