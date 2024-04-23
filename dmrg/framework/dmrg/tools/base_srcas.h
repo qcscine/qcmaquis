@@ -26,7 +26,7 @@ class BaseSRCAS {
    *
    * @return vector representation of current queen
    **/
-  T currentQueen() const;
+  std::vector<int> currentQueen() const;
   /**
    * @brief getter map with all sampled determinants above the threshold
    *

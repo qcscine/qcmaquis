@@ -85,7 +85,7 @@ void BaseSRCAS<ScalarType, T>::run() {
  * @return vector representation of current queen
  **/
 template<typename ScalarType, class T>
-T BaseSRCAS<ScalarType, T>::currentQueen() const {
+std::vector<int> BaseSRCAS<ScalarType, T>::currentQueen() const {
   return queen_.vector();
 }
 /**
