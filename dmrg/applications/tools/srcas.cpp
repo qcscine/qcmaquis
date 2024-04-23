@@ -5,19 +5,24 @@
  * Group. See LICENSE.txt for details.
  */
 
-#include <cmath>
-#include <iostream>
-#include <iterator>
-#include <string>
+#include "dmrg/tools/base_srcas.h"
+#include "dmrg/tools/electronic_srcas.h"
+#include "dmrg/tools/vib_srcas.h"
+#include "dmrg/utils/DmrgOptions.h"
+#include "maquis_dmrg.h"
 #include <sys/stat.h>
 #include <sys/time.h>
-#include <vector>
+#include <iostream>
+#include <string>
 
-#include "dmrg/sim/symmetry_factory.h"
-#include "dmrg/tools/srcas_utilities.h"
-#include "dmrg/utils/DmrgOptions.h"
-#include "dmrg/utils/DmrgParameters.h"
-#include "maquis_dmrg.h"
+namespace detail {
+template<class T>
+void runSRCAS(T& srcas) {
+  srcas.printSettings();
+  srcas.run();
+  srcas.printResults();
+}
+} // namespace detail
 
 /**
  * @brief Application that extracts the CI coefficients associated with a given
@@ -28,46 +33,51 @@
  * stochastic sampling of the active space to determine the CI expansion
  * coefficients.
  */
-
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   // Check coherence in input
   if (argc != 2) {
-    maquis::cout << "Usage: srcas <input file> " << std::endl;
+    maquis::cout << "Usage: srcas <input file>\n";
     exit(1);
   }
   DmrgOptions opt(argc, argv);
-  if (opt.valid) {
-    if (!(opt.parms["MODEL"] == "nmode") && !(opt.parms["MODEL"] == "watson") &&
-        !(opt.parms["MODEL"] == "quantum_chemistry"))
-      throw std::runtime_error("The SRCAS supports only vibrational and "
-                               "electronic Hamiltonians so far");
-    maquis::cout.precision(10);
-    maquis::cout << "---------------------- SRCAS ----------------------"
-                 << std::endl
-                 << std::endl;
-    // Creates the simulation object either with real or complex coefficients
-    if (opt.parms["COMPLEX"]) {
-      using ScalarType = std::complex<double>;
-      using InterfaceType = maquis::DMRGInterface<ScalarType>;
-      std::shared_ptr<InterfaceType> interface =
-          std::make_shared<InterfaceType>(opt.parms);
-      maquis::srcas::SRCAS<ScalarType> srcas(opt.parms, interface);
-      srcas.printSRCASSettings();
-      srcas.run();
-      srcas.printResults();
-    } else {
-      using ScalarType = double;
-      using InterfaceType = maquis::DMRGInterface<ScalarType>;
-      std::shared_ptr<InterfaceType> interface =
-          std::make_shared<InterfaceType>(opt.parms);
-      maquis::srcas::SRCAS<ScalarType> srcas(opt.parms, interface);
-      srcas.printSRCASSettings();
-      srcas.run();
-      srcas.printResults();
-    }
-  } else {
-    throw std::runtime_error("Parameters in inputfile corrupted");
+  if (!opt.valid) {
+    maquis::cout << "DMRG options are not valid";
+    exit(1);
   }
-  maquis::cout << std::endl;
+  if (!(opt.parms["MODEL"] == "nmode") && !(opt.parms["MODEL"] == "watson") && !(opt.parms["MODEL"] == "quantum_chemistry")) {
+    maquis::cout << "SRCAS is not implemented for model: " << opt.parms["MODEL"];
+    exit(1);
+  }
+
+  maquis::cout.precision(10);
+  maquis::cout << "---------------------- SRCAS ----------------------\n\n";
+
+  if (opt.parms["COMPLEX"]) {
+    using ScalarType = std::complex<double>;
+    using InterfaceType = maquis::DMRGInterface<ScalarType>;
+    std::shared_ptr<InterfaceType> interface = std::make_shared<InterfaceType>(opt.parms);
+    if ((opt.parms["MODEL"] == "quantum_chemistry")) {
+      maquis::srcas::ElectronicSRCAS<ScalarType> srcas(opt.parms, interface);
+      detail::runSRCAS(srcas);
+    }
+    else {
+      maquis::srcas::VibSRCAS<ScalarType> srcas(opt.parms, interface);
+      detail::runSRCAS(srcas);
+    }
+    return 0;
+  }
+
+  using ScalarType = double;
+  using InterfaceType = maquis::DMRGInterface<ScalarType>;
+  std::shared_ptr<InterfaceType> interface = std::make_shared<InterfaceType>(opt.parms);
+  if ((opt.parms["MODEL"] == "quantum_chemistry")) {
+    maquis::srcas::ElectronicSRCAS<ScalarType> srcas(opt.parms, interface);
+    detail::runSRCAS(srcas);
+  }
+  else {
+    maquis::srcas::VibSRCAS<ScalarType> srcas(opt.parms, interface);
+    detail::runSRCAS(srcas);
+  }
+
   return 0;
 }

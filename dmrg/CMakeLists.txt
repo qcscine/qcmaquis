@@ -639,8 +639,7 @@ install(FILES
             framework/dmrg/utils/DmrgOptions.h
             framework/dmrg/utils/BaseParameters.h
             framework/dmrg/utils/results_collector.h
-            framework/dmrg/tools/srcas_utilities.h
-        framework/dmrg/utils/parameter_proxy.h
+            framework/dmrg/utils/parameter_proxy.h
         DESTINATION include/framework/dmrg/utils
         COMPONENT headers
     )

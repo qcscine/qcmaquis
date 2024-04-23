@@ -193,7 +193,8 @@ void SRCAS<ScalarType>::setupModel_() {
   // TODO: better default for sampling speed
   } else if (parms_["MODEL"] == "quantum_chemistry") {
     if (parms_["symmetry"] == "su2u1" || parms_["symmetry"] == "su2u1pg") {
-      numParticles_ = parms_["nelec"];
+      throw std::runtime_error("SRCAS is does not support SU2 symmetry");
+      // numParticles_ = parms_["nelec"];
     } else {
       numParticles_ = int(parms_["u1_total_charge1"]) + int(parms_["u1_total_charge2"]);
     }
