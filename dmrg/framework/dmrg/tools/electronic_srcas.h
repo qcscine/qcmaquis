@@ -24,6 +24,8 @@ class ElectronicSRCAS : public virtual BaseSRCAS<ScalarType, Determinant> {
 
  public:
   ElectronicSRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceType> interface);
+
+ private:
   /** @brief generate a new determinant form current queen */
   Determinant generateNewONV_() override;
   /** @brief get a random occupied orbital for det
@@ -43,7 +45,6 @@ class ElectronicSRCAS : public virtual BaseSRCAS<ScalarType, Determinant> {
   // bool symmetriesFulfilled_(const std::vector<int>& det) const override;
   bool validONV_(const Determinant& det) const override;
 
- private:
   /** @brief modes or electrons **/
   double fractional_beta_orbs_;
 };
