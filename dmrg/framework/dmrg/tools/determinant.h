@@ -58,8 +58,6 @@ class Determinant : public virtual ONV {
   const std::vector<int>& unoccupied(Spin spin) const;
 
  private:
-  void sort_vec(Spin spin);
-
   /** @brief store occupied alpha orbital indices */
   std::vector<int> alpha_occupied_;
   /** @brief store occupied beta orbital indices */
