@@ -49,6 +49,8 @@ qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::qc_model(Lattice 
         }
     }
 
+
+
     if (!isTranscorrelated_ && parms.is_set("quantum_computing_format")) {
         if (parms["quantum_computing_format"] == "yes") {
             maquis::cout << " Activating conventional quantum computing format" << std::endl;
@@ -75,6 +77,11 @@ qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::qc_model(Lattice 
         phys.insert(std::make_pair(D, 1));
 
         phys_indices.push_back(phys);
+    }
+
+    // TMP Solution??
+    if(parms_.defined("srcas_numSamples")) {
+        return; 
     }
 
     op_t create_up_op, create_down_op, destroy_up_op, destroy_down_op,
