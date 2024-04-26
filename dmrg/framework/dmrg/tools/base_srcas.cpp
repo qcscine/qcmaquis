@@ -1,7 +1,7 @@
-
 #include "base_srcas.h"
 #include "determinant.h"
 #include "vib_onv.h"
+#include <cmath>
 
 namespace maquis {
 namespace srcas {
@@ -32,8 +32,7 @@ void BaseSRCAS<ScalarType, T>::run() {
   int nAcceptedQueen = 0;
 
   maquis::cout << std::setw(12) << "Mic. Iter." << std::setw(12) << "# Sample" << std::setw(parms_["L"] * 2 + 2)
-               << "ONV " << std::setw(20) << "Coeff." << std::setw(20) << "Completeness"
-               << "\n";
+               << "ONV " << std::setw(20) << "Coeff." << std::setw(20) << "Completeness" << std::endl;
   maquis::cout << std::setw(12) << 1 << std::setw(12) << nSampled << std::setw(parms_["L"] * 2 + 2) << queen_.string()
                << std::setw(20) << std::setprecision(14) << std::fixed << overlap << std::setw(20)
                << std::setprecision(14) << std::fixed << completeness_ << std::endl;
@@ -73,8 +72,8 @@ void BaseSRCAS<ScalarType, T>::run() {
     // }
 
     if (completeness_ > parms_["srcas_targetCompleteness"]) {
-      maquis::cout << "SRCAS reached target completeness of " << parms_["srcas_targetCompleteness"] << "\n";
-      maquis::cout << "SRCAS current completeness           " << completeness_ << "\n";
+      maquis::cout << "SRCAS reached target completeness of " << parms_["srcas_targetCompleteness"] << std::endl;
+      maquis::cout << "SRCAS current completeness           " << completeness_ << std::endl;
       break;
     }
   }
@@ -143,16 +142,15 @@ void BaseSRCAS<ScalarType, T>::printResults() const {
               return std::abs(a.second) > std::abs(b.second);
             });
 
-  maquis::cout << std::setw(log(parms_["srcas_numSamples"]) + 2) << "index" << std::setw(parms_["L"] * 2 + 2) << "ONV "
-               << std::setw(20) << "Coeff." << std::setw(20) << "Completeness"
-               << "\n";
+  maquis::cout << std::setw(log10(parms_["srcas_numSamples"]) + 2) << "index" << std::setw(parms_["L"] * 2 + 2)
+               << "ONV " << std::setw(20) << "Coeff." << std::setw(20) << "Completeness" << std::endl;
   ScalarType tmpCompleteness = 0.0;
   int count = 0;
   for (const auto& i : onvValuePairs) {
     count++;
     tmpCompleteness += std::pow(i.second, 2);
-    maquis::cout << std::setw(log(parms_["srcas_numSamples"]) + 2) << count << std::setw(parms_["L"] * 2 + 2) << i.first
-                 << std::setw(20) << std::setprecision(14) << std::fixed << i.second << std::setw(20)
+    maquis::cout << std::setw(log10(parms_["srcas_numSamples"]) + 2) << count << std::setw(parms_["L"] * 2 + 2)
+                 << i.first << std::setw(20) << std::setprecision(14) << std::fixed << i.second << std::setw(20)
                  << std::setprecision(14) << std::fixed << tmpCompleteness << std::endl;
   }
 }
