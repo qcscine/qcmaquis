@@ -142,14 +142,14 @@ void BaseSRCAS<ScalarType, T>::printResults() const {
               return std::abs(a.second) > std::abs(b.second);
             });
 
-  maquis::cout << std::setw(log10(parms_["srcas_numSamples"]) + 2) << "index" << std::setw(parms_["L"] * 2 + 2)
+  maquis::cout << std::setw(10) << "index" << std::setw(parms_["L"] * 2 + 2)
                << "ONV " << std::setw(20) << "Coeff." << std::setw(20) << "Completeness" << std::endl;
   ScalarType tmpCompleteness = 0.0;
   int count = 0;
   for (const auto& i : onvValuePairs) {
     count++;
     tmpCompleteness += std::pow(i.second, 2);
-    maquis::cout << std::setw(log10(parms_["srcas_numSamples"]) + 2) << count << std::setw(parms_["L"] * 2 + 2)
+    maquis::cout << std::setw(10) << count << std::setw(parms_["L"] * 2 + 2)
                  << i.first << std::setw(20) << std::setprecision(14) << std::fixed << i.second << std::setw(20)
                  << std::setprecision(14) << std::fixed << tmpCompleteness << std::endl;
   }

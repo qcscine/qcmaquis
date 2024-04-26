@@ -65,6 +65,10 @@ using symmetries = boost::mpl::list<TwoU1PG>;
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_LiH_DMRG_SSvsTS, S, symmetries, LiHFixture) {
   using InterfaceType = maquis::DMRGInterface<double>;
   // Generic parameters
+  parametersLiH.set("nelec", 3);
+  parametersLiH.set("spin", 1);
+  parametersLiH.set("u1_total_charge1", 2);
+  parametersLiH.set("u1_total_charge2", 1);
   parametersLiH.set("max_bond_dimension", 50);
   parametersLiH.set("symmetry", symm_traits::SymmetryNameTrait<S>::symmName());
   parametersLiH.set("init_type", "const");
@@ -79,7 +83,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_LiH_DMRG_SSvsTS, S, symmetries, LiHFixture
   std::shared_ptr<InterfaceType> interface = std::make_shared<InterfaceType>(parametersLiH);
   interface->optimize();
   // Creates SRCAS object
-  parametersLiH.set("srcas_numSamples", 100000);
+  parametersLiH.set("srcas_numSamples", 1000);
   parametersLiH.set("srcas_samplingSpeed", 0.1);
   parametersLiH.set("srcas_overlapThreshold", -1);
   parametersLiH.set("srcas_targetCompleteness", 2);
@@ -87,13 +91,13 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_LiH_DMRG_SSvsTS, S, symmetries, LiHFixture
   std::vector<int> currQueen = srcas.currentQueen();
   BOOST_CHECK_EQUAL(currQueen.size(), parametersLiH["L"]);
   int sumOfQueen = std::accumulate(currQueen.begin(), currQueen.end(), 0);
-  BOOST_CHECK_EQUAL(sumOfQueen, 7);
+  BOOST_CHECK_EQUAL(sumOfQueen, 9);
   srcas.run();
   std::map<std::string, double> detTable = srcas.sampledTable();
   srcas.printResults();
   // Check that all dets have been sampled
   if (parametersLiH["symmetry"] == "2u1pg" || parametersLiH["symmetry"] == "2u1") {
-    BOOST_CHECK_EQUAL(detTable.size(), 16);
+    BOOST_CHECK_EQUAL(detTable.size(), 24);
   }
   // else if (parametersLiH["symmetry"] == "su2u1pg" || parametersLiH["symmetry"] == "su2u1") {
   //   BOOST_CHECK_EQUAL(detTable.size(), 28);
@@ -104,20 +108,20 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_LiH_DMRG_SSvsTS, S, symmetries, LiHFixture
   // SU2 Does not work!
   // Perform an additional test for the spin symmetry for the triplet state
   // if (parametersLiH["symmetry"] == "su2u1pg" || parametersLiH["symmetry"] == "su2u1") {
-  //   parametersLiH.set("spin", 2);
-  //   // Creates the interface and performs a optimization so that we have a MPS
-  //   // to compare to
-  //   std::shared_ptr<InterfaceType> interface2 = std::make_shared<InterfaceType>(parametersLiH);
-  //   interface2->optimize();
-  //   // Creates SRCAS object
-  //   maquis::srcas::ElectronicSRCAS<double> srcas2(parametersLiH, interface2);
-  //   std::vector<int> currQueen2 = srcas2.currentQueen();
-  //   BOOST_CHECK_EQUAL(currQueen2.size(), parametersLiH["L"]);
-  //   srcas2.run();
-  //   std::map<std::string, double> detTable2 = srcas2.sampledTable();
-  //   srcas2.printResults();
-  //   BOOST_CHECK_EQUAL(detTable2.size(), 24);
-  //   BOOST_CHECK_CLOSE(srcas2.completeness(), 1.0, 1.0E-10); // Can be this thight, because we should sample all dets
+    // parametersLiH.set("spin", 2);
+    // // Creates the interface and performs a optimization so that we have a MPS
+    // // to compare to
+    // std::shared_ptr<InterfaceType> interface2 = std::make_shared<InterfaceType>(parametersLiH);
+    // interface2->optimize();
+    // // Creates SRCAS object
+    // maquis::srcas::ElectronicSRCAS<double> srcas2(parametersLiH, interface2);
+    // std::vector<int> currQueen2 = srcas2.currentQueen();
+    // BOOST_CHECK_EQUAL(currQueen2.size(), parametersLiH["L"]);
+    // srcas2.run();
+    // std::map<std::string, double> detTable2 = srcas2.sampledTable();
+    // srcas2.printResults();
+    // BOOST_CHECK_EQUAL(detTable2.size(), 24);
+    // BOOST_CHECK_CLOSE(srcas2.completeness(), 1.0, 1.0E-10); // Can be this thight, because we should sample all dets
   // }
 }
 
