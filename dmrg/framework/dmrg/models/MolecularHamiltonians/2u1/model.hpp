@@ -36,8 +36,7 @@ using HamiltonianTransformation = chem::HamiltonianTransformation;
 
 template <class Matrix, class SymmGroup, Hamiltonian HamiltonianType, HamiltonianTransformation Transcorrelated>
 qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::qc_model(Lattice const & lat_, BaseParameters & parms_)
-    : lat(lat_), parms(parms_), tag_handler(new table_type()), isQuantumComputingFormat(false)
-{
+    : lat(lat_), parms(parms_), tag_handler(new table_type()), isQuantumComputingFormat(false) {
     // Types definition
     typedef typename SymmGroup::subcharge subcharge;
 
@@ -61,9 +60,10 @@ qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::qc_model(Lattice 
     // find the highest irreducible representation number
     // used to generate ops for all irreps 0..max_irrep
     max_irrep = 0;
-    for (pos_t p = 0; p < lat.size(); ++p)
+    for (pos_t p = 0; p < lat.size(); ++p) {
         max_irrep = (lat.get_prop<typename SymmGroup::subcharge>("type", p) > max_irrep)
                     ? lat.get_prop<typename SymmGroup::subcharge>("type", p) : max_irrep;
+    }
 
     typename SymmGroup::charge A(0), B(0), C(0), D(1);
     B[0] = 1;
@@ -181,27 +181,19 @@ qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::qc_model(Lattice 
 
     //**********************************************************************
     std::pair<std::vector<tag_type>, std::vector<value_type> > cutf = tag_handler->get_product_tags(create_up, fill);
-    std::pair<std::vector<tag_type>, std::vector<value_type> > cdtf = tag_handler->get_product_tags(
-            create_down_for_meas, fill);
+    std::pair<std::vector<tag_type>, std::vector<value_type> > cdtf = tag_handler->get_product_tags(create_down_for_meas, fill);
     std::pair<std::vector<tag_type>, std::vector<value_type> > ftdu = tag_handler->get_product_tags(fill, destroy_up);
-    std::pair<std::vector<tag_type>, std::vector<value_type> > ftdd = tag_handler->get_product_tags(fill,
-                                                                                                    destroy_down_for_meas);
-    std::pair<std::vector<tag_type>, std::vector<value_type> > cund = tag_handler->get_product_tags(create_up,
-                                                                                                    count_down);
-    std::pair<std::vector<tag_type>, std::vector<value_type> > dund = tag_handler->get_product_tags(destroy_up,
-                                                                                                    count_down);
-    std::pair<std::vector<tag_type>, std::vector<value_type> > cdnu = tag_handler->get_product_tags(
-            create_down_for_meas, count_up);
-    std::pair<std::vector<tag_type>, std::vector<value_type> > ddnu = tag_handler->get_product_tags(
-            destroy_down_for_meas, count_up);
+    std::pair<std::vector<tag_type>, std::vector<value_type> > ftdd = tag_handler->get_product_tags(fill, destroy_down_for_meas);
+    std::pair<std::vector<tag_type>, std::vector<value_type> > cund = tag_handler->get_product_tags(create_up, count_down);
+    std::pair<std::vector<tag_type>, std::vector<value_type> > dund = tag_handler->get_product_tags(destroy_up, count_down);
+    std::pair<std::vector<tag_type>, std::vector<value_type> > cdnu = tag_handler->get_product_tags(create_down_for_meas, count_up);
+    std::pair<std::vector<tag_type>, std::vector<value_type> > ddnu = tag_handler->get_product_tags(destroy_down_for_meas, count_up);
     std::pair<std::vector<tag_type>, std::vector<value_type> > cundtf = tag_handler->get_product_tags(cund.first, fill);
     std::pair<std::vector<tag_type>, std::vector<value_type> > ftdund = tag_handler->get_product_tags(fill, dund.first);
     std::pair<std::vector<tag_type>, std::vector<value_type> > cdnutf = tag_handler->get_product_tags(cdnu.first, fill);
     std::pair<std::vector<tag_type>, std::vector<value_type> > ftddnu = tag_handler->get_product_tags(fill, ddnu.first);
-    std::pair<std::vector<tag_type>, std::vector<value_type> > ddcu = tag_handler->get_product_tags(
-            destroy_down_for_meas, create_up);
-    std::pair<std::vector<tag_type>, std::vector<value_type> > ducd = tag_handler->get_product_tags(destroy_up,
-                                                                                                    create_down_for_meas);
+    std::pair<std::vector<tag_type>, std::vector<value_type> > ddcu = tag_handler->get_product_tags(destroy_down_for_meas, create_up);
+    std::pair<std::vector<tag_type>, std::vector<value_type> > ducd = tag_handler->get_product_tags(destroy_up, create_down_for_meas);
 
     // Note that the Hermitian pairs are registered only if the Hamiltonian is Hermitean.
     // TODO: In principle, also for the transcorrelated case the registration of the hermitean pairs should
@@ -332,10 +324,12 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
             }
             std::vector< std::vector< OperatorType > > twoBodyElementaryOperators = { opVector1, opVector2, opVector3, opVector4 };
             std::vector< std::array<int, 4> > tmp;
-            if (isTranscorrelated_)
+            if (isTranscorrelated_) {
                 tmp = TermMaker<Matrix, SymmGroup>::generateTwofoldSymmetricIndex(i, j, k, l);
-            else
+            }
+            else {
                 tmp = TermMaker<Matrix, SymmGroup>::generateEightfoldSymmetricIndex(i, j, k, l);
+            }
             //
             for (auto& iOp: twoBodyElementaryOperators) {
                 for (auto& iTerm: tmp) {
@@ -371,10 +365,12 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
                     int maxDegree = parms["transcorrelated_3body_max_coupling"];
                     if (couplingDegree <= maxDegree) {
                         std::vector< std::array<int, 6> > tmp;
-                        if (isQuantumComputingFormat)
+                        if (isQuantumComputingFormat) {
                             tmp = std::vector<std::array<int, 6>>({std::array<int, 6>({i, j, k, l, m, n})});
-                        else
+                        }
+                        else {
                             tmp = TermMaker<Matrix, SymmGroup>::generateThreeBodySymmetricIndex(i, j, k, l, m, n);
+                        }
                         std::vector< OperatorType > opVector1, opVector2, opVector3, opVector4, opVector5, opVector6, opVector7, opVector8;
                         value_type scalingFactor = (isQuantumComputingFormat) ? 1. : -1./6.;
                         if (isQuantumComputingFormat) {
@@ -462,8 +458,9 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
         }
     }
 
-    for (const auto &idx: mapOfOperators)
+    for (const auto &idx: mapOfOperators) {
         this->terms_.push_back(term_descriptor(idx.first, idx.second, true));
+    }
     // Registers all Hermitian conjugate
     /*
     int originalSize = tag_handler->total_size();
@@ -493,24 +490,18 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
     // Generates the data required to form the Hamiltonian
     auto jw = JordanWignerHandler<Matrix, SymmGroup>(lat, fill, create_up, create_down, destroy_up, destroy_down);
     MapOfOperatorsType mapOfOperators;
-    chem::detail::ChemHelper<Matrix, SymmGroup, HamiltonianType, Transcorrelated> term_assistant(parms, lat, ident,
-                                                                                                 fill, tag_handler);
+    chem::detail::ChemHelper<Matrix, SymmGroup, HamiltonianType, Transcorrelated> term_assistant(parms, lat, ident, fill, tag_handler);
     auto &matrix_elements = term_assistant.getMatrixElements();
     // Tmp objects.
     std::vector<OperatorType> oneBodyVec1 = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
     std::vector<OperatorType> oneBodyVec2 = {OperatorType::CreateBeta, OperatorType::DestroyBeta};
     std::vector<std::vector<OperatorType> > oneBodyElementaryOperators = {oneBodyVec1, oneBodyVec2};
 
-    std::vector<OperatorType> twoBodyVec1 = {OperatorType::CreateAlpha, OperatorType::CreateBeta,
-                                             OperatorType::DestroyBeta, OperatorType::DestroyAlpha};
-    std::vector<OperatorType> twoBodyVec2 = {OperatorType::CreateBeta, OperatorType::CreateAlpha,
-                                             OperatorType::DestroyAlpha, OperatorType::DestroyBeta};
-    std::vector<OperatorType> twoBodyVec3 = {OperatorType::CreateAlpha, OperatorType::CreateAlpha,
-                                             OperatorType::DestroyAlpha, OperatorType::DestroyAlpha};
-    std::vector<OperatorType> twoBodyVec4 = {OperatorType::CreateBeta, OperatorType::CreateBeta,
-                                             OperatorType::DestroyBeta, OperatorType::DestroyBeta};
-    std::vector<std::vector<OperatorType> > twoBodyElementaryOperators = {twoBodyVec1, twoBodyVec2, twoBodyVec3,
-                                                                          twoBodyVec4};
+    std::vector<OperatorType> twoBodyVec1 = {OperatorType::CreateAlpha, OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::DestroyAlpha};
+    std::vector<OperatorType> twoBodyVec2 = {OperatorType::CreateBeta, OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::DestroyBeta};
+    std::vector<OperatorType> twoBodyVec3 = {OperatorType::CreateAlpha, OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::DestroyAlpha};
+    std::vector<OperatorType> twoBodyVec4 = {OperatorType::CreateBeta, OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::DestroyBeta};
+    std::vector<std::vector<OperatorType> > twoBodyElementaryOperators = {twoBodyVec1, twoBodyVec2, twoBodyVec3, twoBodyVec4};
 
     std::vector<OperatorType> threeBodyVec1 = {OperatorType::CreateAlpha, OperatorType::CreateAlpha, OperatorType::CreateAlpha,
                                                OperatorType::DestroyAlpha, OperatorType::DestroyAlpha, OperatorType::DestroyAlpha};
@@ -528,10 +519,8 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
                                                OperatorType::DestroyBeta, OperatorType::DestroyBeta, OperatorType::DestroyBeta};
     std::vector<OperatorType> threeBodyVec8 = {OperatorType::CreateBeta, OperatorType::CreateBeta, OperatorType::CreateAlpha,
                                                OperatorType::DestroyAlpha, OperatorType::DestroyBeta,OperatorType::DestroyBeta};
-    std::vector<std::vector<OperatorType> > threeBodyElementaryOperators = {threeBodyVec1, threeBodyVec2,
-                                                                            threeBodyVec3, threeBodyVec4,
-                                                                            threeBodyVec5, threeBodyVec6,
-                                                                            threeBodyVec7, threeBodyVec8};
+    std::vector<std::vector<OperatorType> > threeBodyElementaryOperators = {threeBodyVec1, threeBodyVec2, threeBodyVec3, threeBodyVec4,
+                                                                            threeBodyVec5, threeBodyVec6, threeBodyVec7, threeBodyVec8};
     bool added_0b = false;
 
 
@@ -547,12 +536,14 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
             diagonals.push_back({iElement, matrix_elements[iElement]});
         }
     }
-    std::sort(diagonals.begin(), diagonals.end(),
-                      [](auto a, auto b) {
-                          return a.second < b.second;
-                      });
-    for (auto it = diagonals.begin(); it < diagonals.begin() + n_hole_states; ++it)
+    std::sort(diagonals.begin(), diagonals.end(), 
+        [](auto a, auto b) {
+            return a.second < b.second;
+        }
+    );
+    for (auto it = diagonals.begin(); it < diagonals.begin() + n_hole_states; ++it) {
         hole_states.insert(term_assistant.idx(it->first, 0));
+    }
 
     std::cout << "Normal ordering according to hole states ";
     for(auto h : hole_states) {
@@ -620,8 +611,7 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
 
                 for (auto &iOp: threeBodyElementaryOperators) {
                     for (auto &iTerm: tmp) {
-                        std::vector<pos_t> posVector = {iTerm[0], iTerm[2], iTerm[4], iTerm[5], iTerm[3],
-                                                        iTerm[1]};
+                        std::vector<pos_t> posVector = {iTerm[0], iTerm[2], iTerm[4], iTerm[5], iTerm[3], iTerm[1]};
                         if (!(posVector[0] == posVector[1] && iOp[0] == iOp[1]) &&
                             !(posVector[0] == posVector[2] && iOp[0] == iOp[2]) &&
                             !(posVector[1] == posVector[2] && iOp[1] == iOp[2]) &&
@@ -630,8 +620,7 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
                             !(posVector[4] == posVector[3] && iOp[4] == iOp[3])) {
                             auto noOp(iOp);
                             double sign = applyNormalOrdering(posVector, noOp, hole_states);
-                            auto term = jw.getTerm(posVector, noOp, tag_handler, true,
-                                                   -sign * matrixElement / 6.);
+                            auto term = jw.getTerm(posVector, noOp, tag_handler, true, -sign * matrixElement / 6.);
                             addTerm(mapOfOperators, term);
                         }
                     }
@@ -642,18 +631,17 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
 
     // Normal ordered 2B contribution
     std::unordered_map<std::tuple<int, int, int, int>, double, intTupleHash> twoBodyIndices;
-    twoBodyIndices = no_helper.getNoTwoBodyCoefficients(term_assistant, matrix_elements.size(), parms["L"],
-                                                        hole_states);
+    twoBodyIndices = no_helper.getNoTwoBodyCoefficients(term_assistant, matrix_elements.size(), parms["L"], hole_states);
 
     int cnt = 0;
     for (auto &iOp: twoBodyElementaryOperators) {
         for (auto p: twoBodyIndices) {
-            std::vector<int> posVector = {std::get<0>(p.first), std::get<2>(p.first), std::get<3>(p.first),
-                                          std::get<1>(p.first)};
+            std::vector<int> posVector = {std::get<0>(p.first), std::get<2>(p.first), std::get<3>(p.first), std::get<1>(p.first)};
             if (!(posVector[0] == posVector[1] && iOp[0] == iOp[1]) &&
                 !(posVector[2] == posVector[3] && iOp[2] == iOp[3])) {
-                if(cnt < 20)
+                if(cnt < 20) {
                   std::cout << "Normal ordered " << posVector[0] << " " << posVector[1] <<" " << posVector[2] << " " << posVector[3] << ": " << std::setprecision(16) << p.second << std::endl;
+                }
                 ++cnt;
                 auto noOp(iOp);
                 double sign = applyNormalOrdering(posVector, noOp, hole_states);
@@ -671,8 +659,9 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
         for (auto p: oneBodyIndices) {
             std::vector<int> posVector = {p.first.first, p.first.second};
             auto noOp(iOp);
-            if(cnt < 20)
+            if(cnt < 20) {
                 std::cout << "Normal ordered " << posVector[0] << " " << posVector[1] << ": " << std::setprecision(16) <<  p.second << std::endl;
+            }
             ++cnt;
             double sign = applyNormalOrdering(posVector, noOp, hole_states);
             auto term = jw.getTerm(posVector, noOp, tag_handler, true, sign * p.second);
@@ -690,16 +679,16 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
         this->terms_.push_back(term);
     }
 
-    for (const auto &idx: mapOfOperators)
+    for (const auto &idx: mapOfOperators) {
         this->terms_.push_back(term_descriptor(idx.first, idx.second, true));
+    }
 
     maquis::cout << "The hamiltonian will contain " << this->terms_.size() << " terms" << std::endl;
 }
 
 /** @brief Adds an operator to the underyling operator map */
 template<class Matrix, class SymmGroup, Hamiltonian HamiltonianType, HamiltonianTransformation Transcorrelated>
-void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::addTerm(MapOfOperatorsType &mapOfOperators,
-                                                                            const term_descriptor &term) const {
+void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::addTerm(MapOfOperatorsType &mapOfOperators, const term_descriptor &term) const {
     //
     if (term.size() != 0) {
         if (mapOfOperators.find(term.getBase()) == mapOfOperators.end()) {

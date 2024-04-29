@@ -8,22 +8,24 @@
 #ifndef QC_HAMILTONIANS_H
 #define QC_HAMILTONIANS_H
 
-#include <cmath>
-#include <sstream>
-#include <fstream>
 #include <iterator>
 #include <boost/shared_ptr.hpp>
 #include <boost/tokenizer.hpp>
 #include <regex>
-#include <unordered_set>
 
 #include "dmrg/models/model.h"
-#include "dmrg/models/measurements.h"
 #include "dmrg/utils/BaseParameters.h"
 
 #include "dmrg/models/MolecularHamiltonians/util.h"
-#include "dmrg/models/MolecularHamiltonians/parse_integrals.h"
 #include "dmrg/models/MolecularHamiltonians/pg_util.h"
+
+// These are unused
+// #include <cmath>
+// #include <sstream>
+// #include <fstream>
+// #include <unordered_set>
+#include "dmrg/models/measurements.h"
+#include "dmrg/models/MolecularHamiltonians/parse_integrals.h"
 #include "dmrg/models/MolecularHamiltonians/2u1/term_maker.h"
 #include "dmrg/models/MolecularHamiltonians/2u1/chem_helper.h"
 #include "dmrg/utils/checks.h"
@@ -32,8 +34,7 @@ using Hamiltonian = chem::Hamiltonian;
 using HamiltonianTransformation = chem::HamiltonianTransformation;
 
 template<class Matrix, class SymmGroup, Hamiltonian HamiltonianType, HamiltonianTransformation HamiltonianTranscorrelated>
-class qc_model : public model_impl<Matrix, SymmGroup>
-{
+class qc_model : public model_impl<Matrix, SymmGroup> {
     // Types definition
     using base = model_impl<Matrix, SymmGroup>;
     using table_type = typename base::table_type;
@@ -48,7 +49,6 @@ class qc_model : public model_impl<Matrix, SymmGroup>
     using MapOfOperatorsType = std::unordered_map< std::vector< std::pair< int, unsigned int> >, value_type,
                                                    boost::hash< std::vector< std::pair< int, unsigned int> > > >;
 public:
-
     qc_model(Lattice const & lat_, BaseParameters & parms_);
 
     /** @brief Generates the Hamiltonian terms */
@@ -57,70 +57,78 @@ public:
     /** @brief Updates the map with the operator definition */
     void addTerm(MapOfOperatorsType& mapOfOperators, const term_descriptor& term) const;
 
-    void update(BaseParameters const& p)
-    {
+    void update(BaseParameters const& p) {
         throw std::runtime_error("update() not yet implemented for this model.");
     }
 
     // For this model: site_type == point group irrep
-    Index<SymmGroup> const & phys_dim(size_t type) const
-    {
+    Index<SymmGroup> const & phys_dim(size_t type) const {
         return phys_indices[type];
     }
-    tag_type identity_matrix_tag(size_t type) const
-    {
+
+    tag_type identity_matrix_tag(size_t type) const {
         return ident[type];
     }
-    tag_type filling_matrix_tag(size_t type) const
-    {
+
+    tag_type filling_matrix_tag(size_t type) const {
         return fill[type];
     }
 
-    typename SymmGroup::charge total_quantum_numbers(BaseParameters & parms_) const
-    {
+    typename SymmGroup::charge total_quantum_numbers(BaseParameters & parms_) const {
         return chem::detail::qn_helper<SymmGroup>().total_qn(parms_);
     }
 
-    tag_type get_operator_tag(std::string const & name, size_t type) const
-    {
-        if (name == "create_up")
+    tag_type get_operator_tag(std::string const & name, size_t type) const {
+        if (name == "create_up") {
             return create_up[type];
-        else if (name == "create_down")
+        }
+        if (name == "create_down") {
             return create_down[type];
-        else if (name == "create_down_for_meas")
+        }
+        if (name == "create_down_for_meas") {
             return create_down_for_meas[type];
-        else if (name == "destroy_up")
+        }
+        if (name == "destroy_up") {
             return destroy_up[type];
-        else if (name == "destroy_down")
+        }
+        if (name == "destroy_down") {
             return destroy_down[type];
-        else if (name == "destroy_down_for_meas")
+        }
+        if (name == "destroy_down_for_meas") {
             return destroy_down_for_meas[type];
-        else if (name == "count_up")
+        }
+        if (name == "count_up") {
             return count_up[type];
-        else if (name == "count_down")
+        }
+        if (name == "count_down") {
             return count_down[type];
-        else if (name == "e2d")
+        }
+        if (name == "e2d") {
             return e2d[type];
-        else if (name == "d2e")
+        }
+        if (name == "d2e") {
             return d2e[type];
-        else if (name == "docc")
+         }
+        if (name == "docc") {
             return docc[type];
-	    else if (name == "d2u")
+        }
+	if (name == "d2u") {
             return d2u[type];
-        else if (name == "u2d")
+        }
+        if (name == "u2d") {
             return u2d[type];
-        else
-            throw std::runtime_error("Operator not valid for this model.");
+        }
+        // else {
+        throw std::runtime_error("Operator not valid for this model.");
+        // }
         return 0;
     }
 
-    table_ptr operators_table() const
-    {
+    table_ptr operators_table() const {
         return tag_handler;
     }
 
-    measurements_type measurements () const
-    {
+    measurements_type measurements () const {
         typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
 
         std::vector<tag_type> swap_d2u              = (tag_handler->get_product_tags(destroy_down, create_up)).first;
@@ -139,8 +147,7 @@ public:
         measurements_type meas;
 
         {
-            if (parms.is_set("MEASURE[ChemEntropy]"))
-            {
+            if (parms.is_set("MEASURE[ChemEntropy]")) {
                 parms.set("MEASURE_LOCAL[Nup]", "Nup");
                 parms.set("MEASURE_LOCAL[Ndown]", "Ndown");
                 parms.set("MEASURE_LOCAL[Nupdown]", "Nup*Ndown");
@@ -184,14 +191,18 @@ public:
                 if (std::regex_match(lhs, what, expression)) {
 
                     std::vector<op_t> meas_op;
-                    if (it.second == "Nup")
+                    if (it.second == "Nup") {
                         meas_op = count_up_ops;
-                    else if (it.second == "Ndown")
+                    }
+                    else if (it.second == "Ndown") {
                         meas_op = count_down_ops;
-                    else if (it.second == "Nup*Ndown" || it.second == "docc")
+                    }
+                    else if (it.second == "Nup*Ndown" || it.second == "docc") {
                         meas_op = docc_ops;
-                    else
+                    }
+                    else {
                         throw std::runtime_error("Invalid observable\nLocal measurements supported so far are \"Nup\" and \"Ndown\"\n");
+                    }
 
                     meas.push_back( new measurements::local<Matrix, SymmGroup>(what.str(1), lat, ident_ops, fill_ops, meas_op) );
                 }
@@ -256,15 +267,16 @@ public:
             }
 
             if (std::regex_match(lhs, what, expression_twoptdm) ||
-                    std::regex_match(lhs, what, expression_transition_twoptdm)) {
+                std::regex_match(lhs, what, expression_transition_twoptdm)) {
 
                 std::string bra_ckp("");
                 if(lhs == "MEASURE[trans2rdm]"){
                     name = "transition_twoptdm";
                     bra_ckp = it.second;
                 }
-                else
+                else {
                     name = "twoptdm";
+                }
 
                 std::vector<scaled_bond_element> synchronous_meas_operators;
                 {
@@ -301,8 +313,11 @@ public:
                 }
                 half_only = true;
                 std::vector<pos_t> positions;
-                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
-                                                                                    half_only, positions, bra_ckp));
+                meas.push_back( 
+                    new measurements::TaggedNRankRDM<Matrix, SymmGroup>(
+                        name, lat, tag_handler, ident, fill, synchronous_meas_operators, half_only, positions, bra_ckp
+                    )
+                );
             }
             else if (std::regex_match(lhs, what, expression_transition_twoptdm_uuuu) ||
                      std::regex_match(lhs, what, expression_transition_twoptdm_uddu) ||
@@ -332,7 +347,7 @@ public:
                     meas_operators.push_back(destroy_down_for_meas);
                     meas_operators.push_back(destroy_up);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
-		        }
+                }
                 else if(lhs == "MEASURE[trans2rdm_baab]"){
 
                     name = "transition_twoptdm_baab";
@@ -342,8 +357,7 @@ public:
                     meas_operators.push_back(destroy_up);
                     meas_operators.push_back(destroy_down_for_meas);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
-
-		        }
+                }
                 else{
 
                     name = "transition_twoptdm_bbbb";
@@ -354,12 +368,15 @@ public:
                     meas_operators.push_back(destroy_down_for_meas);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
 
-		        }
+                }
 
                 half_only = true;
                 std::vector<pos_t> positions;
-                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
-                                                                                    half_only, positions, bra_ckp));
+                meas.push_back( 
+                    new measurements::TaggedNRankRDM<Matrix, SymmGroup>(
+                        name, lat, tag_handler, ident, fill, synchronous_meas_operators, half_only, positions, bra_ckp
+                    )
+                );
             }
 
             else if (std::regex_match(lhs, what, expression_threeptdm) ||
@@ -372,13 +389,16 @@ public:
 
                     value = it.second;
                     boost::split( value_split, value, boost::is_any_of(";"));
-                    if (value_split.size() > 1)
-                    	bra_ckp = value_split[0];
-                    else
-                    	bra_ckp = it.second;
+                    if (value_split.size() > 1) {
+                        bra_ckp = value_split[0];
+                    }
+                    else {
+                        bra_ckp = it.second;
+                    }
                 }
-                else
+                else {
                     name = "threeptdm";
+                }
 
                 std::vector<scaled_bond_element> synchronous_meas_operators;
                 {
@@ -480,12 +500,16 @@ public:
                     maquis::cout << " " << std::endl;
                     */
                    // check if positions are out of bounds
-                   for (auto&& p: positions)
+                   for (auto&& p: positions) {
                         assert(p < parms["L"]);
+                    }
 
                 }
-                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
-                                                                                    half_only, positions, bra_ckp));
+                meas.push_back( 
+                    new measurements::TaggedNRankRDM<Matrix, SymmGroup>(
+                        name, lat, tag_handler, ident, fill, synchronous_meas_operators, half_only, positions, bra_ckp
+                    )
+                );
             }
 
             else if (std::regex_match(lhs, what, expression_fourptdm)) {
@@ -731,11 +755,15 @@ public:
                     maquis::cout << " " << std::endl;
                     */
                     // check if positions exceed L
-                    for (auto&& p: positions)
+                    for (auto&& p: positions) {
                         assert(p < parms["L"]);
+                    }
                 }
-                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
-                                                                                    half_only, positions, bra_ckp));
+                meas.push_back( 
+                    new measurements::TaggedNRankRDM<Matrix, SymmGroup>(
+                        name, lat, tag_handler, ident, fill, synchronous_meas_operators, half_only, positions, bra_ckp
+                    )
+                );
             }
 
             else if (std::regex_match(lhs, what, expression_oneptdm_uu) ||
@@ -761,8 +789,11 @@ public:
                 }
                 nearest_neighbors_only = false;
                 std::vector<pos_t> positions;
-                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
-                                                                                    half_only, positions, bra_ckp));
+                meas.push_back( 
+                    new measurements::TaggedNRankRDM<Matrix, SymmGroup>(
+                        name, lat, tag_handler, ident, fill, synchronous_meas_operators, half_only, positions, bra_ckp
+                    )
+                );
             }
 
             else if (std::regex_match(lhs, what, expression_oneptdm_dd) ||
@@ -849,8 +880,7 @@ public:
             // 1-RDM and transition-1RDM
             else if (std::regex_match(lhs, what, expression_oneptdm) ||
                      std::regex_match(lhs, what, expression_transition_oneptdm) ||
-                     std::regex_match(lhs, what, expression_oneptspdm))
-            {
+                     std::regex_match(lhs, what, expression_oneptspdm)) {
                 std::string bra_ckp("");
                 if(lhs == "MEASURE[trans1rdm]"){
                     name = "transition_oneptdm";
@@ -877,8 +907,7 @@ public:
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
                 // if bra == ket the cross terms will be zero for sure, no need to include them
-                if (name == "transition_oneptdm")
-                {
+                if (name == "transition_oneptdm") {
                     {
                         bond_tag_element meas_operators;
                         meas_operators.push_back(create_up);
@@ -907,8 +936,11 @@ public:
 
                 nearest_neighbors_only = false;
                 std::vector<pos_t> positions;
-                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
-                                                                                    half_only, positions, bra_ckp));
+                meas.push_back(
+                    new measurements::TaggedNRankRDM<Matrix, SymmGroup>(
+                        name, lat, tag_handler, ident, fill, synchronous_meas_operators, half_only, positions, bra_ckp
+                    )
+                );
             }
 
             else if (!name.empty()) {
@@ -923,10 +955,7 @@ public:
                 /// parse operators op1:op2:...
                 boost::char_separator<char> sep(":");
                 tokenizer corr_tokens(value_split[0], sep);
-                for (tokenizer::iterator it2=corr_tokens.begin();
-                     it2 != corr_tokens.end();
-                     it2++)
-                {
+                for (tokenizer::iterator it2=corr_tokens.begin(); it2 != corr_tokens.end(); it2++) {
                     if (*it2 == "c_up") {
                         meas_operators.push_back(destroy_up);
                         ++f_ops;
@@ -986,13 +1015,15 @@ public:
                         meas_operators.push_back(destroy_down_count_up);
                         ++f_ops;
                     }
-                    else
+                    else {
                         throw std::runtime_error("Unrecognized operator in correlation measurement: "
                                                     + boost::lexical_cast<std::string>(*it2) + "\n");
+                    }
                 }
 
-                if (f_ops % 2 != 0)
+                if (f_ops % 2 != 0) {
                     throw std::runtime_error("In " + name + ": Number of fermionic operators has to be even in correlation measurements.");
+                }
 
                 /// parse positions p1,p2,p3,... (or `space`)
                 std::vector<pos_t> positions;
@@ -1009,8 +1040,8 @@ public:
                                                                                     half_only, positions));
             }
         }
-        }
-        return meas;
+    }
+    return meas;
     }
 
 private:
@@ -1026,27 +1057,26 @@ private:
     std::vector<tag_type> ident, fill,
                           create_up, create_down, destroy_up, destroy_down,
                           create_down_for_meas, destroy_down_for_meas,
-                          count_up, count_down, count_up_down, docc, e2d, d2e,
-                          d2u, u2d;
+                          count_up, count_down, count_up_down, 
+                          docc, e2d, d2e, d2u, u2d;
 
     typename SymmGroup::subcharge max_irrep;
 
-    std::vector<op_t> generate_site_specific_ops(op_t const & op) const
-    {
+    std::vector<op_t> generate_site_specific_ops(op_t const & op) const {
         PGDecorator<SymmGroup> set_symm;
         std::vector<op_t> ret;
         for (typename SymmGroup::subcharge sc=0; sc < max_irrep+1; ++sc) {
             op_t mod(set_symm(op.basis(), sc));
-            for (std::size_t b = 0; b < op.n_blocks(); ++b)
+            for (std::size_t b = 0; b < op.n_blocks(); ++b) {
                 mod[b] = op[b];
+            }
 
             ret.push_back(mod);
         }
         return ret;
     }
 
-    std::vector<tag_type> register_site_specific(std::vector<op_t> const & ops, tag_detail::operator_kind kind)
-    {
+    std::vector<tag_type> register_site_specific(std::vector<op_t> const & ops, tag_detail::operator_kind kind) {
         std::vector<tag_type> ret;
         for (typename SymmGroup::subcharge sc=0; sc < max_irrep+1; ++sc) {
             std::pair<tag_type, value_type> newtag = tag_handler->checked_register(ops[sc], kind);
