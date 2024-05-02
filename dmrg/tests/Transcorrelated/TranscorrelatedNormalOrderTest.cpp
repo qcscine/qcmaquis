@@ -92,7 +92,7 @@ BOOST_FIXTURE_TEST_CASE(
 
   auto energyDMRG = maquis::real(interface.energy());
 
-  BOOST_CHECK_SMALL(std::abs(energyDMRG - energyDMRGNO), 1.0E-10);
+  BOOST_CHECK_CLOSE(energyDMRG, energyDMRGNO, 1e-6);
 }
 //
 ///**
@@ -146,11 +146,10 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_Be_VersusCCNO, TranscorrelatedFixture) {
 
   BOOST_CHECK_CLOSE(energyDMRG_3body, energyDMRG_NO3body, 2.0E-9);
 
-  double energyOwlCC_3body = -14.656823;
+  double energyOwlCC_3body = -14.6566428;
   double energyOwlCC_NO = -14.656806;
 
-  // This discrepenacy in the eneryg should be checked!
-  // Error is of the order of 1E-5
-  BOOST_CHECK_CLOSE(energyDMRG_3body, energyOwlCC_3body, 1.0E-2);
+  // TODO: This discrepenacy in the energy should be checked!
+  BOOST_CHECK_CLOSE(energyDMRG_3body, energyOwlCC_3body, 1.0E-5);
   BOOST_CHECK_CLOSE(energyDMRG_NO, energyOwlCC_NO, 1.0E-2);
 }

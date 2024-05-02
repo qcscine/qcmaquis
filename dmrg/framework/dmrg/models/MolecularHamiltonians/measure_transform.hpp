@@ -23,14 +23,42 @@ struct measure_transform {
       const std::string& rfile, const std::string& result_path,
       const Lattice& lat, MPS<Matrix, SymmGroup> const& mps,
       BaseParameters const& measurement_parms = BaseParameters()
-  ) {}
+  ) {
+    BaseParameters parms_copy = measurement_parms;
+    parms_copy.set("model_library", "coded");
+    parms_copy.set("lattice_library", "coded");
+    parms_copy.set("model_library", "coded");
+    parms_copy.set("LATTICE", "orbitals");
+    parms_copy.set("MODEL", "quantum_chemistry");
+    Model<Matrix, SymmOut> model_tmp(lat, parms_copy);
+    auto measurements = model_tmp.measurements();
+    std::for_each(
+        measurements.begin(), measurements.end(),
+        measure_and_save<Matrix, SymmOut>(rfile, result_path, mps)
+    );
+  }
 
   results_map_type meas_out(
       const Lattice& lat, MPS<Matrix, SymmGroup> const& mps,
       BaseParameters const& measurement_parms = BaseParameters(),
       const std::string& rfile = "", const std::string& result_path = ""
   ) {
-    return results_map_type();
+    BaseParameters parms_copy = measurement_parms;
+    parms_copy.set("model_library", "coded");
+    parms_copy.set("lattice_library", "coded");
+    parms_copy.set("model_library", "coded");
+    parms_copy.set("LATTICE", "orbitals");
+    parms_copy.set("MODEL", "quantum_chemistry");
+    results_map_type ret;
+    Model<Matrix, SymmOut> model_tmp(lat, parms_copy);
+    auto measurements = model_tmp.measurements();
+    for (auto&& meas : measurements) {
+      ret[meas.name()] =
+          measure_and_save<Matrix, SymmOut>(rfile, result_path, mps)
+              .meas_out(meas);
+    }
+
+    return ret;
   };
 };
 

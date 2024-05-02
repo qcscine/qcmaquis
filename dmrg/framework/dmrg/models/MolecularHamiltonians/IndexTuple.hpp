@@ -79,8 +79,9 @@ class IndexTuple {
 
   /** In-place alignment */
   void align(bool isHermitian) {
-    if (doAlignment)
+    if (doAlignment) {
       tmpStorage = maquis::detail::alignArray(tmpStorage, isHermitian);
+    }
   }
 
   /** @brief Non-const begin pointer */
@@ -102,9 +103,13 @@ class IndexTuple {
   /** @brief Sign of the index (and of the underlying permutation */
   int sign() const {
     int inv_count = 0;
-    for (int c1 = 0; c1 < NumberOfElements - 1; c1++)
-      for (int c2 = c1 + 1; c2 < NumberOfElements; c2++)
-        if (tmpStorage[c1] > tmpStorage[c2]) inv_count++;
+    for (int c1 = 0; c1 < NumberOfElements - 1; c1++) {
+      for (int c2 = c1 + 1; c2 < NumberOfElements; c2++) {
+        if (tmpStorage[c1] > tmpStorage[c2]) {
+          inv_count++;
+        }
+      }
+    }
     return 1 - 2 * (inv_count % 2);
   }
 

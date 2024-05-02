@@ -98,6 +98,7 @@ int main(int argc, char** argv) {
               interface.fiedler_order(1, std::vector<std::vector<int>>{}, "");
         }
         interface.run(sim_type);
+        interface.run_measure();
       } else {
         maquis::DMRGInterface<std::complex<double>> interface(opt.parms);
         if (opt.parms["fiedler"]) {
@@ -105,6 +106,7 @@ int main(int argc, char** argv) {
               interface.fiedler_order(1, std::vector<std::vector<int>>{}, "");
         }
         interface.run(sim_type);
+        interface.run_measure();
       }
 
       sim_timer.end();

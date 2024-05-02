@@ -37,14 +37,15 @@ class AlignTraitClass<U1DG> {
 
 /** @brief Align function for the 4-element array */
 inline auto alignArray(const std::array<int, 4>& idx, bool isHermitian) {
-  int i = idx[0];
-  int j = idx[1];
-  int k = idx[2];
-  int l = idx[3];
+  auto [i, j, k, l] = idx;
   // Same coordinate swap --> symmetry only available if Hermitean
   if (isHermitian) {
-    if (i < j) std::swap(i, j);
-    if (k < l) std::swap(k, l);
+    if (i < j) {
+      std::swap(i, j);
+    }
+    if (k < l) {
+      std::swap(k, l);
+    }
   }
   // R12 swap
   if (i < k) {
@@ -59,17 +60,18 @@ inline auto alignArray(const std::array<int, 4>& idx, bool isHermitian) {
 
 /** @brief Align function for the 6-element array */
 inline auto alignArray(const std::array<int, 6>& idx, bool isHermitian) {
-  int i = idx[0];
-  int j = idx[1];
-  int k = idx[2];
-  int l = idx[3];
-  int m = idx[4];
-  int n = idx[5];
+  auto [i, j, k, l, m, n] = idx;
   // bra <--> ket symmetry for each coordinate, only valid if Hermitian
   if (isHermitian) {
-    if (i < j) std::swap(i, j);
-    if (k < l) std::swap(k, l);
-    if (m < n) std::swap(m, n);
+    if (i < j) {
+      std::swap(i, j);
+    }
+    if (k < l) {
+      std::swap(k, l);
+    }
+    if (m < n) {
+      std::swap(m, n);
+    }
   }
   // R123 symmetry wrt 1/2
   if (i < k) {

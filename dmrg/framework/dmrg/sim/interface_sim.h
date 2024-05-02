@@ -508,6 +508,13 @@ parms["nsweeps"]) checkpoint_simulation(mps, sweep, -1); if (stopped) break;
 
   /** @brief Runs a measurement calculation */
   void run_measure() override {
+    if (rfile().empty()) {
+      std::cout << "Measurements not implemented yet without "
+                   "results file"
+                << std::endl;
+      return;
+    }
+
     // if (this->get_last_sweep() < 0)
     //     throw std::runtime_error("Tried to measure before a sweep");
     this->measure("/spectrum/results/", all_measurements);
@@ -521,7 +528,8 @@ parms["nsweeps"]) checkpoint_simulation(mps, sweep, -1); if (stopped) break;
     if (parms["MEASURE[Energy]"]) {
       energy =
           maquis::real(expval(mps, mpoc)) / maquis::real(overlap(mps, mps));
-      maquis::cout << "Energy: " << energy << std::endl;
+      maquis::cout << std::setprecision(16) << "Energy: " << energy
+                   << std::endl;
       maquis::cout << "MPS norm: " << maquis::real(overlap(mps, mps))
                    << std::endl;
       if (!rfile().empty()) {
@@ -551,22 +559,26 @@ parms["nsweeps"]) checkpoint_simulation(mps, sweep, -1); if (stopped) break;
             << std::vector<double>(1, energy2 - energy * energy);
       }
     }
+    // Measurements that require SU2U1->2U1 transformation for spin-adapted
 #if defined(HAVE_TwoU1) || defined(HAVE_TwoU1PG)
-    if (!rfile().empty()) {
+    bool is_spin_adapted =
+        (parms["symmetry"] == "su2u1" || parms["symmetry"] == "su2u1pg");
+    if (is_spin_adapted) {
       BaseParameters parms_meas;
       parms_meas = parms.twou1_measurements();
       if (!parms_meas.empty()) {
-        measure_transform<Matrix, SymmGroup>(
-        )(rfile(), "/spectrum/results", base::lat, mps, parms_meas);
+        measure_transform<Matrix, SymmGroup>()(
+            rfile(), "/spectrum/results", base::lat, mps, parms_meas
+        );
       }
-    } else {
-      throw std::runtime_error(
-          "Transformed measurements not implemented yet without checkpoints"
-      );
     }
 #endif
   }
 
+  /**
+   * @brief Performs measurements and returns the results of the measurements.
+   * @return Map with the results of the measurements.
+   */
   results_map_type measure_out() override {
     results_map_type ret;
     // Do not measure before a sweep
@@ -594,13 +606,6 @@ parms["nsweeps"]) checkpoint_simulation(mps, sweep, -1); if (stopped) break;
             );
         // Merge transformed measurements with the remaining results
         ret.insert(transformed_meas.begin(), transformed_meas.end());
-      }
-    } else {
-      for (auto&& meas : model.measurements()) {
-        ret[meas.name()] = measure_and_save<Matrix, SymmGroup>(
-                               rfile(), "/spectrum/results", mps
-        )
-                               .meas_out(meas);
       }
     }
 #endif
@@ -898,7 +903,9 @@ parms["nsweeps"]) checkpoint_simulation(mps, sweep, -1); if (stopped) break;
       // do dmrg calculation
       maquis::cout << "Optimize for Fiedler" << std::endl;
       this->run("optimize");
+      std::cout << "Fiedler optimize Done" << '\n';
       measurements.emplace_back(std::move(this->measure_out()));
+      std::cout << "Fiedler measurements Done" << '\n';
     }
     // }
 

@@ -37,8 +37,11 @@ class LatticeHelperClass {
       outputOrder = parms[nameOfOrder].as<std::vector<PositionType> >();
       if (outputOrder.size() != latticeSize) {
         throw std::runtime_error(
-            "Number of orbitals in the orbital order does not match the total "
-            "number of orbitals"
+            "Number of orbitals the orbital_order (" +
+            std::to_string(outputOrder.size()) +
+            ") does not match the total "
+            "number of orbitals in integral_file (" +
+            std::to_string(latticeSize) + ")."
         );
       }
       // Shifts the order by -1 to match the convention that indices start in

@@ -90,10 +90,8 @@ void updateIndices(
       SymmGroup, getIndexDim(HamiltonianType, Transcorrelated)>;
   // Functor class used to reorder the integral indices (used for custom
   // sorting)
-  struct reorderer {
-    int operator()(int p, const std::vector<int>& inv_order) {
-      return p >= 0 ? inv_order[p] : p;
-    }
+  auto reorderer = [](int p, const std::vector<int>& inv_order) {
+    return p >= 0 ? inv_order[p] : p;
   };
   // Actual function
   if (std::abs(t.second) > cutoff) {
@@ -101,7 +99,7 @@ void updateIndices(
     TupleType tmp;
     int idx = 0;
     for (const auto& iElement : t.first) {
-      tmp[idx] = reorderer()(iElement - 1, inv_order);
+      tmp[idx] = reorderer(iElement - 1, inv_order);
       idx++;
     }
     if (do_align) {
@@ -139,6 +137,8 @@ static FcidumpHeaderInfo parse_header(std::istream& is) {
       break;
     }
   }
+  std::cout << "NORB: " << norb << " NELEC: " << nelec << " MS2: " << ms2
+            << "\n";
   return {norb, nelec, ms2};
 }
 
