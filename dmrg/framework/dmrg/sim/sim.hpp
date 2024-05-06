@@ -140,7 +140,7 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
     // Model initialization
     lat = Lattice(parms);
     model = Model<Matrix, SymmGroup>(lat, parms);
-    if(parms_("srcas_numSamples") == 1) {
+    if(parms_["srcas_numSamples"] == 1) {
         mpo = make_mpo(lat, model);
     }
     all_measurements = model.measurements();
