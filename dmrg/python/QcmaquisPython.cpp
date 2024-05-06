@@ -30,50 +30,50 @@ PYBIND11_MODULE(_dmrg, module) {
   py::class_<ComplexElectronicTranscorrelatedIntegralMap>(module, "ComplexTCIntegralMap")
       .def(py::init<>())
       .def("set", &ComplexElectronicTranscorrelatedIntegralMap::set)
-      .def("at", [](ComplexElectronicTranscorrelatedIntegralMap& blub, const std::array<int, 6>& blah,
-                    double& hihi) { blub.at(blah) = hihi; })
-      .def("at", [](const ComplexElectronicTranscorrelatedIntegralMap& blub,
-                    const std::array<int, 6>& blah) { return &blub.at(blah); })
+      .def("at", [](ComplexElectronicTranscorrelatedIntegralMap& map, const std::array<int, 6>& index,
+                    double& value) { map.at(index) = value; })
+      .def("at", [](const ComplexElectronicTranscorrelatedIntegralMap& map,
+                    const std::array<int, 6>& index) { return &map.at(index); })
       .def("__getitem__",
-           [](ComplexElectronicTranscorrelatedIntegralMap& blub, const std::array<int, 6>& blah) { return &blub[blah]; })
+           [](ComplexElectronicTranscorrelatedIntegralMap& map, const std::array<int, 6>& index) { return &map[index]; })
       .def("__setitem__",
-           [](ComplexElectronicTranscorrelatedIntegralMap& blub, const std::array<int, 6>& blah) { return &blub[blah]; });
+           [](ComplexElectronicTranscorrelatedIntegralMap& map, const std::array<int, 6>& index) { return &map[index]; });
 
   /* Transcorrelated Real Integral Map */
   py::class_<RealElectronicTranscorrelatedIntegralMap>(module, "TCIntegralMap")
       .def(py::init<>())
       .def("set", &RealElectronicTranscorrelatedIntegralMap::set)
-      .def("at", [](RealElectronicTranscorrelatedIntegralMap& blub, const std::array<int, 6>& blah,
-                    double& hihi) { blub.at(blah) = hihi; })
-      .def("at", [](const RealElectronicTranscorrelatedIntegralMap& blub,
-                    const std::array<int, 6>& blah) { return &blub.at(blah); })
+      .def("at", [](RealElectronicTranscorrelatedIntegralMap& map, const std::array<int, 6>& index,
+                    double& value) { map.at(index) = value; })
+      .def("at", [](const RealElectronicTranscorrelatedIntegralMap& map,
+                    const std::array<int, 6>& index) { return &map.at(index); })
       .def("__getitem__",
-           [](RealElectronicTranscorrelatedIntegralMap& blub, const std::array<int, 6>& blah) { return &blub[blah]; })
+           [](RealElectronicTranscorrelatedIntegralMap& map, const std::array<int, 6>& index) { return &map[index]; })
       .def("__setitem__",
-           [](RealElectronicTranscorrelatedIntegralMap& blub, const std::array<int, 6>& blah) { return &blub[blah]; });
+           [](RealElectronicTranscorrelatedIntegralMap& map, const std::array<int, 6>& index) { return &map[index]; });
 
   /* Real Integral Map */
   py::class_<chem::integral_map<double>>(module, "IntegralMap")
       .def(py::init<>())
       .def("set", &chem::integral_map<double>::set)
       .def("at",
-           [](chem::integral_map<double>& blub, const std::array<int, 4>& blah, double& hihi) { blub.at(blah) = hihi; })
-      .def("at", [](const chem::integral_map<double>& blub, const std::array<int, 4>& blah) { return &blub.at(blah); })
-      .def("__getitem__", [](chem::integral_map<double>& blub, const std::array<int, 4>& blah) { return &blub[blah]; })
-      .def("__setitem__", [](chem::integral_map<double>& blub, const std::array<int, 4>& blah) { return &blub[blah]; });
+           [](chem::integral_map<double>& map, const std::array<int, 4>& index, double& value) { map.at(index) = value; })
+      .def("at", [](const chem::integral_map<double>& map, const std::array<int, 4>& index) { return &map.at(index); })
+      .def("__getitem__", [](chem::integral_map<double>& map, const std::array<int, 4>& index) { return &map[index]; })
+      .def("__setitem__", [](chem::integral_map<double>& map, const std::array<int, 4>& index) { return &map[index]; });
 
   /* Complex Integral Map */
   py::class_<chem::integral_map<std::complex<double>>>(module, "ComplexIntegralMap")
       .def(py::init<>())
       .def("set", &chem::integral_map<std::complex<double>>::set)
-      .def("at", [](chem::integral_map<std::complex<double>>& blub, const std::array<int, 4>& blah,
-                    std::complex<double>& hihi) { blub.at(blah) = hihi; })
-      .def("at", [](const chem::integral_map<std::complex<double>>& blub,
-                    const std::array<int, 4>& blah) { return &blub.at(blah); })
+      .def("at", [](chem::integral_map<std::complex<double>>& map, const std::array<int, 4>& index,
+                    std::complex<double>& value) { map.at(index) = value; })
+      .def("at", [](const chem::integral_map<std::complex<double>>& map,
+                    const std::array<int, 4>& index) { return &map.at(index); })
       .def("__getitem__",
-           [](chem::integral_map<std::complex<double>>& blub, const std::array<int, 4>& blah) { return &blub[blah]; })
+           [](chem::integral_map<std::complex<double>>& map, const std::array<int, 4>& index) { return &map[index]; })
       .def("__setitem__",
-           [](chem::integral_map<std::complex<double>>& blub, const std::array<int, 4>& blah) { return &blub[blah]; });
+           [](chem::integral_map<std::complex<double>>& map, const std::array<int, 4>& index) { return &map[index]; });
 
   /* BaseParameters for DmrgParameters */
   py::class_<BaseParameters>(module, "BaseParameters")
