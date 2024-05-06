@@ -80,7 +80,7 @@ qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::qc_model(Lattice 
     }
 
     // TMP Solution??
-    if(parms_.defined("srcas_numSamples")) {
+    if(parms_["srcas_numSamples"] != 1) {
         return; 
     }
 
