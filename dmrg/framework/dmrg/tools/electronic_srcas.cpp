@@ -21,6 +21,13 @@ int ElectronicSRCAS<ScalarType>::getRandomUnoccSpinOrb_(const Determinant& det, 
 }
 
 template<typename ScalarType>
+Determinant ElectronicSRCAS<ScalarType>::generateSymmetricDeterminant_(const Determinant& onv) const {
+  auto tmpDet = onv;
+  tmpDet.flipSpin();
+  return tmpDet;
+}
+
+template<typename ScalarType>
 Determinant ElectronicSRCAS<ScalarType>::generateNewONV_() {
   // Start from queen
   auto tmpDet = this->queen_;

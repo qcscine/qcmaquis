@@ -53,6 +53,21 @@ void BaseSRCAS<ScalarType, T>::run() {
         maquis::cout << std::setw(12) << isample << std::setw(12) << nSampled << std::setw(parms_["L"] * 2 + 2)
                      << tmpONV.string() << std::setw(20) << std::setprecision(14) << std::fixed << overlap
                      << std::setw(20) << std::setprecision(14) << std::fixed << completeness_ << std::endl;
+        try {
+          auto otherONV = generateSymmetricDeterminant_(tmpONV);
+          if (!(otherONV == tmpONV)) {
+            overlap = interface_->getCICoefficient(otherONV.string());
+            if (std::abs(overlap) >= parms_["srcas_overlapThreshold"]) {
+              hashTable_[otherONV.string()] = overlap;
+              completeness_ += std::pow(std::abs(overlap), 2.0);
+              maquis::cout << std::setw(12) << "spinflip" << std::setw(12) << nSampled << std::setw(parms_["L"] * 2 + 2)
+                           << tmpONV.string() << std::setw(20) << std::setprecision(14) << std::fixed << overlap
+                           << std::setw(20) << std::setprecision(14) << std::fixed << completeness_ << std::endl;
+            }
+          }
+        }
+        catch (...) {
+        }
       }
     }
     else {
@@ -142,16 +157,16 @@ void BaseSRCAS<ScalarType, T>::printResults() const {
               return std::abs(a.second) > std::abs(b.second);
             });
 
-  maquis::cout << std::setw(10) << "index" << std::setw(parms_["L"] * 2 + 2)
-               << "ONV " << std::setw(20) << "Coeff." << std::setw(20) << "Completeness" << std::endl;
+  maquis::cout << std::setw(10) << "index" << std::setw(parms_["L"] * 2 + 2) << "ONV " << std::setw(20) << "Coeff."
+               << std::setw(20) << "Completeness" << std::endl;
   ScalarType tmpCompleteness = 0.0;
   int count = 0;
   for (const auto& i : onvValuePairs) {
     count++;
     tmpCompleteness += std::pow(i.second, 2);
-    maquis::cout << std::setw(10) << count << std::setw(parms_["L"] * 2 + 2)
-                 << i.first << std::setw(20) << std::setprecision(14) << std::fixed << i.second << std::setw(20)
-                 << std::setprecision(14) << std::fixed << tmpCompleteness << std::endl;
+    maquis::cout << std::setw(10) << count << std::setw(parms_["L"] * 2 + 2) << i.first << std::setw(20)
+                 << std::setprecision(14) << std::fixed << i.second << std::setw(20) << std::setprecision(14)
+                 << std::fixed << tmpCompleteness << std::endl;
   }
 }
 

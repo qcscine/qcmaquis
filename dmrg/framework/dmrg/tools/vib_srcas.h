@@ -26,6 +26,7 @@ class VibSRCAS : public virtual BaseSRCAS<ScalarType, VibONV> {
   VibSRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceType> interface);
   /** @brief generate a new ONV form current queen */
   VibONV generateNewONV_() override;
+  VibONV generateSymmetricDeterminant_(const VibONV& onv) const override;
   /** @brief get a random virtual orbital for det
    *
    * @param det vector representation of a Determinant

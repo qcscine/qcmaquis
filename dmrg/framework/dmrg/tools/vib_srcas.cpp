@@ -40,6 +40,11 @@ VibSRCAS<ScalarType>::VibSRCAS(DmrgParameters& parameters, std::shared_ptr<Inter
 }
 
 template<typename ScalarType>
+VibONV VibSRCAS<ScalarType>::generateSymmetricDeterminant_(const VibONV& onv) const {
+  throw std::runtime_error("Should always be catched");
+}
+
+template<typename ScalarType>
 bool VibSRCAS<ScalarType>::validONV_(const VibONV& onv) const {
   auto onvVec = onv.vector();
   for (int i = 0; i < onvVec.size(); i++) {

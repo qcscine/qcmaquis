@@ -78,6 +78,15 @@ const std::vector<int>& Determinant::unoccupied(Spin spin) const {
   return this->beta_unoccupied_;
 }
 
+void Determinant::flipSpin() {
+  // spin flips make only sense for closed shell
+  if (this->alpha_occupied_.size() != this->beta_occupied_.size()) {
+    return;
+  }
+  this->alpha_occupied_.swap(this->beta_occupied_);
+  this->alpha_unoccupied_.swap(this->beta_unoccupied_);
+}
+
 bool Determinant::operator==(const Determinant& rhs) const {
   auto other = dynamic_cast<Determinant const&>(rhs);
   std::set<int> this_alpha(this->alpha_occupied_.begin(), this->alpha_occupied_.end());

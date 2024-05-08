@@ -56,6 +56,12 @@ class Determinant : public virtual ONV {
    * @param spin alpha or beta
    */
   const std::vector<int>& unoccupied(Spin spin) const;
+  /**
+   * @brief get the unoccupied orbital indeces for corresponding spin
+   *
+   * @param spin alpha or beta
+   */
+  void flipSpin();
 
  private:
   /** @brief store occupied alpha orbital indices */

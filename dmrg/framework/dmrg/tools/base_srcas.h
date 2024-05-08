@@ -47,6 +47,7 @@ class BaseSRCAS {
  protected:
   /** @brief generate a new determinant form current queen */
   virtual T generateNewONV_() = 0;
+  virtual T generateSymmetricDeterminant_(const T& onv) const = 0;
   /** @brief override to add settings to print in srcas settings */
   void printSettingImpl_() const;
   /** @brief get a random virtual orbital for det

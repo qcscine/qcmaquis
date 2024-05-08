@@ -28,6 +28,8 @@ class ElectronicSRCAS : public virtual BaseSRCAS<ScalarType, Determinant> {
  private:
   /** @brief generate a new determinant form current queen */
   Determinant generateNewONV_() override;
+  /** @brief generate a new determinant form current queen */
+  Determinant generateSymmetricDeterminant_(const Determinant& onv) const override;
   /** @brief get a random occupied orbital for det
    *
    * @param det vector representation of a Determinant
