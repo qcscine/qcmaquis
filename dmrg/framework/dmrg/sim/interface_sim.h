@@ -698,16 +698,16 @@ public:
 
     // set sweeps and m, same values as in the old python interface
     parms.set("nsweeps", 4);
-    if (parms.is_set("init_bond_dimension")) {
-      int init_bond_dimension = parms["init_bond_dimension"];
-      parms.set("max_bond_dimension", init_bond_dimension);
+    // if (parms.is_set("init_bond_dimension")) {
+    //   int init_bond_dimension = parms["init_bond_dimension"];
+    //   parms.set("max_bond_dimension", init_bond_dimension);
+    // } else {
+    if (parms.is_set("L")) {
+      parms.set("max_bond_dimension", parms["L"] > 24 ? 256 : 128);
     } else {
-      if (parms.is_set("L")) {
-        parms.set("max_bond_dimension", parms["L"] > 24 ? 256 : 128);
-      } else {
-        throw std::runtime_error("L not defined for a starting guess calculation!");
-      }
+      throw std::runtime_error("L not defined for a starting guess calculation!");
     }
+    // }
 
     //if(parms.is_set("feast_num_states")) {
     //    measurements.reserve(parms["feast_num_states"]);
