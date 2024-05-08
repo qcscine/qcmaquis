@@ -140,8 +140,10 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
     // Model initialization
     lat = Lattice(parms);
     model = Model<Matrix, SymmGroup>(lat, parms);
-    if(parms_["srcas_numSamples"] == 1) {
-        mpo = make_mpo(lat, model);
+    if(parms_.defined("srcas_numSamples")) {
+        if(parms_["srcas_numSamples"] == 1) {
+            mpo = make_mpo(lat, model);
+        }
     }
     all_measurements = model.measurements();
     all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
