@@ -151,15 +151,12 @@ class SingleSiteTimeEvolution
           nms = parms_.template get<int>("nmainsweeps");
       if (sweep < ngs){
         alpha = parms_.template get<double>("alpha_initial");
-        std::cout << "using alpha initial" << std::endl;
       }
       else if (sweep < ngs + nms){
         alpha = parms_.template get<double>("alpha_main");
-        std::cout << "using alpha main" << std::endl;
       }
       else{
         alpha = parms_.template get<double>("alpha_final");
-        std::cout << "using alpha final" << std::endl;
       }
       //
       if (sweep > ngs && parms_.is_set("time_step_larger"))
