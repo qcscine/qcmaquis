@@ -304,20 +304,7 @@ void estimate_truncation(
     }
     */
   }
-  /*
-  if(evalscut == 0){
-    std::cout << "entered if statement 2" << std::endl;
-    auto lastNonZero = std::find_if(allevals.rbegin(), allevals.rend(), [](double val) {
-        return val != 0.0;
-      });
-      evalscut =*lastNonZero;
-  }
-  */
-  //for (const auto& iEl : allevals) std::cout << "eval : " << iEl << std::endl;
-  //std::cout << "evalscut : " << evalscut << std::endl;
-
-  
-  smallest_ev = evalscut / allevals[0];
+  smallest_ev = evalscut;
 
   truncated_fraction = 0.0;
   truncated_weight = 0.0;
