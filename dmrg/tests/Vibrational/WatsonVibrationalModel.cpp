@@ -10,7 +10,7 @@
 #include <boost/test/included/unit_test.hpp>
 #include <boost/mpl/assert.hpp>
 #include "dmrg/models/lattice/lattice.h"
-#include "dmrg/models/vibrational/none/model.hpp"
+#include "dmrg/models/vibrational/none/WatsonModel.hpp"
 #include "Fixtures/WatsonFixture.h"
 #include "maquis_dmrg.h"
 #include "dmrg/sim/matrix_types.h"

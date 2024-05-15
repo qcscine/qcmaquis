@@ -246,6 +246,13 @@ typename maquis::traits::real_type<T>::type gather_real_pred(T const& val) {
   return maquis::real(val);
 }
 
+template <class T>
+bool customCompare(const T a, const T b){
+    // Check if the difference is within the tolerance
+    double tolerance = 1e-40;
+    return a - b > tolerance;
+}
+
 template <class DiagMatrix, class SymmGroup>
 void estimate_truncation(
     block_matrix<DiagMatrix, SymmGroup> const& evals, size_t Mmax,
@@ -371,7 +378,6 @@ truncation_results svd_truncate(
       if (keep >= num_rows(S[k])) {
         continue;
       }
-
       S.resize_block(
           S.basis().left_charge(k), S.basis().right_charge(k), keep, keep
       );

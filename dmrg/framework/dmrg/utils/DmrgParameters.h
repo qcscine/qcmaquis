@@ -469,6 +469,11 @@ class DmrgParameters : public BaseParameters {
         "Maximum power of operators in the Hamiltonian", value(2)
     );
 
+    add_option(
+        "vibronic_max_coupling_nmode",
+        "Maximum many body coupling of vibrational modes", value(1)
+    );
+
     // TD-related parameters
     add_option(
         "propagator_accuracy",

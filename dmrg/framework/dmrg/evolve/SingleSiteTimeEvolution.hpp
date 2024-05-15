@@ -149,18 +149,21 @@ class SingleSiteTimeEvolution
       double alpha, time_step_effective;
       int ngs = parms_.template get<int>("ngrowsweeps"),
           nms = parms_.template get<int>("nmainsweeps");
-      if (sweep < ngs)
+      if (sweep < ngs){
         alpha = parms_.template get<double>("alpha_initial");
-      else if (sweep < ngs + nms)
+      }
+      else if (sweep < ngs + nms){
         alpha = parms_.template get<double>("alpha_main");
-      else
+      }
+      else{
         alpha = parms_.template get<double>("alpha_final");
+      }
       //
       if (sweep > ngs && parms_.is_set("time_step_larger"))
         time_step_effective = parms_["time_step_larger"];
       else
         time_step_effective = time_step_;
-      perturber_->update_alpha(alpha);
+      perturber_->update_alpha(alpha); //not used in twosite time evolver
       // Update of the MPS
       double cutoff = this->get_cutoff(sweep);
       int Mmax = this->get_Mmax(sweep);

@@ -9,6 +9,8 @@
 #include "dmrg/models/vibrational/u1/VibronicModel.hpp"
 #include "dmrg/models/vibrational/u1/ExcitonicModel.hpp"
 #include "dmrg/models/vibrational/u1/ExcitonicExtendedModel.hpp"
+#include "dmrg/models/vibrational/u1/NmodeVibronic.hpp"
+#include "dmrg/models/vibrational/u1/NmodeVibronicProducts.hpp"
 
 #ifdef DMRG_VIBRONIC
 #include "dmrg/models/vibrational/u1/VibronicModel.hpp"
@@ -41,6 +43,20 @@ struct coded_model_factory<Matrix, U1> {
         else if (parms["MODEL"] == std::string("excitonicextended")) {
 #ifdef DMRG_VIBRONIC
             return impl_ptr( new HolsteinbHubbardExcitonicExtendedHamiltonian<Matrix>(lattice, parms));
+#else
+            throw std::runtime_error("Don't know this model!");
+#endif
+        }
+        else if (parms["MODEL"] == std::string("excitonicnmode")){
+#ifdef DMRG_VIBRONIC
+            return impl_ptr( new ExcitonicNmode<Matrix>(lattice, parms));
+#else
+            throw std::runtime_error("Don't know this model!");
+#endif
+        }
+        else if (parms["MODEL"] == std::string("excitonicnmodeproducts")){
+#ifdef DMRG_VIBRONIC
+            return impl_ptr( new ExcitonicNmodeProducts<Matrix>(lattice, parms));
 #else
             throw std::runtime_error("Don't know this model!");
 #endif
