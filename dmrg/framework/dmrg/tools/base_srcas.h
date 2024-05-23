@@ -21,6 +21,8 @@ class BaseSRCAS {
   BaseSRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceType> interface);
   /** @brief Run SRCAS sampling */
   void run();
+  /** @brief Run SRCAS sampling with extra determinants */
+  void run(const std::vector<std::string>& extra_onvs);
   /**
    * @brief get last determinant queen
    *
@@ -45,6 +47,14 @@ class BaseSRCAS {
   void printResults() const;
 
  protected:
+  /** @brief sample user specified determinants */
+  void evaluateSpecificONVs_(const std::vector<std::string>& extra_onvs);
+
+  /** @brief evaluate the initial queen */
+  void evaluateInitial_();
+  /** @brief main sampling*/
+  void sample_();
+
   /** @brief generate a new determinant form current queen */
   virtual T generateNewONV_() = 0;
   virtual T generateSymmetricDeterminant_(const T& onv) const = 0;

@@ -42,9 +42,6 @@ Determinant ElectronicSRCAS<ScalarType>::generateNewONV_() {
     int create = this->getRandomUnoccSpinOrb_(tmpDet, spin);
     tmpDet.excite_electron(annihilate, create, spin);
   }
-  // }
-  // TODO: Try to get spin flipped determinant too if possible,
-  // e.g. 444411->(444321, 444231) (to increase sampling speed?)
   return tmpDet;
 }
 
