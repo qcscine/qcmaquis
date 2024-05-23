@@ -18,20 +18,26 @@
 
 namespace detail {
 template<class T>
-void runSRCAS(T& srcas, const std::vector<std::string>& onvs) {
+void runSRCAS(T& srcas, const std::vector<std::string>& onvs, bool restart = false) {
   srcas.printSettings();
+  if (restart) {
+    srcas.restart();
+  }
   srcas.run(onvs);
   srcas.printResults();
 }
 
 template<class T>
-void runSRCAS(T& srcas) {
+void runSRCAS(T& srcas, bool restart = false) {
   srcas.printSettings();
+  if (restart) {
+    srcas.restart();
+  }
   srcas.run();
   srcas.printResults();
 }
 
-std::vector<std::string> readONVsFromFile(std::string filename) {
+std::vector<std::string> readONVsFromFile(const std::string& filename) {
   std::ifstream config_file;
   config_file.open(filename.c_str());
   if (!config_file.is_open()) {
@@ -109,45 +115,53 @@ int main(int argc, char** argv) {
   maquis::cout << "-                      SRCAS                      -\n";
   maquis::cout << "-                                                 -\n";
   maquis::cout << "---------------------------------------------------\n\n";
+  bool restart = false;
   if (opt.parms.is_set("srcas_restart")) {
+    restart = true;
     maquis::cout << "NOT IMPLEMENTED YET!!!!" << std::endl;
     maquis::cout << "Restart from " << opt.parms["srcas_restart"] << std::endl;
   }
+
   if (opt.parms["COMPLEX"]) {
     using ScalarType = std::complex<double>;
     using InterfaceType = maquis::DMRGInterface<ScalarType>;
     std::shared_ptr<InterfaceType> interface = std::make_shared<InterfaceType>(opt.parms);
+
     if ((opt.parms["MODEL"] == "quantum_chemistry")) {
       maquis::srcas::ElectronicSRCAS<ScalarType> srcas(opt.parms, interface);
       if (opt.parms.is_set("srcas_detfile")) {
         maquis::cout << "Reading determinants from file " << opt.parms["srcas_detfile"] << std::endl;
         auto onvs = detail::readONVsFromFile(opt.parms["srcas_detfile"]);
-        detail::runSRCAS(srcas, onvs);
+        detail::runSRCAS(srcas, onvs, restart);
       }
       else {
-        detail::runSRCAS(srcas);
+        detail::runSRCAS(srcas, restart);
       }
     }
+
     else {
       maquis::srcas::VibSRCAS<ScalarType> srcas(opt.parms, interface);
       detail::runSRCAS(srcas);
     }
+
     return 0;
   }
 
   using ScalarType = double;
   using InterfaceType = maquis::DMRGInterface<ScalarType>;
   std::shared_ptr<InterfaceType> interface = std::make_shared<InterfaceType>(opt.parms);
+
   if ((opt.parms["MODEL"] == "quantum_chemistry")) {
     maquis::srcas::ElectronicSRCAS<ScalarType> srcas(opt.parms, interface);
     if (opt.parms.is_set("srcas_detfile")) {
       auto onvs = detail::readONVsFromFile(opt.parms["srcas_detfile"]);
-      detail::runSRCAS(srcas, onvs);
+      detail::runSRCAS(srcas, onvs, restart);
     }
     else {
-      detail::runSRCAS(srcas);
+      detail::runSRCAS(srcas, restart);
     }
   }
+
   else {
     maquis::srcas::VibSRCAS<ScalarType> srcas(opt.parms, interface);
     detail::runSRCAS(srcas);

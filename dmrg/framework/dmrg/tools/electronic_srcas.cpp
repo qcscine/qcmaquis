@@ -46,6 +46,18 @@ Determinant ElectronicSRCAS<ScalarType>::generateNewONV_() {
 }
 
 template<typename ScalarType>
+void ElectronicSRCAS<ScalarType>::setQueenFromString_(const std::string& queen) {
+  std::vector<int> queenVec;
+  for (const char& i : queen) {
+    if (i != ',') {
+      // convert i to int
+      queenVec.push_back(i - '0');
+    }
+  }
+  this->queen_ = Determinant(queenVec);
+}
+
+template<typename ScalarType>
 ElectronicSRCAS<ScalarType>::ElectronicSRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceType> interface)
   : BaseSRCAS<ScalarType, Determinant>(parameters, interface) {
   int alpha = int(this->parms_["u1_total_charge1"]);

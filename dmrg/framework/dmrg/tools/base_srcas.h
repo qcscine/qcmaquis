@@ -20,6 +20,8 @@ class BaseSRCAS {
   virtual ~BaseSRCAS() = default;
   BaseSRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceType> interface);
   /** @brief Run SRCAS sampling */
+  void restart();
+  /** @brief Run SRCAS sampling */
   void run();
   /** @brief Run SRCAS sampling with extra determinants */
   void run(const std::vector<std::string>& extra_onvs);
@@ -49,6 +51,8 @@ class BaseSRCAS {
  protected:
   /** @brief sample user specified determinants */
   void evaluateSpecificONVs_(const std::vector<std::string>& extra_onvs);
+
+  virtual void setQueenFromString_(const std::string& queen) = 0;
 
   /** @brief evaluate the initial queen */
   void evaluateInitial_();
@@ -86,6 +90,12 @@ class BaseSRCAS {
   /** @brief current queen **/
   T queen_;
   typename std::map<std::string, ScalarType>::iterator iter_;
+
+  // useful for restart
+  /** @brief indicate the start of the sampling */
+  std::string startString_ = "----- Starting SRCAS -----";
+  /** @brief indicate the end of the sampling */
+  std::string endString_ = "----- End SRCAS -----";
 };
 
 } // namespace srcas

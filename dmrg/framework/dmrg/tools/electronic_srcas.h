@@ -28,6 +28,8 @@ class ElectronicSRCAS : public virtual BaseSRCAS<ScalarType, Determinant> {
  private:
   /** @brief generate a new determinant form current queen */
   Determinant generateNewONV_() override;
+
+  void setQueenFromString_(const std::string& queen) override;
   /** @brief generate a new determinant form current queen */
   Determinant generateSymmetricDeterminant_(const Determinant& onv) const override;
   /** @brief get a random occupied orbital for det

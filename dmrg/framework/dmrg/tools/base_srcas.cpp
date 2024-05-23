@@ -30,9 +30,61 @@ void BaseSRCAS<ScalarType, T>::evaluateSpecificONVs_(const std::vector<std::stri
     hashTable_[onv] = overlap;
     completeness_ += std::pow(std::abs(overlap), 2);
 
-    maquis::cout << std::setw(12) << "extra" << std::setw(12) << "" << std::setw(parms_["L"] * 2 + 2) << onv
+    maquis::cout << std::setw(12) << "extra" << std::setw(12) << 0 << std::setw(parms_["L"] * 2 + 2) << onv
                  << std::setw(20) << std::setprecision(14) << std::fixed << overlap << std::setw(20)
                  << std::setprecision(14) << std::fixed << completeness_ << std::endl;
+  }
+}
+
+template<typename ScalarType, class T>
+void BaseSRCAS<ScalarType, T>::restart() {
+  maquis::cout << "Restarting SRCAS" << std::endl;
+  auto old_file = this->parms_["srcas_restart"];
+  std::ifstream config_file;
+  config_file.open(old_file.c_str());
+  if (!config_file.is_open()) {
+    maquis::cout << "Can not open file: " << old_file << std::endl;
+    exit(1);
+  }
+
+  std::string line;
+  // skip until sampling starts
+  while (std::getline(config_file, line)) {
+    if (line == this->startString_) {
+      break;
+    }
+  }
+
+  // extract queen: (queen|new queen): (([1234],)+[1234])
+  // extract other lines (\d+|(initial|extra|spinflip)) *(\d+) *(([1234],)+[1234]) *((-|)\d.\d+) *(\d.\d+)
+  while (std::getline(config_file, line)) {
+    // TODO: see other TODOs labels RESTART
+    //
+    // get queen
+    // std::regex queenRegex("(queen|new queen): (([1234],)+[1234])");
+    // get sample line
+    std::regex otherLineRegex(
+        "(\\d+|(initial|extra|spinflip|restart)) *(\\d+) *(([1234],)+[1234]) *((-|)\\d.\\d+) *(\\d.\\d+)");
+    std::smatch matches;
+
+    // std::string queen;
+    // // check if line is queen
+    // if (std::regex_search(line, matches, queenRegex)) {
+    //   queen = matches[2].str();
+    //   maquis::cout << "   Found queen: " << queen << std::endl;
+    // }
+
+    // check if line is onv result
+    if (std::regex_search(line, matches, otherLineRegex)) {
+      std::string onvString = matches[4].str();
+      double coeff = stod(matches[6].str());
+      completeness_ = stod(matches[8]);
+      hashTable_[onvString] = coeff;
+    }
+    // TODO: RESTART: use this when skipping sampling (see TODO below)
+    // if (queen.empty()){
+    //   this->setQueenFromString_(queen);
+    // }
   }
 }
 
@@ -45,21 +97,35 @@ void BaseSRCAS<ScalarType, T>::run(const std::vector<std::string>& extra_onvs) {
 
 template<typename ScalarType, class T>
 void BaseSRCAS<ScalarType, T>::evaluateInitial_() {
-  maquis::cout << "\n----- Starting SRCAS -----\n\n";
+  maquis::cout << this->startString_ << std::endl;
   // Starting onv should always be added to the list
   auto queenString = queen_.string();
 
-  maquis::cout << "    queen: " << queenString << std::endl;
-
-  ScalarType overlap = interface_->getCICoefficient(queenString);
-  hashTable_[queenString] = overlap;
-  completeness_ += std::pow(std::abs(overlap), 2);
+  iter_ = hashTable_.find(queenString);
 
   maquis::cout << std::setw(12) << "Iteration" << std::setw(12) << "# Sampled" << std::setw(parms_["L"] * 2 + 2)
                << "ONV " << std::setw(20) << "CI Coefficient" << std::setw(20) << "Completeness" << std::endl;
-  maquis::cout << std::setw(12) << "initial" << std::setw(12) << "" << std::setw(parms_["L"] * 2 + 2) << queen_.string()
-               << std::setw(20) << std::setprecision(14) << std::fixed << overlap << std::setw(20)
-               << std::setprecision(14) << std::fixed << completeness_ << std::endl;
+  maquis::cout << "    queen: " << queenString << std::endl;
+  // for restarting the queen is already sampled
+  // iter_ = hashTable_.find(queenString);
+  if (iter_ == hashTable_.end()) {
+    ScalarType overlap = interface_->getCICoefficient(queenString);
+    hashTable_[queenString] = overlap;
+    completeness_ += std::pow(std::abs(overlap), 2);
+
+    maquis::cout << std::setw(12) << "initial" << std::setw(12) << 0 << std::setw(parms_["L"] * 2 + 2) << queenString
+                 << std::setw(20) << std::setprecision(14) << std::fixed << overlap << std::setw(20)
+                 << std::setprecision(14) << std::fixed << completeness_ << std::endl;
+  }
+  else {
+    double tmpCompleteness = 0.0;
+    for (auto const& entry : hashTable_) {
+      tmpCompleteness += std::pow(std::abs(entry.second), 2);
+      maquis::cout << std::setw(12) << "restart" << std::setw(12) << 0 << std::setw(parms_["L"] * 2 + 2) << entry.first
+                   << std::setw(20) << std::setprecision(14) << std::fixed << entry.second << std::setw(20)
+                   << std::setprecision(14) << std::fixed << tmpCompleteness << std::endl;
+    }
+  }
 }
 
 template<typename ScalarType, class T>
@@ -71,13 +137,14 @@ void BaseSRCAS<ScalarType, T>::sample_() {
   for (int isample = 1; isample <= parms_["srcas_numSamples"]; isample++) {
     ScalarType overlap = 0;
     auto tmpONV = generateNewONV_();
+    std::string tmpONVString = tmpONV.string();
 
     // Updates the data if the onv not in map
-    iter_ = hashTable_.find(tmpONV.string());
+    iter_ = hashTable_.find(tmpONVString);
     if (iter_ == hashTable_.end()) {
-      overlap = interface_->getCICoefficient(tmpONV.string());
+      overlap = interface_->getCICoefficient(tmpONVString);
       if (std::abs(overlap) >= parms_["srcas_overlapThreshold"]) {
-        hashTable_[tmpONV.string()] = overlap;
+        hashTable_[tmpONVString] = overlap;
         nSampled++;
         completeness_ += std::pow(std::abs(overlap), 2.0);
 
@@ -87,14 +154,15 @@ void BaseSRCAS<ScalarType, T>::sample_() {
 
         try {
           auto otherONV = generateSymmetricDeterminant_(tmpONV);
+          std::string otherONVString = otherONV.string();
           if (!(otherONV == tmpONV)) {
-            ScalarType newOverlap = interface_->getCICoefficient(otherONV.string());
+            ScalarType newOverlap = interface_->getCICoefficient(otherONVString);
             if (std::abs(newOverlap) >= parms_["srcas_overlapThreshold"]) {
-              hashTable_[otherONV.string()] = newOverlap;
+              hashTable_[otherONVString] = newOverlap;
               completeness_ += std::pow(std::abs(newOverlap), 2.0);
 
               maquis::cout << std::setw(12) << "spinflip" << std::setw(12) << nSampled << std::setw(parms_["L"] * 2 + 2)
-                           << otherONV.string() << std::setw(20) << std::setprecision(14) << std::fixed << newOverlap
+                           << otherONVString << std::setw(20) << std::setprecision(14) << std::fixed << newOverlap
                            << std::setw(20) << std::setprecision(14) << std::fixed << completeness_ << std::endl;
             }
           }
@@ -114,16 +182,18 @@ void BaseSRCAS<ScalarType, T>::sample_() {
     if (ci_ratio > uniformRandomNumber_()) {
       queen_ = tmpONV;
       ci0 = overlap;
-      maquis::cout << "new queen: " << queen_.string() << std::endl;
+      maquis::cout << "new queen: " << tmpONVString << std::endl;
     }
-    // }
 
     if (completeness_ > parms_["srcas_targetCompleteness"]) {
+      maquis::cout << this->endString_ << std::endl;
       maquis::cout << "SRCAS reached target completeness of " << parms_["srcas_targetCompleteness"] << std::endl;
       maquis::cout << "SRCAS current completeness           " << completeness_ << std::endl;
-      break;
+      return;
     }
   }
+  // TODO: RESTART: write last det and samples, so in restart these can be skipped
+  maquis::cout << this->endString_ << std::endl;
 }
 
 template<typename ScalarType, class T>

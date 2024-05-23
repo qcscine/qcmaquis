@@ -45,6 +45,11 @@ VibONV VibSRCAS<ScalarType>::generateSymmetricDeterminant_(const VibONV& onv) co
 }
 
 template<typename ScalarType>
+void VibSRCAS<ScalarType>::setQueenFromString_(const std::string& queen) {
+  throw std::runtime_error("Not implemented for VibSRCAS");
+}
+
+template<typename ScalarType>
 bool VibSRCAS<ScalarType>::validONV_(const VibONV& onv) const {
   auto onvVec = onv.vector();
   for (int i = 0; i < onvVec.size(); i++) {
