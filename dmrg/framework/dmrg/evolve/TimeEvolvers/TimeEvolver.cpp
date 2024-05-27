@@ -54,7 +54,10 @@ TimeEvolver<Matrix, SymmGroup, ParameterType>::TimeEvolver(ParameterType& parms)
     } else {
       throw std::runtime_error("Units for the time variable not yet supported");
     }
-  } else {
+  } else if (parms["time_units"] == "imaginary time units"){
+    time_step_ *= 1;
+  }
+  else {
     throw std::runtime_error("Units for the Hamiltonian not yet supported");
   }
 

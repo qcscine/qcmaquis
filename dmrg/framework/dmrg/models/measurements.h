@@ -36,10 +36,18 @@ class measure_and_save {
         mps(mps_),
         rmps(mps) {}
 
-  measure_and_save(MPS<Matrix, SymmGroup> const& mps_, int eigenstate_ = 0)
-      : rfile(""), archive_path(""), mps(mps_), rmps(mps) {}
+void operator()(measurement<Matrix, SymmGroup>& meas) const {
+    int num_threads;
+#ifdef MAQUIS_OPENMP
+    #pragma omp parallel
+    {
+        #pragma omp single
+        num_threads = omp_get_num_threads();
+    }
+#endif
 
-  void operator()(measurement<Matrix, SymmGroup>& meas) const {
+    maquis::cout << "Number of threads used: " << num_threads << std::endl;
+    
 #ifdef MAQUIS_OPENMP
 #pragma omp critical
 #endif
@@ -62,7 +70,7 @@ class measure_and_save {
         );
       }
     }
-  }
+}
 
   meas_with_results_type meas_out(measurement<Matrix, SymmGroup>& meas) const {
     maquis::cout << "Measuring " << meas.name() << std::endl;

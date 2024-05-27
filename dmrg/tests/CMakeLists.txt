@@ -104,85 +104,75 @@ if(BUILD_SRCAS)
 endif(BUILD_SRCAS)
 
 if(BUILD_VIBRATIONAL)
-  # Unit test
-  add_executable(test_vibrational_lattice
-                 Vibrational/test_vibrational_lattice.cpp)
-  target_link_libraries(test_vibrational_lattice ${DMRG_APP_LIBRARIES})
-  add_executable(test_vibrational_nu1_model Vibrational/NU1VibrationalModel.cpp)
-  target_link_libraries(test_vibrational_nu1_model ${DMRG_APP_LIBRARIES})
-  add_executable(test_vibrational_watson_model
-                 Vibrational/WatsonVibrationalModel.cpp)
-  target_link_libraries(test_vibrational_watson_model ${DMRG_APP_LIBRARIES})
-  add_executable(test_mps_vibrational Vibrational/mpsVibrational.cpp)
-  target_link_libraries(test_mps_vibrational ${DMRG_APP_LIBRARIES})
-  add_executable(test_mps_mpo_ops_vibrational
-                 test_mps_mpo_ops/test_mps_mpo_ops_vibrational.cpp)
-  target_link_libraries(test_mps_mpo_ops_vibrational ${DMRG_APP_LIBRARIES})
-  add_executable(test_mpo_times_mps_vibrational
-                 test_mps_mpo_ops/test_mpo_times_mps_vibrational.cpp)
-  target_link_libraries(test_mpo_times_mps_vibrational ${DMRG_APP_LIBRARIES})
-  add_executable(test_mps_overlap_vibrational
-                 test_mps_mpo_ops/test_mps_overlap_vibrational.cpp)
-  target_link_libraries(test_mps_overlap_vibrational ${DMRG_APP_LIBRARIES})
-  # Sweep optimization tools
-  add_executable(test_boundary_propagator_vibrational
-                 SweepOptimizationTools/BoundaryPropagatorVibrational.cpp)
-  target_link_libraries(test_boundary_propagator_vibrational
-                        ${DMRG_APP_LIBRARIES})
-  add_executable(test_overlap_propagator_vibrational
-                 SweepOptimizationTools/OverlapPropagatorVibrational.cpp)
-  target_link_libraries(test_overlap_propagator_vibrational
-                        ${DMRG_APP_LIBRARIES})
-  add_executable(
-    test_sweep_based_energy_minimization_vibrational
-    SweepOptimizationTools/SweepBasedEnergyMinimizationVibrational.cpp)
-  target_link_libraries(test_sweep_based_energy_minimization_vibrational
-                        ${DMRG_APP_LIBRARIES})
-  add_executable(test_sweep_based_linear_system_vibrational
-                 SweepOptimizationTools/SweepBasedLinearSystemVibrational.cpp)
-  target_link_libraries(test_sweep_based_linear_system_vibrational
-                        ${DMRG_APP_LIBRARIES})
-  add_executable(test_FEAST_vibrational FEAST/VibrationalFEAST.cpp)
-  target_link_libraries(test_FEAST_vibrational ${DMRG_APP_LIBRARIES})
-  # Executable tests
-  add_executable(test_FAD_2Mode Vibrational/test_FAD_2Mode.cpp)
-  target_link_libraries(test_FAD_2Mode ${DMRG_APP_LIBRARIES})
-  add_executable(test_Ethylene_Sextic Vibrational/test_Ethylene_Sextic.cpp)
-  target_link_libraries(test_Ethylene_Sextic ${DMRG_APP_LIBRARIES})
-  add_executable(test_BilinearlyCoupled Vibrational/test_BilinearlyCoupled.cpp)
-  target_link_libraries(test_BilinearlyCoupled ${DMRG_APP_LIBRARIES})
-  add_executable(test_H2CO Vibrational/test_H2CO.cpp)
-  target_link_libraries(test_H2CO ${DMRG_APP_LIBRARIES})
-  add_executable(test_Maleimide Vibrational/test_Maleimide.cpp)
-  target_link_libraries(test_Maleimide ${DMRG_APP_LIBRARIES})
-  add_executable(test_Ethylene_nMode Vibrational/test_Ethylene_nMode.cpp)
-  target_link_libraries(test_Ethylene_nMode ${DMRG_APP_LIBRARIES})
-  add_executable(test_linear_system_solver_vibrational
-                 LinearSystem/LinearSystemSolverVibrational.cpp)
-  target_link_libraries(test_linear_system_solver_vibrational
-                        ${DMRG_APP_LIBRARIES})
+    # Unit test
+    add_executable(test_vibrational_lattice Vibrational/test_vibrational_lattice.cpp)
+    target_link_libraries(test_vibrational_lattice ${DMRG_APP_LIBRARIES})
+    add_executable(test_vibrational_nu1_model Vibrational/NU1VibrationalModel.cpp)
+    target_link_libraries(test_vibrational_nu1_model ${DMRG_APP_LIBRARIES})
+    add_executable(test_vibrational_none_model Vibrational/NoneVibrationalModel.cpp)
+    target_link_libraries(test_vibrational_none_model ${DMRG_APP_LIBRARIES})
+    add_executable(test_vibrational_watson_model Vibrational/WatsonVibrationalModel.cpp)
+    target_link_libraries(test_vibrational_watson_model ${DMRG_APP_LIBRARIES})
+    add_executable(test_mps_vibrational Vibrational/mpsVibrational.cpp)
+    target_link_libraries(test_mps_vibrational ${DMRG_APP_LIBRARIES})
+    add_executable(test_mps_mpo_ops_vibrational test_mps_mpo_ops/test_mps_mpo_ops_vibrational.cpp)
+    target_link_libraries(test_mps_mpo_ops_vibrational ${DMRG_APP_LIBRARIES})
+    add_executable(test_mpo_times_mps_vibrational test_mps_mpo_ops/test_mpo_times_mps_vibrational.cpp)
+    target_link_libraries(test_mpo_times_mps_vibrational ${DMRG_APP_LIBRARIES})
+    add_executable(test_mps_overlap_vibrational test_mps_mpo_ops/test_mps_overlap_vibrational.cpp)
+    target_link_libraries(test_mps_overlap_vibrational ${DMRG_APP_LIBRARIES})
+    add_executable(test_vibrational_nmodemodels vibrational/NmodeModel.cpp)
+    target_link_libraries(test_vibrational_nmodemodels ${DMRG_APP_LIBRARIES})
+    # Sweep optimization tools
+    add_executable(test_boundary_propagator_vibrational SweepOptimizationTools/BoundaryPropagatorVibrational.cpp)
+    target_link_libraries(test_boundary_propagator_vibrational ${DMRG_APP_LIBRARIES})
+    add_executable(test_overlap_propagator_vibrational SweepOptimizationTools/OverlapPropagatorVibrational.cpp)
+    target_link_libraries(test_overlap_propagator_vibrational ${DMRG_APP_LIBRARIES})
+    add_executable(test_sweep_based_energy_minimization_vibrational SweepOptimizationTools/SweepBasedEnergyMinimizationVibrational.cpp)
+    target_link_libraries(test_sweep_based_energy_minimization_vibrational ${DMRG_APP_LIBRARIES})
+    add_executable(test_sweep_based_linear_system_vibrational SweepOptimizationTools/SweepBasedLinearSystemVibrational.cpp)
+    target_link_libraries(test_sweep_based_linear_system_vibrational ${DMRG_APP_LIBRARIES})
+    add_executable(test_FEAST_vibrational FEAST/VibrationalFEAST.cpp)
+    target_link_libraries(test_FEAST_vibrational ${DMRG_APP_LIBRARIES})
+    # Executable tests
+    add_executable(test_FAD_2Mode Vibrational/test_FAD_2Mode.cpp)
+    target_link_libraries(test_FAD_2Mode ${DMRG_APP_LIBRARIES})
+    add_executable(test_Ethylene_Sextic Vibrational/test_Ethylene_Sextic.cpp)
+    target_link_libraries(test_Ethylene_Sextic ${DMRG_APP_LIBRARIES})
+    add_executable(test_BilinearlyCoupled Vibrational/test_BilinearlyCoupled.cpp)
+    target_link_libraries(test_BilinearlyCoupled ${DMRG_APP_LIBRARIES})
+    add_executable(test_H2CO Vibrational/test_H2CO.cpp)
+    target_link_libraries(test_H2CO ${DMRG_APP_LIBRARIES})
+    add_executable(test_Maleimide Vibrational/test_Maleimide.cpp)
+    target_link_libraries(test_Maleimide ${DMRG_APP_LIBRARIES})
+    add_executable(test_Ethylene_nMode Vibrational/test_Ethylene_nMode.cpp)
+    target_link_libraries(test_Ethylene_nMode ${DMRG_APP_LIBRARIES})
+    add_executable(test_linear_system_solver_vibrational LinearSystem/LinearSystemSolverVibrational.cpp)
+    target_link_libraries(test_linear_system_solver_vibrational ${DMRG_APP_LIBRARIES})
+    add_executable(test_taghandler_register mpo/test_taghandler_register.cpp)
+    target_link_libraries(test_taghandler_register ${DMRG_APP_LIBRARIES})
 endif(BUILD_VIBRATIONAL)
 
 # == VIBRONIC TESTS ==
 if(BUILD_VIBRONIC)
-  # Unit test
-  add_executable(test_vibronic_lattice Vibronic/test_vibronic_lattice.cpp)
-  target_link_libraries(test_vibronic_lattice ${DMRG_APP_LIBRARIES})
-  add_executable(test_vibronic_u1_model Vibronic/VibronicModel.cpp)
-  target_link_libraries(test_vibronic_u1_model ${DMRG_APP_LIBRARIES})
-  add_executable(test_excitonic_u1_model Vibronic/ExcitonicModel.cpp)
-  target_link_libraries(test_excitonic_u1_model ${DMRG_APP_LIBRARIES})
-  add_executable(test_mps_mpo_ops_vibronic
-                 test_mps_mpo_ops/test_mps_mpo_ops_vibronic.cpp)
-  target_link_libraries(test_mps_mpo_ops_vibronic ${DMRG_APP_LIBRARIES})
-  add_executable(test_mps_overlap_vibronic
-                 test_mps_mpo_ops/test_mps_overlap_vibronic.cpp)
-  target_link_libraries(test_mps_overlap_vibronic ${DMRG_APP_LIBRARIES})
-  # Executable test
-  add_executable(test_Excitonic Vibronic/test_ExcitonicCoupling.cpp)
-  target_link_libraries(test_Excitonic ${DMRG_APP_LIBRARIES})
-  add_executable(test_Vibronic Vibronic/test_VibronicCoupling.cpp)
-  target_link_libraries(test_Vibronic ${DMRG_APP_LIBRARIES})
+    # Unit test
+    add_executable(test_vibronic_lattice Vibronic/test_vibronic_lattice.cpp)
+    target_link_libraries(test_vibronic_lattice ${DMRG_APP_LIBRARIES})
+    add_executable(test_vibronic_u1_model Vibronic/VibronicModel.cpp)
+    target_link_libraries(test_vibronic_u1_model ${DMRG_APP_LIBRARIES})
+    add_executable(test_excitonic_u1_model Vibronic/ExcitonicModel.cpp)
+    target_link_libraries(test_excitonic_u1_model ${DMRG_APP_LIBRARIES})
+    add_executable(test_mps_mpo_ops_vibronic test_mps_mpo_ops/test_mps_mpo_ops_vibronic.cpp)
+    target_link_libraries(test_mps_mpo_ops_vibronic ${DMRG_APP_LIBRARIES})
+    add_executable(test_mps_overlap_vibronic test_mps_mpo_ops/test_mps_overlap_vibronic.cpp)
+    target_link_libraries(test_mps_overlap_vibronic ${DMRG_APP_LIBRARIES})
+    add_executable(test_excitonic_nmode_model Vibronic/NmodeExcitonicModel.cpp)
+    target_link_libraries(test_excitonic_nmode_model ${DMRG_APP_LIBRARIES})
+    # Executable test
+    add_executable(test_Excitonic Vibronic/test_ExcitonicCoupling.cpp)
+    target_link_libraries(test_Excitonic ${DMRG_APP_LIBRARIES})
+    add_executable(test_Vibronic Vibronic/test_VibronicCoupling.cpp)
+    target_link_libraries(test_Vibronic ${DMRG_APP_LIBRARIES})
 endif(BUILD_VIBRONIC)
 
 if((BUILD_VIBRATIONAL) OR (BUILD_VIBRONIC))
@@ -255,6 +245,7 @@ add_executable(test_sweep_optimization_traits
 target_link_libraries(test_sweep_optimization_traits ${DMRG_APP_LIBRARIES})
 add_executable(test_alps_diagonalization alps/DiagonalizationTest.cpp)
 target_link_libraries(test_alps_diagonalization ${DMRG_APP_LIBRARIES})
+
 
 if(BUILD_DMRG_EVOLVE)
 

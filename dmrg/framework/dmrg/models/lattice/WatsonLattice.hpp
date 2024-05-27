@@ -55,30 +55,26 @@ class WatsonLattice : public lattice_impl {
   /**
    * @brief Getter for the property
    *
-   * Note that, in additional to the usual properties of a lattice, we code
-   * the additional property "sublatticePos" which states where the sublattice
-   * associated with a given mode is starting
-   *
    * @param property string identifier for the property
    * @param pos vector of positions
    * @return std::any requested property
    */
   std::any get_prop_(std::string const& property, std::vector<pos_t> const& pos)
       const {
-    if (property == "label" && pos.size() == 1)
+    if (property == "label" && pos.size() == 1) {
       return std::any(site_label(pos[0]));
-    else if (property == "label" && pos.size() == 2)
+    } else if (property == "label" && pos.size() == 2) {
       return std::any(bond_label(pos[0], pos[1]));
-    else if (property == "type" && pos.size() == 1)
+    } else if (property == "type" && pos.size() == 1) {
       return std::any(pos[0]);
-    else if (property == "type" && pos.size() == 2)
+    } else if (property == "type" && pos.size() == 2) {
       return std::any(0);
-    else if (property == "ParticleType" && pos.size() == 1) {
+    } else if (property == "ParticleType" && pos.size() == 1) {
       assert(pos[0] >= 0 && pos[0] < L);
-      return 0;
-    } else if (property == "NumTypes")
+      return std::any(0);
+    } else if (property == "NumTypes") {
       return numTypes;
-    else {
+    } else {
       std::ostringstream ss;
       ss << "No property '" << property << "' with " << pos.size()
          << " points implemented.";

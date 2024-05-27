@@ -704,8 +704,8 @@ if(QCMAQUIS_TESTS)
     add_test(NAME Vibrational_MPS COMMAND test_mps_vibrational)
     add_test(NAME Vibrational_Lattice COMMAND test_vibrational_lattice)
     add_test(NAME Vibrational_Model_NU1 COMMAND test_vibrational_nu1_model)
-    add_test(NAME Vibrational_Model_Watson
-             COMMAND test_vibrational_watson_model)
+    add_test(NAME Vibrational_Model_None COMMAND test_vibrational_none_model)
+    add_test(NAME Vibrational_Model_Watson COMMAND test_vibrational_watson_model)
     add_test(NAME Vibrational_MPS_MPO_Ops COMMAND test_mps_mpo_ops_vibrational)
     add_test(NAME Vibrational_MPO_Times_MPS
              COMMAND test_mpo_times_mps_vibrational)
@@ -740,6 +740,7 @@ if(QCMAQUIS_TESTS)
     add_test(NAME Vibronic_MPS_Overlap COMMAND test_mps_overlap_vibronic)
     add_test(NAME Excitonic_Optimization COMMAND test_Excitonic)
     add_test(NAME Vibronic_Optimization COMMAND test_Vibronic)
+    add_test(NAME Vibronic_Excitonic_Nmode COMMAND test_excitonic_nmode_model)
   endif(BUILD_VIBRONIC)
   if((BUILD_VIBRATIONAL) OR (BUILD_VIBRONIC))
     add_test(NAME Vibrational_MPS_Initializers

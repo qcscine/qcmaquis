@@ -19,6 +19,7 @@
 #include "dmrg/models/vibrational/VibrationalIntegralParser.hpp"
 #include "dmrg/models/vibrational/VibrationalHelperClass.hpp"
 
+
 /**
  * @brief Class implementing the canonical quantization-based vibrational
  * Hamiltonian.

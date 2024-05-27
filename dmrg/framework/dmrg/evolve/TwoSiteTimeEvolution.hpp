@@ -201,10 +201,13 @@ class TwoSiteTimeEvolution
       int nms = parms_["nmainsweeps"];
       if (sweep < ngs) {
         alpha = parms_["alpha_initial"];
+        std::cout << "using alpha initial" << std::endl;
       } else if (sweep < ngs + nms) {
         alpha = parms_["alpha_main"];
+        std::cout << "using alpha main" << std::endl;
       } else {
         alpha = parms_["alpha_final"];
+        std::cout << "using alpha final" << std::endl;
       }
       auto cutoff = this->get_cutoff(sweep);
       auto Mmax = this->get_Mmax(sweep);

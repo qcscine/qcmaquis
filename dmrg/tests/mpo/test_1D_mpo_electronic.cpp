@@ -5,7 +5,7 @@
  * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
-#define BOOST_TEST_MAIN
+#define BOOST_TEST_MAIN Taghandler_AllSymmetries
 
 #include <boost/test/included/unit_test.hpp>
 #include <boost/mpl/list.hpp>

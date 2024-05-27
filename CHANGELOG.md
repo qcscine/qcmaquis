@@ -3,7 +3,10 @@
 
 ## Release 3.X.X
 
-- Removed keyword "ipi_sweeps_per_system", instead the standard keyword "nsweeps" is used. 
+- Removed keyword "ipi_sweeps_per_system", instead the standard keyword "nsweeps" is used.
+- Added support for vibrational Hamiltonians within the n-mode quantization framework.
+- Added functionality to calculate one- and two-modal RDMs in n-mode quantization framework.
+
 ## Release 3.1.3
 
 - Added support for DMRG[IP], the inverse power iteration method applied to MPS wave functions.
