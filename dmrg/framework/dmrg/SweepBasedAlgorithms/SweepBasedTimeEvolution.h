@@ -81,6 +81,7 @@ class SweepBasedTimeEvolution
     }
     if (parms_["TD_noise"] == "yes") {
       perturbMPS_ = true;
+      std::cout << "Perturbation Activated" << std::endl;
     }
     if (parms_["imaginary_time"] == "yes") {
       isImaginaryTime_ = true;

@@ -106,7 +106,7 @@ BOOST_FIXTURE_TEST_CASE(
   parametersFADTwoBodyFingerPrint.set("init_type", "const");
   parametersFADTwoBodyFingerPrint.set("nsweeps", 20);
   parametersFADTwoBodyFingerPrint.set("max_bond_dimension", 100);
-  parametersFADTwoBodyFingerPrint.set("twosite_truncation", "heev_truncate");
+  parametersFADTwoBodyFingerPrint.set("twosite_truncation", "heev");
   parametersFADTwoBodyFingerPrint.set("alpha_initial", 1.0E-8);
   parametersFADTwoBodyFingerPrint.set("alpha_main", 1.0E-15);
   parametersFADTwoBodyFingerPrint.set("alpha_final", 0.);

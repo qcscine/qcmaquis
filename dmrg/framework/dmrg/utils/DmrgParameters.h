@@ -70,8 +70,13 @@ class DmrgParameters : public BaseParameters {
     );
     add_option(
         "truncation_main",
+        "Intermediate value for the truncation error during the nmainsweeps",
+        value(1e-16)
+    );
+    add_option(
+        "truncation_final",
         "Final value for the truncation error during the rest of the "
-        "nsweeps-ngrowsweeps",
+        "nsweeps-nmainsweeps",
         value(1e-16)
     );
 
@@ -214,7 +219,7 @@ class DmrgParameters : public BaseParameters {
     add_option("beta_mode", "", value(0));
 
     // Jacobi-Davidson-related options
-    add_option("eigensolver", "", value("IETL_JCD"));
+    add_option("eigensolver", "Eigensolver to solve site problem", value("IETL_JCD"));
     add_option(
         "ietl_jcd_tol", "Convergence threshold for JCD at each site",
         value(1e-8)
@@ -463,6 +468,11 @@ class DmrgParameters : public BaseParameters {
     add_option(
         "vibronic_max_coupling",
         "Maximum power of operators in the Hamiltonian", value(2)
+    );
+
+    add_option(
+        "vibronic_max_coupling_nmode",
+        "Maximum many body coupling of vibrational modes", value(1)
     );
 
     // TD-related parameters
