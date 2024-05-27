@@ -115,14 +115,14 @@ struct FcidumpHeaderInfo {
   int ms2;
 };
 
-static FcidumpHeaderInfo parse_header(std::istream& is) {
+static FcidumpHeaderInfo parse_header(std::unique_ptr<std::istream>& is) {
   int nelec;
   int norb;
   int ms2;
 
   std::string token;
   std::string line;
-  while (std::getline(is, line)) {
+  while (std::getline(*is, line)) {
     std::istringstream line_stream(line);
     while (std::getline(line_stream, token, '=')) {
       if (token.find("NORB") != std::string::npos) {
@@ -228,9 +228,9 @@ parse_integrals(
       );
     }
     orb_string = std::make_unique<std::ifstream>(integral_file.c_str());
-    bool has_header = orb_string->peek() == '&';
+    bool has_header = (*orb_string >> std::ws).peek() == '&';
     if (has_header) {
-      auto [norb, nelec, ms2] = parse_header(*orb_string);
+      auto [norb, nelec, ms2] = parse_header(orb_string);
       if (norb != lat.size()) {
         throw std::runtime_error(
             "The number of orbitals in the FCIDUMP (" + std::to_string(norb) +

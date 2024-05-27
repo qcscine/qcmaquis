@@ -828,3 +828,4 @@ inline DmrgParameters load_parms_and_model(
   return parms;
 }
 
+#endif
