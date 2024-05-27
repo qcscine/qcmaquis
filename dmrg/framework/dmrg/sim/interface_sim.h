@@ -19,7 +19,6 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
-#include "omp.h"
 
 #include "dmrg/models/measurements/chementropy.h"
 #include "dmrg/MetaSweepSimulations/FEASTLauncher.h"
@@ -151,7 +150,6 @@ class interface_sim : public sim<Matrix, SymmGroup>,
 
   /** @brief Runs a DMRG-based optimization */
   void run(const std::string& simulationType) override {
-    std::cout << "Number of OMP threads: " << omp_get_max_threads() << '\n';
     Timer timer(simulationType);
     timer.begin();
     if (simulationType == "optimize") {
