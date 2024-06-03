@@ -19,6 +19,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include "omp.h"
 
 #include "dmrg/models/measurements/chementropy.h"
 #include "dmrg/MetaSweepSimulations/FEASTLauncher.h"
@@ -150,6 +151,8 @@ class interface_sim : public sim<Matrix, SymmGroup>,
 
   /** @brief Runs a DMRG-based optimization */
   void run(const std::string& simulationType) override {
+    std::cout << "Number of OMP threads: " << omp_get_max_threads()
+              << std::endl;
     Timer timer(simulationType);
     timer.begin();
     if (simulationType == "optimize") {
@@ -565,9 +568,8 @@ parms["nsweeps"]) checkpoint_simulation(mps, sweep, -1); if (stopped) break;
       BaseParameters parms_meas;
       parms_meas = parms.twou1_measurements();
       if (!parms_meas.empty()) {
-        measure_transform<Matrix, SymmGroup>()(
-            rfile(), "/spectrum/results", base::lat, mps, parms_meas
-        );
+        measure_transform<Matrix, SymmGroup>(
+        )(rfile(), "/spectrum/results", base::lat, mps, parms_meas);
       }
     }
 #endif
