@@ -6,6 +6,9 @@
  */
 
 #define BOOST_TEST_MAIN
+#include <array>
+#include <vector>
+#include <utility>
 
 // Unit test for integral map
 #include <boost/test/included/unit_test.hpp>

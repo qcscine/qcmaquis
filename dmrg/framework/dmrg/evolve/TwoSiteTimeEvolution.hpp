@@ -87,7 +87,7 @@ public:
   {
     // Initialization
     typename MPSTensor<Matrix, SymmGroup>::scalar_type dipole;
-    boost::chrono::high_resolution_clock::time_point sweep_now = boost::chrono::high_resolution_clock::now();
+    std::chrono::high_resolution_clock::time_point sweep_now = std::chrono::high_resolution_clock::now();
     iteration_results_.clear();
     // Definition of the initial site
     int _site = 0, site;
@@ -217,8 +217,8 @@ public:
       iteration_results_["SmallestEV"]        << trunc.smallest_ev;
       iteration_results_["Dipole"]            << dipole;
       parallel::meminfo();
-      boost::chrono::high_resolution_clock::time_point sweep_then = boost::chrono::high_resolution_clock::now();
-      double elapsed = boost::chrono::duration<double>(sweep_then - sweep_now).count();
+      std::chrono::high_resolution_clock::time_point sweep_then = std::chrono::high_resolution_clock::now();
+      double elapsed = std::chrono::duration<double>(sweep_then - sweep_now).count();
       maquis::cout << "Sweep has been running for " << elapsed << " seconds." << std::endl;
       if (stop_callback())
         throw dmrg::time_limit(sweep, _site+1);
