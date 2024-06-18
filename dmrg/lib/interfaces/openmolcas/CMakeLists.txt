@@ -26,7 +26,7 @@ target_link_libraries(qcmaquis-hdf5-interface ${HDF5_LIBRARIES})
 
 if ("${CMAKE_Fortran_COMPILER_ID}" STREQUAL "GNU")
   set_target_properties(qcmaquis-driver PROPERTIES COMPILE_FLAGS "-cpp")
-else()
+elseif("${CMAKE_Fortran_COMPILER_ID}" STREQUAL "Intel" OR "${CMAKE_Fortran_COMPILER_ID}" STREQUAL "NAG")
   set_target_properties(qcmaquis-driver PROPERTIES COMPILE_FLAGS "-fpp")
 endif()
 
