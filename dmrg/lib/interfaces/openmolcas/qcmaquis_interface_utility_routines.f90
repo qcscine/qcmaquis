@@ -555,15 +555,14 @@ contains
         if(dmrg_host_program_settings%myrank == 0)then
           mstates               = '0'
           sweeps                = '0'
-          jcd_maxiter           = '10'
           svd_tolerance_initial = '1e-50'
           svd_tolerance_final   = ' '
           sweeps_tolerance      = ' '
           jcd_tolerance         = ' '
 
-          write(      sweeps_tolerance,'(e9.3)') thre
-          write(         jcd_tolerance,'(e9.3)') thre*0.001  ! same as molcas for Davidson
-          write(   svd_tolerance_final,'(e9.3)') thre*0.001  !  in order to match Davidson
+          write(      sweeps_tolerance,'(e10.3)') thre
+          write(         jcd_tolerance,'(e10.3)') thre*0.001  ! same as molcas for Davidson
+          write(   svd_tolerance_final,'(e10.3)') thre*0.001  !  in order to match Davidson
 
           do i = 1, size(dmrg_input%qcmaquis_input),2
             line(1:500) = dmrg_input%qcmaquis_input(i)(1:500)

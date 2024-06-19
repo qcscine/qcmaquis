@@ -397,6 +397,7 @@ module qcmaquis_interface
       integer :: arr_size = 0
       integer :: max_index2
 
+      integer :: err
       integer :: isym, ksym, lsym, jsym, ijsym, klsym
       integer :: i, j, k, l, ij, kl, ijkl
       integer :: ndummy
