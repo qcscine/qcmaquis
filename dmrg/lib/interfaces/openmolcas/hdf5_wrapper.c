@@ -280,7 +280,7 @@ herr_t hdf5_get_data_c(hid_t fileid, hid_t h5type, const char *dname, int rank, 
       if (error < 0)
           fprintf(stderr, "hdf5_put_data_c: Error %i in H5Dread when reading dataset %s\n", error, dname);
 
-      strncpy(buf,strbuf[0],strlen(strbuf[0]));
+      snprintf(buf, sizeof(buf), "%s", strbuf[0]);
 
       error = H5Dvlen_reclaim(native_h5type, dspace, H5P_DEFAULT, strbuf);
       free(strbuf);

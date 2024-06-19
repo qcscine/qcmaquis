@@ -78,14 +78,15 @@ contains
 !
       AMAX = ZERO
       N_NAN = 0
-      DO 10 J = COLLOW,COLHI
-         DO 10 I = ROWLOW,ROWHI
+      DO J = COLLOW,COLHI
+         DO I = ROWLOW,ROWHI
 !           IF ( IS_NAN(AMATRX(I,J),AMATRX(I,J)) ) THEN
 !              N_NAN = N_NAN + 1
 !           ELSE
                AMAX = MAX( AMAX, ABS(AMATRX(I,J)) )
 !           END IF
-   10 CONTINUE
+         END DO
+     END DO
       IF (N_NAN .GT. 0) WRITE (LUPRI,'(/T6,A,I10,A)') 'WARNING: matrix contains',N_NAN,' NaN.'
       IF (AMAX <= 1.0d-20) THEN
          WRITE (LUPRI,'(/T6,A)') 'Zero matrix.'
@@ -123,7 +124,8 @@ contains
          GO TO 1
     5       WRITE (LUPRI,PFMT) CTL,K,(AMATRX(K,I), I = BEGIN,LAST)
     1    CONTINUE
-    2 LAST = MIN(LAST+KCOL,COLHI)
+    2    END DO
+    LAST = MIN(LAST+KCOL,COLHI)
     3 WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
       RETURN
  1000 FORMAT (/10X,8(5X,A6,I4))

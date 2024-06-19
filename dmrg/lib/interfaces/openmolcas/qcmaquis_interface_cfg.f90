@@ -45,8 +45,8 @@ module qcmaquis_interface_cfg
 
 
   type qcm_warmup
-    logical(kind=8)       :: doCIDEAS                   = .false.
-    logical(kind=8)       :: doFiedler                  = .false.
+    logical*8       :: doCIDEAS                   = .false.
+    logical*8       :: doFiedler                  = .false.
   end type qcm_warmup
   type (qcm_warmup), save, public :: dmrg_warmup
 
@@ -59,7 +59,7 @@ module qcmaquis_interface_cfg
   double precision :: E_threshold               =  0.0d0
 
   type type_host_settings
-       logical(kind=8) :: runs_parallel                =  .false.
+       logical*8 :: runs_parallel                =  .false.
        integer*8 :: myrank                       =  0 ! rank of MPI process in host program
        integer*8 :: nprocs                       =  1 ! number of MPI processes in host program
        character(len=7) :: dmrg_host_program   =  'molcas '
@@ -134,7 +134,7 @@ module qcmaquis_interface_cfg
        integer*8              :: irrep                    = 0       ! spatial irrep
        integer*8              :: maxroot                  = 0       ! number of states in RASSCF run
        ! TODO: consider also sweep_bond_dimensions
-       logical(kind=8)              :: MPSrotated               = .false. ! MPSs of JOB1 and JOB2 were rotated
+       logical*8              :: MPSrotated               = .false. ! MPSs of JOB1 and JOB2 were rotated
   end type external_PARAMETER
   type (external_PARAMETER), save, public :: dmrg_external
 
