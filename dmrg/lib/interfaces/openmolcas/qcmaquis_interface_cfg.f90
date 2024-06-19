@@ -25,19 +25,19 @@ module qcmaquis_interface_cfg
 
   type dmrg_par
        !! QCMaquis-specific settings
-       integer(kind=8)              :: M                        = 0       ! number of renormalized states
-       integer(kind=8)              :: num_sweeps               = 0       ! number of sweeps from the configuration file
-       real*8               :: conv_thresh              = 1.0d-9  ! convergence threshold from the configuration file, reasonable default
-       integer(kind=8)              :: L                        = 0       ! number of orbitals
+       integer(kind=8) :: M = 0       ! number of renormalized states
+       integer(kind=8) :: num_sweeps = 0       ! number of sweeps from the configuration file
+       real*8 :: conv_thresh = 1.0d-9  ! convergence threshold from the configuration file, reasonable default
+       integer(kind=8) :: L = 0       ! number of orbitals
        ! TODO: consider also sweep_bond_dimensions
 
        !! OpenMOLCAS project name & current directory
-       character*256        :: project_name             = '' ! MOLCAS/QCMaquis project prefix
-       character*512        :: currdir                  = '' ! MOLCAS current directory
+       character*256 :: project_name = '' ! MOLCAS/QCMaquis project prefix
+       character*512 :: currdir = '' ! MOLCAS current directory
 
       !! OpenMOLCAS wavefunction settings (possibly redundant)
-      integer(kind=8)               :: nactel                   = 0  ! number of active electrons
-      integer(kind=8)               :: ms2                      = 0  ! spin
+      integer(kind=8) :: nactel = 0  ! number of active electrons
+      integer(kind=8) :: ms2 = 0  ! spin
 
 
   end type dmrg_par

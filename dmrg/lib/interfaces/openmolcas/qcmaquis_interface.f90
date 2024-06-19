@@ -397,10 +397,9 @@ module qcmaquis_interface
       integer :: arr_size = 0
       integer :: max_index2
 
-      integer :: err
       integer :: isym, ksym, lsym, jsym, ijsym, klsym
       integer :: i, j, k, l, ij, kl, ijkl
-      integer :: ndummy,lenorbstring
+      integer :: ndummy
       integer :: norbtot, noccend, noccendi, noccendj
       integer :: offset, offseti, offsetj, offsetk, offsetl
 
@@ -574,7 +573,8 @@ module qcmaquis_interface
               if(dabs(oneint(offset)-(corenergy/dble(dmrg_state%nactel))) < threshold)then
               cycle
               else
-!                 write(fcidump,form1) oneint(offset)-(corenergy/dble(dmrg_state%nactel)), & ! subtract scaled iLive energy from diagonal elements
+                  ! subtract scaled iLive energy from diagonal elements
+!                 write(fcidump,form1) oneint(offset)-(corenergy/dble(dmrg_state%nactel)), &
 !                                                     i+ndummy, j+ndummy,0, 0
                 values(offset_integrals) = oneint(offset)-(corenergy/dble(dmrg_state%nactel))
                 indices(4*(offset_integrals-1)+1:4*(offset_integrals-1)+4) = (/ i+ndummy, j+ndummy, 0, 0 /)
@@ -808,7 +808,6 @@ module qcmaquis_interface
     integer(c_int), allocatable :: indices(:)
     real*8, allocatable :: values(:)
     integer :: v,i ! counters for values and indices
-    integer :: j, ij ! other counters
     integer :: nact
 
     nact = qcmaquis_param%L
@@ -861,7 +860,6 @@ module qcmaquis_interface
     integer(c_int), allocatable :: indices(:)
     real*8, allocatable :: values(:)
     integer :: v,i ! counters for values and indices
-    integer :: j, ij ! other counters
     sz = size(d1)
     d1 = 0.0d0
     allocate(values(sz))
@@ -918,7 +916,7 @@ module qcmaquis_interface
     integer :: nact
     integer :: vv,ii ! counters for values and indices
     integer :: ij,jk,kl,li
-    integer :: i,j,k,l,ijkl
+    integer :: i,j,k,l
     ! temporary rdms
     real*8, allocatable :: rdm2(:,:,:,:)
     nact = qcmaquis_param%L
@@ -987,7 +985,7 @@ module qcmaquis_interface
   subroutine qcmaquis_interface_get_2rdm_compat(d2)
     real*8, intent(inout) :: d2(:)
     integer :: nact
-    integer :: ij,jk,kl,li
+    integer :: ij,kl
     integer :: i,j,k,l,ijkl
     ! temporary rdms
     real*8, allocatable :: rdm2T(:,:,:,:)

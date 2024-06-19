@@ -68,7 +68,7 @@ contains
       DIMENSION AMATRX(ROWDIM,COLDIM)
       CHARACTER*1 ASA(3), BLANK, CTL
       CHARACTER   PFMT*20, COLUMN*8
-      LOGICAL, external :: IS_NAN
+      ! LOGICAL, external :: IS_NAN
       PARAMETER (ZERO=0.D00, KCOLP=5, KCOLN=8)
       PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
       DATA COLUMN/'Column  '/, BLANK/' '/, ASA/' ', '0', '-'/
@@ -499,7 +499,8 @@ contains
                  if(dabs(oneint(offset)-(corenergy/dble(dmrg_state%nactel))) < threshold)then
                    cycle
                  else
-                   write(fcidump,form1) oneint(offset)-(corenergy/dble(dmrg_state%nactel)), & ! subtract scaled inactive energy from diagonal elements
+                   ! subtract scaled inactive energy from diagonal elements
+                   write(fcidump,form1) oneint(offset)-(corenergy/dble(dmrg_state%nactel)), &
                                                         i+ndummy, j+ndummy,0, 0
                  end if
               else
@@ -546,21 +547,16 @@ contains
         character(len=500)                :: sweeps
         character(len=500)                :: sweeps_tolerance
         character(len=500)                :: jcd_tolerance
-        character(len=500)                :: jcd_maxiter
         character(len=500)                :: svd_tolerance_initial
         character(len=500)                :: svd_tolerance_final
-        character(len=500)                :: orbital_ordering
         character(len=500)                :: line
-        character(len=5)                  :: state_tag
-        character(len=5)                  :: full_state_tag
-        integer                           :: i, irootm1
+        integer                           :: i
 
         if(dmrg_host_program_settings%myrank == 0)then
           mstates               = '0'
           sweeps                = '0'
           jcd_maxiter           = '10'
           svd_tolerance_initial = '1e-50'
-          orbital_ordering      = 'ascending in numerical order (default)'
           svd_tolerance_final   = ' '
           sweeps_tolerance      = ' '
           jcd_tolerance         = ' '
@@ -578,8 +574,6 @@ contains
               svd_tolerance_final        = trim(dmrg_input%qcmaquis_input(i+1))
             else if(trim(line) == 'IETL_JCD_TOL')then
               jcd_tolerance         = trim(dmrg_input%qcmaquis_input(i+1))
-            else if(trim(line) == 'IETL_JCD_MAXITER')then
-              jcd_maxiter          = trim(dmrg_input%qcmaquis_input(i+1))
             else if(trim(line) == 'CONV_THRESH')then
               sweeps_tolerance     = trim(dmrg_input%qcmaquis_input(i+1))
             else if(trim(line) == 'MAX_BOND_DIMENSION')then
