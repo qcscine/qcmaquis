@@ -25,10 +25,10 @@ module qcmaquis_interface_cfg
 
   type dmrg_par
        !! QCMaquis-specific settings
-       integer(kind=8) :: M = 0       ! number of renormalized states
-       integer(kind=8) :: num_sweeps = 0       ! number of sweeps from the configuration file
+       integer*8 :: M = 0       ! number of renormalized states
+       integer*8 :: num_sweeps = 0       ! number of sweeps from the configuration file
        real*8 :: conv_thresh = 1.0d-9  ! convergence threshold from the configuration file, reasonable default
-       integer(kind=8) :: L = 0       ! number of orbitals
+       integer*8 :: L = 0       ! number of orbitals
        ! TODO: consider also sweep_bond_dimensions
 
        !! OpenMOLCAS project name & current directory
@@ -36,8 +36,8 @@ module qcmaquis_interface_cfg
        character*512 :: currdir = '' ! MOLCAS current directory
 
       !! OpenMOLCAS wavefunction settings (possibly redundant)
-      integer(kind=8) :: nactel = 0  ! number of active electrons
-      integer(kind=8) :: ms2 = 0  ! spin
+      integer*8 :: nactel = 0  ! number of active electrons
+      integer*8 :: ms2 = 0  ! spin
 
 
   end type dmrg_par
@@ -60,14 +60,14 @@ module qcmaquis_interface_cfg
 
   type type_host_settings
        logical(kind=8) :: runs_parallel                =  .false.
-       integer(kind=8) :: myrank                       =  0 ! rank of MPI process in host program
-       integer(kind=8) :: nprocs                       =  1 ! number of MPI processes in host program
+       integer*8 :: myrank                       =  0 ! rank of MPI process in host program
+       integer*8 :: nprocs                       =  1 ! number of MPI processes in host program
        character(len=7) :: dmrg_host_program   =  'molcas '
   end type type_host_settings
   type (type_host_settings), save, public :: dmrg_host_program_settings
 
   ! Symmetry multiplication table, once and for all
-  integer(kind=8), dimension(8, 8), parameter :: multd2h = &
+  integer*8, dimension(8, 8), parameter :: multd2h = &
      reshape( (/1,2,3,4,5,6,7,8, &
                 2,1,4,3,6,5,8,7, &
                 3,4,1,2,7,8,5,6, &
@@ -78,8 +78,8 @@ module qcmaquis_interface_cfg
                 8,7,6,5,4,3,2,1/), (/8,8/))
   !> definition of "symmetry" data type
   type type_symmetry
-       integer(kind=8) :: nirrep                        = 0
-       integer(kind=8) :: multiplication_table(8,8) = multd2h
+       integer*8 :: nirrep                        = 0
+       integer*8 :: multiplication_table(8,8) = multd2h
   end type type_symmetry
   type (type_symmetry), save :: dmrg_symmetry
 
@@ -100,20 +100,20 @@ module qcmaquis_interface_cfg
 
   !> definition of "state" data type
   type type_state
-       integer(kind=8)              :: irefsm        = 0
-       integer(kind=8)              :: nactel        = 0
-       integer(kind=8)              :: ms2           = 0
-       integer(kind=8)              :: nroot         = 0
-       integer(kind=8)              :: maxroot       = 0
-       integer(kind=8), allocatable :: iroot(:)
+       integer*8              :: irefsm        = 0
+       integer*8              :: nactel        = 0
+       integer*8              :: ms2           = 0
+       integer*8              :: nroot         = 0
+       integer*8              :: maxroot       = 0
+       integer*8, allocatable :: iroot(:)
        real*8 , allocatable :: weight(:)
   end type type_state
   type (type_state), save :: dmrg_state
 
   !> definition of "orbital_space" data type
   type type_orbital_space
-       integer(kind=8)              ::  nash(8)        = 0
-       integer(kind=8), allocatable :: initial_occ(:,:) ! in order to get the starting determinant for each state (Maquis)
+       integer*8              ::  nash(8)        = 0
+       integer*8, allocatable :: initial_occ(:,:) ! in order to get the starting determinant for each state (Maquis)
   end type type_orbital_space
   type (type_orbital_space), save :: dmrg_orbital_space
 
@@ -123,16 +123,16 @@ module qcmaquis_interface_cfg
        real*8 :: dmrg                  = 0.0d0
        real*8 , allocatable :: dmrg_state_specific(:)
        real*8 , allocatable :: max_truncW(:)
-       integer(kind=8), allocatable :: num_sweeps(:)
+       integer*8, allocatable :: num_sweeps(:)
   end type type_energy
   type (type_energy), save :: dmrg_energy
 
   !> DMRG-RASSI parameters
   type external_PARAMETER
-       integer(kind=8)              :: nalpha                   = 0       ! number of alpha electrons
-       integer(kind=8)              :: nbeta                    = 0       ! number of beta electrons
-       integer(kind=8)              :: irrep                    = 0       ! spatial irrep
-       integer(kind=8)              :: maxroot                  = 0       ! number of states in RASSCF run
+       integer*8              :: nalpha                   = 0       ! number of alpha electrons
+       integer*8              :: nbeta                    = 0       ! number of beta electrons
+       integer*8              :: irrep                    = 0       ! spatial irrep
+       integer*8              :: maxroot                  = 0       ! number of states in RASSCF run
        ! TODO: consider also sweep_bond_dimensions
        logical(kind=8)              :: MPSrotated               = .false. ! MPSs of JOB1 and JOB2 were rotated
   end type external_PARAMETER
