@@ -187,7 +187,7 @@ contains
 
       !! For Fiedler ordering: calculate the length of a string that would fit the Fiedler ordering
       !! i.e., for a given integer N, give the length of a string that fits numbers "1,2,...,N" with commas included
-      integer*8 function fiedlerorder_length(L) result(res)
+      integer(kind=8) function fiedlerorder_length(L) result(res)
           implicit none
           integer, intent(in) :: L
           integer p,n,c ! temporary variables
@@ -220,7 +220,7 @@ contains
 
       subroutine file_name_generator(iroot, prototype_name, suffix, generated_name)
           implicit none
-          integer*8, intent(in)                :: iroot
+          integer(kind=8), intent(in)                :: iroot
           character(len=*), intent(in)       :: prototype_name
           character(len=*), intent(in)       :: suffix
           character(len=2300), intent(inout) :: generated_name
