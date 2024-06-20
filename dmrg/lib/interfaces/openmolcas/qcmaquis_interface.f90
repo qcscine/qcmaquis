@@ -163,8 +163,6 @@ module qcmaquis_interface
         type(c_ptr) :: sweep_m_
         integer(c_int) :: nsweepm = 0
 
-        integer :: err
-
         integer(c_int), dimension(L) :: site_types
 
         integer :: i, j, n
