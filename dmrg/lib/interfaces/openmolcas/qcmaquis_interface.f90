@@ -245,8 +245,8 @@ module qcmaquis_interface
 
         ! save project name (only the short version!!! Warning, this might be different from project_name
 
-        call getenvf('Project', qcmaquis_param%project_name)
-        call getenvf('CurrDir', qcmaquis_param%currdir)
+        call getenv('Project', qcmaquis_param%project_name)
+        call getenv('CurrDir', qcmaquis_param%currdir)
 
         ! save wavefunction parameters
         qcmaquis_param%nactel = nel
@@ -1103,7 +1103,7 @@ module qcmaquis_interface
       state_real = state - 1
       call file_name_generator(state_real,"checkpoint_state.",".h5",filename)
 
-      call systemf("rm -rf "//trim(filename))
+      call system("rm -rf "//trim(filename))
 #ifdef _MOLCAS_MPP_
     endif
 #endif
