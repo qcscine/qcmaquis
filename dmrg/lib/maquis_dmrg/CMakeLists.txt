@@ -18,9 +18,9 @@ add_library(maquis_dmrg SHARED ${DMRG_SYMM_SOURCES} maquis_dmrg.cpp maquis_cinte
 set_property(TARGET maquis_dmrg PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 if(APPLE)
   target_link_libraries(maquis_dmrg ${DMRG_APP_LIBRARIES} "-framework Accelerate")
-else()
-  target_link_libraries(maquis_dmrg "-llapack")
-  # target_link_libraries(maquis_dmrg Eigen3::Eigen)
+# else()
+#   target_link_libraries(maquis_dmrg ${DMRG_APP_LIBRARIES})
+#   target_link_libraries(maquis_dmrg Eigen3::Eigen)
 endif()
 
 # *** Install
