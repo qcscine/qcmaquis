@@ -159,7 +159,9 @@ void measure_correlation(Range const& range,
 
         std::copy(dct.begin(), dct.end(), std::back_inserter(dc));
 
-        std::vector<std::string> lbt = label_strings(lattice, numeric_labels);
+        // BUG: Reordering is buggy
+        // std::vector<std::string> lbt = label_strings(lattice, numeric_labels);
+        std::vector<std::string> lbt = label_strings(numeric_labels);
         std::copy(lbt.begin(), lbt.end(), std::back_inserter(labels));
         tim.end();
     }
