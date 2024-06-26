@@ -1103,7 +1103,7 @@ module qcmaquis_interface
       state_real = state - 1
       call file_name_generator(state_real,"checkpoint_state.",".h5",filename)
 
-      call system("rm -rf "//trim(filename))
+      call execute_command_line("rm -rf "//trim(filename))
 #ifdef _MOLCAS_MPP_
     endif
 #endif
