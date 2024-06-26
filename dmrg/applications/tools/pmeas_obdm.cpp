@@ -77,9 +77,7 @@ void measure_correlation_parallel(MPS<Matrix, SymmGroup> const & mps,
     }
     int nthread = omp_thread_num();
     all_vals[nthread] = vals;
-    // BUG: Reordering is buggy
-    // all_labels[nthread] = label_strings(lat, num_labels);
-    all_labels[nthread] = label_strings(num_labels);
+    all_labels[nthread] = label_strings(lat, num_labels);
 }
 
 

@@ -117,9 +117,7 @@ void measure_correlation(MPS<Matrix, SymmGroup> const & bra,
 
         std::copy(dct.begin(), dct.end(), std::back_inserter(dc));
 
-        // BUG: Reordering is buggy
-        // std::vector<std::string> lbt = label_strings(lattice, numeric_labels);
-        std::vector<std::string> lbt = label_strings(numeric_labels);
+        std::vector<std::string> lbt = label_strings(lattice, numeric_labels);
         std::copy(lbt.begin(), lbt.end(), std::back_inserter(labels));
         tim.end();
     }

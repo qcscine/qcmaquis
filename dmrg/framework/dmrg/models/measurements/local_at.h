@@ -28,9 +28,7 @@ public:
              op_vec const & identities_, op_vec const & fillings_, std::vector<std::pair<op_vec, bool> > const& ops_)
     : base(name_), lattice(lat), positions(positions_), identities(identities_), fillings(fillings_), ops(ops_)
     {
-        // BUG: Reordering is buggy
-        // this->labels = label_strings(lattice, positions);
-        this->labels = label_strings(positions);
+        this->labels = label_strings(lattice, positions);
         this->labels_num = positions;
         this->cast_to_real = false;
     }

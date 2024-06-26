@@ -202,9 +202,7 @@ namespace measurements {
 
                 std::copy(num_labels.begin(), num_labels.end(), std::back_inserter(this->labels_num));
 
-                // BUG: Reordering is buggy
-                // std::vector<std::string> lbt = label_strings(lattice, num_labels );
-                std::vector<std::string> lbt = label_strings(num_labels);
+                std::vector<std::string> lbt = label_strings(lattice, num_labels );
                 std::copy(lbt.begin(), lbt.end(), std::back_inserter(this->labels));
             }
         }
