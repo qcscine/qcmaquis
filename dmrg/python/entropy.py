@@ -32,6 +32,7 @@ import sys
 import pyalpslite as pyalps
 
 import numpy as np
+np.set_printoptions(linewidth=300)
 import scipy.linalg as sl
 
 from copy import deepcopy
