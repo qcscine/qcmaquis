@@ -71,7 +71,6 @@ namespace measurements {
 
                 parallel::scheduler_balanced scheduler(L);
 
-                std::vector<std::vector<Lattice::pos_t>> num_labels;
                 for (typename Lattice::pos_t p = 0; p < L; ++p) {
                     parallel::guard proc(scheduler(p)); /// scheduling kernels
 
@@ -87,11 +86,10 @@ namespace measurements {
                         typename MPS<Matrix, SymmGroup>::scalar_type res = mps[p].scalar_overlap(vec2);
 
                         this->vector_results.push_back(res);
-                        num_labels.push_back(std::vector<Lattice::pos_t>{p});
+                        this->labels.push_back( lattice.get_prop<std::string>("label", p) );
                         this->labels_num.push_back({p});
                     }
                 }
-                this->labels = label_strings(num_labels);
             }
         }
 
