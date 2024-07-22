@@ -245,8 +245,8 @@ module qcmaquis_interface
 
         ! save project name (only the short version!!! Warning, this might be different from project_name
 
-        call getenv('Project', qcmaquis_param%project_name)
-        call getenv('CurrDir', qcmaquis_param%currdir)
+        call get_environment_variable('Project', qcmaquis_param%project_name)
+        call get_environment_variable('CurrDir', qcmaquis_param%currdir)
 
         ! save wavefunction parameters
         qcmaquis_param%nactel = nel
