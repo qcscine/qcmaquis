@@ -113,7 +113,7 @@ int main(int argc, char** argv) {
       std::cerr
           << "ERROR: No simulation type specified. Please specify a simulation "
              "type using the 'simulation_type' parameter.\n"
-             "Valid options are: 'optimize', 'evolve', 'ipi' or 'feast'\n";
+             "Valid options are: 'optimize', 'evolve', 'ipi', 'feast' or 'transcorrelated'\n";
       exit(1);
     }
   }
