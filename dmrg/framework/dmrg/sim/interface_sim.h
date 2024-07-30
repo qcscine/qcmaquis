@@ -794,19 +794,6 @@ parms["nsweeps"]) checkpoint_simulation(mps, sweep, -1); if (stopped) break;
    * state
    * @return order a string with the orbital order based on fiedler ordering
    */
-  // using ScalarType = typename Matrix::value_type;
-  // template<typename std::enable_if<std::is_same<ScalarType,
-  // std::complex<double>>::value, int>::type = 0> std::string
-  // get_fiedler_order(int n_states, const std::vector<std::vector<int>>&
-  // hf_occupations, std::string checkpoint_name) {
-  //   throw std::runtime_error("Fiedler ordering only implemented for double
-  //   not compelex!");
-  // }
-
-  // template<typename std::enable_if<std::is_same<ScalarType, double>::value,
-  // int>::type = 0>
-  // template<typename = typename std::enable_if <std::is_same<ScalarType,
-  // double>::value>::type>
   std::string get_fiedler_order(
       int n_states, const std::vector<std::vector<int>>& hf_occupations,
       std::string checkpoint_name, bool zero_based = false
@@ -847,17 +834,12 @@ parms["nsweeps"]) checkpoint_simulation(mps, sweep, -1); if (stopped) break;
 
     // set sweeps and m, same values as in the old python interface
     parms.set("nsweeps", 4);
-    if (parms.is_set("init_bond_dimension")) {
-      int init_bond_dimension = parms["init_bond_dimension"];
-      parms.set("max_bond_dimension", init_bond_dimension);
+    if (parms.is_set("L")) {
+      parms.set("max_bond_dimension", parms["L"] > 24 ? 256 : 128);
     } else {
-      if (parms.is_set("L")) {
-        parms.set("max_bond_dimension", parms["L"] > 24 ? 256 : 128);
-      } else {
-        throw std::runtime_error(
-            "L not defined for a starting guess calculation!"
-        );
-      }
+      throw std::runtime_error(
+          "L not defined for a starting guess calculation!"
+      );
     }
 
     // if(parms.is_set("feast_num_states")) {

@@ -1,26 +1,9 @@
-/*****************************************************************************
- *
- * QCMaquis DMRG Project
- *
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have receivedo a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
+ */
 
 #ifndef QC_NORMAL_ORDER_H
 #define QC_NORMAL_ORDER_H
@@ -210,7 +193,7 @@ class NormalOrderingHelper {
   /**
    * @brief Function that returns a map, corresponding to a chain a_p^\dag a_q
    * of one creation and one annihilation operator, where p and q are stored in
-   * the pair, and gives the coefficient of the NO 3B contribution to this chain
+   * the pair, and gives the coefficient of the NO 2-body contribution to this chain
    * of operators.
    */
   std::unordered_map<std::tuple<int, int, int, int>, double, intTupleHash>
@@ -263,7 +246,7 @@ class NormalOrderingHelper {
   /**
    * @brief Function that returns a map, corresponding to a chain a_p^\dag a_q
    * of one creation and one annihilation operator, where p and q are stored in
-   * the pair, and gives the coefficient of the NO 3B contribution to this chain
+   * the pair, and gives the coefficient of the NO 1-body contribution to this chain
    * of operators.
    */
   std::unordered_map<std::pair<int, int>, double, intPairHash>
