@@ -44,6 +44,15 @@ module qcmaquis_interface
   interface qcmaquis_interface_get_2rdm
     module procedure qcmaquis_interface_get_2rdm_compat, qcmaquis_interface_get_2rdm_full
   end interface
+
+  interface qcmaquis_interface_get_3rdm
+    module procedure qcmaquis_interface_get_3rdm_full
+  end interface
+
+  interface qcmaquis_interface_get_4rdm
+    module procedure qcmaquis_interface_get_4rdm_full
+  end interface
+
   interface
 
     subroutine qcmaquis_interface_update_integrals_C(integral_indices, integral_values, size) &
@@ -96,7 +105,22 @@ module qcmaquis_interface
       integer(c_int), value :: size
     end subroutine
 
+    subroutine qcmaquis_interface_get_3rdm_C(indices, values, size) bind(C,  name='qcmaquis_interface_get_3rdm')
+      import c_int, c_double
+      integer(c_int), dimension(*) :: indices
+      real(c_double), dimension(*) :: values
+      integer(c_int), value :: size
+    end subroutine
+
+    subroutine qcmaquis_interface_get_4rdm_C(indices, values, size) bind(C,  name='qcmaquis_interface_get_4rdm')
+      import c_int, c_double
+      integer(c_int), dimension(*) :: indices
+      real(c_double), dimension(*) :: values
+      integer(c_int), value :: size
+    end subroutine
+
   end interface
+
   contains
 
     ! Initialises QCMaquis interface with values from OpenMOLCAS
@@ -162,6 +186,8 @@ module qcmaquis_interface
 
         type(c_ptr) :: sweep_m_
         integer(c_int) :: nsweepm = 0
+
+        integer :: err
 
         integer(c_int), dimension(L) :: site_types
 
@@ -245,8 +271,8 @@ module qcmaquis_interface
 
         ! save project name (only the short version!!! Warning, this might be different from project_name
 
-        call get_environment_variable('Project', qcmaquis_param%project_name)
-        call get_environment_variable('CurrDir', qcmaquis_param%currdir)
+        call getenv('Project', qcmaquis_param%project_name)
+        call getenv('CurrDir', qcmaquis_param%currdir)
 
         ! save wavefunction parameters
         qcmaquis_param%nactel = nel
@@ -398,7 +424,7 @@ module qcmaquis_interface
       integer :: err
       integer :: isym, ksym, lsym, jsym, ijsym, klsym
       integer :: i, j, k, l, ij, kl, ijkl
-      integer :: ndummy
+      integer :: ndummy,lenorbstring
       integer :: norbtot, noccend, noccendi, noccendj
       integer :: offset, offseti, offsetj, offsetk, offsetl
 
@@ -572,8 +598,7 @@ module qcmaquis_interface
               if(dabs(oneint(offset)-(corenergy/dble(dmrg_state%nactel))) < threshold)then
               cycle
               else
-                  ! subtract scaled iLive energy from diagonal elements
-!                 write(fcidump,form1) oneint(offset)-(corenergy/dble(dmrg_state%nactel)), &
+!                 write(fcidump,form1) oneint(offset)-(corenergy/dble(dmrg_state%nactel)), & ! subtract scaled iLive energy from diagonal elements
 !                                                     i+ndummy, j+ndummy,0, 0
                 values(offset_integrals) = oneint(offset)-(corenergy/dble(dmrg_state%nactel))
                 indices(4*(offset_integrals-1)+1:4*(offset_integrals-1)+4) = (/ i+ndummy, j+ndummy, 0, 0 /)
@@ -807,6 +832,7 @@ module qcmaquis_interface
     integer(c_int), allocatable :: indices(:)
     real*8, allocatable :: values(:)
     integer :: v,i ! counters for values and indices
+    integer :: j, ij ! other counters
     integer :: nact
 
     nact = qcmaquis_param%L
@@ -859,6 +885,7 @@ module qcmaquis_interface
     integer(c_int), allocatable :: indices(:)
     real*8, allocatable :: values(:)
     integer :: v,i ! counters for values and indices
+    integer :: j, ij ! other counters
     sz = size(d1)
     d1 = 0.0d0
     allocate(values(sz))
@@ -914,71 +941,52 @@ module qcmaquis_interface
     real*8, allocatable :: values(:)
     integer :: nact
     integer :: vv,ii ! counters for values and indices
-    integer :: ij,jk,kl,li
     integer :: i,j,k,l
-    ! temporary rdms
-    real*8, allocatable :: rdm2(:,:,:,:)
     nact = qcmaquis_param%L
     ! calculate the size of 2-RDM in QCMaquis
     ! TODO: this should be of the value n2*(n2+1)/2 with n2=nact*(nact+1)/2
-    d2 = 0.0d0
     sz=0
     do i=1,nact
-    do j=1,nact
-    do k=min(i,j),nact
-    do l=k,nact
-      sz=sz+1
-    end do
-    end do
-    end do
-    end do
-
-    allocate(values(sz))
-    values = 0.0d0
-    allocate(indices(4*sz))
-    ! initialise indices to -1, see in 1RDM code why
-    indices = -1
-    allocate(rdm2(nact,nact,nact,nact))
-    rdm2 = 0.0d0
-    d2 = 0.0d0
-    ! obtain the rdms from qcmaquis
-    call qcmaquis_interface_get_2rdm_C(indices, values, sz)
-
-    ! copy the values into the matrix
-    do vv=0,sz-1
-      ii = 4*vv
-      ! TODO: make sure we don't get out of bounds here, i.e. add some
-      ! checks for size(d2) eventually
-      ij = indices(ii+1)+1
-      jk = indices(ii+2)+1
-      kl = indices(ii+3)+1
-      li = indices(ii+4)+1
-      if ((ij+jk+kl+li).eq.0) cycle ! skip empty indices
-      rdm2(ij,jk,kl,li) = values(vv+1)
-      rdm2(kl,li,ij,jk) = values(vv+1)
-      rdm2(jk,ij,li,kl) = values(vv+1)
-      rdm2(li,kl,jk,ij) = values(vv+1)
-    end do
-
-    ! now symmetrise the RDM for compatibility with MOLCAS (copy-paste from old interface)
-    do i=1,nact
       do j=1,nact
-        do k=1,nact
-          do l=1,nact
-            if(j.eq.k)then
-              d2(i,j,k,l)=rdm2(i,j,k,l)
-            else
-              d2(i,j,k,l)=rdm2(i,j,k,l)+rdm2(i,k,j,l)
-            end if
+        do k=min(i,j),nact
+          do l=k,nact
+            sz=sz+1
           end do
         end do
       end do
     end do
 
+    allocate(values(sz))
+    values(:) = 0.0d0
+    allocate(indices(4*sz))
+    ! initialise indices to -1, see in 1RDM code why
+    indices(:) = -1
+    ! obtain the rdms from qcmaquis
+    call qcmaquis_interface_get_2rdm_C(indices, values, sz)
+
+    d2(:,:,:,:) = 0.0d0
+    ! copy the values into the matrix
+    do vv=0,sz-1
+      ii = 4*vv
+      ! TODO: make sure we don't get out of bounds here, i.e. add some
+      ! checks for size(d2) eventually
+      ! indices are reversed from i,k,l,j to i,j,k,l
+      i = indices(ii+1)+1
+      k = indices(ii+2)+1
+      l = indices(ii+3)+1
+      j = indices(ii+4)+1
+      if ((i+j+k+l).eq.0) cycle ! skip empty indices
+      d2(i,j,k,l) = values(vv+1)
+      d2(k,l,i,j) = values(vv+1)
+      d2(j,i,l,k) = values(vv+1)
+      d2(l,k,j,i) = values(vv+1)
+    end do
+
     if (allocated(values)) deallocate(values)
     if (allocated(indices)) deallocate(indices)
-    if (allocated(rdm2)) deallocate(rdm2)
   end subroutine qcmaquis_interface_get_2rdm_full
+
+
   ! Get 2-RDM in MOLCAS-compatible format (packed form)
   ! Warning, a lot of copy-paste from the old interface
   subroutine qcmaquis_interface_get_2rdm_compat(d2)
@@ -987,14 +995,14 @@ module qcmaquis_interface
     integer :: ij,kl
     integer :: i,j,k,l,ijkl
     ! temporary rdms
-    real*8, allocatable :: rdm2T(:,:,:,:)
+    real*8, allocatable :: rdm2(:,:,:,:)
 
     nact = qcmaquis_param%L
-    d2 = 0.0d0
 
-    allocate(rdm2T(nact,nact,nact,nact))
-    call qcmaquis_interface_get_2rdm_full(rdm2T)
-    ! copy symmetrised RDM to the output
+    allocate(rdm2(nact,nact,nact,nact))
+    call qcmaquis_interface_get_2rdm_full(rdm2)
+
+    d2(:) = 0.0d0
     ij=0
     ijkl=1
     do i=1,nact
@@ -1005,9 +1013,14 @@ module qcmaquis_interface
           do l=1,k
             kl=kl+1
             if(ij.ge.kl)then
-              d2(ijkl)=rdm2T(i,k,l,j)*0.5d0
               ! We need a factor of 0.5 for 2-RDM here
-              ! as used in the previous interface
+              ! as used in the previous interface and
+              ! symmetrise the 2-RDM on the fly
+              if(k.eq.l)then
+                d2(ijkl) = 0.5d0*rdm2(i,j,k,l)
+              else
+                d2(ijkl) = 0.5d0*(rdm2(i,j,k,l)+rdm2(i,j,l,k))
+              end if
               ijkl=ijkl+1
             end if
           end do
@@ -1015,11 +1028,549 @@ module qcmaquis_interface
       end do
     end do
 
-    if (allocated(rdm2T)) deallocate(rdm2T)
+    if (allocated(rdm2)) deallocate(rdm2)
 
   end subroutine
 
-    ! redirect QCMaquis stdout to file
+
+  ! Get 3-RDM and save it into an 6-dimensional array. (Used by CASPT2)
+  subroutine qcmaquis_interface_get_3rdm_full(d3)
+    real*8, intent(inout) :: d3(:,:,:,:,:,:)
+    integer(c_int) :: sz ! size
+
+    ! indices and values that are obtained from QCMaquis interface
+    integer(c_int), allocatable :: indices(:)
+    real*8, allocatable :: values(:)
+    integer :: nact
+    integer :: vv,ii ! counters for values and indices
+    integer :: i,j,k,l,m,n
+
+    nact = qcmaquis_param%L
+    sz = qcmaquis_interface_get_3rdm_elements(.false.)
+
+    allocate(values(sz))
+    values(:) = 0.0d0
+    allocate(indices(6*sz))
+    ! initialise indices to -1, see in 1RDM code why
+    indices(:) = -1
+    ! obtain the rdms from qcmaquis
+    call qcmaquis_interface_get_3rdm_C(indices, values, sz)
+
+    d3(:,:,:,:,:,:) = 0.0d0
+    ! copy the values into the matrix
+    ! the indices are i,k,m,j,l,n
+    do vv=0,sz-1
+      ii = 6*vv
+
+      i = indices(ii+1)+1
+      j = indices(ii+2)+1
+      k = indices(ii+3)+1
+      l = indices(ii+4)+1
+      m = indices(ii+5)+1
+      n = indices(ii+6)+1
+
+      d3(i,j,k,l,m,n) = -1.0d0*values(vv+1)
+      d3(i,k,j,l,n,m) = -1.0d0*values(vv+1)
+      d3(j,i,k,m,l,n) = -1.0d0*values(vv+1)
+      d3(j,k,i,m,n,l) = -1.0d0*values(vv+1)
+      d3(k,i,j,n,l,m) = -1.0d0*values(vv+1)
+      d3(k,j,i,n,m,l) = -1.0d0*values(vv+1)
+
+      ! conjugate transpose
+      d3(l,m,n,i,j,k) = -1.0d0*values(vv+1)
+      d3(l,n,m,i,k,j) = -1.0d0*values(vv+1)
+      d3(m,l,n,j,i,k) = -1.0d0*values(vv+1)
+      d3(m,n,l,j,k,i) = -1.0d0*values(vv+1)
+      d3(n,l,m,k,i,j) = -1.0d0*values(vv+1)
+      d3(n,m,l,k,j,i) = -1.0d0*values(vv+1)
+
+    end do
+
+    if (allocated(values)) deallocate(values)
+    if (allocated(indices)) deallocate(indices)
+  end subroutine qcmaquis_interface_get_3rdm_full
+
+
+  ! Get 4-RDM and save it into an 5-dimensional array. (Used by CASPT2)
+  subroutine qcmaquis_interface_get_4rdm_full(d4)
+    real*8, intent(inout) :: d4(:,:,:,:,:)
+    integer(c_int) :: sz ! size
+
+    ! indices and values that are obtained from QCMaquis interface
+    integer(c_int), allocatable :: indices(:)
+    real*8, allocatable :: values(:)
+    integer :: nact
+    integer :: vv,ii ! counters for values and indices
+    integer :: i,j,k,l,m,n,o,p
+
+    nact = qcmaquis_param%L
+    sz = qcmaquis_interface_get_4rdm_elements()
+
+    allocate(values(sz))
+    values(:) = 0.0d0
+    allocate(indices(8*sz))
+    ! initialise indices to -1, see in 1RDM code why
+    indices(:) = -1
+    ! obtain the rdm from qcmaquis
+    call qcmaquis_interface_get_4rdm_C(indices, values, sz)
+
+    d4 = 0.0d0
+    ! copy the values into the matrix
+    do vv=0,sz-1
+      ii = 8*vv
+
+      i = indices(ii+1)+1
+      j = indices(ii+2)+1
+      k = indices(ii+3)+1
+      l = indices(ii+4)+1
+      m = indices(ii+5)+1
+      n = indices(ii+6)+1
+      o = indices(ii+7)+1
+      p = indices(ii+8)+1
+
+      call permute(d4, i,j,k,l,m,n,o,p,values(vv+1))
+
+      ! rdm4(i,j,k,l,  m,n,o,p) = values(vv+1)
+      ! rdm4(i,j,l,k,  m,n,p,o) = values(vv+1)
+      ! rdm4(i,k,j,l,  m,o,n,p) = values(vv+1)
+      ! rdm4(i,k,l,j,  m,o,p,n) = values(vv+1)
+      ! rdm4(i,l,j,k,  m,p,n,o) = values(vv+1)
+      ! rdm4(i,l,k,j,  m,p,o,n) = values(vv+1)
+
+      ! rdm4(j,i,k,l,  n,m,o,p) = values(vv+1)
+      ! rdm4(j,i,l,k,  n,m,p,o) = values(vv+1)
+      ! rdm4(j,k,i,l,  n,o,m,p) = values(vv+1)
+      ! rdm4(j,k,l,i,  n,o,p,m) = values(vv+1)
+      ! rdm4(j,l,i,k,  n,p,m,o) = values(vv+1)
+      ! rdm4(j,l,k,i,  n,p,o,m) = values(vv+1)
+
+      ! rdm4(k,i,j,l,  o,m,n,p) = values(vv+1)
+      ! rdm4(k,i,l,j,  o,m,p,n) = values(vv+1)
+      ! rdm4(k,j,i,l,  o,n,m,p) = values(vv+1)
+      ! rdm4(k,j,l,i,  o,n,p,m) = values(vv+1)
+      ! rdm4(k,l,i,j,  o,p,m,n) = values(vv+1)
+      ! rdm4(k,l,j,i,  o,p,n,m) = values(vv+1)
+
+      ! rdm4(l,i,j,k,  p,m,n,o) = values(vv+1)
+      ! rdm4(l,i,k,j,  p,m,o,n) = values(vv+1)
+      ! rdm4(l,j,i,k,  p,n,m,o) = values(vv+1)
+      ! rdm4(l,j,k,i,  p,n,o,m) = values(vv+1)
+      ! rdm4(l,k,i,j,  p,o,m,n) = values(vv+1)
+      ! rdm4(l,k,j,i,  p,o,n,m) = values(vv+1)
+
+      ! ! conjugate transpose
+      ! rdm4(m,n,o,p,  i,j,k,l) = values(vv+1)
+      ! rdm4(m,n,p,o,  i,j,l,k) = values(vv+1)
+      ! rdm4(m,o,n,p,  i,k,j,l) = values(vv+1)
+      ! rdm4(m,o,p,n,  i,k,l,j) = values(vv+1)
+      ! rdm4(m,p,n,o,  i,l,j,k) = values(vv+1)
+      ! rdm4(m,p,o,n,  i,l,k,j) = values(vv+1)
+
+      ! rdm4(n,m,o,p,  j,i,k,l) = values(vv+1)
+      ! rdm4(n,m,p,o,  j,i,l,k) = values(vv+1)
+      ! rdm4(n,o,m,p,  j,k,i,l) = values(vv+1)
+      ! rdm4(n,o,p,m,  j,k,l,i) = values(vv+1)
+      ! rdm4(n,p,m,o,  j,l,i,k) = values(vv+1)
+      ! rdm4(n,p,o,m,  j,l,k,i) = values(vv+1)
+
+      ! rdm4(o,m,n,p,  k,i,j,l) = values(vv+1)
+      ! rdm4(o,m,p,n,  k,i,l,j) = values(vv+1)
+      ! rdm4(o,n,m,p,  k,j,i,l) = values(vv+1)
+      ! rdm4(o,n,p,m,  k,j,l,i) = values(vv+1)
+      ! rdm4(o,p,m,n,  k,l,i,j) = values(vv+1)
+      ! rdm4(o,p,n,m,  k,l,j,i) = values(vv+1)
+
+      ! rdm4(p,m,n,o,  l,i,j,k) = values(vv+1)
+      ! rdm4(p,m,o,n,  l,i,k,j) = values(vv+1)
+      ! rdm4(p,n,m,o,  l,j,i,k) = values(vv+1)
+      ! rdm4(p,n,o,m,  l,j,k,i) = values(vv+1)
+      ! rdm4(p,o,m,n,  l,k,i,j) = values(vv+1)
+      ! rdm4(p,o,n,m,  l,k,j,i) = values(vv+1)
+
+    end do
+
+    if (allocated(values)) deallocate(values)
+    if (allocated(indices)) deallocate(indices)
+  end subroutine qcmaquis_interface_get_4rdm_full
+
+  ! get and element of the 4-RDM
+  ! copy and paste from old dmrg-caspt2 implementation of Stefan
+  real*8 function get_p4_element(d4,w,t,v,y,ww,u,x,z,nasht)
+
+    integer, intent(in) :: w, t, u, v, x, y, z, ww
+    integer, intent(in) :: nasht
+    real*8 , intent(in) :: d4((nasht*(nasht+1)*(nasht+2)*(nasht+3)/24),nasht,nasht,nasht,nasht)
+
+    real*8              :: local_value
+    integer             :: i1,i2,i3,i4,i5,i6,i7,i8
+    integer             :: contracted_index
+
+    local_value = 0.0d0
+
+    i1 = -1; i2 = -1; i3 = -1; i4 = -1; i5 = -1; i6 = -1; i7 = -1; i8 = -1
+    call sort_indices_4rdm(w,t,v,y,ww,u,x,z,i1,i2,i3,i4,i5,i6,i7,i8)
+
+    contracted_index = (i1-1)*i1*(i1+1)*(i1+2)/24 &
+                     + (i2-1)*i2*(i2+1)/6         &
+                     + (i3-1)*i3/2                &
+                     + i4
+
+    local_value      = d4(contracted_index,i5,i6,i7,i8)
+
+    !write(6,*) 'contracted index => ',contracted_index
+
+    !if(abs(local_value) > 1.0d-08)                                 &
+    !write(6,'(a,i2,a,i2,a,i2,a,i2,a,i2,a,i2,a,i2,a,i2,a,ES21.14)') &
+    !'x4(',i1,',',i2,',',i3,',',i4,',',i5,',',i6,',',i7,',',i8,') = ',local_value
+
+    get_p4_element = local_value
+
+  end function get_p4_element
+
+
+  ! helper function to get correct 4rdm elements
+  ! copy and paste from old dmrg-caspt2 implementation of Stefan
+  subroutine sort_indices_4rdm(ia1,ic1,ie1,ig1,ia2,ic2,ie2,ig2,i1,i2,i3,i4,i5,i6,i7,i8)
+
+  ! sort in decreasing order: ia1, ic1, ie1, ig1 in i1 i2 i3 i4
+  ! ... and the same for    : ia2, ic2, ie2, ig2 in i5 i6 i7 i8
+  !------------------------------------------------------------------------------
+    integer, intent(in)     :: ia1,ic1,ie1,ig1,ia2,ic2,ie2,ig2
+    integer, intent(out)    :: i1,i2,i3,i4,i5,i6,i7,i8
+    integer                 :: nv1(4), nv2(4)
+    integer                 :: i, j, imax, jmax, n, normx, normy
+  !------------------------------------------------------------------------------
+
+    normx = norm4(ia1,ic1,ie1,ig1)
+    normy = norm4(ia2,ic2,ie2,ig2)
+
+    if (normx >= normy) then
+      nv1(1)=ia1
+      nv1(2)=ic1
+      nv1(3)=ie1
+      nv1(4)=ig1
+      nv2(1)=ia2
+      nv2(2)=ic2
+      nv2(3)=ie2
+      nv2(4)=ig2
+    else
+      nv1(1)=ia2
+      nv1(2)=ic2
+      nv1(3)=ie2
+      nv1(4)=ig2
+      nv2(1)=ia1
+      nv2(2)=ic1
+      nv2(3)=ie1
+      nv2(4)=ig1
+    endif
+
+    do i = 1,4
+      imax=nv1(i)
+      jmax=i
+      do j = i+1,4
+        if (nv1(j).gt.imax) then
+          imax=nv1(j)
+          jmax=j
+        end if
+      end do
+      if (jmax.ne.i) then
+        n         = nv1(i)
+        nv1(i)    = nv1(jmax)
+        nv1(jmax) = n
+        n         = nv2(i)
+        nv2(i)    = nv2(jmax)
+        nv2(jmax) = n
+      end if
+    end do
+
+    i1 = nv1(1); i2 = nv1(2); i3 = nv1(3); i4 = nv1(4)
+    i5 = nv2(1); i6 = nv2(2); i7 = nv2(3); i8 = nv2(4)
+
+  end subroutine sort_indices_4rdm
+  ! ----------------------------------------------------------------------
+
+
+  ! helper function to get the contracted 4-index
+  ! copy and paste from old dmrg-caspt2 implementation of Stefan
+  integer function norm4(ia,ic,ie,ig)
+
+    integer, intent(in)   :: ia, ic, ie, ig
+
+    integer, dimension(4) :: nv
+    integer               :: i,j,jmax,imax,ndum
+
+    norm4 = 0
+    nv(1) = ia
+    nv(2) = ic
+    nv(3) = ie
+    nv(4) = ig
+
+    do i = 1,4
+      imax = nv(i)
+      jmax = i
+      do j = i+1,4
+        if (nv(j) > imax) then
+          imax = nv(j)
+          jmax = j
+        end if
+      end do
+
+      if (jmax /= i) then
+        ndum     = nv(i)
+        nv(i)    = nv(jmax)
+        nv(jmax) = ndum
+      end if
+    end do
+
+    norm4 = (nv(1)-1)*nv(1)*(nv(1)+1)*(nv(1)+2)/24  &
+          + (nv(2)-1)*nv(2)*(nv(2)+1)/6             &
+          +  nv(3)*(nv(3)-1)/2                      &
+          +  nv(4)
+
+  end function norm4
+  ! ----------------------------------------------------------------------
+
+! macro function to dump 4-RDM elements
+! copy and paste from old dmrg-caspt2 implementation of Stefan
+#define dump_el(M, v, i, j, k, l, m, n, o, p) M(norm4(i,j,k,l),m,n,o,p) = v
+
+
+  ! copy and paste from old dmrg-caspt2 implementation of Stefan
+  subroutine permute(rdm4,i,j,k,l,m,n,o,p,val)
+
+    real*8, dimension(:,:,:,:,:), intent(inout) :: rdm4 ! first index is collapsed with norm(i,j,k,l)
+    integer, intent(in) :: i,j,k,l,m,n,o,p
+    real*8, intent(in) :: val
+    real*8 :: valm05, valm2
+    real*8, parameter :: rdm_thresh = 1.0d-12
+
+    if (abs(val).lt.rdm_thresh) return
+
+    valm05 = val*(-0.5d0)
+    valm2  = val*(-2.0d0)
+
+    if ((i.eq.j).and.(k.eq.l)) then ! case 1: i.eq.j k.eq.l
+      if ((m.eq.n).and.(o.eq.p)) then
+        !default
+        dump_el(rdm4,val,i,j,k,l,m,n,o,o)
+        dump_el(rdm4,val,i,j,k,l,o,o,m,m)
+        dump_el(rdm4,valm05,i,j,k,l,m,o,o,m)
+        dump_el(rdm4,valm05,i,j,k,l,m,o,m,o)
+        dump_el(rdm4,valm05,i,j,k,l,o,m,m,o)
+        dump_el(rdm4,valm05,i,j,k,l,o,m,o,m)
+      else
+        if ((m.eq.n).and.(o.ne.p)) then
+          dump_el(rdm4,val,i,j,k,l,m,n,o,p)
+          ! regular permutations
+          dump_el(rdm4,val,i,j,k,l,m,m,p,o)
+          dump_el(rdm4,val,i,j,k,l,o,p,m,m)
+          dump_el(rdm4,val,i,j,k,l,p,o,m,m)
+          ! remaining permutations
+          dump_el(rdm4,valm05,i,j,k,l,o,m,m,p)
+          dump_el(rdm4,valm05,i,j,k,l,o,m,p,m)
+          dump_el(rdm4,valm05,i,j,k,l,p,m,m,o)
+          dump_el(rdm4,valm05,i,j,k,l,p,m,o,m)
+          dump_el(rdm4,valm05,i,j,k,l,m,o,p,m)
+          dump_el(rdm4,valm05,i,j,k,l,m,p,o,m)
+          dump_el(rdm4,valm05,i,j,k,l,m,p,m,o)
+          dump_el(rdm4,valm05,i,j,k,l,m,o,m,p)
+        else
+          if ((m.ne.n).and.(o.eq.p)) then
+            !default
+            dump_el(rdm4,val,i,j,k,l,m,n,o,p)
+            ! regular permutations
+            dump_el(rdm4,val,i,j,k,l,n,m,o,o)
+            dump_el(rdm4,val,i,j,k,l,o,o,m,n)
+            dump_el(rdm4,val,i,j,k,l,o,o,n,m)
+            ! remaining permutations
+            dump_el(rdm4,valm05,i,j,k,l,m,o,o,n)
+            dump_el(rdm4,valm05,i,j,k,l,n,o,o,m)
+            dump_el(rdm4,valm05,i,j,k,l,o,m,o,n)
+            dump_el(rdm4,valm05,i,j,k,l,o,n,o,m)
+            dump_el(rdm4,valm05,i,j,k,l,o,m,n,o)
+            dump_el(rdm4,valm05,i,j,k,l,o,n,m,o)
+            dump_el(rdm4,valm05,i,j,k,l,m,o,n,o)
+            dump_el(rdm4,valm05,i,j,k,l,n,o,m,o)
+          else
+            if ((m.ne.n).and.(o.ne.p)) then
+              if (n.eq.o) then
+                !default
+                dump_el(rdm4,val,i,j,k,l,m,n,o,p)
+
+                dump_el(rdm4,valm2,i,j,k,l,n,n,m,p)
+                dump_el(rdm4,valm2,i,j,k,l,n,n,p,m)
+                dump_el(rdm4,valm2,i,j,k,l,m,p,n,n)
+                dump_el(rdm4,valm2,i,j,k,l,p,m,n,n)
+
+                dump_el(rdm4,val,i,j,k,l,p,n,n,m)
+                dump_el(rdm4,val,i,j,k,l,p,n,m,n)
+                dump_el(rdm4,val,i,j,k,l,m,n,p,n)
+                dump_el(rdm4,val,i,j,k,l,n,p,m,n)
+                dump_el(rdm4,val,i,j,k,l,n,m,p,n)
+                dump_el(rdm4,val,i,j,k,l,n,m,n,p)
+                dump_el(rdm4,val,i,j,k,l,n,p,n,m)
+              else
+                if ((n.lt.o).and.(p.ne.m)) then
+                !default
+                  dump_el(rdm4,val,i,j,k,l,m,n,o,p)
+
+                  dump_el(rdm4,val,i,j,k,l,m,n,p,o)
+                  dump_el(rdm4,val,i,j,k,l,n,m,p,o)
+                  dump_el(rdm4,val,i,j,k,l,n,m,o,p)
+                  dump_el(rdm4,val,i,j,k,l,o,p,m,n)
+                  dump_el(rdm4,val,i,j,k,l,o,p,n,m)
+                  dump_el(rdm4,val,i,j,k,l,p,o,n,m)
+                  dump_el(rdm4,val,i,j,k,l,p,o,m,n)
+                else
+                  if (o.ne.p) then
+                    dump_el(rdm4,val,i,j,k,l,m,n,o,p)
+                    dump_el(rdm4,val,i,j,k,l,m,n,p,o)
+                    dump_el(rdm4,val,i,j,k,l,n,m,p,o)
+                    dump_el(rdm4,val,i,j,k,l,n,m,o,p)
+                    dump_el(rdm4,val,i,j,k,l,o,p,m,n)
+                    dump_el(rdm4,val,i,j,k,l,o,p,n,m)
+                    dump_el(rdm4,val,i,j,k,l,p,o,n,m)
+                    dump_el(rdm4,val,i,j,k,l,p,o,m,n)
+                  end if
+                end if
+              end if
+            end if
+          end if
+        end if
+      end if
+    else
+      if ((i.eq.j).and.(k.ne.l)) then ! case 2: i.eq.j k.ne.l
+        if ((m.eq.n).and.(o.eq.p)) then ! 2x2 equal
+          !default
+          dump_el(rdm4,val,i,j,k,l,m,n,o,p)
+
+          dump_el(rdm4,val,i,j,k,l,o,o,m,m)
+
+          dump_el(rdm4,valm05,i,j,k,l,m,o,o,m)
+          dump_el(rdm4,valm05,i,j,k,l,o,m,m,o)
+          dump_el(rdm4,valm05,i,j,k,l,o,m,o,m)
+          dump_el(rdm4,valm05,i,j,k,l,m,o,m,o)
+        end if
+        if ((m.eq.n).and.(o.ne.p)) then ! 1 equal (first 2)
+          !default
+          dump_el(rdm4,val,i,j,k,l,m,n,o,p)
+
+          dump_el(rdm4,valm05,i,j,k,l,m,o,m,p)
+          dump_el(rdm4,valm05,i,j,k,l,m,p,o,m)
+          dump_el(rdm4,valm05,i,j,k,l,o,m,m,p)
+          dump_el(rdm4,valm05,i,j,k,l,p,m,o,m)
+        end if
+        if ((m.ne.n).and.(o.eq.p)) then ! 1 equal (latter 2)
+          !default
+          dump_el(rdm4,val,i,j,k,l,m,n,o,p)
+
+          dump_el(rdm4,val,i,j,k,l,n,m,o,o)
+        end if
+        if ((m.ne.n).and.(n.ne.o).and.(o.ne.p).and.(m.ne.p)) then ! all different
+          !default
+          dump_el(rdm4,val,i,j,k,l,m,n,o,p)
+
+          dump_el(rdm4,val,i,j,k,l,n,m,o,p)
+        end if
+      else
+        if ((i.ne.j).and.(j.eq.k).and.(k.ne.l)) then ! case 3: i.ne.j j.eq.k k.ne.l
+          if ((m.eq.n).and.(o.eq.p)) then ! 2x2 equal
+            !default
+            dump_el(rdm4,val,i,j,k,l,m,n,o,p)
+
+            dump_el(rdm4,val,i,j,k,l,o,o,m,m)
+            dump_el(rdm4,val,i,j,k,l,o,m,o,m)
+            dump_el(rdm4,val,i,j,k,l,m,o,m,o)
+
+            dump_el(rdm4,valm2,i,j,k,l,m,o,o,m)
+            dump_el(rdm4,valm2,i,j,k,l,o,m,m,o)
+          end if
+          if ((m.ne.n).and.(o.eq.p)) then ! 1 equal (latter 2)
+            !default
+            dump_el(rdm4,val,i,j,k,l,m,n,o,p)
+
+            dump_el(rdm4,val,i,j,k,l,o,o,m,n)
+            dump_el(rdm4,val,i,j,k,l,o,m,o,n)
+            dump_el(rdm4,val,i,j,k,l,m,o,n,o)
+
+            dump_el(rdm4,valm2,i,j,k,l,m,o,o,n)
+          end if
+          if ((m.ne.n).and.(o.ne.p).and.(m.eq.p)) then ! 1 equal (first.and.last)
+            !default
+            dump_el(rdm4,val,i,j,k,l,m,n,o,p)
+
+            dump_el(rdm4,val,i,j,k,l,m,o,n,m)
+          end if
+          if ((m.ne.n).and.(n.ne.o).and.(o.ne.p).and.(m.ne.p)) then ! all different
+            !default
+            dump_el(rdm4,val,i,j,k,l,m,n,o,p)
+
+            dump_el(rdm4,val,i,j,k,l,m,o,n,p)
+          end if
+        else
+          if ((i.ne.j).and.(k.eq.l)) then ! case 4: i.ne.j k.eq.l
+            if ((m.eq.n).and.(o.eq.p)) then ! 2x2 equal
+              !default
+              dump_el(rdm4,val,i,j,k,l,m,n,o,p)
+
+              dump_el(rdm4,val,i,j,k,l,o,o,m,m)
+
+              dump_el(rdm4,valm05,i,j,k,l,m,o,o,m)
+              dump_el(rdm4,valm05,i,j,k,l,o,m,m,o)
+              dump_el(rdm4,valm05,i,j,k,l,o,m,o,m)
+              dump_el(rdm4,valm05,i,j,k,l,m,o,m,o)
+            end if
+            if ((m.eq.n).and.(o.ne.p)) then ! 1 equal (first 2)
+              !default
+              dump_el(rdm4,val,i,j,k,l,m,n,o,p)
+
+              dump_el(rdm4,val,i,j,k,l,m,m,p,o)
+            end if
+            if ((m.ne.n).and.(o.eq.p)) then ! 1 equal (latter 2)
+              !default
+              dump_el(rdm4,val,i,j,k,l,m,n,o,p)
+
+              dump_el(rdm4,valm05,i,j,k,l,m,o,n,o)
+              dump_el(rdm4,valm05,i,j,k,l,m,o,o,n)
+              dump_el(rdm4,valm05,i,j,k,l,o,n,o,m)
+              dump_el(rdm4,valm05,i,j,k,l,o,n,m,o)
+            endif
+            if ((m.ne.n).and.(n.ne.o).and.(o.ne.p).and.(m.ne.p)) then ! all different
+              !default
+              dump_el(rdm4,val,i,j,k,l,m,n,o,p)
+
+              dump_el(rdm4,val,i,j,k,l,m,n,p,o)
+            end if
+          else
+            if ((i.ne.j).and.(k.ne.l).and.(j.ne.k)) then ! case 5: i.ne.j j.ne.k k.ne.l
+              if (((m.eq.o).and.(n.eq.p)).or.((m.eq.p.and.n.eq.o))) then
+                !default
+                dump_el(rdm4,val,i,j,k,l,m,n,o,p)
+
+                dump_el(rdm4,val,i,j,k,l,n,m,p,o)
+              else
+                if ((m.eq.n).and.(o.eq.p)) then
+                  !default
+                  dump_el(rdm4,val,i,j,k,l,m,n,o,p)
+
+                  dump_el(rdm4,val,i,j,k,l,o,o,m,m)
+                else
+                  !default
+                  dump_el(rdm4,val,i,j,k,l,m,n,o,p)
+                end if
+              end if
+            end if
+          end if
+        end if
+      end if
+    end if
+
+  end subroutine permute
+
+
+#undef dump_el
+
+  ! redirect QCMaquis stdout to file
   subroutine qcmaquis_interface_stdout(filename)
     interface
       subroutine qcmaquis_interface_stdout_C(filename) bind(C, name='qcmaquis_interface_stdout')
@@ -1103,7 +1654,7 @@ module qcmaquis_interface
       state_real = state - 1
       call file_name_generator(state_real,"checkpoint_state.",".h5",filename)
 
-      call execute_command_line("rm -rf "//trim(filename))
+      call system("rm -rf "//trim(filename))
 #ifdef _MOLCAS_MPP_
     endif
 #endif
@@ -1287,4 +1838,3 @@ module qcmaquis_interface
 
 
 end module qcmaquis_interface
-
