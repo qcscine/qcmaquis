@@ -25,8 +25,9 @@ module qcmaquis_interface_cfg
 
   type dmrg_par
        !! QCMaquis-specific settings
-       integer*8 :: M = 0       ! number of renormalized states
-       integer*8 :: num_sweeps = 0       ! number of sweeps from the configuration file
+       integer*8 :: M = 2000       ! number of renormalized states, default provided but should be modified by user
+       ! number of sweeps from the configuration file, set to a large number such that it is not used as a convergence criteria
+       integer*8 :: num_sweeps = 999999
        real*8 :: conv_thresh = 1.0d-9  ! convergence threshold from the configuration file, reasonable default
        integer*8 :: L = 0       ! number of orbitals
        ! TODO: consider also sweep_bond_dimensions
