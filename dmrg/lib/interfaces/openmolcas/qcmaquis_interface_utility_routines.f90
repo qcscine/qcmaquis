@@ -587,11 +587,16 @@ contains
           if(trim(mstates) == '0') mstates = 'dynamically changing (according to sweep_bond_dimensions)'
 
           write(lupri,fmt2//'a,t45,5x,a)') 'Number of renormalized states           ', trim(mstates)
-    !       if(dmrg_warmup%doCIDEAS)then
-    !         write(lupri,fmt2//'a,t45,5x,a)') 'Start guess in warm-up sweep            ','CI-DEAS'
-    !       else
-    !         write(lupri,fmt2//'a,t45,5x,a)') 'Start guess in warm-up sweep            ', trim(start_guess)
-    !       end if
+          if(dmrg_warmup%doCIDEAS)then
+            write(lupri,fmt2//'a,t45,5x,a)') 'Start guess in warm-up sweep            ','CI-DEAS'
+          else
+            write(lupri,fmt2//'a,t45,5x,a)') 'Start guess in warm-up sweep            ', trim(start_guess)
+          end if
+          if(dmrg_warmup%doFiedler)then
+            write(lupri,fmt2//'a,t45,5x,a)') 'Fiedler ordering                        ','ON'
+          else
+            write(lupri,fmt2//'a,t45,5x,a)') 'Fiedler ordering                        ','OFF'
+          end if
           write(lupri,fmt2//'a,t45,5x,a)') '(Max) number of sweeps                  ', trim(sweeps)
           write(lupri,fmt2//'a,t45,5x,a)') 'Convergence threshold (sweep tolerance) ', trim(sweeps_tolerance)
           write(lupri,fmt2//'a,t45,5x,a)') 'Jacobi-Davidson threshold               ', trim(jcd_tolerance)
