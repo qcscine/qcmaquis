@@ -237,6 +237,7 @@ qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::qc_model(
       tag_handler->hermitian_pair(cdnutf.first[opType], ftddnu.first[opType]);
       tag_handler->hermitian_pair(ddcu.first[opType], ducd.first[opType]);
     }
+    }
 
     // TODO: fix this TMP Solution??
     if(parms_.defined("srcas_numSamples")) {
@@ -728,7 +729,6 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::addTerm(MapO
         else {
             mapOfOperators[term.getBase()] += term.coeff;
         }
-    }
   }
 }
 

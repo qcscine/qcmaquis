@@ -24,7 +24,6 @@
  *
  *****************************************************************************/
 
-
 #define BOOST_TEST_MODULE TranscorrelatedNO
 
 #include <alps/numeric/matrix.hpp>
@@ -37,60 +36,68 @@
 #include "dmrg/models/generate_mpo.hpp"
 #include "Fixtures/TranscorrelatedFixture.h"
 
-
 /**
- * @brief Checks consistency between transcorrelated with three body and normal-ordered transcorrelated
- *         implementations.
+ * @brief Checks consistency between transcorrelated with three body and
+ * normal-ordered transcorrelated implementations.
  *
- * Energies are calculated for both the transcorrelated Hamiltonian with full three body interactions and the
- * normal-ordered Hamiltonian. These should give equal results.
+ * Energies are calculated for both the transcorrelated Hamiltonian with full
+ * three body interactions and the normal-ordered Hamiltonian. These should give
+ * equal results.
  */
-BOOST_FIXTURE_TEST_CASE(TestTCMolecular_HE_NormalOrdered, TranscorrelatedFixture)
-{
-    parametersHeTranscorrelated.set("L", 5);
-    parametersHeTranscorrelated.set("nelec", 2);
-    parametersH2Transcorrelated.set("symmetry", "2u1");
-    parametersHeTranscorrelated.set("irrep", 0);
-    parametersHeTranscorrelated.set("u1_total_charge1", 1);
-    parametersHeTranscorrelated.set("u1_total_charge2", 1);
-    parametersHeTranscorrelated.set("MODEL", "quantum_chemistry");
-    parametersHeTranscorrelated.set("truncation_initial", 1e-50);
-    parametersHeTranscorrelated.set("truncation_final", 1e-50);
-    parametersHeTranscorrelated.set("init_state", "default");
-    parametersHeTranscorrelated.set("site_types", "0,0,0,0,0");
-    parametersHeTranscorrelated.set("max_bond_dimension", 100);
-    parametersHeTranscorrelated.set("propagator_accuracy", 1.0E-10);
-    parametersHeTranscorrelated.set("propagator_maxiter", 10);
-    parametersHeTranscorrelated.set("nsweeps", 0);
-    parametersHeTranscorrelated.set("hamiltonian_units", "Hartree");
-    parametersHeTranscorrelated.set("time_units", "fs");
-    parametersHeTranscorrelated.set("TD_backpropagation", "no");
-    parametersHeTranscorrelated.set("symmetry", "2u1");
-    parametersHeTranscorrelated.set("time_step", 0.1);
-    parametersHeTranscorrelated.set("optimization", "singlesite");
-    parametersHeTranscorrelated.set("transcorrelated_nsweeps_TI", 0);
-    parametersHeTranscorrelated.set("transcorrelated_nsweeps_TC", 20);
-    parametersHeTranscorrelated.set("integral_file", CONVENTIONAL_HE_FCIDUMP_PATH);
-    parametersHeTranscorrelated.set("transcorrelated_integral_file", TRANSCORRELATED_HE_FCIDUMP_PATH);
-    parametersBeTranscorrelatedTwoBody.set("transcorrelated_3body", "yes");
+BOOST_FIXTURE_TEST_CASE(
+    TestTCMolecular_HE_NormalOrdered, TranscorrelatedFixture
+) {
+  parametersH2Transcorrelated.set("L", 5);
+  parametersH2Transcorrelated.set("nelec", 2);
+  parametersH2Transcorrelated.set("symmetry", "2u1");
+  parametersH2Transcorrelated.set("irrep", 0);
+  parametersH2Transcorrelated.set("u1_total_charge1", 1);
+  parametersH2Transcorrelated.set("u1_total_charge2", 1);
+  parametersH2Transcorrelated.set("MODEL", "quantum_chemistry");
+  parametersH2Transcorrelated.set("truncation_initial", 1e-50);
+  parametersH2Transcorrelated.set("truncation_final", 1e-50);
+  parametersH2Transcorrelated.set("init_state", "default");
+  parametersH2Transcorrelated.set("site_types", "0,0,0,0,0");
+  parametersH2Transcorrelated.set("max_bond_dimension", 100);
+  parametersH2Transcorrelated.set("propagator_accuracy", 1.0E-10);
+  parametersH2Transcorrelated.set("propagator_maxiter", 10);
+  parametersH2Transcorrelated.set("nsweeps", 0);
+  parametersH2Transcorrelated.set("hamiltonian_units", "Hartree");
+  parametersH2Transcorrelated.set("time_units", "fs");
+  parametersH2Transcorrelated.set("TD_backpropagation", "no");
+  parametersH2Transcorrelated.set("symmetry", "2u1");
+  parametersH2Transcorrelated.set("time_step", 0.1);
+  parametersH2Transcorrelated.set("optimization", "singlesite");
+  parametersH2Transcorrelated.set("transcorrelated_nsweeps_TI", 0);
+  parametersH2Transcorrelated.set("transcorrelated_nsweeps_TC", 20);
+  parametersH2Transcorrelated.set(
+      "integral_file", CONVENTIONAL_HE_FCIDUMP_PATH
+  );
+  parametersH2Transcorrelated.set(
+      "transcorrelated_integral_file", TRANSCORRELATED_HE_FCIDUMP_PATH
+  );
+  parametersBeTranscorrelatedTwoBody.set("transcorrelated_3body", "yes");
 
-    //auto energyDMRG = maquis::real(interface.energy());
+  // auto energyDMRG = maquis::real(interface.energy());
 
-    parametersHeTranscorrelated.set("transcorrelated_3body_normal_ordered", "yes");
-    maquis::DMRGInterface<double> NO_interface(parametersHeTranscorrelated);
-    NO_interface.runTranscorrelated();
+  parametersH2Transcorrelated.set(
+      "transcorrelated_3body_normal_ordered", "yes"
+  );
+  maquis::DMRGInterface<double> NO_interface(parametersH2Transcorrelated);
+  NO_interface.runTranscorrelated();
 
-    auto energyDMRGNO = maquis::real(NO_interface.energy());
+  auto energyDMRGNO = maquis::real(NO_interface.energy());
 
-    parametersHeTranscorrelated.set("transcorrelated_3body_normal_ordered", "no");
-    maquis::DMRGInterface<double> interface(parametersHeTranscorrelated);
-    interface.runTranscorrelated();
+  parametersH2Transcorrelated.set("transcorrelated_3body_normal_ordered", "no");
+  maquis::DMRGInterface<double> interface(parametersH2Transcorrelated);
+  interface.runTranscorrelated();
 
-    auto energyDMRG = maquis::real(interface.energy());
+  auto energyDMRG = maquis::real(interface.energy());
 
-    BOOST_CHECK_SMALL(std::abs(energyDMRG-energyDMRGNO), 1.0E-10);
+  BOOST_CHECK_SMALL(std::abs(energyDMRG - energyDMRGNO), 1.0E-10);
 
-    maquis::cout << "Energies: " << energyDMRG << " " << energyDMRGNO  << std::endl;
+  maquis::cout << "Energies: " << energyDMRG << " " << energyDMRGNO
+               << std::endl;
 }
 //
 ///**
@@ -98,40 +105,52 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_HE_NormalOrdered, TranscorrelatedFixture
 // * The reference energy has been generated in this case with the Owl CC
 // * code by Max Moerchen.
 // */
-BOOST_FIXTURE_TEST_CASE(TestTCMolecular_Be_VersusCCNO, TranscorrelatedFixture)
-{
-    parametersBeTranscorrelatedTwoBody.set("propagator_accuracy", 1.0E-10);
-    parametersBeTranscorrelatedTwoBody.set("max_bond_dimension", 150);
-    parametersBeTranscorrelatedTwoBody.set("init_state", "hf");
-    parametersBeTranscorrelatedTwoBody.set("propagator_maxiter", 10);
-    parametersBeTranscorrelatedTwoBody.set("hamiltonian_units", "Hartree");
-    parametersBeTranscorrelatedTwoBody.set("time_units", "fs");
-    parametersBeTranscorrelatedTwoBody.set("TD_backpropagation", "no");
-    parametersBeTranscorrelatedTwoBody.set("symmetry", "2u1");
-    parametersBeTranscorrelatedTwoBody.set("time_step", 0.1);
-    parametersBeTranscorrelatedTwoBody.set("chkpfile", "Be.tcDMRGNO.checkpoint.h5");
-    parametersBeTranscorrelatedTwoBody.set("transcorrelated_nsweeps_TI", 0);
-    parametersBeTranscorrelatedTwoBody.set("transcorrelated_nsweeps_TC", 10);
-    parametersBeTranscorrelatedTwoBody.set("integral_file", "IntegralFile_Be_Conventional");
-    parametersBeTranscorrelatedTwoBody.set("transcorrelated_integral_file", TRANSCORRELATED_BE_FCIDUMP_PATH);
-    parametersBeTranscorrelatedTwoBody.set("transcorrelated_3body_normal_ordered", "yes");
-    parametersBeTranscorrelatedTwoBody.set("transcorrelated_3body", "yes");
-    maquis::DMRGInterface<double> interface(parametersBeTranscorrelatedTwoBody);
-    interface.runTranscorrelated();
-    auto energyDMRG = maquis::real(interface.energy());
+BOOST_FIXTURE_TEST_CASE(TestTCMolecular_Be_VersusCCNO, TranscorrelatedFixture) {
+  parametersBeTranscorrelatedTwoBody.set("propagator_accuracy", 1.0E-10);
+  parametersBeTranscorrelatedTwoBody.set("max_bond_dimension", 150);
+  parametersBeTranscorrelatedTwoBody.set("init_state", "hf");
+  parametersBeTranscorrelatedTwoBody.set("propagator_maxiter", 10);
+  parametersBeTranscorrelatedTwoBody.set("hamiltonian_units", "Hartree");
+  parametersBeTranscorrelatedTwoBody.set("time_units", "fs");
+  parametersBeTranscorrelatedTwoBody.set("TD_backpropagation", "no");
+  parametersBeTranscorrelatedTwoBody.set("symmetry", "2u1");
+  parametersBeTranscorrelatedTwoBody.set("time_step", 0.1);
+  parametersBeTranscorrelatedTwoBody.set(
+      "chkpfile", "Be.tcDMRGNO.checkpoint.h5"
+  );
+  parametersBeTranscorrelatedTwoBody.set("transcorrelated_nsweeps_TI", 0);
+  parametersBeTranscorrelatedTwoBody.set("transcorrelated_nsweeps_TC", 10);
+  parametersBeTranscorrelatedTwoBody.set(
+      "integral_file", "IntegralFile_Be_Conventional"
+  );
+  parametersBeTranscorrelatedTwoBody.set(
+      "transcorrelated_integral_file", TRANSCORRELATED_BE_FCIDUMP_PATH
+  );
+  parametersBeTranscorrelatedTwoBody.set(
+      "transcorrelated_3body_normal_ordered", "yes"
+  );
+  parametersBeTranscorrelatedTwoBody.set("transcorrelated_3body", "yes");
+  maquis::DMRGInterface<double> interface(parametersBeTranscorrelatedTwoBody);
+  interface.runTranscorrelated();
+  auto energyDMRG = maquis::real(interface.energy());
 
-    parametersBeTranscorrelatedTwoBody.set("transcorrelated_3body", "no");
-    maquis::DMRGInterface<double> approxInterface(parametersBeTranscorrelatedTwoBody);
-    approxInterface.runTranscorrelated();
-    auto energyDRMGno3b = maquis::real(approxInterface.energy());
+  parametersBeTranscorrelatedTwoBody.set("transcorrelated_3body", "no");
+  maquis::DMRGInterface<double> approxInterface(
+      parametersBeTranscorrelatedTwoBody
+  );
+  approxInterface.runTranscorrelated();
+  auto energyDRMGno3b = maquis::real(approxInterface.energy());
 
-    parametersBeTranscorrelatedTwoBody.set("transcorrelated_3body_normal_ordered", "no");
-    parametersBeTranscorrelatedTwoBody.set("transcorrelated_3body", "yes");
-    maquis::DMRGInterface<double> tcInterface(parametersBeTranscorrelatedTwoBody);
-    tcInterface.runTranscorrelated();
-    auto energytcDMRG = maquis::real(tcInterface.energy());
+  parametersBeTranscorrelatedTwoBody.set(
+      "transcorrelated_3body_normal_ordered", "no"
+  );
+  parametersBeTranscorrelatedTwoBody.set("transcorrelated_3body", "yes");
+  maquis::DMRGInterface<double> tcInterface(parametersBeTranscorrelatedTwoBody);
+  tcInterface.runTranscorrelated();
+  auto energytcDMRG = maquis::real(tcInterface.energy());
 
-    BOOST_CHECK_SMALL(std::abs(energyDMRG-energytcDMRG), 1.0E-9);
+  BOOST_CHECK_SMALL(std::abs(energyDMRG - energytcDMRG), 1.0E-9);
 
-    std::cout << "Difference with and withour 3B: " << std::abs(energyDMRG - energyDRMGno3b) << std::endl;
+  std::cout << "Difference with and withour 3B: "
+            << std::abs(energyDMRG - energyDRMGno3b) << std::endl;
 }
