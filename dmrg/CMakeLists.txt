@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.16.3)
 
 ######################################################################
 # Machine Config
@@ -21,10 +21,10 @@ endif(NOT DEFAULT_BLAS_LAPACK)
 ######################################################################
 project (MAQUIS_DMRG)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/config)
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 # set proper rpath for installed binaries
 # @stknecht: make sure this works also for OS X with MACOS_RPATH
@@ -33,23 +33,41 @@ set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
+# @kszenes use cache and mold linker (if available) for faster compilation
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+  message(STATUS "Found ccache in ${CCACHE_PROGRAM}")
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
+endif()
+
+find_program(MOLD_PROGRAM mold)
+if(MOLD_PROGRAM)
+  if ((CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+       OR (CMAKE_CXX_COMPILER_ID MATCHES "GNU"
+           AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 12))
+  message(STATUS "Found mold linker in ${MOLD_PROGRAM}")
+  add_link_options(-fuse-ld=mold)
+  endif()
+endif()
+
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(CMAKE_INSTALL_PREFIX "/opt/maquis" CACHE PATH "MAQUIS install prefix" FORCE)
 endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 set (ALPS_SOURCE_DIR "alps")
 
-set(BUILD_SYMMETRIES "TwoU1PG;SU2U1PG" CACHE STRING "List of symmetry to include in the build objects. \
+set(BUILD_SYMMETRIES "TwoU1PG;SU2U1PG" CACHE STRING "List of symmetries to include in the build objects. \
 U1, TwoU1, TwoU1PG, NU1, Z2, SU2U1, SU2U1PG, U1DG and NONE are currently available. \
 TwoU1PG and SU2U1PG are built in any case.")
-set(DMRG_NUMSYMM 6 CACHE STRING "Number of U1 symmetries for NU1 calculations.")
-set(DMRG_ORDERNONE 6 CACHE STRING "Maximum order of integral terms for NONE symmetry.")
-add_definitions(-DORDER_NONE=${DMRG_ORDERNONE})
-add_definitions(-DDMRG_NUMSYMM=${DMRG_NUMSYMM})
 option(ENABLE_OMP "Enable OpenMP" ON)
 # option(ENABLE_ALPS_MODELS "Enable binding with ALPS lattices and models" OFF)
 option(LAPACK_64_BIT "Build for 64-bit LAPACK library" ON)
 
+# Flags for vibrational calculations
+set(DMRG_NUMSYMM 6 CACHE STRING "Number of U1 symmetries for NU1 calculations.")
+set(DMRG_ORDERNONE 6 CACHE STRING "Maximum order of integral terms for NONE symmetry.")
+add_definitions(-DORDER_NONE=${DMRG_ORDERNONE})
+add_definitions(-DDMRG_NUMSYMM=${DMRG_NUMSYMM})
 # The upper bound for NU1 symmetry is DMRG_NUMSYMM+1 (BOOST does not include in the macro the upper bound)
 math(EXPR DMRG_UPPER_BOUND "${DMRG_NUMSYMM}+1")
 
@@ -89,8 +107,8 @@ if(BUILD_TRANSCORRELATED_DMRG)
   if (NOT BUILD_DMRG_EVOLVE)
     message(FATAL_ERROR "The [BUILD_DMRG_EVOLVE] flag should be set to ON in order to compile the tcDMRG code")
   endif()
-  list(APPEND DMRG_DEFINITIONS -DDMRG_TC)
-  set(DMRG_TC TRUE)
+  list(APPEND DMRG_DEFINITIONS -DDMRG_TRANSCORRELATED)
+  set(DMRG_TRANSCORRELATED TRUE)
 endif(BUILD_TRANSCORRELATED_DMRG)
 
 option (ENABLE_COLLECTOR "Enable profiling through DataCollector object" OFF)
@@ -121,7 +139,6 @@ endif()
 
 set(BLAS_LAPACK_SELECTOR "auto" CACHE STRING "Linear algebra library selector")
 set_property(CACHE BLAS_LAPACK_SELECTOR PROPERTY STRINGS auto manual mkl_sequential mkl_parallel veclib openblas)
-
 include(BlasLapack)
 
 # QCMaquis manual
@@ -136,17 +153,16 @@ endif()
 ######################################################################
 
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-    include("config/clang_fixes.cmake")
+    include("cmake/clang_fixes.cmake")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 endif(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+
 # Set a default build type if none was specified
 set(default_build_type "Release")
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
     set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
             STRING "Choose the type of build." FORCE)
-    # Set the possible values of build type for cmake-gui
-    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
-            "Debug" "Release" "RelWithDebugInfo")
 endif()
 
 if(NOT ${CMAKE_CXX_FLAGS_RELEASE} MATCHES "-Wno-unknown-pragmas")
@@ -158,6 +174,12 @@ endif()
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}" CACHE STRING "CMAKE_C_FLAGS_RELEASE: Flags used by the compiler during release builds" FORCE)
 
 
+if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
+  # message(STATUS "Debug build: Adding Address Sanitizer")
+  # message(STATUS "Debug warnings = ${COMPILER_WARNING_FLAGS}")
+  # add_compile_options(-g3 -fsanitize=address,leak,undefined)
+  # add_link_options(-g3 -fsanitize=address,leak,undefined)
+endif()
 ######################################################################
 # Symmetries management
 ######################################################################
@@ -217,13 +239,13 @@ endmacro(configure_symm_file)
 
 # Adding symmetries definitions, TwoU1PG and SU2U1PG are needed in any case for smooth compilation/testing
 list(APPEND BUILD_SYMMETRIES "TwoU1PG" "SU2U1PG")
-list(REMOVE_DUPLICATES BUILD_SYMMETRIES)
-message(STATUS "Enabled symmetries: ${BUILD_SYMMETRIES}")
 foreach(SYMM ${BUILD_SYMMETRIES})
   get_symm_group_name(SYMM_NAME ${SYMM})
   list(APPEND DMRG_DEFINITIONS -DHAVE_${SYMM_NAME})
   set(DMRG_HAS_${SYMM_NAME} TRUE)
 endforeach(SYMM)
+list(REMOVE_DUPLICATES BUILD_SYMMETRIES)
+message(STATUS "Enabled symmetries: ${BUILD_SYMMETRIES}")
 
 # PreBO-specific flags
 if((BUILD_PREBO))
@@ -291,11 +313,15 @@ find_package(HDF5 REQUIRED)
 list(APPEND DMRG_LIBRARIES ${HDF5_LIBRARIES})
 
 # Boost
+
+# Remove annoying cmake configure boost warning
+set(Boost_NO_WARN_NEW_VERSIONS 1)
 set(Boost_requirements program_options filesystem system serialization thread)
-set (Boost_NO_BOOST_CMAKE ON)
+set(Boost_NO_BOOST_CMAKE ON)
 
 find_package(Boost 1.56 COMPONENTS ${Boost_requirements})
 if(Boost_FOUND)
+    include_directories(SYSTEM ${Boost_INCLUDE_DIRS}) # Silence warning coming from boost headers
     list(APPEND DMRG_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
     list(APPEND DMRG_LIBRARY_DIRS ${Boost_LIBRARY_DIRS})
     list(APPEND DMRG_LIBRARIES ${Boost_LIBRARIES})
@@ -313,10 +339,49 @@ endif(Boost_FOUND)
 add_subdirectory(${ALPS_SOURCE_DIR})
 list(APPEND DMRG_LIBRARIES alps)
 
+# Add warning flags
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+  message(STATUS "Adding CLANG warning flags")
+  set(COMPILER_WARNING_FLAGS
+    -Wall -Wextra
+    -Wno-unused-variable
+    -Wno-unused-parameter
+    -Wno-unused-local-typedef
+    -Wno-return-type-c-linkage      # boost ublas bug
+    -Wno-sign-compare               # TODO: These should be fixed
+    -Wno-reorder-ctor               # TODO: This as well
+    )
+elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+  message(STATUS "Adding GNU warning flags")
+  set(COMPILER_WARNING_FLAGS
+    -Wall -Wextra
+    -Wno-int-in-bool-context        # TODO: This should also be fixed
+    -Wno-unused-variable
+    -Wno-unused-but-set-variable
+    -Wno-unused-parameter
+    -Wno-unused-local-typedefs
+    -Wno-sign-compare               # TODO: These should be fixed
+    -Wno-deprecated-copy            # TODO: Fix this as well
+    -Wno-reorder                    # TODO: This as well
+    -Wno-maybe-uninitialized        # TODO: This as well
+    -Wno-switch                     # TODO: This as well
+    )
+endif()
+add_compile_options(${COMPILER_WARNING_FLAGS})
+add_link_options(${COMPILER_WARNING_FLAGS})
+
+
 # Eigen
-# find_package(Eigen3 3.3 REQUIRED NO_MODULE)
-# message("Eigen directory " ${EIGEN3_INCLUDE_DIR})
-# list(APPEND DMRG_LIBRARIES Eigen3::Eigen)
+find_package(Eigen3 3.2 NO_MODULE)
+if (NOT TARGET Eigen3::Eigen)
+    find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+endif(NOT TARGET Eigen3::Eigen)
+if (TARGET Eigen3::Eigen)
+    include_directories(${EIGEN3_INCLUDE_DIR})
+    MESSAGE(STATUS "EIGEN include path: " ${EIGEN3_INCLUDE_DIR})
+else(TARGET Eigen3::Eigen)
+    message(FATAL_ERROR "Eigen3 not found! Required for compilation of QCMaquis.")
+endif (TARGET Eigen3::Eigen)
 
 # OpenMolcas interface
 if (BUILD_OPENMOLCAS_INTERFACE)
@@ -328,9 +393,9 @@ endif()
 # Version information
 ######################################################################
 set(DMRG_YEAR 2023)
-set(DMRG_VERSION_MAJOR 2)
-set(DMRG_VERSION_MINOR 2)
-set(DMRG_VERSION_PATCH 0)
+set(DMRG_VERSION_MAJOR 3)
+set(DMRG_VERSION_MINOR 1)
+set(DMRG_VERSION_PATCH 3)
 set(DMRG_VERSION_BUILD "")
 
 if(NOT DMRG_VERSION_BUILD AND EXISTS ${PROJECT_SOURCE_DIR}/.svn)
@@ -389,13 +454,25 @@ set(DMRG_VERSION_STRING "DMRG version ${DMRG_VERSION}")
 MESSAGE(STATUS "DMRG version: ${DMRG_VERSION}")
 
 # OpenMP
+
+if(APPLE)
+    if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
+        set(OpenMP_C_FLAG "-fopenmp=libomp -Wno-unused-command-line-argument")
+    endif()
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        set(OpenMP_CXX_FLAG "-fopenmp=libomp -Wno-unused-command-line-argument")
+    endif()
+endif()
+
 if(ENABLE_OMP)
-  find_package(OpenMP)
+  find_package(OpenMP REQUIRED)
   if(OPENMP_FOUND)
     add_definitions(-DMAQUIS_OPENMP)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+    list(APPEND DMRG_INCLUDE_DIRS ${OpenMP_CXX_INCLUDE_DIRS})
+    list(APPEND DMRG_LIBRARIES OpenMP::OpenMP_CXX)
   else(OPENMP_FOUND)
     message("OpenMP not found")
   endif(OPENMP_FOUND)
@@ -426,7 +503,6 @@ endif(CMAKE_EXE_LINKER_FLAGS MATCHES "^ $")
 ######################################################################
 
 configure_file(framework/dmrg/version.h.in ${PROJECT_BINARY_DIR}/framework/dmrg/version.h)
-
 
 ######################################################################
 # Targets
@@ -494,64 +570,66 @@ if(QCMAQUIS_TESTS)
   enable_testing()
 
   # Generate the files required by the tests
-  configure_file(data/IntegralFile_H2_Transcorrelated IntegralFile_H2_Transcorrelated COPYONLY)
-  configure_file(data/IntegralFile_H2_Transcorrelated_QuantumFormat IntegralFile_H2_Transcorrelated_QuantumFormat COPYONLY)
-  configure_file(data/IntegralFile_Be_Conventional IntegralFile_Be_Conventional COPYONLY)
-  configure_file(data/IntegralFile_Be_Transcorrelated_TwoBody IntegralFile_Be_Transcorrelated_TwoBody COPYONLY)
+  configure_file(tests/Transcorrelated/data/IntegralFile_H2_Transcorrelated IntegralFile_H2_Transcorrelated COPYONLY)
+  configure_file(tests/Transcorrelated/data/IntegralFile_H2_Transcorrelated_QuantumFormat IntegralFile_H2_Transcorrelated_QuantumFormat COPYONLY)
+  configure_file(tests/Transcorrelated/data/IntegralFile_Be_Conventional IntegralFile_Be_Conventional COPYONLY)
+  configure_file(tests/Transcorrelated/data/IntegralFile_Be_Transcorrelated_TwoBody IntegralFile_Be_Transcorrelated_TwoBody COPYONLY)
 
   # Adds the tests
   add_subdirectory(tests)
-  add_test(NAME Test1 COMMAND test1)
-  add_test(NAME Test2 COMMAND test2)
-  add_test(NAME TestFHRealSpace COMMAND test_FH_RealSpace)
-  add_test(NAME TestFHMomentumSpace COMMAND test_FH_MomentumSpace)
+  add_test(NAME H2GroundState COMMAND testH2GroundState)
+  add_test(NAME LihGroundAndExcited COMMAND testLiHGroundAndExcited)
+  add_test(NAME FermiHubbard_RealSpace COMMAND test_FH_RealSpace)
+  add_test(NAME FermiHubbard_MomentumSpace COMMAND test_FH_MomentumSpace)
   if(BUILD_TRANSCORRELATED_DMRG)
-    add_test(NAME TestTranscorrelatedMolecular COMMAND test_transcorrelated_molecular)
+    add_test(NAME TranscorrelatedMolecular COMMAND test_transcorrelated_molecular)
   endif(BUILD_TRANSCORRELATED_DMRG)
-  add_test(NAME Test_Relativistic COMMAND test_rel)
-  if(BUILD_DMRG_FEAST)
-    add_test(NAME Test_FEAST_Electronic COMMAND test_FEAST_electronic)
-  endif(BUILD_DMRG_FEAST)
-  add_test(NAME Test_DMRG_LiH COMMAND testLiH)
-  add_test(NAME Test_Integral_Map COMMAND test_integral_map)
-  add_test(NAME Test_IndexTuple COMMAND test_IndexTuple)
-  add_test(NAME Test_HiRDM COMMAND test_hirdm)
-  add_test(NAME Test_MPO_times_MPS_TwoU1 COMMAND test_mpo_times_mps_TwoU1)
-  add_test(NAME Test_MPS_MPO_Ops_TwoU1 COMMAND test_mps_mpo_ops_TwoU1)
-  add_test(NAME Test_MPS_MPO_Ops_Electronic COMMAND test_mps_mpo_ops_electronic)
-  add_test(NAME Test_MPS_Overlap_Electronic COMMAND test_mps_overlap_electronic)
-  add_test(NAME Test_SiteProblem COMMAND test_siteproblem)
-  add_test(NAME Test_SweepBasedLinearSystem_Electronic COMMAND test_sweep_based_linear_system_electronic)
-  add_test(NAME Test_OverlapPropagator_Electronic COMMAND test_overlap_propagator_electronic)
-  add_test(NAME Test_BoundaryPropagator_Electronic COMMAND test_boundary_propagator_electronic)
-  add_test(NAME Test_MPS_Join COMMAND test_mpsjoin)
-  add_test(NAME Test_Wigner COMMAND test_wigner)
-  add_test(NAME Test_Block_Matrix COMMAND test_block_matrix)
-  add_test(NAME Test_1DMPO_Electronic COMMAND test_1D_mpo_electronic)
+  add_test(NAME Relativistic COMMAND test_Relativistic)
+  add_test(NAME Integral_Map COMMAND test_integral_map)
+  add_test(NAME IndexTuple COMMAND test_IndexTuple)
+  add_test(NAME HiRDM COMMAND test_hirdm)
+  add_test(NAME MPS_MPO_Ops_TwoU1 COMMAND test_mps_mpo_ops_TwoU1)
+  add_test(NAME Electronic_MPS_MPO_Ops COMMAND test_mps_mpo_ops_electronic)
+  add_test(NAME Electronic_MPS_Overlap COMMAND test_mps_overlap_electronic)
+  add_test(NAME SiteProblem COMMAND test_siteproblem)
+  add_test(NAME Electronic_OverlapPropagator COMMAND test_overlap_propagator_electronic)
+  add_test(NAME Electronic_BoundaryPropagator COMMAND test_boundary_propagator_electronic)
+  add_test(NAME MPS_Join COMMAND test_mpsjoin)
+  add_test(NAME Wigner COMMAND test_wigner)
+  add_test(NAME Block_Matrix COMMAND test_block_matrix)
+  add_test(NAME MPS_Tensor COMMAND test_mps_tensor)
+  add_test(NAME Electronic_MPS_Initializers COMMAND test_mps_initializers_electronic)
+  add_test(NAME Electronic_1DMPO COMMAND test_1D_mpo_electronic)
   # Alps-related tests
-  add_test(NAME Test_Alps_Diagonalization COMMAND test_alps_diagonalization)
-  add_test(NAME Test_GeneralizedEigenvalue COMMAND test_generalized_eigenvalue_problem)
-  add_test(NAME Test_SweepOptimization_Traits COMMAND test_sweep_optimization_traits)
+  add_test(NAME Alps_Diagonalization COMMAND test_alps_diagonalization)
+  add_test(NAME GeneralizedEigenvalue COMMAND test_generalized_eigenvalue_problem)
+  add_test(NAME SweepOptimization_Traits COMMAND test_sweep_optimization_traits)
+  add_test(NAME DMRG_LiH COMMAND testLiH)
+  add_test(NAME MPO_times_MPS_TwoU1 COMMAND test_mpo_times_mps_TwoU1)
+  add_test(NAME Electronic_SweepBasedLinearSystem COMMAND test_sweep_based_linear_system_electronic)
+  if(BUILD_DMRG_FEAST)
+    add_test(NAME Electronic_FEAST COMMAND test_FEAST_electronic)
+  endif(BUILD_DMRG_FEAST)
   # Time-evolution tests
   if(BUILD_DMRG_EVOLVE)
-    add_test(NAME Test_Time_Evolver COMMAND test_time_evolvers)
-    add_test(NAME Test_Site_Shifter COMMAND test_site_shifter)
-    add_test(NAME Test_Time_Evolution_Sweep COMMAND test_time_evolution_sweep)
-    add_test(NAME Test_RealTime_Evolution COMMAND test_realtime)
-    add_test(NAME Test_ImaginaryTime_Evolution_Electronic COMMAND test_imaginarytime_Electronic)
+    add_test(NAME Time_Evolver COMMAND test_time_evolvers)
+    add_test(NAME Site_Shifter COMMAND test_site_shifter)
+    add_test(NAME Time_Evolution_Sweep COMMAND test_time_evolution_sweep)
+    add_test(NAME RealTime_Evolution COMMAND test_realtime)
+    add_test(NAME Electronic_ImaginaryTime_Evolution COMMAND test_imaginarytime_Electronic)
     if(BUILD_PREBO)
-      add_test(NAME Test_ImaginaryTime_Evolution_PreBO COMMAND test_imaginarytime_PreBO)
+      add_test(NAME PreBO_ImaginaryTime_Evolution COMMAND test_imaginarytime_PreBO)
     endif(BUILD_PREBO)
-    add_test(NAME Test_ImaginaryTime_Evolution_Relativistic COMMAND test_imaginarytime_Relativistic)
-    add_test(NAME Test_ImaginaryTime_Evolution_FermiHubbard COMMAND test_imaginarytime_FermiHubbard)
+    add_test(NAME Relativistic_ImaginaryTime_Evolution COMMAND test_imaginarytime_Relativistic)
+    add_test(NAME FermiHubbard_ImaginaryTime_Evolution COMMAND test_imaginarytime_FermiHubbard)
   endif(BUILD_DMRG_EVOLVE)
   # PreBO tests
   if(BUILD_PREBO)
-    add_test(NAME PreBO_Test1 COMMAND prebo_test1)
-    add_test(NAME PreBO_Test2 COMMAND prebo_test2)
-    add_test(NAME PreBO_Test_Model COMMAND prebo_test_model)
-    add_test(NAME PreBO_Test_SymbolicOperator COMMAND test_prebo_symbolic_operator)
-    add_test(NAME PreBO_Test_SymbolicJordanWigner COMMAND test_prebo_symbolic_jw)
+    add_test(NAME PreBO_H2 COMMAND testPreBOH2)
+    add_test(NAME PreBO_HeHHe COMMAND testPreBOHeHHe)
+    add_test(NAME PreBO_Model COMMAND testPreBOModel)
+    add_test(NAME PreBO_SymbolicOperator COMMAND testPreBOSymbolicOperator)
+    add_test(NAME PreBO_SymbolicJordanWigner COMMAND testPreBOSymbolicJordanWigner)
   endif(BUILD_PREBO)
   # Vibrational tests
   if(BUILD_VIBRATIONAL)
@@ -559,29 +637,26 @@ if(QCMAQUIS_TESTS)
     add_test(NAME Vibrational_MPS COMMAND test_mps_vibrational)
     add_test(NAME Vibrational_Lattice COMMAND test_vibrational_lattice)
     add_test(NAME Vibrational_Model_NU1 COMMAND test_vibrational_nu1_model)
+    add_test(NAME Vibrational_Model_None COMMAND test_vibrational_none_model)
     add_test(NAME Vibrational_Model_Watson COMMAND test_vibrational_watson_model)
-    add_test(NAME Test_MPS_MPO_Ops_Vibrational COMMAND test_mps_mpo_ops_vibrational)
-    add_test(NAME Test_MPO_Times_MPS_Vibrational COMMAND test_mpo_times_mps_vibrational)
-    add_test(NAME Test_MPS_Initializers_Vibrational COMMAND test_mps_initializers_vibrational)
-    add_test(NAME Test_MPS_Overlap_Vibrational COMMAND test_mps_overlap_vibrational)
-    add_test(NAME Test_OverlapPropagator_Vibrational COMMAND test_overlap_propagator_vibrational)
-    add_test(NAME Test_BoundaryPropagator_Vibrational COMMAND test_boundary_propagator_vibrational)
-    add_test(NAME Test_Linear_System_Solver_Vibrational COMMAND test_linear_system_solver_vibrational)
-    add_test(NAME Test_SweepEnergyMinimization_Vibrational COMMAND test_sweep_based_energy_minimization_vibrational)
-    add_test(NAME Test_SweepBasedLinearSystem_Vibrational COMMAND test_sweep_based_linear_system_vibrational)
+    add_test(NAME Vibrational_MPS_MPO_Ops COMMAND test_mps_mpo_ops_vibrational)
+    add_test(NAME Vibrational_MPO_Times_MPS COMMAND test_mpo_times_mps_vibrational)
+    add_test(NAME Vibrational_MPS_Overlap COMMAND test_mps_overlap_vibrational)
+    add_test(NAME Vibrational_OverlapPropagator COMMAND test_overlap_propagator_vibrational)
+    add_test(NAME Vibrational_BoundaryPropagator COMMAND test_boundary_propagator_vibrational)
+    add_test(NAME Vibrational_Linear_System_Solver COMMAND test_linear_system_solver_vibrational)
+    add_test(NAME Vibrational_SweepEnergyMinimization COMMAND test_sweep_based_energy_minimization_vibrational)
+    add_test(NAME Vibrational_SweepBasedLinearSystem COMMAND test_sweep_based_linear_system_vibrational)
     if(BUILD_DMRG_FEAST)
-      add_test(NAME Test_FEAST_vibrational COMMAND test_FEAST_vibrational)
+      add_test(NAME Vibrational_FEAST COMMAND test_FEAST_vibrational)
     endif(BUILD_DMRG_FEAST)
     # Application tests
-    add_test(NAME Test_FAD_2Mode COMMAND test_FAD_2Mode)
-    add_test(NAME Test_Ethylene_Sextic COMMAND test_Ethylene_Sextic)
-    add_test(NAME Test_H2CO COMMAND test_H2CO)
-    add_test(NAME Test_Maleimide COMMAND test_Maleimide)
-    add_test(NAME Test_Ethylene_nMode COMMAND test_Ethylene_nMode)
-    add_test(NAME Test_BilinearlyCoupled COMMAND test_BilinearlyCoupled)
-    if (BUILD_MPS2CI)
-      add_test(NAME Vibrational_SRCAS COMMAND test_vibrational_srcas)
-    endif(BUILD_MPS2CI)
+    add_test(NAME Vibrational_FAD_2Mode COMMAND test_FAD_2Mode)
+    add_test(NAME Vibrational_Ethylene_Sextic COMMAND test_Ethylene_Sextic)
+    add_test(NAME Vibrational_H2CO COMMAND test_H2CO)
+    add_test(NAME Vibrational_Maleimide COMMAND test_Maleimide)
+    add_test(NAME Vibrational_Ethylene_nMode COMMAND test_Ethylene_nMode)
+    add_test(NAME Vibrational_BilinearlyCoupled COMMAND test_BilinearlyCoupled)
   endif(BUILD_VIBRATIONAL)
   # Vibronic tests
   if(BUILD_VIBRONIC)
@@ -592,9 +667,13 @@ if(QCMAQUIS_TESTS)
     add_test(NAME Vibronic_MPS_Overlap COMMAND test_mps_overlap_vibronic)
     add_test(NAME Excitonic_Optimization COMMAND test_Excitonic)
     add_test(NAME Vibronic_Optimization COMMAND test_Vibronic)
+    add_test(NAME Vibronic_Excitonic_Nmode COMMAND test_excitonic_nmode_model)
   endif(BUILD_VIBRONIC)
+  if((BUILD_VIBRATIONAL) OR (BUILD_VIBRONIC))
+    add_test(NAME Vibrational_MPS_Initializers COMMAND test_mps_initializers_vibrational)    
+  endif((BUILD_VIBRATIONAL) OR (BUILD_VIBRONIC))
   if (BUILD_SRCAS)
-    add_test(NAME Test_SRCAS COMMAND test_srcas)
+    add_test(NAME SRCAS COMMAND test_srcas)
   endif(BUILD_SRCAS)
 endif(QCMAQUIS_TESTS)
 

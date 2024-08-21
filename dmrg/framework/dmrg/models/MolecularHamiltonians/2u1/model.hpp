@@ -34,188 +34,217 @@
 using Hamiltonian = chem::Hamiltonian;
 using HamiltonianTransformation = chem::HamiltonianTransformation;
 
-template <class Matrix, class SymmGroup, Hamiltonian HamiltonianType, HamiltonianTransformation Transcorrelated>
-qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::qc_model(Lattice const & lat_, BaseParameters & parms_)
-    : lat(lat_), parms(parms_), tag_handler(new table_type()), isQuantumComputingFormat(false) {
-    // Types definition
-    typedef typename SymmGroup::subcharge subcharge;
+template <
+    class Matrix, class SymmGroup, Hamiltonian HamiltonianType,
+    HamiltonianTransformation Transcorrelated>
+qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::qc_model(
+    Lattice const& lat_, BaseParameters& parms_
+)
+    : lat(lat_),
+      parms(parms_),
+      tag_handler(new table_type()),
+      isQuantumComputingFormat(false) {
+  // Types definition
+  typedef typename SymmGroup::subcharge subcharge;
 
-    // Parameter parsing
-    if (isTranscorrelated_ && parms.is_set("transcorrelated_quantum_computing_format")) {
-        if (parms["transcorrelated_quantum_computing_format"] == "yes") {
-            maquis::cout << " Activating transcorrelated quantum computing format" << std::endl;
-            isQuantumComputingFormat = true;
-        }
+  // Parameter parsing
+  if (isTranscorrelated_ &&
+      parms.is_set("transcorrelated_quantum_computing_format")) {
+    if (parms["transcorrelated_quantum_computing_format"] == "yes") {
+      maquis::cout << " Activating transcorrelated quantum computing format"
+                   << std::endl;
+      isQuantumComputingFormat = true;
+    }
+  }
+
+  if (!isTranscorrelated_ && parms.is_set("quantum_computing_format")) {
+    if (parms["quantum_computing_format"] == "yes") {
+      maquis::cout << " Activating conventional quantum computing format"
+                   << std::endl;
+      isQuantumComputingFormat = true;
+    }
+  }
+
+  // find the highest irreducible representation number
+  // used to generate ops for all irreps 0..max_irrep
+  max_irrep = 0;
+  for (pos_t p = 0; p < lat.size(); ++p)
+    max_irrep =
+        (lat.get_prop<typename SymmGroup::subcharge>("type", p) > max_irrep)
+            ? lat.get_prop<typename SymmGroup::subcharge>("type", p)
+            : max_irrep;
+
+  typename SymmGroup::charge A(0), B(0), C(0), D(1);
+  B[0] = 1;
+  C[1] = 1;
+
+  for (subcharge irr = 0; irr <= max_irrep; ++irr) {
+    Index<SymmGroup> phys;
+    phys.insert(std::make_pair(A, 1));
+    phys.insert(std::make_pair(PGCharge<SymmGroup>()(B, irr), 1));
+    phys.insert(std::make_pair(PGCharge<SymmGroup>()(C, irr), 1));
+    phys.insert(std::make_pair(D, 1));
+
+    phys_indices.push_back(phys);
+  }
+
+  op_t create_up_op, create_down_op, destroy_up_op, destroy_down_op,
+      count_up_op, count_down_op, count_up_down_op, docc_op, e2d_op, d2e_op,
+      d2u_op, u2d_op, create_down_for_meas_op, destroy_down_for_meas_op,
+      ident_op, fill_op;
+
+  ident_op.insert_block(Matrix(1, 1, 1), A, A);
+  ident_op.insert_block(Matrix(1, 1, 1), B, B);
+  ident_op.insert_block(Matrix(1, 1, 1), C, C);
+  ident_op.insert_block(Matrix(1, 1, 1), D, D);
+
+  create_up_op.insert_block(Matrix(1, 1, 1), A, B);
+  create_up_op.insert_block(Matrix(1, 1, 1), C, D);
+  create_down_op.insert_block(Matrix(1, 1, 1), A, C);
+  create_down_op.insert_block(Matrix(1, 1, 1), B, D);
+
+  destroy_up_op.insert_block(Matrix(1, 1, 1), B, A);
+  destroy_up_op.insert_block(Matrix(1, 1, 1), D, C);
+  destroy_down_op.insert_block(Matrix(1, 1, 1), C, A);
+  destroy_down_op.insert_block(Matrix(1, 1, 1), D, B);
+
+  count_up_op.insert_block(Matrix(1, 1, 1), B, B);
+  count_up_op.insert_block(Matrix(1, 1, 1), D, D);
+
+  count_down_op.insert_block(Matrix(1, 1, 1), C, C);
+  count_down_op.insert_block(Matrix(1, 1, 1), D, D);
+
+  count_up_down_op.insert_block(Matrix(1, 1, 1), B, B);
+  count_up_down_op.insert_block(Matrix(1, 1, 1), C, C);
+  count_up_down_op.insert_block(Matrix(1, 1, 2), D, D);
+
+  docc_op.insert_block(Matrix(1, 1, 1), D, D);
+
+  e2d_op.insert_block(Matrix(1, 1, 1), A, D);
+  d2e_op.insert_block(Matrix(1, 1, 1), D, A);
+
+  fill_op.insert_block(Matrix(1, 1, 1), A, A);
+  fill_op.insert_block(Matrix(1, 1, -1), B, B);
+  fill_op.insert_block(Matrix(1, 1, -1), C, C);
+  fill_op.insert_block(Matrix(1, 1, 1), D, D);
+
+  op_t tmp;
+
+  // TODO ALB FOR NOW KEPT, BUT THIS SHOULD GO!!
+  gemm(fill_op, create_down_op, tmp);
+  create_down_for_meas_op = tmp;
+  gemm(destroy_down_op, fill_op, tmp);
+  destroy_down_for_meas_op = tmp;
+
+  /// stknecht: needed for special 1-TDMs
+  gemm(destroy_down_op, create_up_op, d2u_op);  // S_plus
+  gemm(destroy_up_op, create_down_op, u2d_op);  // S_minus
+
+// only effective if point group symmetry is active, need to adapt operators to
+// different irreps
+#define GENERATE_SITE_SPECIFIC(opname) \
+  std::vector<op_t> opname##s = this->generate_site_specific_ops(opname);
+  GENERATE_SITE_SPECIFIC(ident_op)
+  GENERATE_SITE_SPECIFIC(fill_op)
+  GENERATE_SITE_SPECIFIC(create_up_op)
+  GENERATE_SITE_SPECIFIC(create_down_op)
+  GENERATE_SITE_SPECIFIC(create_down_for_meas_op)
+  GENERATE_SITE_SPECIFIC(destroy_up_op)
+  GENERATE_SITE_SPECIFIC(destroy_down_op)
+  GENERATE_SITE_SPECIFIC(destroy_down_for_meas_op)
+  GENERATE_SITE_SPECIFIC(count_up_op)
+  GENERATE_SITE_SPECIFIC(count_down_op)
+  GENERATE_SITE_SPECIFIC(e2d_op)
+  GENERATE_SITE_SPECIFIC(d2e_op)
+  GENERATE_SITE_SPECIFIC(docc_op)
+  GENERATE_SITE_SPECIFIC(count_up_down_op)
+  GENERATE_SITE_SPECIFIC(d2u_op)
+  GENERATE_SITE_SPECIFIC(u2d_op)
+#undef GENERATE_SITE_SPECIFIC
+
+  /**********************************************************************/
+  /*** Create operator tag table ****************************************/
+  /**********************************************************************/
+
+#define REGISTER(op, kind) op = this->register_site_specific(op##_ops, kind);
+  REGISTER(ident, tag_detail::bosonic)
+  REGISTER(fill, tag_detail::bosonic)
+  REGISTER(create_up, tag_detail::fermionic)
+  REGISTER(create_down, tag_detail::fermionic)
+  REGISTER(create_down_for_meas, tag_detail::fermionic)
+  REGISTER(destroy_up, tag_detail::fermionic)
+  REGISTER(destroy_down, tag_detail::fermionic)
+  REGISTER(destroy_down_for_meas, tag_detail::fermionic)
+  REGISTER(count_up, tag_detail::bosonic)
+  REGISTER(count_down, tag_detail::bosonic)
+  REGISTER(e2d, tag_detail::bosonic)
+  REGISTER(d2e, tag_detail::bosonic)
+  REGISTER(docc, tag_detail::bosonic)
+  REGISTER(count_up_down, tag_detail::bosonic)
+  REGISTER(d2u, tag_detail::bosonic)
+  REGISTER(u2d, tag_detail::bosonic)
+#undef REGISTER
+
+  //**********************************************************************
+  std::pair<std::vector<tag_type>, std::vector<value_type>> cutf =
+      tag_handler->get_product_tags(create_up, fill);
+  std::pair<std::vector<tag_type>, std::vector<value_type>> cdtf =
+      tag_handler->get_product_tags(create_down_for_meas, fill);
+  std::pair<std::vector<tag_type>, std::vector<value_type>> ftdu =
+      tag_handler->get_product_tags(fill, destroy_up);
+  std::pair<std::vector<tag_type>, std::vector<value_type>> ftdd =
+      tag_handler->get_product_tags(fill, destroy_down_for_meas);
+  std::pair<std::vector<tag_type>, std::vector<value_type>> cund =
+      tag_handler->get_product_tags(create_up, count_down);
+  std::pair<std::vector<tag_type>, std::vector<value_type>> dund =
+      tag_handler->get_product_tags(destroy_up, count_down);
+  std::pair<std::vector<tag_type>, std::vector<value_type>> cdnu =
+      tag_handler->get_product_tags(create_down_for_meas, count_up);
+  std::pair<std::vector<tag_type>, std::vector<value_type>> ddnu =
+      tag_handler->get_product_tags(destroy_down_for_meas, count_up);
+  std::pair<std::vector<tag_type>, std::vector<value_type>> cundtf =
+      tag_handler->get_product_tags(cund.first, fill);
+  std::pair<std::vector<tag_type>, std::vector<value_type>> ftdund =
+      tag_handler->get_product_tags(fill, dund.first);
+  std::pair<std::vector<tag_type>, std::vector<value_type>> cdnutf =
+      tag_handler->get_product_tags(cdnu.first, fill);
+  std::pair<std::vector<tag_type>, std::vector<value_type>> ftddnu =
+      tag_handler->get_product_tags(fill, ddnu.first);
+  std::pair<std::vector<tag_type>, std::vector<value_type>> ddcu =
+      tag_handler->get_product_tags(destroy_down_for_meas, create_up);
+  std::pair<std::vector<tag_type>, std::vector<value_type>> ducd =
+      tag_handler->get_product_tags(destroy_up, create_down_for_meas);
+
+  // Note that the Hermitian pairs are registered only if the Hamiltonian is
+  // Hermitean.
+  // TODO: In principle, also for the transcorrelated case the registration of
+  // the hermitean pairs should
+  //       work, needs more testing to understand why it does not work.
+  if (!isTranscorrelated_) {
+    int numberOfTypes = create_up.size();
+    for (int opType = 0; opType < numberOfTypes; opType++) {
+      tag_handler->hermitian_pair(create_up[opType], destroy_up[opType]);
+      tag_handler->hermitian_pair(create_down[opType], destroy_down[opType]);
+      tag_handler->hermitian_pair(
+          create_down_for_meas[opType], destroy_down_for_meas[opType]
+      );
+      tag_handler->hermitian_pair(cutf.first[opType], ftdu.first[opType]);
+      tag_handler->hermitian_pair(cdtf.first[opType], ftdd.first[opType]);
+      tag_handler->hermitian_pair(e2d[opType], d2e[opType]);
+      tag_handler->hermitian_pair(cund.first[opType], dund.first[opType]);
+      tag_handler->hermitian_pair(cdnu.first[opType], ddnu.first[opType]);
+      tag_handler->hermitian_pair(cundtf.first[opType], ftdund.first[opType]);
+      tag_handler->hermitian_pair(cdnutf.first[opType], ftddnu.first[opType]);
+      tag_handler->hermitian_pair(ddcu.first[opType], ducd.first[opType]);
     }
 
-
-
-    if (!isTranscorrelated_ && parms.is_set("quantum_computing_format")) {
-        if (parms["quantum_computing_format"] == "yes") {
-            maquis::cout << " Activating conventional quantum computing format" << std::endl;
-            isQuantumComputingFormat = true;
-        }
-    }
-
-    // find the highest irreducible representation number
-    // used to generate ops for all irreps 0..max_irrep
-    max_irrep = 0;
-    for (pos_t p = 0; p < lat.size(); ++p) {
-        max_irrep = (lat.get_prop<typename SymmGroup::subcharge>("type", p) > max_irrep)
-                    ? lat.get_prop<typename SymmGroup::subcharge>("type", p) : max_irrep;
-    }
-
-    typename SymmGroup::charge A(0), B(0), C(0), D(1);
-    B[0] = 1;
-    C[1] = 1;
-
-    for (subcharge irr = 0; irr <= max_irrep; ++irr) {
-        Index<SymmGroup> phys;
-        phys.insert(std::make_pair(A, 1));
-        phys.insert(std::make_pair(PGCharge<SymmGroup>()(B, irr), 1));
-        phys.insert(std::make_pair(PGCharge<SymmGroup>()(C, irr), 1));
-        phys.insert(std::make_pair(D, 1));
-
-        phys_indices.push_back(phys);
-    }
-
-    // TMP Solution??
+    // TODO: fix this TMP Solution??
     if(parms_.defined("srcas_numSamples")) {
         if(parms_["srcas_numSamples"] != 1) {
             return; 
         }
     }
 
-    op_t create_up_op, create_down_op, destroy_up_op, destroy_down_op,
-            count_up_op, count_down_op, count_up_down_op, docc_op, e2d_op, d2e_op,
-            d2u_op, u2d_op, create_down_for_meas_op, destroy_down_for_meas_op,
-            ident_op, fill_op;
-
-    ident_op.insert_block(Matrix(1, 1, 1), A, A);
-    ident_op.insert_block(Matrix(1, 1, 1), B, B);
-    ident_op.insert_block(Matrix(1, 1, 1), C, C);
-    ident_op.insert_block(Matrix(1, 1, 1), D, D);
-
-    create_up_op.insert_block(Matrix(1, 1, 1), A, B);
-    create_up_op.insert_block(Matrix(1, 1, 1), C, D);
-    create_down_op.insert_block(Matrix(1, 1, 1), A, C);
-    create_down_op.insert_block(Matrix(1, 1, 1), B, D);
-
-    destroy_up_op.insert_block(Matrix(1, 1, 1), B, A);
-    destroy_up_op.insert_block(Matrix(1, 1, 1), D, C);
-    destroy_down_op.insert_block(Matrix(1, 1, 1), C, A);
-    destroy_down_op.insert_block(Matrix(1, 1, 1), D, B);
-
-    count_up_op.insert_block(Matrix(1, 1, 1), B, B);
-    count_up_op.insert_block(Matrix(1, 1, 1), D, D);
-
-    count_down_op.insert_block(Matrix(1, 1, 1), C, C);
-    count_down_op.insert_block(Matrix(1, 1, 1), D, D);
-
-    count_up_down_op.insert_block(Matrix(1, 1, 1), B, B);
-    count_up_down_op.insert_block(Matrix(1, 1, 1), C, C);
-    count_up_down_op.insert_block(Matrix(1, 1, 2), D, D);
-
-    docc_op.insert_block(Matrix(1, 1, 1), D, D);
-
-    e2d_op.insert_block(Matrix(1, 1, 1), A, D);
-    d2e_op.insert_block(Matrix(1, 1, 1), D, A);
-
-    fill_op.insert_block(Matrix(1, 1, 1), A, A);
-    fill_op.insert_block(Matrix(1, 1, -1), B, B);
-    fill_op.insert_block(Matrix(1, 1, -1), C, C);
-    fill_op.insert_block(Matrix(1, 1, 1), D, D);
-
-    op_t tmp;
-
-    // TODO ALB FOR NOW KEPT, BUT THIS SHOULD GO!!
-    gemm(fill_op, create_down_op, tmp);
-    create_down_for_meas_op = tmp;
-    gemm(destroy_down_op, fill_op, tmp);
-    destroy_down_for_meas_op = tmp;
-
-    /// stknecht: needed for special 1-TDMs
-    gemm(destroy_down_op, create_up_op, d2u_op); // S_plus
-    gemm(destroy_up_op, create_down_op, u2d_op); // S_minus
-
-    // only effective if point group symmetry is active, need to adapt operators to different irreps
-#define GENERATE_SITE_SPECIFIC(opname) std::vector<op_t> opname ## s = this->generate_site_specific_ops(opname);
-    GENERATE_SITE_SPECIFIC(ident_op)
-    GENERATE_SITE_SPECIFIC(fill_op)
-    GENERATE_SITE_SPECIFIC(create_up_op)
-    GENERATE_SITE_SPECIFIC(create_down_op)
-    GENERATE_SITE_SPECIFIC(create_down_for_meas_op)
-    GENERATE_SITE_SPECIFIC(destroy_up_op)
-    GENERATE_SITE_SPECIFIC(destroy_down_op)
-    GENERATE_SITE_SPECIFIC(destroy_down_for_meas_op)
-    GENERATE_SITE_SPECIFIC(count_up_op)
-    GENERATE_SITE_SPECIFIC(count_down_op)
-    GENERATE_SITE_SPECIFIC(e2d_op)
-    GENERATE_SITE_SPECIFIC(d2e_op)
-    GENERATE_SITE_SPECIFIC(docc_op)
-    GENERATE_SITE_SPECIFIC(count_up_down_op)
-    GENERATE_SITE_SPECIFIC(d2u_op)
-    GENERATE_SITE_SPECIFIC(u2d_op)
-#undef GENERATE_SITE_SPECIFIC
-
-    /**********************************************************************/
-    /*** Create operator tag table ****************************************/
-    /**********************************************************************/
-
-#define REGISTER(op, kind) op = this->register_site_specific(op ## _ops, kind);
-    REGISTER(ident, tag_detail::bosonic)
-    REGISTER(fill, tag_detail::bosonic)
-    REGISTER(create_up, tag_detail::fermionic)
-    REGISTER(create_down, tag_detail::fermionic)
-    REGISTER(create_down_for_meas, tag_detail::fermionic)
-    REGISTER(destroy_up, tag_detail::fermionic)
-    REGISTER(destroy_down, tag_detail::fermionic)
-    REGISTER(destroy_down_for_meas, tag_detail::fermionic)
-    REGISTER(count_up, tag_detail::bosonic)
-    REGISTER(count_down, tag_detail::bosonic)
-    REGISTER(e2d, tag_detail::bosonic)
-    REGISTER(d2e, tag_detail::bosonic)
-    REGISTER(docc, tag_detail::bosonic)
-    REGISTER(count_up_down, tag_detail::bosonic)
-    REGISTER(d2u, tag_detail::bosonic)
-    REGISTER(u2d, tag_detail::bosonic)
-#undef REGISTER
-
-    //**********************************************************************
-    std::pair<std::vector<tag_type>, std::vector<value_type> > cutf = tag_handler->get_product_tags(create_up, fill);
-    std::pair<std::vector<tag_type>, std::vector<value_type> > cdtf = tag_handler->get_product_tags(create_down_for_meas, fill);
-    std::pair<std::vector<tag_type>, std::vector<value_type> > ftdu = tag_handler->get_product_tags(fill, destroy_up);
-    std::pair<std::vector<tag_type>, std::vector<value_type> > ftdd = tag_handler->get_product_tags(fill, destroy_down_for_meas);
-    std::pair<std::vector<tag_type>, std::vector<value_type> > cund = tag_handler->get_product_tags(create_up, count_down);
-    std::pair<std::vector<tag_type>, std::vector<value_type> > dund = tag_handler->get_product_tags(destroy_up, count_down);
-    std::pair<std::vector<tag_type>, std::vector<value_type> > cdnu = tag_handler->get_product_tags(create_down_for_meas, count_up);
-    std::pair<std::vector<tag_type>, std::vector<value_type> > ddnu = tag_handler->get_product_tags(destroy_down_for_meas, count_up);
-    std::pair<std::vector<tag_type>, std::vector<value_type> > cundtf = tag_handler->get_product_tags(cund.first, fill);
-    std::pair<std::vector<tag_type>, std::vector<value_type> > ftdund = tag_handler->get_product_tags(fill, dund.first);
-    std::pair<std::vector<tag_type>, std::vector<value_type> > cdnutf = tag_handler->get_product_tags(cdnu.first, fill);
-    std::pair<std::vector<tag_type>, std::vector<value_type> > ftddnu = tag_handler->get_product_tags(fill, ddnu.first);
-    std::pair<std::vector<tag_type>, std::vector<value_type> > ddcu = tag_handler->get_product_tags(destroy_down_for_meas, create_up);
-    std::pair<std::vector<tag_type>, std::vector<value_type> > ducd = tag_handler->get_product_tags(destroy_up, create_down_for_meas);
-
-    // Note that the Hermitian pairs are registered only if the Hamiltonian is Hermitean.
-    // TODO: In principle, also for the transcorrelated case the registration of the hermitean pairs should
-    //       work, needs more testing to understand why it does not work.
-    if (!isTranscorrelated_) {
-        int numberOfTypes = create_up.size();
-        for (int opType = 0; opType < numberOfTypes; opType++) {
-            tag_handler->hermitian_pair(create_up[opType], destroy_up[opType]);
-            tag_handler->hermitian_pair(create_down[opType], destroy_down[opType]);
-            tag_handler->hermitian_pair(create_down_for_meas[opType], destroy_down_for_meas[opType]);
-            tag_handler->hermitian_pair(cutf.first[opType], ftdu.first[opType]);
-            tag_handler->hermitian_pair(cdtf.first[opType], ftdd.first[opType]);
-            tag_handler->hermitian_pair(e2d[opType], d2e[opType]);
-            tag_handler->hermitian_pair(cund.first[opType], dund.first[opType]);
-            tag_handler->hermitian_pair(cdnu.first[opType], ddnu.first[opType]);
-            tag_handler->hermitian_pair(cundtf.first[opType], ftdund.first[opType]);
-            tag_handler->hermitian_pair(cdnutf.first[opType], ftddnu.first[opType]);
-            tag_handler->hermitian_pair(ddcu.first[opType], ducd.first[opType]);
-        }
-    }
     if (isTranscorrelated_)
         maquis::cout << "Transcorrelated Hamiltonian modality activated" << std::endl;
 }
@@ -456,8 +485,8 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
 
             } else {
                 throw std::runtime_error("Three-body term for non transcorrelated Hamiltonian not yet available");
-            }
         }
+      }
     }
 
     for (const auto &idx: mapOfOperators) {
@@ -700,6 +729,7 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::addTerm(MapO
             mapOfOperators[term.getBase()] += term.coeff;
         }
     }
+  }
 }
 
 #endif

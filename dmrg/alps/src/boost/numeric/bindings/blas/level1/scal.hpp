@@ -60,8 +60,8 @@ namespace detail {
 // * CBLAS backend, and
 // * float value-type.
 //
-inline void scal( const int n, const float a, float* x, const int incx ) {
-    cblas_sscal( n, a, x, incx );
+inline void scal(const int n, const float a, float* x, const int incx) {
+  cblas_sscal(n, a, x, incx);
 }
 
 //
@@ -69,8 +69,8 @@ inline void scal( const int n, const float a, float* x, const int incx ) {
 // * CBLAS backend, and
 // * double value-type.
 //
-inline void scal( const int n, const double a, double* x, const int incx ) {
-    cblas_dscal( n, a, x, incx );
+inline void scal(const int n, const double a, double* x, const int incx) {
+  cblas_dscal(n, a, x, incx);
 }
 
 //
@@ -78,9 +78,10 @@ inline void scal( const int n, const double a, double* x, const int incx ) {
 // * CBLAS backend, and
 // * combined float and complex<float> value-type.
 //
-inline void scal( const int n, const float a, std::complex<float>* x,
-        const int incx ) {
-    cblas_csscal( n, a, x, incx );
+inline void scal(
+    const int n, const float a, std::complex<float>* x, const int incx
+) {
+  cblas_csscal(n, a, x, incx);
 }
 
 //
@@ -88,9 +89,10 @@ inline void scal( const int n, const float a, std::complex<float>* x,
 // * CBLAS backend, and
 // * combined double and complex<double> value-type.
 //
-inline void scal( const int n, const double a, std::complex<double>* x,
-        const int incx ) {
-    cblas_zdscal( n, a, x, incx );
+inline void scal(
+    const int n, const double a, std::complex<double>* x, const int incx
+) {
+  cblas_zdscal(n, a, x, incx);
 }
 
 //
@@ -98,9 +100,11 @@ inline void scal( const int n, const double a, std::complex<double>* x,
 // * CBLAS backend, and
 // * complex<float> value-type.
 //
-inline void scal( const int n, const std::complex<float> a,
-        std::complex<float>* x, const int incx ) {
-    cblas_cscal( n, &a, x, incx );
+inline void scal(
+    const int n, const std::complex<float> a, std::complex<float>* x,
+    const int incx
+) {
+  cblas_cscal(n, &a, x, incx);
 }
 
 //
@@ -108,9 +112,11 @@ inline void scal( const int n, const std::complex<float> a,
 // * CBLAS backend, and
 // * complex<double> value-type.
 //
-inline void scal( const int n, const std::complex<double> a,
-        std::complex<double>* x, const int incx ) {
-    cblas_zscal( n, &a, x, incx );
+inline void scal(
+    const int n, const std::complex<double> a, std::complex<double>* x,
+    const int incx
+) {
+  cblas_zscal(n, &a, x, incx);
 }
 
 #elif defined BOOST_NUMERIC_BINDINGS_BLAS_CUBLAS
@@ -119,8 +125,8 @@ inline void scal( const int n, const std::complex<double> a,
 // * CUBLAS backend, and
 // * float value-type.
 //
-inline void scal( const int n, const float a, float* x, const int incx ) {
-    cublasSscal( n, a, x, incx );
+inline void scal(const int n, const float a, float* x, const int incx) {
+  cublasSscal(n, a, x, incx);
 }
 
 //
@@ -128,8 +134,8 @@ inline void scal( const int n, const float a, float* x, const int incx ) {
 // * CUBLAS backend, and
 // * double value-type.
 //
-inline void scal( const int n, const double a, double* x, const int incx ) {
-    cublasDscal( n, a, x, incx );
+inline void scal(const int n, const double a, double* x, const int incx) {
+  cublasDscal(n, a, x, incx);
 }
 
 //
@@ -137,9 +143,10 @@ inline void scal( const int n, const double a, double* x, const int incx ) {
 // * CUBLAS backend, and
 // * combined float and complex<float> value-type.
 //
-inline void scal( const int n, const float a, std::complex<float>* x,
-        const int incx ) {
-    cublasCsscal( n, a, x, incx );
+inline void scal(
+    const int n, const float a, std::complex<float>* x, const int incx
+) {
+  cublasCsscal(n, a, x, incx);
 }
 
 //
@@ -147,9 +154,10 @@ inline void scal( const int n, const float a, std::complex<float>* x,
 // * CUBLAS backend, and
 // * combined double and complex<double> value-type.
 //
-inline void scal( const int n, const double a, std::complex<double>* x,
-        const int incx ) {
-    // NOT FOUND();
+inline void scal(
+    const int n, const double a, std::complex<double>* x, const int incx
+) {
+  // NOT FOUND();
 }
 
 //
@@ -157,9 +165,11 @@ inline void scal( const int n, const double a, std::complex<double>* x,
 // * CUBLAS backend, and
 // * complex<float> value-type.
 //
-inline void scal( const int n, const std::complex<float> a,
-        std::complex<float>* x, const int incx ) {
-    cublasCscal( n, a, x, incx );
+inline void scal(
+    const int n, const std::complex<float> a, std::complex<float>* x,
+    const int incx
+) {
+  cublasCscal(n, a, x, incx);
 }
 
 //
@@ -167,9 +177,11 @@ inline void scal( const int n, const std::complex<float> a,
 // * CUBLAS backend, and
 // * complex<double> value-type.
 //
-inline void scal( const int n, const std::complex<double> a,
-        std::complex<double>* x, const int incx ) {
-    cublasZscal( n, a, x, incx );
+inline void scal(
+    const int n, const std::complex<double> a, std::complex<double>* x,
+    const int incx
+) {
+  cublasZscal(n, a, x, incx);
 }
 
 #else
@@ -178,9 +190,10 @@ inline void scal( const int n, const std::complex<double> a,
 // * netlib-compatible BLAS backend (the default), and
 // * float value-type.
 //
-inline void scal( const fortran_int_t n, const float a, float* x,
-        const fortran_int_t incx ) {
-    BLAS_SSCAL( &n, &a, x, &incx );
+inline void scal(
+    const fortran_int_t n, const float a, float* x, const fortran_int_t incx
+) {
+  BLAS_SSCAL(&n, &a, x, &incx);
 }
 
 //
@@ -188,9 +201,10 @@ inline void scal( const fortran_int_t n, const float a, float* x,
 // * netlib-compatible BLAS backend (the default), and
 // * double value-type.
 //
-inline void scal( const fortran_int_t n, const double a, double* x,
-        const fortran_int_t incx ) {
-    BLAS_DSCAL( &n, &a, x, &incx );
+inline void scal(
+    const fortran_int_t n, const double a, double* x, const fortran_int_t incx
+) {
+  BLAS_DSCAL(&n, &a, x, &incx);
 }
 
 //
@@ -198,9 +212,11 @@ inline void scal( const fortran_int_t n, const double a, double* x,
 // * netlib-compatible BLAS backend (the default), and
 // * combined float and complex<float> value-type.
 //
-inline void scal( const fortran_int_t n, const float a,
-        std::complex<float>* x, const fortran_int_t incx ) {
-    BLAS_CSSCAL( &n, &a, x, &incx );
+inline void scal(
+    const fortran_int_t n, const float a, std::complex<float>* x,
+    const fortran_int_t incx
+) {
+  BLAS_CSSCAL(&n, &a, x, &incx);
 }
 
 //
@@ -208,9 +224,11 @@ inline void scal( const fortran_int_t n, const float a,
 // * netlib-compatible BLAS backend (the default), and
 // * combined double and complex<double> value-type.
 //
-inline void scal( const fortran_int_t n, const double a,
-        std::complex<double>* x, const fortran_int_t incx ) {
-    BLAS_ZDSCAL( &n, &a, x, &incx );
+inline void scal(
+    const fortran_int_t n, const double a, std::complex<double>* x,
+    const fortran_int_t incx
+) {
+  BLAS_ZDSCAL(&n, &a, x, &incx);
 }
 
 //
@@ -218,9 +236,11 @@ inline void scal( const fortran_int_t n, const double a,
 // * netlib-compatible BLAS backend (the default), and
 // * complex<float> value-type.
 //
-inline void scal( const fortran_int_t n, const std::complex<float> a,
-        std::complex<float>* x, const fortran_int_t incx ) {
-    BLAS_CSCAL( &n, &a, x, &incx );
+inline void scal(
+    const fortran_int_t n, const std::complex<float> a, std::complex<float>* x,
+    const fortran_int_t incx
+) {
+  BLAS_CSCAL(&n, &a, x, &incx);
 }
 
 //
@@ -228,44 +248,46 @@ inline void scal( const fortran_int_t n, const std::complex<float> a,
 // * netlib-compatible BLAS backend (the default), and
 // * complex<double> value-type.
 //
-inline void scal( const fortran_int_t n, const std::complex<double> a,
-        std::complex<double>* x, const fortran_int_t incx ) {
-    BLAS_ZSCAL( &n, &a, x, &incx );
+inline void scal(
+    const fortran_int_t n, const std::complex<double> a,
+    std::complex<double>* x, const fortran_int_t incx
+) {
+  BLAS_ZSCAL(&n, &a, x, &incx);
 }
 
 #endif
 
-} // namespace detail
+}  // namespace detail
 
 //
 // Value-type based template class. Use this class if you need a type
 // for dispatching to scal.
 //
-template< typename Value >
+template <typename Value>
 struct scal_impl {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
+  typedef void result_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
-    typedef void result_type;
-
-    //
-    // Static member function that
-    // * Deduces the required arguments for dispatching to BLAS, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename ScalarA, typename VectorX >
-    static result_type invoke( const ScalarA a, VectorX& x ) {
-        namespace bindings = ::boost::numeric::bindings;
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorX >::value) );
-        detail::scal( bindings::size(x), a, bindings::begin_value(x),
-                bindings::stride(x) );
-    }
+  //
+  // Static member function that
+  // * Deduces the required arguments for dispatching to BLAS, and
+  // * Asserts that most arguments make sense.
+  //
+  template <typename ScalarA, typename VectorX>
+  static result_type invoke(const ScalarA a, VectorX& x) {
+    namespace bindings = ::boost::numeric::bindings;
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorX>::value));
+    detail::scal(
+        bindings::size(x), a, bindings::begin_value(x), bindings::stride(x)
+    );
+  }
 };
 
 //
 // Functions for direct use. These functions are overloaded for temporaries,
 // so that wrapped types can still be passed and used for write-access. Calls
-// to these functions are passed to the scal_impl classes. In the 
+// to these functions are passed to the scal_impl classes. In the
 // documentation, the const-overloads are collapsed to avoid a large number of
 // prototypes which are very similar.
 //
@@ -273,17 +295,16 @@ struct scal_impl {
 //
 // Overloaded function for scal. Its overload differs for
 //
-template< typename ScalarA, typename VectorX >
-inline typename scal_impl< typename bindings::value_type<
-        VectorX >::type >::result_type
-scal( const ScalarA a, VectorX& x ) {
-    scal_impl< typename bindings::value_type<
-            VectorX >::type >::invoke( a, x );
+template <typename ScalarA, typename VectorX>
+inline typename scal_impl<
+    typename bindings::value_type<VectorX>::type>::result_type
+scal(const ScalarA a, VectorX& x) {
+  scal_impl<typename bindings::value_type<VectorX>::type>::invoke(a, x);
 }
 
-} // namespace blas
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace blas
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

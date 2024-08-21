@@ -1,12 +1,14 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
 #include "dmrg/models/factories/factory.h"
-#include "dmrg/models/vibrational/none/model.hpp"
+#include "dmrg/models/vibrational/none/WatsonModel.hpp"
+#include "dmrg/models/vibrational/none/NModeModelCompact.hpp"
+#include "dmrg/models/vibrational/none/NModeModelPairedOperators.hpp"
 
 
 template<class Matrix>
@@ -16,11 +18,19 @@ struct coded_model_factory<Matrix, TrivialGroup> {
     // Factory class
     static PointerType parse(Lattice const& lattice, BaseParameters & parms)
     {
+#ifdef DMRG_VIBRATIONAL
         if (parms["MODEL"] == std::string("watson"))
             return PointerType( new WatsonHamiltonian<Matrix>(lattice, parms, false));
+        else if(parms["MODEL"] == std::string("nmodecompact"))
+            return PointerType( new NModeModelCompact<Matrix>(lattice, parms, false));
+        else if(parms["MODEL"] == std::string("nmodecompactpaired"))
+            return PointerType( new NModeModelPaired<Matrix>(lattice, parms, false));
         else {
+#endif
             throw std::runtime_error("Don't know this model with None symmetry group!");
             return PointerType();
+#ifdef DMRG_VIBRATIONAL
         }
+#endif
     }
 };

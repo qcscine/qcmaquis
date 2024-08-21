@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -14,7 +14,7 @@ public:
     /** @brief Parses input info and returns a pointer to the proper model */
     static std::shared_ptr<model_impl<Matrix, TwoU1PG> > parse(const Lattice& lattice, BaseParameters& parms)
     {
-        typedef std::shared_ptr<model_impl<Matrix, TwoU1PG> > impl_ptr;
+        using impl_ptr = std::shared_ptr<model_impl<Matrix, TwoU1PG>>;
         if (parms["MODEL"] == std::string("quantum_chemistry")) {
             if (parms.is_set("LATTICE") && parms["LATTICE"] != std::string("orbitals"))
                 throw std::runtime_error("Please use \"LATTICE = orbitals\" for quantum_chemistry\n");

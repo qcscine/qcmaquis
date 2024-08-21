@@ -10,7 +10,7 @@
 #define BOOST_NUMERIC_BINDINGS_BLAS_DETAIL_CUBLAS_H
 
 extern "C" {
-#include <cublas.h> 
+#include <cublas.h>
 }
 
 #endif

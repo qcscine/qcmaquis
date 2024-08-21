@@ -23,4 +23,3 @@
 #include <boost/numeric/bindings/vector_view.hpp>
 
 #endif
-

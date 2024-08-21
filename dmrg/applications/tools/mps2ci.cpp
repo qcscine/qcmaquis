@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #include <cmath>
@@ -12,6 +12,8 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <vector>
+#include <boost/lexical_cast.hpp>
+#include <boost/tokenizer.hpp>
 
 using std::cerr;
 using std::cout;
@@ -27,8 +29,7 @@ typedef TwoU1 grp;
 typedef TwoU1PG grp;
 #endif
 
-int main(int argc, char ** argv)
-{
+int main(int argc, char** argv) {
   if (argc != 3) {
     maquis::cout << "Usage: mps2ci <mps.h5> <determinants_file> " << std::endl;
     maquis::cout << "See J. Chem. Phys. 126, 244109(2007)" << std::endl;
@@ -47,4 +48,3 @@ int main(int argc, char ** argv)
   maquis::cout << " Completeness : " << completeness << std::endl;
   return 0;
 }
-

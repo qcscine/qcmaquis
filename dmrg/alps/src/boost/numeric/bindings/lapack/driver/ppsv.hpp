@@ -49,14 +49,14 @@ namespace detail {
 // * netlib-compatible LAPACK backend (the default), and
 // * float value-type.
 //
-template< typename UpLo >
-inline std::ptrdiff_t ppsv( const UpLo, const fortran_int_t n,
-        const fortran_int_t nrhs, float* ap, float* b,
-        const fortran_int_t ldb ) {
-    fortran_int_t info(0);
-    LAPACK_SPPSV( &lapack_option< UpLo >::value, &n, &nrhs, ap, b, &ldb,
-            &info );
-    return info;
+template <typename UpLo>
+inline std::ptrdiff_t ppsv(
+    const UpLo, const fortran_int_t n, const fortran_int_t nrhs, float* ap,
+    float* b, const fortran_int_t ldb
+) {
+  fortran_int_t info(0);
+  LAPACK_SPPSV(&lapack_option<UpLo>::value, &n, &nrhs, ap, b, &ldb, &info);
+  return info;
 }
 
 //
@@ -64,14 +64,14 @@ inline std::ptrdiff_t ppsv( const UpLo, const fortran_int_t n,
 // * netlib-compatible LAPACK backend (the default), and
 // * double value-type.
 //
-template< typename UpLo >
-inline std::ptrdiff_t ppsv( const UpLo, const fortran_int_t n,
-        const fortran_int_t nrhs, double* ap, double* b,
-        const fortran_int_t ldb ) {
-    fortran_int_t info(0);
-    LAPACK_DPPSV( &lapack_option< UpLo >::value, &n, &nrhs, ap, b, &ldb,
-            &info );
-    return info;
+template <typename UpLo>
+inline std::ptrdiff_t ppsv(
+    const UpLo, const fortran_int_t n, const fortran_int_t nrhs, double* ap,
+    double* b, const fortran_int_t ldb
+) {
+  fortran_int_t info(0);
+  LAPACK_DPPSV(&lapack_option<UpLo>::value, &n, &nrhs, ap, b, &ldb, &info);
+  return info;
 }
 
 //
@@ -79,14 +79,14 @@ inline std::ptrdiff_t ppsv( const UpLo, const fortran_int_t n,
 // * netlib-compatible LAPACK backend (the default), and
 // * complex<float> value-type.
 //
-template< typename UpLo >
-inline std::ptrdiff_t ppsv( const UpLo, const fortran_int_t n,
-        const fortran_int_t nrhs, std::complex<float>* ap,
-        std::complex<float>* b, const fortran_int_t ldb ) {
-    fortran_int_t info(0);
-    LAPACK_CPPSV( &lapack_option< UpLo >::value, &n, &nrhs, ap, b, &ldb,
-            &info );
-    return info;
+template <typename UpLo>
+inline std::ptrdiff_t ppsv(
+    const UpLo, const fortran_int_t n, const fortran_int_t nrhs,
+    std::complex<float>* ap, std::complex<float>* b, const fortran_int_t ldb
+) {
+  fortran_int_t info(0);
+  LAPACK_CPPSV(&lapack_option<UpLo>::value, &n, &nrhs, ap, b, &ldb, &info);
+  return info;
 }
 
 //
@@ -94,63 +94,68 @@ inline std::ptrdiff_t ppsv( const UpLo, const fortran_int_t n,
 // * netlib-compatible LAPACK backend (the default), and
 // * complex<double> value-type.
 //
-template< typename UpLo >
-inline std::ptrdiff_t ppsv( const UpLo, const fortran_int_t n,
-        const fortran_int_t nrhs, std::complex<double>* ap,
-        std::complex<double>* b, const fortran_int_t ldb ) {
-    fortran_int_t info(0);
-    LAPACK_ZPPSV( &lapack_option< UpLo >::value, &n, &nrhs, ap, b, &ldb,
-            &info );
-    return info;
+template <typename UpLo>
+inline std::ptrdiff_t ppsv(
+    const UpLo, const fortran_int_t n, const fortran_int_t nrhs,
+    std::complex<double>* ap, std::complex<double>* b, const fortran_int_t ldb
+) {
+  fortran_int_t info(0);
+  LAPACK_ZPPSV(&lapack_option<UpLo>::value, &n, &nrhs, ap, b, &ldb, &info);
+  return info;
 }
 
-} // namespace detail
+}  // namespace detail
 
 //
 // Value-type based template class. Use this class if you need a type
 // for dispatching to ppsv.
 //
-template< typename Value >
+template <typename Value>
 struct ppsv_impl {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
-
-    //
-    // Static member function, that
-    // * Deduces the required arguments for dispatching to LAPACK, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename MatrixAP, typename MatrixB >
-    static std::ptrdiff_t invoke( MatrixAP& ap, MatrixB& b ) {
-        namespace bindings = ::boost::numeric::bindings;
-        typedef typename result_of::uplo_tag< MatrixAP >::type uplo;
-        BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixB >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
-                typename bindings::value_type< MatrixAP >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                MatrixB >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< MatrixAP >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< MatrixB >::value) );
-        BOOST_ASSERT( bindings::size_column(ap) >= 0 );
-        BOOST_ASSERT( bindings::size_column(b) >= 0 );
-        BOOST_ASSERT( bindings::size_minor(b) == 1 ||
-                bindings::stride_minor(b) == 1 );
-        BOOST_ASSERT( bindings::stride_major(b) >= std::max< std::ptrdiff_t >(1,
-                bindings::size_column(ap)) );
-        return detail::ppsv( uplo(), bindings::size_column(ap),
-                bindings::size_column(b), bindings::begin_value(ap),
-                bindings::begin_value(b), bindings::stride_major(b) );
-    }
-
+  //
+  // Static member function, that
+  // * Deduces the required arguments for dispatching to LAPACK, and
+  // * Asserts that most arguments make sense.
+  //
+  template <typename MatrixAP, typename MatrixB>
+  static std::ptrdiff_t invoke(MatrixAP& ap, MatrixB& b) {
+    namespace bindings = ::boost::numeric::bindings;
+    typedef typename result_of::uplo_tag<MatrixAP>::type uplo;
+    BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixB>::value));
+    BOOST_STATIC_ASSERT(
+        (boost::is_same<
+            typename remove_const<
+                typename bindings::value_type<MatrixAP>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<MatrixB>::type>::type>::value)
+    );
+    BOOST_STATIC_ASSERT((bindings::is_mutable<MatrixAP>::value));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<MatrixB>::value));
+    BOOST_ASSERT(bindings::size_column(ap) >= 0);
+    BOOST_ASSERT(bindings::size_column(b) >= 0);
+    BOOST_ASSERT(
+        bindings::size_minor(b) == 1 || bindings::stride_minor(b) == 1
+    );
+    BOOST_ASSERT(
+        bindings::stride_major(b) >=
+        std::max<std::ptrdiff_t>(1, bindings::size_column(ap))
+    );
+    return detail::ppsv(
+        uplo(), bindings::size_column(ap), bindings::size_column(b),
+        bindings::begin_value(ap), bindings::begin_value(b),
+        bindings::stride_major(b)
+    );
+  }
 };
-
 
 //
 // Functions for direct use. These functions are overloaded for temporaries,
 // so that wrapped types can still be passed and used for write-access. In
 // addition, if applicable, they are overloaded for user-defined workspaces.
-// Calls to these functions are passed to the ppsv_impl classes. In the 
+// Calls to these functions are passed to the ppsv_impl classes. In the
 // documentation, most overloads are collapsed to avoid a large number of
 // prototypes which are very similar.
 //
@@ -158,15 +163,16 @@ struct ppsv_impl {
 //
 // Overloaded function for ppsv. Its overload differs for
 //
-template< typename MatrixAP, typename MatrixB >
-inline std::ptrdiff_t ppsv( MatrixAP& ap, MatrixB& b ) {
-    return ppsv_impl< typename bindings::value_type<
-            MatrixAP >::type >::invoke( ap, b );
+template <typename MatrixAP, typename MatrixB>
+inline std::ptrdiff_t ppsv(MatrixAP& ap, MatrixB& b) {
+  return ppsv_impl<typename bindings::value_type<MatrixAP>::type>::invoke(
+      ap, b
+  );
 }
 
-} // namespace lapack
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace lapack
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

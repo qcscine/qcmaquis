@@ -1,0 +1,21 @@
+CompileFlags:
+  Add: [-Wall, -Wextra, -std=c++17]
+
+Diagnostics:
+  Suppress: [pp_including_mainfile_in_preamble, pp_file_not_found, undeclared_var_use]
+  UnusedIncludes: None
+  MissingIncludes: None
+  ClangTidy:
+    Add: [cppcoreguidelines-*, modernize-*, readability-*, bugprone-*]
+    Remove: [
+      bugprone-easily-swappable-parameters,
+      modernize-use-trailing-return-type,
+      modernize-use-nodiscard,
+      modernize-return-braced-init-list,
+      cppcoreguidelines-avoid-magic-numbers,
+      cppcoreguidelines-non-private-member-variables-in-classes,
+      cppcoreguidelines-init-variables,
+      readability-magic-numbers,
+      readability-identifier-length,
+      readability-else-after-return,
+      readability-inconsistent-declaration-parameter-name]

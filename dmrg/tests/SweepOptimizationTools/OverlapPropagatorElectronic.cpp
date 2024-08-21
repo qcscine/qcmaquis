@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #define BOOST_TEST_MODULE OverlapPropagatorElectronic
@@ -23,34 +23,46 @@
 
 typedef boost::mpl::list<
 #ifdef HAVE_TwoU1PG
-TwoU1PG
+    TwoU1PG
 #endif
 #ifdef HAVE_SU2U1PG
-, SU2U1PG
+    ,
+    SU2U1PG
 #endif
-> symmetries;
+    >
+    symmetries;
 
 /**
  * @brief Checks that the OverlapPropagator object works propery.
- * 
- * The check is done by verifying that, if the object is constructed from two orthogonal MPSs,
- * the overlap between the reference MPS for a given site and the MPSTensor of the other MPS
- * is zero.
+ *
+ * The check is done by verifying that, if the object is constructed from two
+ * orthogonal MPSs, the overlap between the reference MPS for a given site and
+ * the MPSTensor of the other MPS is zero.
  */
-BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestOverlapPropagatorElectronic, S, symmetries, BenzeneFixture)
-{
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(
+    TestOverlapPropagatorElectronic, S, symmetries, BenzeneFixture
+) {
   using OverlapPropagatorType = OverlapPropagator<matrix, S, storage::disk>;
   using MPSType = MPS<matrix, S>;
-  parametersBenzene.set("init_type", "hf");
+  parametersBenzene.set("init_type", "basis_state_generic");
   auto latticeBenzene = Lattice(parametersBenzene);
   auto modelBenzene = Model<matrix, S>(latticeBenzene, parametersBenzene);
   auto mpoBenzene = make_mpo(latticeBenzene, modelBenzene);
-  parametersBenzene.set("hf_occ", "4,4,4,1,1,1");
-  auto mpsGS = MPS<matrix, S>(latticeBenzene.size(), *(modelBenzene.initializer(latticeBenzene, parametersBenzene)));
-  parametersBenzene.set("hf_occ", "4,4,1,4,1,1");
-  auto mpsExc1 = MPS<matrix, S>(latticeBenzene.size(), *(modelBenzene.initializer(latticeBenzene, parametersBenzene)));
-  parametersBenzene.set("hf_occ", "4,1,4,1,4,1");
-  auto mpsExc2 = MPS<matrix, S>(latticeBenzene.size(), *(modelBenzene.initializer(latticeBenzene, parametersBenzene)));
+  parametersBenzene.set("init_basis_state", "4,4,4,1,1,1");
+  auto mpsGS = MPS<matrix, S>(
+      latticeBenzene.size(),
+      *(modelBenzene.initializer(latticeBenzene, parametersBenzene))
+  );
+  parametersBenzene.set("init_basis_state", "4,4,1,4,1,1");
+  auto mpsExc1 = MPS<matrix, S>(
+      latticeBenzene.size(),
+      *(modelBenzene.initializer(latticeBenzene, parametersBenzene))
+  );
+  parametersBenzene.set("init_basis_state", "4,1,4,1,4,1");
+  auto mpsExc2 = MPS<matrix, S>(
+      latticeBenzene.size(),
+      *(modelBenzene.initializer(latticeBenzene, parametersBenzene))
+  );
   mpsGS.normalize_right();
   mpsExc1.normalize_right();
   mpsExc2.normalize_right();
@@ -59,10 +71,18 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestOverlapPropagatorElectronic, S, symmetries,
   excitedStateMPSs.push_back(mpsExc2);
   auto overlapPropagator = OverlapPropagatorType(mpsGS, excitedStateMPSs, 0);
   // Checks orthogonality
-  auto ortho1 = overlapPropagator.template getOrthogonalVector<SweepOptimizationType::SingleSite>(0, 0, 1);
+  auto ortho1 =
+      overlapPropagator
+          .template getOrthogonalVector<SweepOptimizationType::SingleSite>(
+              0, 0, 1
+          );
   auto overlap1 = ietl::dot(ortho1, mpsGS[0]);
   BOOST_CHECK_SMALL(overlap1, 1.0E-10);
-  auto ortho2 = overlapPropagator.template getOrthogonalVector<SweepOptimizationType::SingleSite>(1, 0, 1);
+  auto ortho2 =
+      overlapPropagator
+          .template getOrthogonalVector<SweepOptimizationType::SingleSite>(
+              1, 0, 1
+          );
   auto overlap2 = ietl::dot(ortho1, mpsGS[0]);
   BOOST_CHECK_SMALL(overlap2, 1.0E-10);
 }

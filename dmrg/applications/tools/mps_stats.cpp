@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #ifdef USE_AMBIENT
@@ -42,26 +42,27 @@ typedef U1 grp;
 typedef U1DG grp;
 #endif
 
-int main(int argc, char ** argv)
-{
-    try {
-        if (argc != 2) {
-            std::cout << "Usage: " << argv[0] << " <mps.h5>" << std::endl;
-            return 1;
-        }
-        MPS<matrix, grp> mps;
-        load(argv[1], mps);
-        
-        for (int i=0; i<mps.length(); ++i) {
-            std::string fname = "mps_stats."+boost::lexical_cast<std::string>(i)+".dat";
-            std::ofstream ofs(fname.c_str());
-            mps[i].make_left_paired();
-            for (int k=0; k<mps[i].data().n_blocks(); ++k)
-                ofs << num_rows(mps[i].data()[k]) << "    " << num_cols(mps[i].data()[k]) << std::endl;
-        }
-        
-    } catch (std::exception& e) {
-        std::cerr << "Error:" << std::endl << e.what() << std::endl;
-        return 1;
+int main(int argc, char** argv) {
+  try {
+    if (argc != 2) {
+      std::cout << "Usage: " << argv[0] << " <mps.h5>" << std::endl;
+      return 1;
     }
+    MPS<matrix, grp> mps;
+    load(argv[1], mps);
+
+    for (int i = 0; i < mps.length(); ++i) {
+      std::string fname =
+          "mps_stats." + boost::lexical_cast<std::string>(i) + ".dat";
+      std::ofstream ofs(fname.c_str());
+      mps[i].make_left_paired();
+      for (int k = 0; k < mps[i].data().n_blocks(); ++k)
+        ofs << num_rows(mps[i].data()[k]) << "    "
+            << num_cols(mps[i].data()[k]) << std::endl;
+    }
+
+  } catch (std::exception& e) {
+    std::cerr << "Error:" << std::endl << e.what() << std::endl;
+    return 1;
+  }
 }

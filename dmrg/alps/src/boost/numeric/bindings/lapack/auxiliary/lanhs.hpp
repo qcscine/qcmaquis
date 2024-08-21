@@ -50,11 +50,13 @@ namespace detail {
 // * netlib-compatible LAPACK backend (the default), and
 // * float value-type.
 //
-inline std::ptrdiff_t lanhs( const char norm, const fortran_int_t n,
-        const float* a, const fortran_int_t lda, float* work ) {
-    fortran_int_t info(0);
-    LAPACK_SLANHS( &norm, &n, a, &lda, work );
-    return info;
+inline std::ptrdiff_t lanhs(
+    const char norm, const fortran_int_t n, const float* a,
+    const fortran_int_t lda, float* work
+) {
+  fortran_int_t info(0);
+  LAPACK_SLANHS(&norm, &n, a, &lda, work);
+  return info;
 }
 
 //
@@ -62,11 +64,13 @@ inline std::ptrdiff_t lanhs( const char norm, const fortran_int_t n,
 // * netlib-compatible LAPACK backend (the default), and
 // * double value-type.
 //
-inline std::ptrdiff_t lanhs( const char norm, const fortran_int_t n,
-        const double* a, const fortran_int_t lda, double* work ) {
-    fortran_int_t info(0);
-    LAPACK_DLANHS( &norm, &n, a, &lda, work );
-    return info;
+inline std::ptrdiff_t lanhs(
+    const char norm, const fortran_int_t n, const double* a,
+    const fortran_int_t lda, double* work
+) {
+  fortran_int_t info(0);
+  LAPACK_DLANHS(&norm, &n, a, &lda, work);
+  return info;
 }
 
 //
@@ -74,11 +78,13 @@ inline std::ptrdiff_t lanhs( const char norm, const fortran_int_t n,
 // * netlib-compatible LAPACK backend (the default), and
 // * complex<float> value-type.
 //
-inline std::ptrdiff_t lanhs( const char norm, const fortran_int_t n,
-        const std::complex<float>* a, const fortran_int_t lda, float* work ) {
-    fortran_int_t info(0);
-    LAPACK_CLANHS( &norm, &n, a, &lda, work );
-    return info;
+inline std::ptrdiff_t lanhs(
+    const char norm, const fortran_int_t n, const std::complex<float>* a,
+    const fortran_int_t lda, float* work
+) {
+  fortran_int_t info(0);
+  LAPACK_CLANHS(&norm, &n, a, &lda, work);
+  return info;
 }
 
 //
@@ -86,97 +92,106 @@ inline std::ptrdiff_t lanhs( const char norm, const fortran_int_t n,
 // * netlib-compatible LAPACK backend (the default), and
 // * complex<double> value-type.
 //
-inline std::ptrdiff_t lanhs( const char norm, const fortran_int_t n,
-        const std::complex<double>* a, const fortran_int_t lda,
-        double* work ) {
-    fortran_int_t info(0);
-    LAPACK_ZLANHS( &norm, &n, a, &lda, work );
-    return info;
+inline std::ptrdiff_t lanhs(
+    const char norm, const fortran_int_t n, const std::complex<double>* a,
+    const fortran_int_t lda, double* work
+) {
+  fortran_int_t info(0);
+  LAPACK_ZLANHS(&norm, &n, a, &lda, work);
+  return info;
 }
 
-} // namespace detail
+}  // namespace detail
 
 //
 // Value-type based template class. Use this class if you need a type
 // for dispatching to lanhs.
 //
-template< typename Value >
+template <typename Value>
 struct lanhs_impl {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
+  //
+  // Static member function for user-defined workspaces, that
+  // * Deduces the required arguments for dispatching to LAPACK, and
+  // * Asserts that most arguments make sense.
+  //
+  template <typename MatrixA, typename WORK>
+  static std::ptrdiff_t invoke(
+      const char norm, const MatrixA& a, detail::workspace1<WORK> work
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixA>::value));
+    BOOST_ASSERT(
+        bindings::size(work.select(real_type())) >=
+        min_size_work(norm, bindings::size_column(a))
+    );
+    BOOST_ASSERT(bindings::size_column(a) >= 0);
+    BOOST_ASSERT(
+        bindings::size_minor(a) == 1 || bindings::stride_minor(a) == 1
+    );
+    BOOST_ASSERT(
+        bindings::stride_major(a) >=
+        std::max<std::ptrdiff_t>(bindings::size_column(a), 1)
+    );
+    return detail::lanhs(
+        norm, bindings::size_column(a), bindings::begin_value(a),
+        bindings::stride_major(a),
+        bindings::begin_value(work.select(real_type()))
+    );
+  }
 
-    //
-    // Static member function for user-defined workspaces, that
-    // * Deduces the required arguments for dispatching to LAPACK, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename MatrixA, typename WORK >
-    static std::ptrdiff_t invoke( const char norm, const MatrixA& a,
-            detail::workspace1< WORK > work ) {
-        namespace bindings = ::boost::numeric::bindings;
-        BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixA >::value) );
-        BOOST_ASSERT( bindings::size(work.select(real_type())) >=
-                min_size_work( norm, bindings::size_column(a) ));
-        BOOST_ASSERT( bindings::size_column(a) >= 0 );
-        BOOST_ASSERT( bindings::size_minor(a) == 1 ||
-                bindings::stride_minor(a) == 1 );
-        BOOST_ASSERT( bindings::stride_major(a) >= std::max<
-                std::ptrdiff_t >(bindings::size_column(a),1) );
-        return detail::lanhs( norm, bindings::size_column(a),
-                bindings::begin_value(a), bindings::stride_major(a),
-                bindings::begin_value(work.select(real_type())) );
-    }
+  //
+  // Static member function that
+  // * Figures out the minimal workspace requirements, and passes
+  //   the results to the user-defined workspace overload of the
+  //   invoke static member function
+  // * Enables the unblocked algorithm (BLAS level 2)
+  //
+  template <typename MatrixA>
+  static std::ptrdiff_t invoke(
+      const char norm, const MatrixA& a, minimal_workspace
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    bindings::detail::array<real_type> tmp_work(
+        min_size_work(norm, bindings::size_column(a))
+    );
+    return invoke(norm, a, workspace(tmp_work));
+  }
 
-    //
-    // Static member function that
-    // * Figures out the minimal workspace requirements, and passes
-    //   the results to the user-defined workspace overload of the 
-    //   invoke static member function
-    // * Enables the unblocked algorithm (BLAS level 2)
-    //
-    template< typename MatrixA >
-    static std::ptrdiff_t invoke( const char norm, const MatrixA& a,
-            minimal_workspace ) {
-        namespace bindings = ::boost::numeric::bindings;
-        bindings::detail::array< real_type > tmp_work( min_size_work( norm,
-                bindings::size_column(a) ) );
-        return invoke( norm, a, workspace( tmp_work ) );
-    }
+  //
+  // Static member function that
+  // * Figures out the optimal workspace requirements, and passes
+  //   the results to the user-defined workspace overload of the
+  //   invoke static member
+  // * Enables the blocked algorithm (BLAS level 3)
+  //
+  template <typename MatrixA>
+  static std::ptrdiff_t invoke(
+      const char norm, const MatrixA& a, optimal_workspace
+  ) {
+    namespace bindings = ::boost::numeric::bindings;
+    return invoke(norm, a, minimal_workspace());
+  }
 
-    //
-    // Static member function that
-    // * Figures out the optimal workspace requirements, and passes
-    //   the results to the user-defined workspace overload of the 
-    //   invoke static member
-    // * Enables the blocked algorithm (BLAS level 3)
-    //
-    template< typename MatrixA >
-    static std::ptrdiff_t invoke( const char norm, const MatrixA& a,
-            optimal_workspace ) {
-        namespace bindings = ::boost::numeric::bindings;
-        return invoke( norm, a, minimal_workspace() );
-    }
-
-    //
-    // Static member function that returns the minimum size of
-    // workspace-array work.
-    //
-    static std::ptrdiff_t min_size_work( const char norm,
-            const std::ptrdiff_t n ) {
-        if ( norm == 'I' )
-            return std::max< std::ptrdiff_t >( 1, n );
-        else
-            return 1;
-    }
+  //
+  // Static member function that returns the minimum size of
+  // workspace-array work.
+  //
+  static std::ptrdiff_t min_size_work(const char norm, const std::ptrdiff_t n) {
+    if (norm == 'I')
+      return std::max<std::ptrdiff_t>(1, n);
+    else
+      return 1;
+  }
 };
-
 
 //
 // Functions for direct use. These functions are overloaded for temporaries,
 // so that wrapped types can still be passed and used for write-access. In
 // addition, if applicable, they are overloaded for user-defined workspaces.
-// Calls to these functions are passed to the lanhs_impl classes. In the 
+// Calls to these functions are passed to the lanhs_impl classes. In the
 // documentation, most overloads are collapsed to avoid a large number of
 // prototypes which are very similar.
 //
@@ -185,29 +200,31 @@ struct lanhs_impl {
 // Overloaded function for lanhs. Its overload differs for
 // * User-defined workspace
 //
-template< typename MatrixA, typename Workspace >
-inline typename boost::enable_if< detail::is_workspace< Workspace >,
-        std::ptrdiff_t >::type
-lanhs( const char norm, const MatrixA& a, Workspace work ) {
-    return lanhs_impl< typename bindings::value_type<
-            MatrixA >::type >::invoke( norm, a, work );
+template <typename MatrixA, typename Workspace>
+inline typename boost::enable_if<
+    detail::is_workspace<Workspace>, std::ptrdiff_t>::type
+lanhs(const char norm, const MatrixA& a, Workspace work) {
+  return lanhs_impl<typename bindings::value_type<MatrixA>::type>::invoke(
+      norm, a, work
+  );
 }
 
 //
 // Overloaded function for lanhs. Its overload differs for
 // * Default workspace-type (optimal)
 //
-template< typename MatrixA >
-inline typename boost::disable_if< detail::is_workspace< MatrixA >,
-        std::ptrdiff_t >::type
-lanhs( const char norm, const MatrixA& a ) {
-    return lanhs_impl< typename bindings::value_type<
-            MatrixA >::type >::invoke( norm, a, optimal_workspace() );
+template <typename MatrixA>
+inline typename boost::disable_if<
+    detail::is_workspace<MatrixA>, std::ptrdiff_t>::type
+lanhs(const char norm, const MatrixA& a) {
+  return lanhs_impl<typename bindings::value_type<MatrixA>::type>::invoke(
+      norm, a, optimal_workspace()
+  );
 }
 
-} // namespace lapack
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace lapack
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

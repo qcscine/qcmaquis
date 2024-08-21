@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #define BOOST_TEST_MODULE ElectronicFEAST
@@ -19,16 +19,20 @@
 
 typedef boost::mpl::list<
 #ifdef HAVE_TwoU1PG
-TwoU1PG
+    TwoU1PG
 #endif
 #ifdef HAVE_SU2U1PG
-, SU2U1PG
+    ,
+    SU2U1PG
 #endif
-> symmetries;
+    >
+    symmetries;
 
-/** @brief Test FEAST for electronic calculations (we target the ground and first excited state) */
-BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2, S, symmetries, H2Fixture)
-{
+/** @brief Test FEAST for electronic calculations (we target the ground and
+ * first excited state) */
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(
+    Test_FEAST_Electronic_H2, S, symmetries, H2Fixture
+) {
   using FEASTSimulatorType = FEASTSimulator<S>;
   using ModelType = Model<cmatrix, S>;
   //
@@ -50,11 +54,13 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2, S, symmetries, H2Fixt
   interfaceOptimizerES.optimize();
   auto energyFromOptimizerES = interfaceOptimizerES.energy();
   // Cleans up stuff
-  boost::filesystem::remove_all("GS.H2.FEAST.chkp.h5");
-  boost::filesystem::remove_all("ES.H2.FEAST.chkp.h5");
+  std::filesystem::remove_all("GS.H2.FEAST.chkp.h5");
+  std::filesystem::remove_all("ES.H2.FEAST.chkp.h5");
   // FEAST for ground state
-  auto eMin = energyFromOptimizerGS - (energyFromOptimizerES-energyFromOptimizerGS)/10.;
-  auto eMax = energyFromOptimizerGS + (energyFromOptimizerES-energyFromOptimizerGS)/10.;
+  auto eMin = energyFromOptimizerGS -
+              (energyFromOptimizerES - energyFromOptimizerGS) / 10.;
+  auto eMax = energyFromOptimizerGS +
+              (energyFromOptimizerES - energyFromOptimizerGS) / 10.;
   parametersH2.set("feast_num_states", 1);
   parametersH2.set("feast_max_iter", 1);
   parametersH2.set("feast_emin", eMin);
@@ -68,7 +74,8 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2, S, symmetries, H2Fixt
   auto H2Lattice = Lattice(parametersH2);
   auto H2Model = ModelType(H2Lattice, parametersH2);
   auto H2MPO = make_mpo(H2Lattice, H2Model);
-  auto feastSimulator = FEASTSimulatorType(parametersH2, H2Model, H2Lattice, H2MPO);
+  auto feastSimulator =
+      FEASTSimulatorType(parametersH2, H2Model, H2Lattice, H2MPO);
   feastSimulator.runFEAST();
   auto feastEnergy = feastSimulator.getEnergy(0);
   BOOST_CHECK_CLOSE(feastEnergy, energyFromOptimizerGS, 1.0E-6);
@@ -78,15 +85,18 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2, S, symmetries, H2Fixt
   parametersH2.set("feast_max_iter", 5);
   parametersH2.set("feast_emin", eMin);
   parametersH2.set("feast_emax", eMax);
-  auto feastSimulatorES = FEASTSimulatorType(parametersH2, H2Model, H2Lattice, H2MPO);
+  auto feastSimulatorES =
+      FEASTSimulatorType(parametersH2, H2Model, H2Lattice, H2MPO);
   feastSimulatorES.runFEAST();
   feastEnergy = feastSimulatorES.getEnergy(0);
   BOOST_CHECK_CLOSE(feastEnergy, energyFromOptimizerES, 1.0E-6);
 }
 
-/** @brief Test FEAST for electronic calculations (we target the ground and first excited state) */
-BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2_Interface, S, symmetries, H2Fixture)
-{
+/** @brief Test FEAST for electronic calculations (we target the ground and
+ * first excited state) */
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(
+    Test_FEAST_Electronic_H2_Interface, S, symmetries, H2Fixture
+) {
   using ComplexType = std::complex<double>;
   using FEASTSimulatorType = FEASTSimulator<S>;
   using ModelType = Model<cmatrix, S>;
@@ -108,7 +118,8 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2_Interface, S, symmetri
   auto H2Lattice = Lattice(parametersH2);
   auto H2Model = ModelType(H2Lattice, parametersH2);
   auto H2MPO = make_mpo(H2Lattice, H2Model);
-  auto feastSimulator = FEASTSimulatorType(parametersH2, H2Model, H2Lattice, H2MPO);
+  auto feastSimulator =
+      FEASTSimulatorType(parametersH2, H2Model, H2Lattice, H2MPO);
   feastSimulator.runFEAST();
   auto feastEnergy = maquis::real(feastSimulator.getEnergy(0));
   // Gets the energy via the interface
@@ -119,9 +130,11 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2_Interface, S, symmetri
   BOOST_CHECK_CLOSE(feastEnergy, feastEnergyInterface, 1.0E-6);
 }
 
-/** @brief Test that running FEAST with real-valued parameters raises an exception */
-BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2_Real, S, symmetries, H2Fixture)
-{
+/** @brief Test that running FEAST with real-valued parameters raises an
+ * exception */
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(
+    Test_FEAST_Electronic_H2_Real, S, symmetries, H2Fixture
+) {
   parametersH2.set("max_bond_dimension", 10);
   parametersH2.set("init_type", "default");
   parametersH2.set("seed", 19893003);
@@ -132,11 +145,10 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2_Real, S, symmetries, H
   BOOST_CHECK_THROW(interfaceFEASTReal.runFEAST(), FEASTException);
 }
 
- #ifdef HAVE_TwoU1PG
+#ifdef HAVE_TwoU1PG
 
 /** @brief Test FEAST wit two guesses */
-BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_LiH_TwoGuesses, LiHFixture)
-{
+BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_LiH_TwoGuesses, LiHFixture) {
   // Generic data
   using ComplexType = std::complex<double>;
   auto refEnergyGS = -7.904357504731657;
@@ -151,8 +163,8 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_LiH_TwoGuesses, LiHFixture)
   parametersLiH.set("truncation_initial", 1.0E-30);
   parametersLiH.set("truncation_main", 1.0E-30);
   parametersLiH.set("linsystem_exact_error", "yes");
-  // Linear system parameters (note that the same set of parameters is used also for DMRG[FEAST])
-  // parametersLiH.set("linsystem_precond", "yes");
+  // Linear system parameters (note that the same set of parameters is used also
+  // for DMRG[FEAST]) parametersLiH.set("linsystem_precond", "diagonal");
   parametersLiH.set("linsystem_init", "last");
   parametersLiH.set("linsystem_max_it", 1);
   parametersLiH.set("linsystem_tol", 1.0E-10);
@@ -166,8 +178,8 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_LiH_TwoGuesses, LiHFixture)
   parametersLiH.set("feast_overlap_convergence_threshold", 1.0E-5);
   parametersLiH.set("feast_energy_convergence_threshold", 1.0E-6);
   // Note that the interval includes two states, but we use three guesses.
-  parametersLiH.set("feast_emin", refEnergyGS-0.001);
-  parametersLiH.set("feast_emax", refEnergyGS+0.001);
+  parametersLiH.set("feast_emin", refEnergyGS - 0.001);
+  parametersLiH.set("feast_emax", refEnergyGS + 0.001);
   parametersLiH.set("feast_num_states", 2);
   parametersLiH.set("feast_calculate_standard_deviation", "yes");
   // Constructs the interface and runs FEAST
@@ -177,16 +189,18 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_LiH_TwoGuesses, LiHFixture)
   BOOST_CHECK_CLOSE(energyGS, refEnergyGS, 1.0E-10);
 }
 
-#endif // HAVE_TwoU1PG
+#endif  // HAVE_TwoU1PG
 
-/** 
- * @brief Test FEAST on Benzene with two guesses and an interval comprising 1 state 
- * Note that the threshold used in the test is rather high (1.0E-5) because we use 
- * a bond dimension (50) which does not allow to match precisely the reference energy,
- * which was obtained from a fully converged DMRG calculation.
+/**
+ * @brief Test FEAST on Benzene with two guesses and an interval comprising 1
+ * state Note that the threshold used in the test is rather high (1.0E-5)
+ * because we use a bond dimension (50) which does not allow to match precisely
+ * the reference energy, which was obtained from a fully converged DMRG
+ * calculation.
  */
-BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_TwoGuesses, BenzeneFixture)
-{
+BOOST_FIXTURE_TEST_CASE(
+    Test_FEAST_Electronic_Benzene_TwoGuesses, BenzeneFixture
+) {
   // Generic data
   using ComplexType = std::complex<double>;
   auto referenceEnergy = -230.7555388354673;
@@ -198,7 +212,8 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_TwoGuesses, BenzeneFixture
   parametersBenzene.set("truncation_initial", 1.0E-30);
   parametersBenzene.set("truncation_main", 1.0E-30);
   // parametersBenzene.set("linsystem_exact_error", "yes");
-  // Linear system parameters (note that the same set of parameters is used also for DMRG[FEAST])
+  // Linear system parameters (note that the same set of parameters is used also
+  // for DMRG[FEAST])
   parametersBenzene.set("linsystem_init", "last");
   parametersBenzene.set("linsystem_max_it", 1);
   parametersBenzene.set("linsystem_tol", 1.0E-8);
@@ -224,26 +239,29 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_TwoGuesses, BenzeneFixture
   interfaceBenzene.runFEAST();
   auto energy1 = maquis::real(interfaceBenzene.energyFEAST(0));
   BOOST_CHECK_CLOSE(energy1, referenceEnergy, 1.0E-5);
-#endif // HAVE_TwoU1
+#endif  // HAVE_TwoU1
   // Does the same for the point group case
 #ifdef HAVE_TwoU1PG
   parametersBenzene.set("symmetry", "2u1pg");
-  maquis::DMRGInterface<ComplexType> interfaceBenzenePointGroup(parametersBenzene);
+  maquis::DMRGInterface<ComplexType> interfaceBenzenePointGroup(
+      parametersBenzene
+  );
   interfaceBenzenePointGroup.runFEAST();
   auto energy2 = maquis::real(interfaceBenzenePointGroup.energyFEAST(0));
   BOOST_CHECK_CLOSE(energy2, referenceEnergy, 1.0E-5);
-#endif // HAVE_TwoU1PG
+#endif  // HAVE_TwoU1PG
 }
 
 /**
- * @brief Test FEAST on Benzene with 3 guesses and an interval comprising 2 states.
- * Note that, to differentiate the test compared to the previous test case, we use
- * the symmetry-adapted code.
- * Note that, as for the test above, the check threshold is low because -- to keep
- * the test short -- we use a relatively low value for the bond dimension.
+ * @brief Test FEAST on Benzene with 3 guesses and an interval comprising 2
+ * states. Note that, to differentiate the test compared to the previous test
+ * case, we use the symmetry-adapted code. Note that, as for the test above, the
+ * check threshold is low because -- to keep the test short -- we use a
+ * relatively low value for the bond dimension.
  */
-BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_ThreeGuesses, BenzeneFixture)
-{
+BOOST_FIXTURE_TEST_CASE(
+    Test_FEAST_Electronic_Benzene_ThreeGuesses, BenzeneFixture
+) {
   // Generic data
   using ComplexType = std::complex<double>;
   auto referenceEnergy0 = -230.7555388354674;
@@ -256,7 +274,8 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_ThreeGuesses, BenzeneFixtu
   parametersBenzene.set("truncation_initial", 1.0E-30);
   parametersBenzene.set("truncation_main", 1.0E-30);
   parametersBenzene.set("linsystem_exact_error", "no");
-  // Linear system parameters (note that the same set of parameters is used also for DMRG[FEAST])
+  // Linear system parameters (note that the same set of parameters is used also
+  // for DMRG[FEAST])
   parametersBenzene.set("linsystem_init", "last");
   parametersBenzene.set("linsystem_max_it", 1);
   parametersBenzene.set("linsystem_tol", 1.0E-8);
@@ -265,7 +284,8 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_ThreeGuesses, BenzeneFixtu
   parametersBenzene.set("feast_max_iter", 3);
   parametersBenzene.set("feast_num_points", 8);
   parametersBenzene.set("init_type", "default");
-  // parametersBenzene.set("init_basis_state", "4,4,4,1,1,1|4,4,1,4,1,1|4,1,4,1,4,1");
+  // parametersBenzene.set("init_basis_state",
+  // "4,4,4,1,1,1|4,4,1,4,1,1|4,1,4,1,4,1");
   parametersBenzene.set("feast_overlap_convergence_threshold", 1.0E-5);
   parametersBenzene.set("feast_energy_convergence_threshold", 1.0E-6);
   // Note that the interval includes two states, but we use three guesses.
@@ -278,17 +298,20 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_ThreeGuesses, BenzeneFixtu
   parametersBenzene.set("symmetry", "su2u1");
   maquis::DMRGInterface<ComplexType> interfaceBenzene(parametersBenzene);
   interfaceBenzene.runFEAST();
-  std::vector<double> vectorOFEnergies = {maquis::real(interfaceBenzene.energyFEAST(0)),
-                                          maquis::real(interfaceBenzene.energyFEAST(1))};
+  std::vector<double> vectorOFEnergies = {
+      maquis::real(interfaceBenzene.energyFEAST(0)),
+      maquis::real(interfaceBenzene.energyFEAST(1))};
   std::sort(vectorOFEnergies.begin(), vectorOFEnergies.end());
   // Now sets the intervals to be smaller.
-  parametersBenzene.set("feast_emin", vectorOFEnergies[0]-0.001);
-  parametersBenzene.set("feast_emax", vectorOFEnergies[0]+0.001);
+  parametersBenzene.set("feast_emin", vectorOFEnergies[0] - 0.001);
+  parametersBenzene.set("feast_emax", vectorOFEnergies[0] + 0.001);
   maquis::DMRGInterface<ComplexType> interfaceBenzeneSmaller(parametersBenzene);
   interfaceBenzene.runFEAST();
-  BOOST_CHECK_CLOSE(maquis::real(interfaceBenzene.energyFEAST(0)), referenceEnergy0, 1.0E-8);
+  BOOST_CHECK_CLOSE(
+      maquis::real(interfaceBenzene.energyFEAST(0)), referenceEnergy0, 1.0E-8
+  );
   // BOOST_CHECK_CLOSE(vectorOFEnergies[1], referenceEnergy1, 1.0E-8);
-#endif // HAVE_SU2U1
+#endif  // HAVE_SU2U1
   // Does the same for the point group case
 #ifdef HAVE_SU2U1PG
   parametersBenzene.set("symmetry", "su2u1pg");
@@ -297,42 +320,47 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_ThreeGuesses, BenzeneFixtu
   parametersBenzene.set("feast_emax", -230.48);
   maquis::DMRGInterface<ComplexType> interfaceBenzenePG(parametersBenzene);
   interfaceBenzenePG.runFEAST();
-  std::vector<double> vectorOFEnergiesPG = {maquis::real(interfaceBenzenePG.energyFEAST(0)),
-                                            maquis::real(interfaceBenzenePG.energyFEAST(1))};
+  std::vector<double> vectorOFEnergiesPG = {
+      maquis::real(interfaceBenzenePG.energyFEAST(0)),
+      maquis::real(interfaceBenzenePG.energyFEAST(1))};
   std::sort(vectorOFEnergiesPG.begin(), vectorOFEnergiesPG.end());
   // Now sets the intervals to be smaller.
-  parametersBenzene.set("feast_emin", vectorOFEnergiesPG[1]-0.001);
-  parametersBenzene.set("feast_emax", vectorOFEnergiesPG[1]+0.001);
-  maquis::DMRGInterface<ComplexType> interfaceBenzeneSmallerPG(parametersBenzene);
+  parametersBenzene.set("feast_emin", vectorOFEnergiesPG[1] - 0.001);
+  parametersBenzene.set("feast_emax", vectorOFEnergiesPG[1] + 0.001);
+  maquis::DMRGInterface<ComplexType> interfaceBenzeneSmallerPG(parametersBenzene
+  );
   interfaceBenzeneSmallerPG.runFEAST();
-  BOOST_CHECK_CLOSE(maquis::real(interfaceBenzeneSmallerPG.energyFEAST(0)), referenceEnergy1, 1.0E-8);
-#endif // HAVE_SU2U1PG
+  BOOST_CHECK_CLOSE(
+      maquis::real(interfaceBenzeneSmallerPG.energyFEAST(0)), referenceEnergy1,
+      1.0E-8
+  );
+#endif  // HAVE_SU2U1PG
 }
 
 #ifdef HAVE_SU2U1PG
 
 /**
- * @brief Test FEAST for electronic calculations (we target the first excited state)
- * Note that, unlike the other test-cases, here we benchmark against DMRG[IPI] and also
- * repeat the FEAST iterations.
+ * @brief Test FEAST for electronic calculations (we target the first excited
+ * state) Note that, unlike the other test-cases, here we benchmark against
+ * DMRG[IPI] and also repeat the FEAST iterations.
  */
-BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_LiH, LiHFixture)
-{
+BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_LiH, LiHFixture) {
   using FEASTSimulatorType = FEASTSimulator<SU2U1PG>;
   using ModelType = Model<cmatrix, SU2U1PG>;
   // Generic parameters
   parametersLiH.set("max_bond_dimension", 50);
-  parametersLiH.set("init_type", "hf");
-  parametersLiH.set("hf_occ", "4,1,1,1");
+  parametersLiH.set("init_type", "basis_state_generic");
+  parametersLiH.set("init_basis_state", "4,1,1,1");
   parametersLiH.set("optimization", "twosite");
   parametersLiH.set("symmetry", "su2u1pg");
   parametersLiH.set("init_type", "const");
   // IPI-specific parameters
   parametersLiH.set("ipi_sweep_overlap_threshold", 1.0E-5);
   parametersLiH.set("ipi_sweep_energy_threshold", 1.0E-5);
-  parametersLiH.set("ipi_sweeps_per_system", 5);
+  parametersLiH.set("nsweeps", 5);
   parametersLiH.set("ipi_iterations", 8);
-  // Linear system parameters (note that the same set of parameters is used also for DMRG[FEAST])
+  // Linear system parameters (note that the same set of parameters is used also
+  // for DMRG[FEAST])
   parametersLiH.set("linsystem_precond", "no");
   parametersLiH.set("linsystem_init", "last");
   parametersLiH.set("linsystem_max_it", 1);
@@ -351,7 +379,8 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_LiH, LiHFixture)
   optimizerIpiES1.runInversePowerIteration();
   auto energyFromIpiES1 = optimizerIpiES1.energy();
   BOOST_CHECK_SMALL(std::abs(energyFromIpiES1 - -7.77349), 1.0E-4);
-  // Second excited state (no reference from test2.cpp, but DMRG data == -7.275314952)
+  // Second excited state (no reference from test2.cpp, but DMRG data ==
+  // -7.275314952)
   parametersLiH.set("ipi_shift", -7.3);
   maquis::DMRGInterface<double> optimizerIpiES2(parametersLiH);
   optimizerIpiES2.runInversePowerIteration();
@@ -378,7 +407,8 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_LiH, LiHFixture)
   auto LiHLattice = Lattice(parametersLiH);
   auto LiHModel = ModelType(LiHLattice, parametersLiH);
   auto LiHMPO = make_mpo(LiHLattice, LiHModel);
-  auto feastSimulator = FEASTSimulatorType(parametersLiH, LiHModel, LiHLattice, LiHMPO);
+  auto feastSimulator =
+      FEASTSimulatorType(parametersLiH, LiHModel, LiHLattice, LiHMPO);
   feastSimulator.runFEAST();
   auto feastEnergy = feastSimulator.getEnergy(0);
   BOOST_CHECK_CLOSE(feastEnergy, energyFromIpiGS, 1.0E-5);
@@ -387,7 +417,8 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_LiH, LiHFixture)
   eMax = energyFromIpiES1 + 0.001;
   parametersLiH.set("feast_emin", eMin);
   parametersLiH.set("feast_emax", eMax);
-  auto feastSimulatorES1 = FEASTSimulatorType(parametersLiH, LiHModel, LiHLattice, LiHMPO);
+  auto feastSimulatorES1 =
+      FEASTSimulatorType(parametersLiH, LiHModel, LiHLattice, LiHMPO);
   feastSimulatorES1.runFEAST();
   feastEnergy = feastSimulatorES1.getEnergy(0);
   BOOST_CHECK_CLOSE(feastEnergy, energyFromIpiES1, 1.0E-5);
@@ -397,11 +428,14 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_LiH, LiHFixture)
   parametersLiH.set("feast_emin", eMin);
   parametersLiH.set("feast_emax", eMax);
   parametersLiH.set("feast_num_states", 2);
-  auto feastSimulatorTwoStates = FEASTSimulatorType(parametersLiH, LiHModel, LiHLattice, LiHMPO);
+  auto feastSimulatorTwoStates =
+      FEASTSimulatorType(parametersLiH, LiHModel, LiHLattice, LiHMPO);
   feastSimulatorTwoStates.runFEAST();
   auto feastEnergyGS = feastSimulatorTwoStates.getEnergy(0);
   auto feastEnergyES = feastSimulatorTwoStates.getEnergy(1);
-  BOOST_CHECK_CLOSE(feastEnergyGS+feastEnergyES, energyFromIpiGS+energyFromIpiES1, 1.0E-5);
+  BOOST_CHECK_CLOSE(
+      feastEnergyGS + feastEnergyES, energyFromIpiGS + energyFromIpiES1, 1.0E-5
+  );
 }
 
-#endif // HAVE_SU2U1PG
+#endif  // HAVE_SU2U1PG

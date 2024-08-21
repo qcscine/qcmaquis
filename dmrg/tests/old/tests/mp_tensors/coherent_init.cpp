@@ -48,244 +48,241 @@ using std::endl;
 #include "dmrg/models/generate_mpo.hpp"
 #include "dmrg/models/coded/lattice.hpp"
 
-#include <boost/tuple/tuple.hpp>
 #include <boost/math/special_functions/factorials.hpp>
 
 typedef alps::numeric::matrix<double> matrix;
 
-
 template <class SymmGroup>
-std::vector<double> measure_local(MPS<matrix, SymmGroup> const& mps,
-                                  typename operator_selector<matrix, SymmGroup>::type const& ident,
-                                  typename operator_selector<matrix, SymmGroup>::type const& op)
-{
-    typedef typename operator_selector<matrix, SymmGroup>::type op_t;
-    typedef std::vector<op_t> op_vec;
-    std::shared_ptr<lattice_impl> lat_ptr(new ChainLattice(mps.length()));
-    Lattice lattice(lat_ptr);
+std::vector<double> measure_local(
+    MPS<matrix, SymmGroup> const& mps,
+    typename operator_selector<matrix, SymmGroup>::type const& ident,
+    typename operator_selector<matrix, SymmGroup>::type const& op
+) {
+  typedef typename operator_selector<matrix, SymmGroup>::type op_t;
+  typedef std::vector<op_t> op_vec;
+  std::shared_ptr<lattice_impl> lat_ptr(new ChainLattice(mps.length()));
+  Lattice lattice(lat_ptr);
 
-    std::vector<double> vals(mps.size());
-    for (int p=0; p<mps.size(); ++p) {
-        generate_mpo::MPOMaker<matrix, SymmGroup> mpom(lattice, op_vec(1,ident),op_vec(1,ident));
-        generate_mpo::OperatorTerm<matrix, SymmGroup> term;
-        term.operators.push_back( std::make_pair(p, op) );
-        term.fill_operator = ident;
-        mpom.add_term(term);
-        MPO<matrix, SymmGroup> mpo = mpom.create_mpo();
+  std::vector<double> vals(mps.size());
+  for (int p = 0; p < mps.size(); ++p) {
+    generate_mpo::MPOMaker<matrix, SymmGroup> mpom(
+        lattice, op_vec(1, ident), op_vec(1, ident)
+    );
+    generate_mpo::OperatorTerm<matrix, SymmGroup> term;
+    term.operators.push_back(std::make_pair(p, op));
+    term.fill_operator = ident;
+    mpom.add_term(term);
+    MPO<matrix, SymmGroup> mpo = mpom.create_mpo();
 
-        vals[p] = maquis::real(expval(mps, mpo));
-    }
-    return vals;
+    vals[p] = maquis::real(expval(mps, mpo));
+  }
+  return vals;
 }
 
+BOOST_AUTO_TEST_CASE(manual_superposition) {
+  std::cout << "=== RUNNING manual_superposition ===" << std::endl;
 
-BOOST_AUTO_TEST_CASE( manual_superposition )
-{
-    std::cout << "=== RUNNING manual_superposition ===" << std::endl;
+  typedef TrivialGroup SymmGroup;
+  typedef SymmGroup::charge charge;
+  typedef std::tuple<charge, size_t, double> local_state;
+  typedef operator_selector<matrix, SymmGroup>::type op_t;
 
-    typedef TrivialGroup SymmGroup;
-    typedef SymmGroup::charge charge;
-    typedef boost::tuple<charge, size_t, double> local_state;
-    typedef operator_selector<matrix, SymmGroup>::type op_t;
+  using boost::math::factorial;
+  using std::exp;
+  using std::pow;
+  using std::sqrt;
 
-    using std::exp; using std::sqrt; using std::pow;
-    using boost::math::factorial;
+  int L = 4;
 
-    int L = 4;
+  // Bosons with Nmax=2
+  const int Nmax = 2;
+  charge C = SymmGroup::IdentityCharge;
+  Index<SymmGroup> phys;
+  phys.insert(std::make_pair(C, 3));
 
-    // Bosons with Nmax=2
-    const int Nmax = 2;
-    charge C = SymmGroup::IdentityCharge;
-    Index<SymmGroup> phys;
-    phys.insert(std::make_pair(C, 3));
+  MPS<matrix, SymmGroup> mps(L);
 
-    MPS<matrix,SymmGroup> mps(L);
+  Index<SymmGroup> left_i, right_i;
+  left_i.insert(std::make_pair(C, 1));
+  int p = 0;
+  {
+    matrix m(Nmax + 1, 2, 0.);
+    m(0, 0) = 1.;
+    m(1, 1) = 1.;
+    block_matrix<matrix, SymmGroup> block;
+    block.insert_block(m, C, C);
 
-    Index<SymmGroup> left_i, right_i;
-    left_i.insert(std::make_pair(C,1));
-    int p=0;
-    {
-        matrix m(Nmax+1, 2, 0.);
-        m(0,0) = 1.;
-        m(1,1) = 1.;
-        block_matrix<matrix, SymmGroup> block;
-        block.insert_block(m, C,C);
+    right_i = block.right_basis();
+    MPSTensor<matrix, SymmGroup> mt(phys, left_i, right_i, false, 0);
+    mt.data() = block;
 
-        right_i = block.right_basis();
-        MPSTensor<matrix, SymmGroup> mt(phys, left_i, right_i, false, 0);
-        mt.data() = block;
+    mps[p] = mt;
+    p++;
+    std::swap(left_i, right_i);
+  }
+  {
+    matrix m(6, 2, 0.);
+    m(0, 0) = 1.;
+    m(1, 1) = 1.;
+    block_matrix<matrix, SymmGroup> block;
+    block.insert_block(m, C, C);
 
-        mps[p] = mt;
-        p++;
-        std::swap(left_i, right_i);
-    }
-    {
-        matrix m(6, 2, 0.);
-        m(0,0) = 1.;
-        m(1,1) = 1.;
-        block_matrix<matrix, SymmGroup> block;
-        block.insert_block(m, C,C);
+    right_i = block.right_basis();
+    MPSTensor<matrix, SymmGroup> mt(phys, left_i, right_i, false, 0);
+    mt.data() = block;
 
-        right_i = block.right_basis();
-        MPSTensor<matrix, SymmGroup> mt(phys, left_i, right_i, false, 0);
-        mt.data() = block;
+    mps[p] = mt;
+    p++;
+    std::swap(left_i, right_i);
+  }
+  {
+    matrix m(6, 2, 0.);
+    m(0, 0) = 1.;
+    m(3, 1) = 1.;
+    block_matrix<matrix, SymmGroup> block;
+    block.insert_block(m, C, C);
 
-        mps[p] = mt;
-        p++;
-        std::swap(left_i, right_i);
-    }
-    {
-        matrix m(6, 2, 0.);
-        m(0,0) = 1.;
-        m(3,1) = 1.;
-        block_matrix<matrix, SymmGroup> block;
-        block.insert_block(m, C,C);
+    right_i = block.right_basis();
+    MPSTensor<matrix, SymmGroup> mt(phys, left_i, right_i, false, 0);
+    mt.data() = block;
 
-        right_i = block.right_basis();
-        MPSTensor<matrix, SymmGroup> mt(phys, left_i, right_i, false, 0);
-        mt.data() = block;
+    mps[p] = mt;
+    p++;
+    std::swap(left_i, right_i);
+  }
+  {
+    matrix m(6, 1, 0.);
+    m(0, 0) = 1.;
+    m(1, 0) = 1.;
+    block_matrix<matrix, SymmGroup> block;
+    block.insert_block(m, C, C);
 
-        mps[p] = mt;
-        p++;
-        std::swap(left_i, right_i);
-    }
-    {
-        matrix m(6, 1, 0.);
-        m(0,0) = 1.;
-        m(1,0) = 1.;
-        block_matrix<matrix, SymmGroup> block;
-        block.insert_block(m, C,C);
+    right_i = block.right_basis();
+    MPSTensor<matrix, SymmGroup> mt(phys, left_i, right_i, false, 0);
+    mt.data() = block;
 
-        right_i = block.right_basis();
-        MPSTensor<matrix, SymmGroup> mt(phys, left_i, right_i, false, 0);
-        mt.data() = block;
+    mps[p] = mt;
+    p++;
+    std::swap(left_i, right_i);
+  }
 
-        mps[p] = mt;
-        p++;
-        std::swap(left_i, right_i);
-    }
+  std::cout << "norm = " << norm(mps) << std::endl;
+  mps.normalize_left();
+  double nn = norm(mps);
+  std::cout << "norm = " << nn << std::endl;
 
-    std::cout << "norm = " << norm(mps) << std::endl;
-    mps.normalize_left();
-    double nn = norm(mps);
-    std::cout << "norm = " << nn << std::endl;
+  /// operators for meas
+  op_t ident = identity_matrix<op_t>(phys);
+  op_t densop;
+  {
+    matrix tmp(Nmax + 1, Nmax + 1, 0.);
+    for (int i = 1; i <= Nmax; ++i) tmp(i, i) = i;
+    densop.insert_block(tmp, C, C);
+  }
 
-    /// operators for meas
-    op_t ident = identity_matrix<op_t>(phys);
-    op_t densop;
-    {
-        matrix tmp(Nmax+1, Nmax+1, 0.);
-        for (int i=1; i<=Nmax; ++i) tmp(i,i) = i;
-        densop.insert_block(tmp, C,C);
-    }
+  /// meas
+  std::vector<double> meas_dens = measure_local(mps, ident, densop);
+  for (int p = 0; p < L; ++p) {
+    maquis::cout << "site " << p << ": " << meas_dens[p] / nn << std::endl;
+  }
 
-    /// meas
-    std::vector<double> meas_dens = measure_local(mps, ident, densop);
-    for (int p=0; p<L; ++p) {
-        maquis::cout << "site " << p << ": " << meas_dens[p]/nn << std::endl;
-    }
-
-    /// checking results
-    BOOST_CHECK_CLOSE(0.5, meas_dens[0]/nn, 1e-8 );
-    BOOST_CHECK_CLOSE(0.0, meas_dens[1]/nn, 1e-8 );
-    BOOST_CHECK_CLOSE(0.5, meas_dens[2]/nn, 1e-8 );
-    BOOST_CHECK_CLOSE(0.0, meas_dens[3]/nn, 1e-8 );
+  /// checking results
+  BOOST_CHECK_CLOSE(0.5, meas_dens[0] / nn, 1e-8);
+  BOOST_CHECK_CLOSE(0.0, meas_dens[1] / nn, 1e-8);
+  BOOST_CHECK_CLOSE(0.5, meas_dens[2] / nn, 1e-8);
+  BOOST_CHECK_CLOSE(0.0, meas_dens[3] / nn, 1e-8);
 }
 
-BOOST_AUTO_TEST_CASE( coherent_init_L2Nmax2 )
-{
-    std::cout << "=== RUNNING coherent_init_L2Nmax2 ===" << std::endl;
+BOOST_AUTO_TEST_CASE(coherent_init_L2Nmax2) {
+  std::cout << "=== RUNNING coherent_init_L2Nmax2 ===" << std::endl;
 
-    typedef TrivialGroup SymmGroup;
-    typedef SymmGroup::charge charge;
-    typedef boost::tuple<charge, size_t, double> local_state;
-    typedef operator_selector<matrix, SymmGroup>::type op_t;
-    using std::sqrt;
+  typedef TrivialGroup SymmGroup;
+  typedef SymmGroup::charge charge;
+  typedef std::tuple<charge, size_t, double> local_state;
+  typedef operator_selector<matrix, SymmGroup>::type op_t;
+  using std::sqrt;
 
-    int L = 2;
+  int L = 2;
 
-    // Bosons with Nmax=2
-    const int Nmax = 2;
-    charge C = SymmGroup::IdentityCharge;
-    Index<SymmGroup> phys;
-    phys.insert(std::make_pair(C, Nmax+1));
+  // Bosons with Nmax=2
+  const int Nmax = 2;
+  charge C = SymmGroup::IdentityCharge;
+  Index<SymmGroup> phys;
+  phys.insert(std::make_pair(C, Nmax + 1));
 
-    /// desired density
-    std::vector<double> coeff(L);
-    coeff[0] = sqrt(0.0075);
-    coeff[1] = sqrt(0.0025);
+  /// desired density
+  std::vector<double> coeff(L);
+  coeff[0] = sqrt(0.0075);
+  coeff[1] = sqrt(0.0025);
 
-    MPS<matrix,SymmGroup> mps = coherent_init<matrix>(coeff, phys);
+  MPS<matrix, SymmGroup> mps = coherent_init<matrix>(coeff, phys);
 
-    double nn = norm(mps);
-    std::cout << "norm = " << nn << std::endl;
+  double nn = norm(mps);
+  std::cout << "norm = " << nn << std::endl;
 
-    /// operators for meas
-    op_t ident = identity_matrix<op_t>(phys);
-    op_t densop;
-    {
-        matrix tmp(Nmax+1, Nmax+1, 0.);
-        for (int i=1; i<Nmax+1; ++i) tmp(i,i) = i;
-        densop.insert_block(tmp, C,C);
-    }
+  /// operators for meas
+  op_t ident = identity_matrix<op_t>(phys);
+  op_t densop;
+  {
+    matrix tmp(Nmax + 1, Nmax + 1, 0.);
+    for (int i = 1; i < Nmax + 1; ++i) tmp(i, i) = i;
+    densop.insert_block(tmp, C, C);
+  }
 
-    /// meas
-    std::vector<double> meas_dens = measure_local(mps, ident, densop);
-    for (int p=0; p<L; ++p) {
-        maquis::cout << "site " << p << ": " << meas_dens[p]/nn << std::endl;
-    }
-    for (int p=0; p<L; ++p) {
-        BOOST_CHECK_CLOSE(coeff[p]*coeff[p], meas_dens[p]/nn, 1. );
-    }
+  /// meas
+  std::vector<double> meas_dens = measure_local(mps, ident, densop);
+  for (int p = 0; p < L; ++p) {
+    maquis::cout << "site " << p << ": " << meas_dens[p] / nn << std::endl;
+  }
+  for (int p = 0; p < L; ++p) {
+    BOOST_CHECK_CLOSE(coeff[p] * coeff[p], meas_dens[p] / nn, 1.);
+  }
 }
 
+BOOST_AUTO_TEST_CASE(coherent_init_Nmax2) {
+  std::cout << "=== RUNNING coherent_init_Nmax2 ===" << std::endl;
 
-BOOST_AUTO_TEST_CASE( coherent_init_Nmax2 )
-{
-    std::cout << "=== RUNNING coherent_init_Nmax2 ===" << std::endl;
+  typedef TrivialGroup SymmGroup;
+  typedef SymmGroup::charge charge;
+  typedef std::tuple<charge, size_t, double> local_state;
+  typedef operator_selector<matrix, SymmGroup>::type op_t;
+  using std::sqrt;
 
-    typedef TrivialGroup SymmGroup;
-    typedef SymmGroup::charge charge;
-    typedef boost::tuple<charge, size_t, double> local_state;
-    typedef operator_selector<matrix, SymmGroup>::type op_t;
-    using std::sqrt;
+  int L = 4;
 
-    int L = 4;
+  // Bosons with Nmax=2
+  const int Nmax = 2;
+  charge C = SymmGroup::IdentityCharge;
+  Index<SymmGroup> phys;
+  phys.insert(std::make_pair(C, Nmax + 1));
 
-    // Bosons with Nmax=2
-    const int Nmax = 2;
-    charge C = SymmGroup::IdentityCharge;
-    Index<SymmGroup> phys;
-    phys.insert(std::make_pair(C, Nmax+1));
+  /// desired density
+  std::vector<double> coeff(L);
+  coeff[0] = sqrt(0.005);
+  coeff[1] = sqrt(0.015);
+  coeff[2] = sqrt(0.015);
+  coeff[3] = sqrt(0.005);
 
-    /// desired density
-    std::vector<double> coeff(L);
-    coeff[0] = sqrt(0.005);
-    coeff[1] = sqrt(0.015);
-    coeff[2] = sqrt(0.015);
-    coeff[3] = sqrt(0.005);
+  MPS<matrix, SymmGroup> mps = coherent_init<matrix>(coeff, phys);
 
-    MPS<matrix,SymmGroup> mps = coherent_init<matrix>(coeff, phys);
+  double nn = norm(mps);
+  std::cout << "norm = " << nn << std::endl;
 
-    double nn = norm(mps);
-    std::cout << "norm = " << nn << std::endl;
+  /// operators for meas
+  op_t ident = identity_matrix<op_t>(phys);
+  op_t densop;
+  {
+    matrix tmp(Nmax + 1, Nmax + 1, 0.);
+    for (int i = 1; i < Nmax + 1; ++i) tmp(i, i) = i;
+    densop.insert_block(tmp, C, C);
+  }
 
-    /// operators for meas
-    op_t ident = identity_matrix<op_t>(phys);
-    op_t densop;
-    {
-        matrix tmp(Nmax+1, Nmax+1, 0.);
-        for (int i=1; i<Nmax+1; ++i) tmp(i,i) = i;
-        densop.insert_block(tmp, C,C);
-    }
-
-    /// meas
-    std::vector<double> meas_dens = measure_local(mps, ident, densop);
-    for (int p=0; p<L; ++p) {
-        maquis::cout << "site " << p << ": " << meas_dens[p]/nn << std::endl;
-    }
-    for (int p=0; p<L; ++p) {
-        BOOST_CHECK_CLOSE(coeff[p]*coeff[p], meas_dens[p]/nn, 1. );
-    }
+  /// meas
+  std::vector<double> meas_dens = measure_local(mps, ident, densop);
+  for (int p = 0; p < L; ++p) {
+    maquis::cout << "site " << p << ": " << meas_dens[p] / nn << std::endl;
+  }
+  for (int p = 0; p < L; ++p) {
+    BOOST_CHECK_CLOSE(coeff[p] * coeff[p], meas_dens[p] / nn, 1.);
+  }
 }
-

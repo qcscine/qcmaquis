@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #include "dmrg/utils/archive.h"
@@ -19,11 +19,11 @@ dmrg_random::engine_t dmrg_random::engine = dmrg_random::engine_t(42);
 
 // Init logger
 namespace storage {
-    Logger<storage::archive> log;
+Logger<storage::archive> log;
 }
 
-// Init parallel params 
+// Init parallel params
 namespace parallel {
-    parameters& params = parameters::instance();
-    int groups_granularity;
-}
+parameters& params = parameters::instance();
+int groups_granularity;
+}  // namespace parallel

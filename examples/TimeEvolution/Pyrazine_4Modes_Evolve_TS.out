@@ -1,0 +1,3625 @@
+  SCINE QCMaquis 
+  Quantum Chemical Density Matrix Renormalization group
+  available from https://scine.ethz.ch/download/qcmaquis
+  based on the ALPS MPS codes from http://alps.comp-phys.org/
+  copyright (c) 2015-2018 Laboratory of Physical Chemistry, ETH Zurich
+  copyright (c) 2012-2016 by Sebastian Keller
+  copyright (c) 2016-2021 by Alberto Baiardi, Leon Freitag, 
+  Stefan Knecht, Yingjin Ma 
+  for details see the publication: 
+  A. Baiardi, J. Chem. Theory Comput. 17, 3320 (2021)
+
+This binary contains symmetries: none u1 2u1 2u1pg su2u1 su2u1pg 
+DMRG version 2.2.0-7cbcbb40d04371cc6690f882446c9821188de069 (ExcitonDynamicsValentin) release-3.0.6-gitlab
+Disk storage of boundaries disabled
+coeff: (-4114.23,0)
+operators: {0,3}
+
+coeff: (325.84799,0)
+operators: {0,3} {2,7}
+
+coeff: (-325.84799,0)
+operators: {0,3} {2,8}
+
+coeff: (559.3455,0)
+operators: {0,3} {3,7}
+
+coeff: (-559.3455,0)
+operators: {0,3} {3,8}
+
+coeff: (674.68277,0)
+operators: {0,3} {4,7}
+
+coeff: (-674.68277,0)
+operators: {0,3} {4,8}
+
+coeff: (518.21124,0)
+operators: {0,3} {5,7}
+
+coeff: (-518.21124,0)
+operators: {0,3} {5,8}
+
+coeff: (4114.23,0)
+operators: {1,3}
+
+coeff: (325.84799,0)
+operators: {1,3} {2,7}
+
+coeff: (-325.84799,0)
+operators: {1,3} {2,8}
+
+coeff: (559.3455,0)
+operators: {1,3} {3,7}
+
+coeff: (-559.3455,0)
+operators: {1,3} {3,8}
+
+coeff: (674.68277,0)
+operators: {1,3} {4,7}
+
+coeff: (-674.68277,0)
+operators: {1,3} {4,8}
+
+coeff: (518.21124,0)
+operators: {1,3} {5,7}
+
+coeff: (-518.21124,0)
+operators: {1,3} {5,8}
+
+coeff: (-791.22989,0)
+operators: {0,3} {2,5}
+
+coeff: (-405.69687,0)
+operators: {0,3} {3,5}
+
+coeff: (1171.11703,0)
+operators: {0,3} {4,5}
+
+coeff: (1092.881251,0)
+operators: {1,3} {2,5}
+
+coeff: (-1379.877165,0)
+operators: {1,3} {3,5}
+
+coeff: (302.45791,0)
+operators: {1,3} {4,5}
+
+coeff: (0.16131088,0)
+operators: {0,3} {2,7}
+
+coeff: (8.71078783,0)
+operators: {0,3} {2,5} {3,5}
+
+coeff: (-16.45371035,0)
+operators: {0,3} {2,5} {4,5}
+
+coeff: (8.71078783,0)
+operators: {0,3} {2,5} {3,5}
+
+coeff: (-65.33090875,0)
+operators: {0,3} {3,7}
+
+coeff: (38.23067993,0)
+operators: {0,3} {3,5} {4,5}
+
+coeff: (-16.45371035,0)
+operators: {0,3} {2,5} {4,5}
+
+coeff: (38.23067993,0)
+operators: {0,3} {3,5} {4,5}
+
+coeff: (-9.35603137,0)
+operators: {0,3} {4,7}
+
+coeff: (-93.47965832,0)
+operators: {0,3} {5,7}
+
+coeff: (-73.96104114,0)
+operators: {1,3} {2,7}
+
+coeff: (-24.03532198,0)
+operators: {1,3} {2,5} {3,5}
+
+coeff: (-15.24387871,0)
+operators: {1,3} {2,5} {4,5}
+
+coeff: (-24.03532198,0)
+operators: {1,3} {2,5} {3,5}
+
+coeff: (39.35985614,0)
+operators: {1,3} {3,7}
+
+coeff: (9.27537593,0)
+operators: {1,3} {3,5} {4,5}
+
+coeff: (-15.24387871,0)
+operators: {1,3} {2,5} {4,5}
+
+coeff: (9.27537593,0)
+operators: {1,3} {3,5} {4,5}
+
+coeff: (1.77441974,0)
+operators: {1,3} {4,7}
+
+coeff: (-93.47965832,0)
+operators: {1,3} {5,7}
+
+coeff: (1677.633212,0)
+operators: {0,1} {1,2} {5,5}
+
+coeff: (-80.65544294,0)
+operators: {0,1} {1,2} {2,5} {5,5}
+
+coeff: (-44.44114904,0)
+operators: {0,1} {1,2} {3,5} {5,5}
+
+coeff: (10.24324125,0)
+operators: {0,1} {1,2} {4,5} {5,5}
+
+coeff: (50.65161814,0)
+operators: {0,1} {1,2} {2,5} {5,5}
+
+coeff: (-44.44114904,0)
+operators: {0,1} {1,2} {3,5} {5,5}
+
+coeff: (10.24324125,0)
+operators: {0,1} {1,2} {4,5} {5,5}
+
+coeff: (1677.633212,0)
+operators: {0,2} {1,1} {5,5}
+
+coeff: (-80.65544294,0)
+operators: {0,2} {1,1} {2,5} {5,5}
+
+coeff: (-44.44114904,0)
+operators: {0,2} {1,1} {3,5} {5,5}
+
+coeff: (10.24324125,0)
+operators: {0,2} {1,1} {4,5} {5,5}
+
+coeff: (50.65161814,0)
+operators: {0,2} {1,1} {2,5} {5,5}
+
+coeff: (-44.44114904,0)
+operators: {0,2} {1,1} {3,5} {5,5}
+
+coeff: (10.24324125,0)
+operators: {0,2} {1,1} {4,5} {5,5}
+
+MPO Bond 0: 16/0
+MPO Bond 1: 18/0
+MPO Bond 2: 15/0
+MPO Bond 3: 10/0
+MPO Bond 4: 5/0
+MPO Bond 5: 1/0
+MPS initialization has finished...
+
++----------------------------------+
+ NEW SwEEP-BASED SIMULATION STARTED
++----------------------------------+
+
+ Simulation settings:
+ - Simulation type: Time Evolution
+ - Sweep-based modality: Two site
+ - Maximum number of sweeps: 20
+
+ -------------------
+   SWEEP NUMBER 0
+ -------------------
+ - Noise parameter: 0.01
+ - Maximum bond dimension: 100
+ - Truncation parameter: 1e-40
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.4968E+03 
+    2        |  6.6313E-03 
+    3        |  6.8633E-09 
+    4        |  6.0432E-29 
++------------+------------+
+ Energy = 22593.53542394218
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.4968E+03 
+    2        |  6.6313E-03 
+    3        |  6.8633E-09 
+    4        |  4.9570E-29 
++------------+------------+
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.8771E+03 
+    2        |  4.3550E-02 
+    3        |  3.1476E-07 
+    4        |  1.1625E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.8771E+03 
+    2        |  4.3550E-02 
+    3        |  3.1476E-07 
+    4        |  1.1625E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  3.3514E+03 
+    2        |  6.0144E-02 
+    3        |  6.2884E-07 
+    4        |  4.9112E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  3.3514E+03 
+    2        |  6.0144E-02 
+    3        |  6.2884E-07 
+    4        |  4.9112E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.3322E+03 
+    2        |  1.8115E-01 
+    3        |  2.6667E-06 
+    4        |  2.6024E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8548E+03 
+    2        |  2.3868E-01 
+    3        |  3.8968E-06 
+    4        |  3.7523E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8548E+03 
+    2        |  2.3868E-01 
+    3        |  3.8968E-06 
+    4        |  3.7523E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 5  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8825E+03 
+    2        |  2.4316E-01 
+    3        |  4.0895E-06 
+    4        |  4.2064E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8825E+03 
+    2        |  2.4316E-01 
+    3        |  4.0895E-06 
+    4        |  4.2064E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 6  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8825E+03 
+    2        |  2.4316E-01 
+    3        |  4.0895E-06 
+    4        |  4.2064E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.1869E+03 
+    2        |  1.3127E-01 
+    3        |  1.2058E-06 
+    4        |  8.6221E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 7  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.1869E+03 
+    2        |  1.3127E-01 
+    3        |  1.2058E-06 
+    4        |  8.6221E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.5102E+03 
+    2        |  7.0742E-03 
+    3        |  7.4382E-09 
+    4        |  2.6240E-27 
++------------+------------+
+
+Measuring PopulationState0
+Measuring PopulationState1
+
+ -------------------
+   SWEEP NUMBER 1
+ -------------------
+ - Noise parameter: 0.01
+ - Maximum bond dimension: 100
+ - Truncation parameter: 1.747528400007684e-40
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.5102E+03 
+    2        |  7.0742E-03 
+    3        |  7.4382E-09 
+    4        |  2.5427E-27 
++------------+------------+
+ Energy = 22593.5354239422
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.5102E+03 
+    2        |  7.0742E-03 
+    3        |  7.4382E-09 
+    4        |  2.5268E-27 
++------------+------------+
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.1869E+03 
+    2        |  1.3126E-01 
+    3        |  1.2056E-06 
+    4        |  8.6210E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.1869E+03 
+    2        |  1.3126E-01 
+    3        |  1.2056E-06 
+    4        |  8.6210E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8825E+03 
+    2        |  2.4316E-01 
+    3        |  4.0895E-06 
+    4        |  4.2064E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8825E+03 
+    2        |  2.4316E-01 
+    3        |  4.0895E-06 
+    4        |  4.2064E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8825E+03 
+    2        |  2.4316E-01 
+    3        |  4.0895E-06 
+    4        |  4.2064E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8824E+03 
+    2        |  2.4314E-01 
+    3        |  4.0880E-06 
+    4        |  4.1925E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8824E+03 
+    2        |  2.4314E-01 
+    3        |  4.0880E-06 
+    4        |  4.1925E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 5  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8825E+03 
+    2        |  2.4316E-01 
+    3        |  4.0895E-06 
+    4        |  4.2064E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8825E+03 
+    2        |  2.4316E-01 
+    3        |  4.0895E-06 
+    4        |  4.2064E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 6  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8825E+03 
+    2        |  2.4316E-01 
+    3        |  4.0895E-06 
+    4        |  4.2064E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.2471E+03 
+    2        |  1.3677E-01 
+    3        |  1.2587E-06 
+    4        |  8.5328E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 7  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.2471E+03 
+    2        |  1.3677E-01 
+    3        |  1.2587E-06 
+    4        |  8.5328E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.5727E+03 
+    2        |  8.8253E-03 
+    3        |  9.6361E-09 
+    4        |  1.8870E-27 
++------------+------------+
+
+Measuring PopulationState0
+Measuring PopulationState1
+
+ -------------------
+   SWEEP NUMBER 2
+ -------------------
+ - Noise parameter: 0.01
+ - Maximum bond dimension: 100
+ - Truncation parameter: 3.053855508833415e-40
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.5727E+03 
+    2        |  8.8253E-03 
+    3        |  9.6361E-09 
+    4        |  2.3119E-27 
++------------+------------+
+ Energy = 22593.53542394215
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.5727E+03 
+    2        |  8.8253E-03 
+    3        |  9.6361E-09 
+    4        |  3.6460E-27 
++------------+------------+
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.2472E+03 
+    2        |  1.3677E-01 
+    3        |  1.2582E-06 
+    4        |  8.5285E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.2472E+03 
+    2        |  1.3677E-01 
+    3        |  1.2582E-06 
+    4        |  8.5285E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8826E+03 
+    2        |  2.4317E-01 
+    3        |  4.0897E-06 
+    4        |  4.2066E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8826E+03 
+    2        |  2.4317E-01 
+    3        |  4.0897E-06 
+    4        |  4.2066E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8826E+03 
+    2        |  2.4317E-01 
+    3        |  4.0897E-06 
+    4        |  4.2066E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8824E+03 
+    2        |  2.4314E-01 
+    3        |  4.0877E-06 
+    4        |  4.1894E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8824E+03 
+    2        |  2.4314E-01 
+    3        |  4.0877E-06 
+    4        |  4.1894E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 5  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8826E+03 
+    2        |  2.4317E-01 
+    3        |  4.0897E-06 
+    4        |  4.2066E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8826E+03 
+    2        |  2.4317E-01 
+    3        |  4.0897E-06 
+    4        |  4.2066E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 6  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8826E+03 
+    2        |  2.4317E-01 
+    3        |  4.0897E-06 
+    4        |  4.2066E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.2601E+03 
+    2        |  1.3934E-01 
+    3        |  1.2973E-06 
+    4        |  8.5950E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 7  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.2601E+03 
+    2        |  1.3934E-01 
+    3        |  1.2973E-06 
+    4        |  8.5950E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.6746E+03 
+    2        |  1.1025E-02 
+    3        |  1.2576E-08 
+    4        |  4.0816E-27 
++------------+------------+
+
+Measuring PopulationState0
+Measuring PopulationState1
+
+ -------------------
+   SWEEP NUMBER 3
+ -------------------
+ - Noise parameter: 0.01
+ - Maximum bond dimension: 100
+ - Truncation parameter: 5.336699231206308e-40
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.6746E+03 
+    2        |  1.1025E-02 
+    3        |  1.2576E-08 
+    4        |  4.0994E-27 
++------------+------------+
+ Energy = 22593.53542394223
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.6746E+03 
+    2        |  1.1025E-02 
+    3        |  1.2576E-08 
+    4        |  4.6264E-27 
++------------+------------+
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.2602E+03 
+    2        |  1.3933E-01 
+    3        |  1.2966E-06 
+    4        |  8.5879E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.2602E+03 
+    2        |  1.3933E-01 
+    3        |  1.2966E-06 
+    4        |  8.5879E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8827E+03 
+    2        |  2.4318E-01 
+    3        |  4.0899E-06 
+    4        |  4.2070E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8827E+03 
+    2        |  2.4318E-01 
+    3        |  4.0899E-06 
+    4        |  4.2070E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8827E+03 
+    2        |  2.4318E-01 
+    3        |  4.0899E-06 
+    4        |  4.2070E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8825E+03 
+    2        |  2.4314E-01 
+    3        |  4.0871E-06 
+    4        |  4.1861E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8825E+03 
+    2        |  2.4314E-01 
+    3        |  4.0871E-06 
+    4        |  4.1861E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 5  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8827E+03 
+    2        |  2.4318E-01 
+    3        |  4.0899E-06 
+    4        |  4.2070E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8827E+03 
+    2        |  2.4318E-01 
+    3        |  4.0899E-06 
+    4        |  4.2070E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 6  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8827E+03 
+    2        |  2.4318E-01 
+    3        |  4.0899E-06 
+    4        |  4.2070E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.2726E+03 
+    2        |  1.4165E-01 
+    3        |  1.3339E-06 
+    4        |  8.6829E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 7  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.2726E+03 
+    2        |  1.4165E-01 
+    3        |  1.3339E-06 
+    4        |  8.6829E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.8007E+03 
+    2        |  1.3119E-02 
+    3        |  1.5556E-08 
+    4        |  5.5326E-27 
++------------+------------+
+
+Measuring PopulationState0
+Measuring PopulationState1
+
+ -------------------
+   SWEEP NUMBER 4
+ -------------------
+ - Noise parameter: 0.01
+ - Maximum bond dimension: 100
+ - Truncation parameter: 9.326033468832196e-40
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.8007E+03 
+    2        |  1.3119E-02 
+    3        |  1.5556E-08 
+    4        |  5.4146E-27 
++------------+------------+
+ Energy = 22593.5354239422
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.8007E+03 
+    2        |  1.3119E-02 
+    3        |  1.5556E-08 
+    4        |  5.0876E-27 
++------------+------------+
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.2728E+03 
+    2        |  1.4164E-01 
+    3        |  1.3331E-06 
+    4        |  8.6734E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.2728E+03 
+    2        |  1.4164E-01 
+    3        |  1.3331E-06 
+    4        |  8.6734E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8828E+03 
+    2        |  2.4319E-01 
+    3        |  4.0902E-06 
+    4        |  4.2076E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8828E+03 
+    2        |  2.4319E-01 
+    3        |  4.0902E-06 
+    4        |  4.2076E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8828E+03 
+    2        |  2.4319E-01 
+    3        |  4.0902E-06 
+    4        |  4.2076E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8826E+03 
+    2        |  2.4314E-01 
+    3        |  4.0861E-06 
+    4        |  4.1818E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8826E+03 
+    2        |  2.4314E-01 
+    3        |  4.0861E-06 
+    4        |  4.1818E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 5  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8828E+03 
+    2        |  2.4319E-01 
+    3        |  4.0902E-06 
+    4        |  4.2076E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8828E+03 
+    2        |  2.4319E-01 
+    3        |  4.0902E-06 
+    4        |  4.2076E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 6  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8828E+03 
+    2        |  2.4319E-01 
+    3        |  4.0902E-06 
+    4        |  4.2076E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.2881E+03 
+    2        |  1.4396E-01 
+    3        |  1.3703E-06 
+    4        |  8.7855E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 7  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.2881E+03 
+    2        |  1.4396E-01 
+    3        |  1.3703E-06 
+    4        |  8.7855E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.9366E+03 
+    2        |  1.4916E-02 
+    3        |  1.8143E-08 
+    4        |  8.3170E-27 
++------------+------------+
+
+Measuring PopulationState0
+Measuring PopulationState1
+
+ -------------------
+   SWEEP NUMBER 5
+ -------------------
+ - Noise parameter: 0.01
+ - Maximum bond dimension: 100
+ - Truncation parameter: 1.629750834620643e-39
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.9366E+03 
+    2        |  1.4916E-02 
+    3        |  1.8143E-08 
+    4        |  7.9965E-27 
++------------+------------+
+ Energy = 22593.53542394219
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  1.9366E+03 
+    2        |  1.4916E-02 
+    3        |  1.8143E-08 
+    4        |  7.1292E-27 
++------------+------------+
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.2883E+03 
+    2        |  1.4395E-01 
+    3        |  1.3694E-06 
+    4        |  8.7742E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.2883E+03 
+    2        |  1.4395E-01 
+    3        |  1.3694E-06 
+    4        |  8.7742E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8830E+03 
+    2        |  2.4321E-01 
+    3        |  4.0905E-06 
+    4        |  4.2082E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8830E+03 
+    2        |  2.4321E-01 
+    3        |  4.0905E-06 
+    4        |  4.2082E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8830E+03 
+    2        |  2.4321E-01 
+    3        |  4.0905E-06 
+    4        |  4.2082E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8827E+03 
+    2        |  2.4314E-01 
+    3        |  4.0851E-06 
+    4        |  4.1784E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8827E+03 
+    2        |  2.4314E-01 
+    3        |  4.0851E-06 
+    4        |  4.1784E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 5  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8830E+03 
+    2        |  2.4321E-01 
+    3        |  4.0905E-06 
+    4        |  4.2082E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8830E+03 
+    2        |  2.4321E-01 
+    3        |  4.0905E-06 
+    4        |  4.2082E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 6  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8830E+03 
+    2        |  2.4321E-01 
+    3        |  4.0905E-06 
+    4        |  4.2082E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.3064E+03 
+    2        |  1.4627E-01 
+    3        |  1.4062E-06 
+    4        |  8.8989E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 7  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.3064E+03 
+    2        |  1.4627E-01 
+    3        |  1.4062E-06 
+    4        |  8.8989E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.0720E+03 
+    2        |  1.6410E-02 
+    3        |  2.0063E-08 
+    4        |  9.7252E-27 
++------------+------------+
+
+Measuring PopulationState0
+Measuring PopulationState1
+
+ -------------------
+   SWEEP NUMBER 6
+ -------------------
+ - Noise parameter: 0.01
+ - Maximum bond dimension: 100
+ - Truncation parameter: 2.848035868435801e-39
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.0720E+03 
+    2        |  1.6410E-02 
+    3        |  2.0063E-08 
+    4        |  9.4672E-27 
++------------+------------+
+ Energy = 22593.53542394222
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.0720E+03 
+    2        |  1.6410E-02 
+    3        |  2.0063E-08 
+    4        |  9.8607E-27 
++------------+------------+
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.3067E+03 
+    2        |  1.4625E-01 
+    3        |  1.4052E-06 
+    4        |  8.8864E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.3067E+03 
+    2        |  1.4625E-01 
+    3        |  1.4052E-06 
+    4        |  8.8864E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8832E+03 
+    2        |  2.4322E-01 
+    3        |  4.0907E-06 
+    4        |  4.2088E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8832E+03 
+    2        |  2.4322E-01 
+    3        |  4.0907E-06 
+    4        |  4.2088E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8832E+03 
+    2        |  2.4322E-01 
+    3        |  4.0907E-06 
+    4        |  4.2088E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8828E+03 
+    2        |  2.4313E-01 
+    3        |  4.0837E-06 
+    4        |  4.1743E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8828E+03 
+    2        |  2.4313E-01 
+    3        |  4.0837E-06 
+    4        |  4.1743E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 5  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8832E+03 
+    2        |  2.4322E-01 
+    3        |  4.0907E-06 
+    4        |  4.2088E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8832E+03 
+    2        |  2.4322E-01 
+    3        |  4.0907E-06 
+    4        |  4.2088E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 6  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8832E+03 
+    2        |  2.4322E-01 
+    3        |  4.0907E-06 
+    4        |  4.2088E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.3268E+03 
+    2        |  1.4848E-01 
+    3        |  1.4405E-06 
+    4        |  9.0174E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 7  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.3268E+03 
+    2        |  1.4848E-01 
+    3        |  1.4405E-06 
+    4        |  9.0174E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.2000E+03 
+    2        |  1.7673E-02 
+    3        |  2.1163E-08 
+    4        |  9.9736E-27 
++------------+------------+
+
+Measuring PopulationState0
+Measuring PopulationState1
+
+ -------------------
+   SWEEP NUMBER 7
+ -------------------
+ - Noise parameter: 0.01
+ - Maximum bond dimension: 100
+ - Truncation parameter: 4.977023564332109e-39
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.2000E+03 
+    2        |  1.7673E-02 
+    3        |  2.1163E-08 
+    4        |  1.0602E-26 
++------------+------------+
+ Energy = 22593.5354239422
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.2000E+03 
+    2        |  1.7673E-02 
+    3        |  2.1163E-08 
+    4        |  1.1257E-26 
++------------+------------+
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.3270E+03 
+    2        |  1.4846E-01 
+    3        |  1.4394E-06 
+    4        |  9.0042E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.3270E+03 
+    2        |  1.4846E-01 
+    3        |  1.4394E-06 
+    4        |  9.0042E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8834E+03 
+    2        |  2.4323E-01 
+    3        |  4.0909E-06 
+    4        |  4.2093E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8834E+03 
+    2        |  2.4323E-01 
+    3        |  4.0909E-06 
+    4        |  4.2093E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8834E+03 
+    2        |  2.4323E-01 
+    3        |  4.0909E-06 
+    4        |  4.2093E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8828E+03 
+    2        |  2.4310E-01 
+    3        |  4.0813E-06 
+    4        |  4.1674E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8828E+03 
+    2        |  2.4310E-01 
+    3        |  4.0813E-06 
+    4        |  4.1674E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 5  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8834E+03 
+    2        |  2.4323E-01 
+    3        |  4.0909E-06 
+    4        |  4.2093E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8834E+03 
+    2        |  2.4323E-01 
+    3        |  4.0909E-06 
+    4        |  4.2093E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 6  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8834E+03 
+    2        |  2.4323E-01 
+    3        |  4.0909E-06 
+    4        |  4.2093E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.3476E+03 
+    2        |  1.5051E-01 
+    3        |  1.4719E-06 
+    4        |  9.1347E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 7  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.3476E+03 
+    2        |  1.5051E-01 
+    3        |  1.4719E-06 
+    4        |  9.1347E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.3169E+03 
+    2        |  1.8792E-02 
+    3        |  2.1399E-08 
+    4        |  1.1953E-26 
++------------+------------+
+
+Measuring PopulationState0
+Measuring PopulationState1
+
+ -------------------
+   SWEEP NUMBER 8
+ -------------------
+ - Noise parameter: 0.01
+ - Maximum bond dimension: 100
+ - Truncation parameter: 8.697490026177829e-39
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.3169E+03 
+    2        |  1.8792E-02 
+    3        |  2.1399E-08 
+    4        |  1.1588E-26 
++------------+------------+
+ Energy = 22593.53542394221
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.3169E+03 
+    2        |  1.8792E-02 
+    3        |  2.1399E-08 
+    4        |  1.1779E-26 
++------------+------------+
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.3478E+03 
+    2        |  1.5049E-01 
+    3        |  1.4708E-06 
+    4        |  9.1211E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.3478E+03 
+    2        |  1.5049E-01 
+    3        |  1.4708E-06 
+    4        |  9.1211E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8836E+03 
+    2        |  2.4324E-01 
+    3        |  4.0911E-06 
+    4        |  4.2097E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8836E+03 
+    2        |  2.4324E-01 
+    3        |  4.0911E-06 
+    4        |  4.2097E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8836E+03 
+    2        |  2.4324E-01 
+    3        |  4.0911E-06 
+    4        |  4.2097E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8827E+03 
+    2        |  2.4307E-01 
+    3        |  4.0779E-06 
+    4        |  4.1572E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8827E+03 
+    2        |  2.4307E-01 
+    3        |  4.0779E-06 
+    4        |  4.1572E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 5  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8836E+03 
+    2        |  2.4324E-01 
+    3        |  4.0911E-06 
+    4        |  4.2097E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8836E+03 
+    2        |  2.4324E-01 
+    3        |  4.0911E-06 
+    4        |  4.2097E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 6  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8836E+03 
+    2        |  2.4324E-01 
+    3        |  4.0911E-06 
+    4        |  4.2097E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.3673E+03 
+    2        |  1.5231E-01 
+    3        |  1.4999E-06 
+    4        |  9.2462E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 7  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.3673E+03 
+    2        |  1.5231E-01 
+    3        |  1.4999E-06 
+    4        |  9.2462E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.4213E+03 
+    2        |  1.9835E-02 
+    3        |  2.0828E-08 
+    4        |  1.4173E-26 
++------------+------------+
+
+Measuring PopulationState0
+Measuring PopulationState1
+
+ -------------------
+   SWEEP NUMBER 9
+ -------------------
+ - Noise parameter: 0.01
+ - Maximum bond dimension: 100
+ - Truncation parameter: 1.519911082952933e-38
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.4213E+03 
+    2        |  1.9835E-02 
+    3        |  2.0828E-08 
+    4        |  1.5261E-26 
++------------+------------+
+ Energy = 22593.53542394223
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.4213E+03 
+    2        |  1.9835E-02 
+    3        |  2.0828E-08 
+    4        |  1.5401E-26 
++------------+------------+
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.3675E+03 
+    2        |  1.5228E-01 
+    3        |  1.4988E-06 
+    4        |  9.2326E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.3675E+03 
+    2        |  1.5228E-01 
+    3        |  1.4988E-06 
+    4        |  9.2326E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8837E+03 
+    2        |  2.4325E-01 
+    3        |  4.0911E-06 
+    4        |  4.2100E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8837E+03 
+    2        |  2.4325E-01 
+    3        |  4.0911E-06 
+    4        |  4.2100E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8837E+03 
+    2        |  2.4325E-01 
+    3        |  4.0911E-06 
+    4        |  4.2100E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8825E+03 
+    2        |  2.4301E-01 
+    3        |  4.0738E-06 
+    4        |  4.1458E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8825E+03 
+    2        |  2.4301E-01 
+    3        |  4.0738E-06 
+    4        |  4.1458E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 5  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8837E+03 
+    2        |  2.4325E-01 
+    3        |  4.0911E-06 
+    4        |  4.2100E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8837E+03 
+    2        |  2.4325E-01 
+    3        |  4.0911E-06 
+    4        |  4.2100E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 6  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8837E+03 
+    2        |  2.4325E-01 
+    3        |  4.0911E-06 
+    4        |  4.2100E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.3848E+03 
+    2        |  1.5384E-01 
+    3        |  1.5246E-06 
+    4        |  9.3494E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 7  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.3848E+03 
+    2        |  1.5384E-01 
+    3        |  1.5246E-06 
+    4        |  9.3494E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.5130E+03 
+    2        |  2.0837E-02 
+    3        |  1.9584E-08 
+    4        |  1.6318E-26 
++------------+------------+
+
+Measuring PopulationState0
+Measuring PopulationState1
+
+ -------------------
+   SWEEP NUMBER 10
+ -------------------
+ - Noise parameter: 0.01
+ - Maximum bond dimension: 100
+ - Truncation parameter: 2.656087782946683e-38
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.5130E+03 
+    2        |  2.0837E-02 
+    3        |  1.9584E-08 
+    4        |  1.5819E-26 
++------------+------------+
+ Energy = 22593.53542394216
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.5130E+03 
+    2        |  2.0837E-02 
+    3        |  1.9584E-08 
+    4        |  1.6293E-26 
++------------+------------+
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.3849E+03 
+    2        |  1.5382E-01 
+    3        |  1.5234E-06 
+    4        |  9.3359E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.3849E+03 
+    2        |  1.5382E-01 
+    3        |  1.5234E-06 
+    4        |  9.3359E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8838E+03 
+    2        |  2.4326E-01 
+    3        |  4.0910E-06 
+    4        |  4.2100E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8838E+03 
+    2        |  2.4326E-01 
+    3        |  4.0910E-06 
+    4        |  4.2100E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8838E+03 
+    2        |  2.4326E-01 
+    3        |  4.0910E-06 
+    4        |  4.2100E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8821E+03 
+    2        |  2.4293E-01 
+    3        |  4.0692E-06 
+    4        |  4.1346E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8821E+03 
+    2        |  2.4293E-01 
+    3        |  4.0692E-06 
+    4        |  4.1346E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 5  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8838E+03 
+    2        |  2.4326E-01 
+    3        |  4.0910E-06 
+    4        |  4.2100E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8838E+03 
+    2        |  2.4326E-01 
+    3        |  4.0910E-06 
+    4        |  4.2100E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 6  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8838E+03 
+    2        |  2.4326E-01 
+    3        |  4.0910E-06 
+    4        |  4.2100E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.3993E+03 
+    2        |  1.5515E-01 
+    3        |  1.5464E-06 
+    4        |  9.4435E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 7  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.3993E+03 
+    2        |  1.5515E-01 
+    3        |  1.5464E-06 
+    4        |  9.4435E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.5927E+03 
+    2        |  2.1810E-02 
+    3        |  1.7842E-08 
+    4        |  1.5745E-26 
++------------+------------+
+
+Measuring PopulationState0
+Measuring PopulationState1
+
+ -------------------
+   SWEEP NUMBER 11
+ -------------------
+ - Noise parameter: 0.01
+ - Maximum bond dimension: 100
+ - Truncation parameter: 4.641588833612777e-38
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.5927E+03 
+    2        |  2.1810E-02 
+    3        |  1.7842E-08 
+    4        |  1.6087E-26 
++------------+------------+
+ Energy = 22593.5354239422
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.5927E+03 
+    2        |  2.1810E-02 
+    3        |  1.7842E-08 
+    4        |  1.6003E-26 
++------------+------------+
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.3994E+03 
+    2        |  1.5512E-01 
+    3        |  1.5452E-06 
+    4        |  9.4303E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.3994E+03 
+    2        |  1.5512E-01 
+    3        |  1.5452E-06 
+    4        |  9.4303E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8840E+03 
+    2        |  2.4326E-01 
+    3        |  4.0908E-06 
+    4        |  4.2099E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8840E+03 
+    2        |  2.4326E-01 
+    3        |  4.0908E-06 
+    4        |  4.2099E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8840E+03 
+    2        |  2.4326E-01 
+    3        |  4.0908E-06 
+    4        |  4.2099E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8816E+03 
+    2        |  2.4282E-01 
+    3        |  4.0639E-06 
+    4        |  4.1230E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8816E+03 
+    2        |  2.4282E-01 
+    3        |  4.0639E-06 
+    4        |  4.1230E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 5  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8840E+03 
+    2        |  2.4326E-01 
+    3        |  4.0908E-06 
+    4        |  4.2099E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8840E+03 
+    2        |  2.4326E-01 
+    3        |  4.0908E-06 
+    4        |  4.2099E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 6  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8840E+03 
+    2        |  2.4326E-01 
+    3        |  4.0908E-06 
+    4        |  4.2099E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4107E+03 
+    2        |  1.5625E-01 
+    3        |  1.5657E-06 
+    4        |  9.5283E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 7  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4107E+03 
+    2        |  1.5625E-01 
+    3        |  1.5657E-06 
+    4        |  9.5283E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.6614E+03 
+    2        |  2.2751E-02 
+    3        |  1.5791E-08 
+    4        |  1.6673E-26 
++------------+------------+
+
+Measuring PopulationState0
+Measuring PopulationState1
+
+ -------------------
+   SWEEP NUMBER 12
+ -------------------
+ - Noise parameter: 0.01
+ - Maximum bond dimension: 100
+ - Truncation parameter: 8.111308307896865e-38
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.6614E+03 
+    2        |  2.2751E-02 
+    3        |  1.5791E-08 
+    4        |  1.6432E-26 
++------------+------------+
+ Energy = 22593.53542394224
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.6614E+03 
+    2        |  2.2751E-02 
+    3        |  1.5791E-08 
+    4        |  1.6470E-26 
++------------+------------+
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4108E+03 
+    2        |  1.5622E-01 
+    3        |  1.5646E-06 
+    4        |  9.5155E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4108E+03 
+    2        |  1.5622E-01 
+    3        |  1.5646E-06 
+    4        |  9.5155E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8841E+03 
+    2        |  2.4326E-01 
+    3        |  4.0904E-06 
+    4        |  4.2096E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8841E+03 
+    2        |  2.4326E-01 
+    3        |  4.0904E-06 
+    4        |  4.2096E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8841E+03 
+    2        |  2.4326E-01 
+    3        |  4.0904E-06 
+    4        |  4.2096E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8809E+03 
+    2        |  2.4269E-01 
+    3        |  4.0582E-06 
+    4        |  4.1105E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8809E+03 
+    2        |  2.4269E-01 
+    3        |  4.0582E-06 
+    4        |  4.1105E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 5  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8841E+03 
+    2        |  2.4326E-01 
+    3        |  4.0904E-06 
+    4        |  4.2096E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8841E+03 
+    2        |  2.4326E-01 
+    3        |  4.0904E-06 
+    4        |  4.2096E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 6  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8841E+03 
+    2        |  2.4326E-01 
+    3        |  4.0904E-06 
+    4        |  4.2096E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4192E+03 
+    2        |  1.5718E-01 
+    3        |  1.5829E-06 
+    4        |  9.6035E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 7  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4192E+03 
+    2        |  1.5718E-01 
+    3        |  1.5829E-06 
+    4        |  9.6035E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.7204E+03 
+    2        |  2.3648E-02 
+    3        |  1.3620E-08 
+    4        |  1.5552E-26 
++------------+------------+
+
+Measuring PopulationState0
+Measuring PopulationState1
+
+ -------------------
+   SWEEP NUMBER 13
+ -------------------
+ - Noise parameter: 0.01
+ - Maximum bond dimension: 100
+ - Truncation parameter: 1.417474162926804e-37
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.7204E+03 
+    2        |  2.3648E-02 
+    3        |  1.3620E-08 
+    4        |  1.5345E-26 
++------------+------------+
+ Energy = 22593.53542394219
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.7204E+03 
+    2        |  2.3648E-02 
+    3        |  1.3620E-08 
+    4        |  1.5348E-26 
++------------+------------+
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4193E+03 
+    2        |  1.5715E-01 
+    3        |  1.5818E-06 
+    4        |  9.5911E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4193E+03 
+    2        |  1.5715E-01 
+    3        |  1.5818E-06 
+    4        |  9.5911E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8841E+03 
+    2        |  2.4325E-01 
+    3        |  4.0900E-06 
+    4        |  4.2090E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8841E+03 
+    2        |  2.4325E-01 
+    3        |  4.0900E-06 
+    4        |  4.2090E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8841E+03 
+    2        |  2.4325E-01 
+    3        |  4.0900E-06 
+    4        |  4.2090E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8802E+03 
+    2        |  2.4256E-01 
+    3        |  4.0525E-06 
+    4        |  4.0984E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8802E+03 
+    2        |  2.4256E-01 
+    3        |  4.0525E-06 
+    4        |  4.0984E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 5  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8841E+03 
+    2        |  2.4325E-01 
+    3        |  4.0900E-06 
+    4        |  4.2090E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8841E+03 
+    2        |  2.4325E-01 
+    3        |  4.0900E-06 
+    4        |  4.2090E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 6  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8841E+03 
+    2        |  2.4325E-01 
+    3        |  4.0900E-06 
+    4        |  4.2090E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4252E+03 
+    2        |  1.5797E-01 
+    3        |  1.5981E-06 
+    4        |  9.6683E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 7  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4252E+03 
+    2        |  1.5797E-01 
+    3        |  1.5981E-06 
+    4        |  9.6683E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.7708E+03 
+    2        |  2.4492E-02 
+    3        |  1.1507E-08 
+    4        |  1.1415E-26 
++------------+------------+
+
+Measuring PopulationState0
+Measuring PopulationState1
+
+ -------------------
+   SWEEP NUMBER 14
+ -------------------
+ - Noise parameter: 0.01
+ - Maximum bond dimension: 100
+ - Truncation parameter: 2.47707635599171e-37
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.7708E+03 
+    2        |  2.4492E-02 
+    3        |  1.1507E-08 
+    4        |  1.1250E-26 
++------------+------------+
+ Energy = 22593.53542394219
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.7708E+03 
+    2        |  2.4492E-02 
+    3        |  1.1507E-08 
+    4        |  1.1386E-26 
++------------+------------+
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4252E+03 
+    2        |  1.5793E-01 
+    3        |  1.5970E-06 
+    4        |  9.6563E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4252E+03 
+    2        |  1.5793E-01 
+    3        |  1.5970E-06 
+    4        |  9.6563E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8842E+03 
+    2        |  2.4324E-01 
+    3        |  4.0894E-06 
+    4        |  4.2083E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8842E+03 
+    2        |  2.4324E-01 
+    3        |  4.0894E-06 
+    4        |  4.2083E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8842E+03 
+    2        |  2.4324E-01 
+    3        |  4.0894E-06 
+    4        |  4.2083E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8794E+03 
+    2        |  2.4244E-01 
+    3        |  4.0476E-06 
+    4        |  4.0881E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8794E+03 
+    2        |  2.4244E-01 
+    3        |  4.0476E-06 
+    4        |  4.0881E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 5  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8842E+03 
+    2        |  2.4324E-01 
+    3        |  4.0894E-06 
+    4        |  4.2083E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8842E+03 
+    2        |  2.4324E-01 
+    3        |  4.0894E-06 
+    4        |  4.2083E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 6  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8842E+03 
+    2        |  2.4324E-01 
+    3        |  4.0894E-06 
+    4        |  4.2083E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4292E+03 
+    2        |  1.5861E-01 
+    3        |  1.6112E-06 
+    4        |  9.7218E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 7  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4292E+03 
+    2        |  1.5861E-01 
+    3        |  1.6112E-06 
+    4        |  9.7218E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.8139E+03 
+    2        |  2.5274E-02 
+    3        |  9.6320E-09 
+    4        |  1.1304E-26 
++------------+------------+
+
+Measuring PopulationState0
+Measuring PopulationState1
+
+ -------------------
+   SWEEP NUMBER 15
+ -------------------
+ - Noise parameter: 0.01
+ - Maximum bond dimension: 100
+ - Truncation parameter: 4.328761281083055e-37
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.8139E+03 
+    2        |  2.5274E-02 
+    3        |  9.6320E-09 
+    4        |  1.1412E-26 
++------------+------------+
+ Energy = 22593.5354239422
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.8139E+03 
+    2        |  2.5274E-02 
+    3        |  9.6320E-09 
+    4        |  1.1773E-26 
++------------+------------+
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4291E+03 
+    2        |  1.5858E-01 
+    3        |  1.6102E-06 
+    4        |  9.7101E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4291E+03 
+    2        |  1.5858E-01 
+    3        |  1.6102E-06 
+    4        |  9.7101E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8842E+03 
+    2        |  2.4323E-01 
+    3        |  4.0887E-06 
+    4        |  4.2074E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8842E+03 
+    2        |  2.4323E-01 
+    3        |  4.0887E-06 
+    4        |  4.2074E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8842E+03 
+    2        |  2.4323E-01 
+    3        |  4.0887E-06 
+    4        |  4.2074E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8787E+03 
+    2        |  2.4234E-01 
+    3        |  4.0435E-06 
+    4        |  4.0794E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8787E+03 
+    2        |  2.4234E-01 
+    3        |  4.0435E-06 
+    4        |  4.0794E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 5  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8842E+03 
+    2        |  2.4323E-01 
+    3        |  4.0887E-06 
+    4        |  4.2074E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8842E+03 
+    2        |  2.4323E-01 
+    3        |  4.0887E-06 
+    4        |  4.2074E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 6  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8842E+03 
+    2        |  2.4323E-01 
+    3        |  4.0887E-06 
+    4        |  4.2074E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4315E+03 
+    2        |  1.5914E-01 
+    3        |  1.6223E-06 
+    4        |  9.7626E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 7  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4315E+03 
+    2        |  1.5914E-01 
+    3        |  1.6223E-06 
+    4        |  9.7626E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.8508E+03 
+    2        |  2.5989E-02 
+    3        |  8.1822E-09 
+    4        |  1.1739E-26 
++------------+------------+
+
+Measuring PopulationState0
+Measuring PopulationState1
+
+ -------------------
+   SWEEP NUMBER 16
+ -------------------
+ - Noise parameter: 0.01
+ - Maximum bond dimension: 100
+ - Truncation parameter: 7.564633275546282e-37
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.8508E+03 
+    2        |  2.5989E-02 
+    3        |  8.1822E-09 
+    4        |  1.2169E-26 
++------------+------------+
+ Energy = 22593.53542394221
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.8508E+03 
+    2        |  2.5989E-02 
+    3        |  8.1822E-09 
+    4        |  1.2399E-26 
++------------+------------+
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4315E+03 
+    2        |  1.5910E-01 
+    3        |  1.6212E-06 
+    4        |  9.7514E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4315E+03 
+    2        |  1.5910E-01 
+    3        |  1.6212E-06 
+    4        |  9.7514E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8842E+03 
+    2        |  2.4321E-01 
+    3        |  4.0879E-06 
+    4        |  4.2064E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8842E+03 
+    2        |  2.4321E-01 
+    3        |  4.0879E-06 
+    4        |  4.2064E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8842E+03 
+    2        |  2.4321E-01 
+    3        |  4.0879E-06 
+    4        |  4.2064E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8780E+03 
+    2        |  2.4224E-01 
+    3        |  4.0398E-06 
+    4        |  4.0717E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8780E+03 
+    2        |  2.4224E-01 
+    3        |  4.0398E-06 
+    4        |  4.0717E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 5  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8842E+03 
+    2        |  2.4321E-01 
+    3        |  4.0879E-06 
+    4        |  4.2064E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8842E+03 
+    2        |  2.4321E-01 
+    3        |  4.0879E-06 
+    4        |  4.2064E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 6  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8842E+03 
+    2        |  2.4321E-01 
+    3        |  4.0879E-06 
+    4        |  4.2064E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4326E+03 
+    2        |  1.5954E-01 
+    3        |  1.6311E-06 
+    4        |  9.7900E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 7  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4326E+03 
+    2        |  1.5954E-01 
+    3        |  1.6311E-06 
+    4        |  9.7900E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.8823E+03 
+    2        |  2.6638E-02 
+    3        |  7.3357E-09 
+    4        |  1.2081E-26 
++------------+------------+
+
+Measuring PopulationState0
+Measuring PopulationState1
+
+ -------------------
+   SWEEP NUMBER 17
+ -------------------
+ - Noise parameter: 0.01
+ - Maximum bond dimension: 100
+ - Truncation parameter: 1.321941148466028e-36
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.8823E+03 
+    2        |  2.6638E-02 
+    3        |  7.3357E-09 
+    4        |  1.2050E-26 
++------------+------------+
+ Energy = 22593.5354239422
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.8823E+03 
+    2        |  2.6638E-02 
+    3        |  7.3357E-09 
+    4        |  1.1837E-26 
++------------+------------+
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4325E+03 
+    2        |  1.5950E-01 
+    3        |  1.6301E-06 
+    4        |  9.7792E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4325E+03 
+    2        |  1.5950E-01 
+    3        |  1.6301E-06 
+    4        |  9.7792E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8842E+03 
+    2        |  2.4320E-01 
+    3        |  4.0870E-06 
+    4        |  4.2052E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8842E+03 
+    2        |  2.4320E-01 
+    3        |  4.0870E-06 
+    4        |  4.2052E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8842E+03 
+    2        |  2.4320E-01 
+    3        |  4.0870E-06 
+    4        |  4.2052E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8774E+03 
+    2        |  2.4216E-01 
+    3        |  4.0360E-06 
+    4        |  4.0638E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8774E+03 
+    2        |  2.4216E-01 
+    3        |  4.0360E-06 
+    4        |  4.0638E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 5  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8842E+03 
+    2        |  2.4320E-01 
+    3        |  4.0870E-06 
+    4        |  4.2052E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8842E+03 
+    2        |  2.4320E-01 
+    3        |  4.0870E-06 
+    4        |  4.2052E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 6  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8842E+03 
+    2        |  2.4320E-01 
+    3        |  4.0870E-06 
+    4        |  4.2052E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4328E+03 
+    2        |  1.5983E-01 
+    3        |  1.6378E-06 
+    4        |  9.8038E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 7  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4328E+03 
+    2        |  1.5983E-01 
+    3        |  1.6378E-06 
+    4        |  9.8038E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.9092E+03 
+    2        |  2.7222E-02 
+    3        |  7.1727E-09 
+    4        |  1.2489E-26 
++------------+------------+
+
+Measuring PopulationState0
+Measuring PopulationState1
+
+ -------------------
+   SWEEP NUMBER 18
+ -------------------
+ - Noise parameter: 0.01
+ - Maximum bond dimension: 100
+ - Truncation parameter: 2.310129700083157e-36
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.9092E+03 
+    2        |  2.7222E-02 
+    3        |  7.1727E-09 
+    4        |  1.2470E-26 
++------------+------------+
+ Energy = 22593.5354239421
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.9092E+03 
+    2        |  2.7222E-02 
+    3        |  7.1727E-09 
+    4        |  1.2467E-26 
++------------+------------+
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4326E+03 
+    2        |  1.5979E-01 
+    3        |  1.6369E-06 
+    4        |  9.7932E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4326E+03 
+    2        |  1.5979E-01 
+    3        |  1.6369E-06 
+    4        |  9.7932E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8842E+03 
+    2        |  2.4317E-01 
+    3        |  4.0860E-06 
+    4        |  4.2038E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8842E+03 
+    2        |  2.4317E-01 
+    3        |  4.0860E-06 
+    4        |  4.2038E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8842E+03 
+    2        |  2.4317E-01 
+    3        |  4.0860E-06 
+    4        |  4.2038E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8769E+03 
+    2        |  2.4207E-01 
+    3        |  4.0319E-06 
+    4        |  4.0555E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8769E+03 
+    2        |  2.4207E-01 
+    3        |  4.0319E-06 
+    4        |  4.0555E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 5  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8842E+03 
+    2        |  2.4317E-01 
+    3        |  4.0860E-06 
+    4        |  4.2038E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8842E+03 
+    2        |  2.4317E-01 
+    3        |  4.0860E-06 
+    4        |  4.2038E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 6  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8842E+03 
+    2        |  2.4317E-01 
+    3        |  4.0860E-06 
+    4        |  4.2038E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4322E+03 
+    2        |  1.6002E-01 
+    3        |  1.6424E-06 
+    4        |  9.8040E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 7  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4322E+03 
+    2        |  1.6002E-01 
+    3        |  1.6424E-06 
+    4        |  9.8040E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.9323E+03 
+    2        |  2.7743E-02 
+    3        |  7.5931E-09 
+    4        |  1.5397E-26 
++------------+------------+
+
+Measuring PopulationState0
+Measuring PopulationState1
+
+ -------------------
+   SWEEP NUMBER 19
+ -------------------
+ - Noise parameter: 0.01
+ - Maximum bond dimension: 100
+ - Truncation parameter: 4.037017258596548e-36
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.9323E+03 
+    2        |  2.7743E-02 
+    3        |  7.5931E-09 
+    4        |  1.5617E-26 
++------------+------------+
+ Energy = 22593.53542394194
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.9323E+03 
+    2        |  2.7743E-02 
+    3        |  7.5931E-09 
+    4        |  1.5569E-26 
++------------+------------+
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4320E+03 
+    2        |  1.5998E-01 
+    3        |  1.6415E-06 
+    4        |  9.7937E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4320E+03 
+    2        |  1.5998E-01 
+    3        |  1.6415E-06 
+    4        |  9.7937E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8841E+03 
+    2        |  2.4315E-01 
+    3        |  4.0849E-06 
+    4        |  4.2023E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8841E+03 
+    2        |  2.4315E-01 
+    3        |  4.0849E-06 
+    4        |  4.2023E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8841E+03 
+    2        |  2.4315E-01 
+    3        |  4.0849E-06 
+    4        |  4.2023E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 4  , forward sweep
+ - Left boundaries taken from index: 4
+ - Right boundaries taken from index: 6
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8765E+03 
+    2        |  2.4197E-01 
+    3        |  4.0275E-06 
+    4        |  4.0465E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8765E+03 
+    2        |  2.4197E-01 
+    3        |  4.0275E-06 
+    4        |  4.0465E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 5  , backward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8841E+03 
+    2        |  2.4315E-01 
+    3        |  4.0849E-06 
+    4        |  4.2023E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8841E+03 
+    2        |  2.4315E-01 
+    3        |  4.0849E-06 
+    4        |  4.2023E-11 
++------------+------------+
+
+ MICROITERATION NUMBER = 6  , backward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.8841E+03 
+    2        |  2.4315E-01 
+    3        |  4.0849E-06 
+    4        |  4.2023E-11 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4310E+03 
+    2        |  1.6012E-01 
+    3        |  1.6451E-06 
+    4        |  9.7916E-12 
++------------+------------+
+
+ MICROITERATION NUMBER = 7  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  5.4310E+03 
+    2        |  1.6012E-01 
+    3        |  1.6451E-06 
+    4        |  9.7916E-12 
++------------+------------+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  2.9520E+03 
+    2        |  2.8206E-02 
+    3        |  8.3837E-09 
+    4        |  1.7298E-26 
++------------+------------+
+
+Measuring PopulationState0
+Measuring PopulationState1
+Task took 412.164848 seconds.

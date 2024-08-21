@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #ifdef USE_AMBIENT
@@ -39,25 +39,24 @@ typedef TrivialGroup grp;
 typedef U1 grp;
 #endif
 
-
-int main(int argc, char ** argv)
-{
-    try {
-        if (argc != 4) {
-            std::cout << "Usage: " << argv[0] << " <in1.chkp> <in2.chkp> <out.chkp>" << std::endl;
-            return 1;
-        }
-        MPS<matrix, grp> mps_in1;
-        load(argv[1], mps_in1);
-
-        MPS<matrix, grp> mps_in2;
-        load(argv[2], mps_in2);
-
-        MPS<matrix, grp> mps_out = join(mps_in1, mps_in2);
-        save(argv[3], mps_out);
-        
-    } catch (std::exception& e) {
-        std::cerr << "Error:" << std::endl << e.what() << std::endl;
-        return 1;
+int main(int argc, char** argv) {
+  try {
+    if (argc != 4) {
+      std::cout << "Usage: " << argv[0] << " <in1.chkp> <in2.chkp> <out.chkp>"
+                << std::endl;
+      return 1;
     }
+    MPS<matrix, grp> mps_in1;
+    load(argv[1], mps_in1);
+
+    MPS<matrix, grp> mps_in2;
+    load(argv[2], mps_in2);
+
+    MPS<matrix, grp> mps_out = join(mps_in1, mps_in2);
+    save(argv[3], mps_out);
+
+  } catch (std::exception& e) {
+    std::cerr << "Error:" << std::endl << e.what() << std::endl;
+    return 1;
+  }
 }

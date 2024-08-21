@@ -17,29 +17,30 @@ namespace numeric {
 namespace bindings {
 namespace result_of {
 
-template< typename T >
+template <typename T>
 struct unit_upper {
-    typedef detail::basic_wrapper<
-        T,
-        mpl::pair< tag::matrix_type, tag::unit_triangular >,
-        mpl::pair< tag::data_side, tag::upper >
-    > type;
+  typedef detail::basic_wrapper<
+      T, mpl::pair<tag::matrix_type, tag::unit_triangular>,
+      mpl::pair<tag::data_side, tag::upper> >
+      type;
 };
 
-} // namespace result_of
+}  // namespace result_of
 
-template< typename T >
-typename result_of::unit_upper< T >::type const unit_upper( T& underlying ) {
-    return typename result_of::unit_upper< T >::type( underlying );
+template <typename T>
+typename result_of::unit_upper<T>::type const unit_upper(T& underlying) {
+  return typename result_of::unit_upper<T>::type(underlying);
 }
 
-template< typename T >
-typename result_of::unit_upper< const T >::type const unit_upper( const T& underlying ) {
-    return typename result_of::unit_upper< const T >::type( underlying );
+template <typename T>
+typename result_of::unit_upper<const T>::type const unit_upper(
+    const T& underlying
+) {
+  return typename result_of::unit_upper<const T>::type(underlying);
 }
 
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

@@ -1,29 +1,29 @@
 /*****************************************************************************
-*
-* ALPS Project: Algorithms and Libraries for Physics Simulations
-*
-* ALPS Libraries
-*
-* Copyright (C) 2006-2014 by Synge Todo <wistaria@comp-phys.org>
-*
-* This software is part of the ALPS libraries, published under the ALPS
-* Library License; you can use, redistribute it and/or modify it under
-* the terms of the license, either version 1 or (at your option) any later
-* version.
-* 
-* You should have received a copy of the ALPS Library License along with
-* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
-* available from http://alps.comp-phys.org/.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-* FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
-* SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
-* FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
-* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
-* DEALINGS IN THE SOFTWARE.
-*
-*****************************************************************************/
+ *
+ * ALPS Project: Algorithms and Libraries for Physics Simulations
+ *
+ * ALPS Libraries
+ *
+ * Copyright (C) 2006-2014 by Synge Todo <wistaria@comp-phys.org>
+ *
+ * This software is part of the ALPS libraries, published under the ALPS
+ * Library License; you can use, redistribute it and/or modify it under
+ * the terms of the license, either version 1 or (at your option) any later
+ * version.
+ *
+ * You should have received a copy of the ALPS Library License along with
+ * the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+ * available from http://alps.comp-phys.org/.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
+ *****************************************************************************/
 
 #ifndef ALPS_RANDOM_CHOICE_HPP
 #define ALPS_RANDOM_CHOICE_HPP
@@ -45,16 +45,20 @@ namespace alps {
 
 namespace detail {
 
-template<typename WVEC, typename CutoffType, typename IndexType>
-inline bool check_table(WVEC const& weights,
-  std::vector<std::pair<CutoffType, IndexType> > const& table, double tol = 1.0e-10) {
+template <typename WVEC, typename CutoffType, typename IndexType>
+inline bool check_table(
+    WVEC const& weights,
+    std::vector<std::pair<CutoffType, IndexType> > const& table,
+    double tol = 1.0e-10
+) {
   std::size_t n = weights.size();
   std::size_t m = table.size();
   bool r = true;
   tol *= n;
   double norm = m / std::accumulate(weights.begin(), weights.end(), double(0));
   double nm = 1;
-  if (boost::is_integral<CutoffType>::value) nm /= std::numeric_limits<CutoffType>::max();
+  if (boost::is_integral<CutoffType>::value)
+    nm /= std::numeric_limits<CutoffType>::max();
   for (IndexType i = 0; i < n; ++i) {
     double p = nm * table[i].first;
     for (IndexType j = 0; j < m; ++j)
@@ -65,16 +69,17 @@ inline bool check_table(WVEC const& weights,
 }
 
 // Initialization routine with complexity O(N)
-template<typename WVEC, typename CutoffType, typename IndexType>
-inline void fill_ft2009(WVEC const& weights, std::vector<std::pair<CutoffType, IndexType> >& table,
-  typename boost::enable_if<boost::is_float<CutoffType> >::type* = 0,
-  typename boost::enable_if<boost::is_integral<IndexType> >::type* = 0) {
-  
+template <typename WVEC, typename CutoffType, typename IndexType>
+inline void fill_ft2009(
+    WVEC const& weights, std::vector<std::pair<CutoffType, IndexType> >& table,
+    typename boost::enable_if<boost::is_float<CutoffType> >::type* = 0,
+    typename boost::enable_if<boost::is_integral<IndexType> >::type* = 0
+) {
   if (weights.size() == 0)
     boost::throw_exception(std::invalid_argument("fill_ft2009"));
   std::size_t n = weights.size();
   CutoffType norm = CutoffType(0);
-  BOOST_FOREACH(CutoffType w, weights) {
+  BOOST_FOREACH (CutoffType w, weights) {
     if (w < CutoffType(0))
       boost::throw_exception(std::invalid_argument("fill_ft2009"));
     norm += w;
@@ -87,8 +92,10 @@ inline void fill_ft2009(WVEC const& weights, std::vector<std::pair<CutoffType, I
   // that all the negative elements precede the positive ones.
   table.resize(n);
   std::vector<std::pair<CutoffType, IndexType> > array(n);
-  typename std::vector<std::pair<CutoffType, IndexType> >::iterator neg_p = array.begin();
-  typename std::vector<std::pair<CutoffType, IndexType> >::iterator pos_p = array.end();
+  typename std::vector<std::pair<CutoffType, IndexType> >::iterator neg_p =
+      array.begin();
+  typename std::vector<std::pair<CutoffType, IndexType> >::iterator pos_p =
+      array.end();
   for (std::size_t i = 0; i < n; ++i) {
     CutoffType b = norm * weights[i] - CutoffType(1);
     if (b < CutoffType(0)) {
@@ -100,12 +107,14 @@ inline void fill_ft2009(WVEC const& weights, std::vector<std::pair<CutoffType, I
     }
   }
 
-  // Note: at this point `pos_p' is pointing the first non-negative element in the array.
+  // Note: at this point `pos_p' is pointing the first non-negative element in
+  // the array.
 
   // Assign alias and cutoff values
   for (neg_p = array.begin(); neg_p != array.end(); ++neg_p) {
     if (pos_p != array.end()) {
-      table[neg_p->second] = std::make_pair(CutoffType(1) + neg_p->first, pos_p->second);
+      table[neg_p->second] =
+          std::make_pair(CutoffType(1) + neg_p->first, pos_p->second);
       pos_p->first += neg_p->first;
       if (pos_p->first <= CutoffType(0)) ++pos_p;
     } else {
@@ -113,11 +122,13 @@ inline void fill_ft2009(WVEC const& weights, std::vector<std::pair<CutoffType, I
     }
   }
 }
-  
-template<typename WVEC, typename CutoffType, typename IndexType>
-inline void fill_ft2009(WVEC const& weights, std::vector<std::pair<CutoffType, IndexType> >& table,
-  typename boost::enable_if<boost::is_integral<CutoffType> >::type* = 0,
-  typename boost::enable_if<boost::is_integral<IndexType> >::type* = 0) {
+
+template <typename WVEC, typename CutoffType, typename IndexType>
+inline void fill_ft2009(
+    WVEC const& weights, std::vector<std::pair<CutoffType, IndexType> >& table,
+    typename boost::enable_if<boost::is_integral<CutoffType> >::type* = 0,
+    typename boost::enable_if<boost::is_integral<IndexType> >::type* = 0
+) {
   if (weights.size() == 0)
     boost::throw_exception(std::range_error("fill_ft2009"));
   std::size_t n = weights.size();
@@ -125,21 +136,21 @@ inline void fill_ft2009(WVEC const& weights, std::vector<std::pair<CutoffType, I
   while (m < n) m <<= 1;
 
   double norm = 0;
-  BOOST_FOREACH(double w, weights) {
-    if (w < 0)
-      boost::throw_exception(std::invalid_argument("fill_ft2009"));
+  BOOST_FOREACH (double w, weights) {
+    if (w < 0) boost::throw_exception(std::invalid_argument("fill_ft2009"));
     norm += w;
   }
-  if (norm <= 0)
-    boost::throw_exception(std::invalid_argument("fill_ft2009"));
+  if (norm <= 0) boost::throw_exception(std::invalid_argument("fill_ft2009"));
   norm = m / norm;
 
   // Initialize arrays.  We will reorder the elements in `array', so
   // that all the negative elements precede the positive ones.
   table.resize(m);
   std::vector<std::pair<double, IndexType> > array(m);
-  typename std::vector<std::pair<double, IndexType> >::iterator neg_p = array.begin();
-  typename std::vector<std::pair<double, IndexType> >::iterator pos_p = array.end();
+  typename std::vector<std::pair<double, IndexType> >::iterator neg_p =
+      array.begin();
+  typename std::vector<std::pair<double, IndexType> >::iterator pos_p =
+      array.end();
   for (std::size_t i = 0; i < m; ++i) {
     double b = norm * (i < n ? weights[i] : 0) - 1;
     if (b < 0) {
@@ -157,7 +168,8 @@ inline void fill_ft2009(WVEC const& weights, std::vector<std::pair<CutoffType, I
   double nm = std::numeric_limits<CutoffType>::max();
   for (neg_p = array.begin(); neg_p != array.end(); ++neg_p) {
     if (pos_p != array.end()) {
-      table[neg_p->second] = std::make_pair(CutoffType(nm * (1 + neg_p->first)), pos_p->second);
+      table[neg_p->second] =
+          std::make_pair(CutoffType(nm * (1 + neg_p->first)), pos_p->second);
       pos_p->first += neg_p->first;
       if (pos_p->first <= 0) ++pos_p;
     } else {
@@ -168,17 +180,18 @@ inline void fill_ft2009(WVEC const& weights, std::vector<std::pair<CutoffType, I
 
 // Original O(N^2) initialization routine given in A. W. Walker, ACM
 // Trans. Math. Software, 3, 253 (1977).
-template<typename WVEC, typename CutoffType, typename IndexType>
-inline void fill_walker1977(WVEC const& weights,
-  std::vector<std::pair<CutoffType, IndexType> >& table, CutoffType tol = 1.0e-10,
-  typename boost::enable_if<boost::is_float<CutoffType> >::type* = 0,
-  typename boost::enable_if<boost::is_integral<IndexType> >::type* = 0) {
-
+template <typename WVEC, typename CutoffType, typename IndexType>
+inline void fill_walker1977(
+    WVEC const& weights, std::vector<std::pair<CutoffType, IndexType> >& table,
+    CutoffType tol = 1.0e-10,
+    typename boost::enable_if<boost::is_float<CutoffType> >::type* = 0,
+    typename boost::enable_if<boost::is_integral<IndexType> >::type* = 0
+) {
   if (weights.size() == 0)
     boost::throw_exception(std::invalid_argument("fill_walker1977"));
   std::size_t n = weights.size();
   CutoffType norm = CutoffType(0);
-  BOOST_FOREACH(CutoffType w, weights) {
+  BOOST_FOREACH (CutoffType w, weights) {
     if (w < CutoffType(0))
       boost::throw_exception(std::invalid_argument("fill_walker1977"));
     norm += w;
@@ -212,7 +225,7 @@ inline void fill_walker1977(WVEC const& weights,
         maxpos = j;
       }
     }
-    
+
     if (sum < tol) break;
 
     // Assign alias and cutoff values
@@ -226,121 +239,132 @@ inline void fill_walker1977(WVEC const& weights,
 // double-based Walker algorithm
 //
 
-template<class CutoffType, class IntType, class RealType>
+template <class CutoffType, class IntType, class RealType>
 class random_choice_walker;
 
-template<class IntType, class RealType>
+template <class IntType, class RealType>
 class random_choice_walker<double, IntType, RealType> {
-public:
+ public:
   typedef RealType input_type;
   typedef IntType result_type;
 
   random_choice_walker() {}
-  template<class CONT>
-  random_choice_walker(const CONT& weights) { init(weights); }
-  template<class CONT>
-  void init(const CONT& weights) { detail::fill_ft2009(weights, table_); }
+  template <class CONT>
+  random_choice_walker(const CONT& weights) {
+    init(weights);
+  }
+  template <class CONT>
+  void init(const CONT& weights) {
+    detail::fill_ft2009(weights, table_);
+  }
 
-  template<class Engine>
+  template <class Engine>
   result_type operator()(Engine& eng) const {
     result_type x = result_type(RealType(size()) * eng());
     return (eng() < cutoff(x)) ? x : alias(x);
   }
 
-  template<class CONT>
+  template <class CONT>
   bool check(const CONT& weights, RealType tol = 1.0e-10) const {
     return detail::check_table(weights, table_, tol);
   }
 
-protected:
+ protected:
   IntType size() const { return table_.size(); }
   RealType cutoff(result_type i) const { return table_[i].first; }
   result_type alias(result_type i) const { return table_[i].second; }
 
-private:
-  std::vector<std::pair<RealType, result_type> > table_; // first element:  cutoff value
-                                                         // second element: alias
+ private:
+  std::vector<std::pair<RealType, result_type> >
+      table_;  // first element:  cutoff value
+               // second element: alias
 };
-
 
 //
 // optimized integer-based version of Walker algorithm
 //
 
-template<class IntType, class RealType>
+template <class IntType, class RealType>
 class random_choice_walker<unsigned int, IntType, RealType> {
-public:
+ public:
   typedef IntType input_type;
   typedef IntType result_type;
 
   random_choice_walker() {}
-  template<class CONT>
-  random_choice_walker(const CONT& weights) { init(weights); }
-  template<class CONT>
+  template <class CONT>
+  random_choice_walker(const CONT& weights) {
+    init(weights);
+  }
+  template <class CONT>
   void init(const CONT& weights) {
     detail::fill_ft2009(weights, table_);
     bits_ = 31 - int(std::log(table_.size() - 0.5) / std::log(2.0));
   }
 
-  template<class Engine>
+  template <class Engine>
   result_type operator()(Engine& eng) const {
     result_type x = eng() >> bits_;
     return (eng() < cutoff(x)) ? x : alias(x);
   }
 
-  template<class CONT>
+  template <class CONT>
   bool check(const CONT& weights, RealType tol = 1.0e-10) const {
     return detail::check_table(weights, table_, tol);
   }
 
-protected:
+ protected:
   IntType cutoff(IntType i) const { return table_[i].first; }
   IntType alias(IntType i) const { return table_[i].second; }
 
-private:
-  IntType bits_; // number of bits to be disposed
+ private:
+  IntType bits_;  // number of bits to be disposed
   std::vector<std::pair<IntType, IntType> > table_;
 };
-
 
 //
 // random_choice_bsearch (O(log N) algorithm using binary search algorithm)
 //
 
-template<class IntType = unsigned int, class RealType = double>
+template <class IntType = unsigned int, class RealType = double>
 class random_choice_bsearch {
-public:
+ public:
   typedef RealType input_type;
   typedef IntType result_type;
 
   random_choice_bsearch() : accum_(0) {}
-  template<class CONT>
-  random_choice_bsearch(CONT const& weights) { init(weights); }
-  template<class CONT>
+  template <class CONT>
+  random_choice_bsearch(CONT const& weights) {
+    init(weights);
+  }
+  template <class CONT>
   void init(CONT const& weights) {
 #ifndef BOOST_NO_LIMITS_COMPILE_TIME_CONSTANTS
     BOOST_STATIC_ASSERT(std::numeric_limits<IntType>::is_integer);
     BOOST_STATIC_ASSERT(!std::numeric_limits<RealType>::is_integer);
 #endif
     if (weights.size() == 0)
-      boost::throw_exception(std::invalid_argument("random_choice_bsearch::init"));
+      boost::throw_exception(std::invalid_argument("random_choice_bsearch::init"
+      ));
     RealType norm = 0;
-    BOOST_FOREACH(RealType w, weights) {
+    BOOST_FOREACH (RealType w, weights) {
       if (w < RealType(0))
-        boost::throw_exception(std::invalid_argument("random_choice_bsearch::init"));
+        boost::throw_exception(
+            std::invalid_argument("random_choice_bsearch::init")
+        );
       norm += w;
     }
     if (norm <= RealType(0))
-      boost::throw_exception(std::invalid_argument("random_choice_bsearch::init"));
+      boost::throw_exception(std::invalid_argument("random_choice_bsearch::init"
+      ));
     accum_.resize(0);
     double a = 0;
-    BOOST_FOREACH(RealType w, weights) {
+    BOOST_FOREACH (RealType w, weights) {
       a += w / norm;
       accum_.push_back(a);
     }
   }
 
-  template<class Engine>
+  template <class Engine>
   result_type operator()(Engine& eng) const {
     double p = eng();
     int first = 0;
@@ -366,9 +390,9 @@ public:
       } else if (last - first == 3) {
         if (p < accum_[first])
           return first;
-        else if  (p < accum_[first + 1])
+        else if (p < accum_[first + 1])
           return first + 1;
-        else if  (p < accum_[first + 2])
+        else if (p < accum_[first + 2])
           return first + 2;
         else
           return first + 3;
@@ -376,7 +400,7 @@ public:
         if (last - first == 2) {
           if (p < accum_[first])
             return first;
-          else if  (p < accum_[first + 1])
+          else if (p < accum_[first + 1])
             return first + 1;
           else
             return first + 2;
@@ -385,91 +409,106 @@ public:
     }
   }
 
-private:
+ private:
   std::vector<RealType> accum_;
 };
-
 
 //
 // random_choice_lsearch (O(N) algorithm with naive linear search)
 //
 
-template<class IntType = unsigned int, class RealType = double>
+template <class IntType = unsigned int, class RealType = double>
 class random_choice_lsearch {
-public:
+ public:
   typedef RealType input_type;
   typedef IntType result_type;
 
   random_choice_lsearch() : accum_(0) {}
-  template<class CONT>
-  random_choice_lsearch(CONT const& weights) { init(weights); }
-  template<class CONT>
+  template <class CONT>
+  random_choice_lsearch(CONT const& weights) {
+    init(weights);
+  }
+  template <class CONT>
   void init(CONT const& weights) {
 #ifndef BOOST_NO_LIMITS_COMPILE_TIME_CONSTANTS
     BOOST_STATIC_ASSERT(std::numeric_limits<IntType>::is_integer);
     BOOST_STATIC_ASSERT(!std::numeric_limits<RealType>::is_integer);
 #endif
     if (weights.size() == 0)
-      boost::throw_exception(std::invalid_argument("random_choice_lsearch::init"));
+      boost::throw_exception(std::invalid_argument("random_choice_lsearch::init"
+      ));
     double norm = 0;
-    BOOST_FOREACH(RealType w, weights) {
+    BOOST_FOREACH (RealType w, weights) {
       if (w < RealType(0))
-        boost::throw_exception(std::invalid_argument("random_choice_lsearch::init"));
+        boost::throw_exception(
+            std::invalid_argument("random_choice_lsearch::init")
+        );
       norm += w;
     }
     if (norm <= RealType(0))
-      boost::throw_exception(std::invalid_argument("random_choice_lsearch::init"));
+      boost::throw_exception(std::invalid_argument("random_choice_lsearch::init"
+      ));
     accum_.resize(0);
     double a = 0;
-    BOOST_FOREACH(RealType w, weights) {
+    BOOST_FOREACH (RealType w, weights) {
       a += w / norm;
       accum_.push_back(a);
     }
   }
 
-  template<class Engine>
+  template <class Engine>
   result_type operator()(Engine& eng) const {
     RealType x = eng();
-    for (result_type r = 0; r < accum_.size(); ++r) if (accum_[r] > x) return r;
-    return result_type(0); // never reached
+    for (result_type r = 0; r < accum_.size(); ++r)
+      if (accum_[r] > x) return r;
+    return result_type(0);  // never reached
   }
 
-private:
+ private:
   std::vector<RealType> accum_;
 };
 
-} // end namespace detail
+}  // end namespace detail
 
-template<typename RNG>
-class random_choice : public detail::random_choice_walker<typename RNG::result_type, unsigned int, double> {
-private:
-  typedef detail::random_choice_walker<typename RNG::result_type, unsigned int, double> base_type;
-public:
+template <typename RNG>
+class random_choice : public detail::random_choice_walker<
+                          typename RNG::result_type, unsigned int, double> {
+ private:
+  typedef detail::random_choice_walker<
+      typename RNG::result_type, unsigned int, double>
+      base_type;
+
+ public:
   random_choice() : base_type() {}
-  template<class CONT>
+  template <class CONT>
   random_choice(const CONT& weights) : base_type(weights) {}
 };
 
-template<>
-class random_choice<double> : public detail::random_choice_walker<double, unsigned int, double> {
-private:
+template <>
+class random_choice<double>
+    : public detail::random_choice_walker<double, unsigned int, double> {
+ private:
   typedef detail::random_choice_walker<double, unsigned int, double> base_type;
-public:
+
+ public:
   random_choice() : base_type() {}
-  template<class CONT>
+  template <class CONT>
   random_choice(const CONT& weights) : base_type(weights) {}
 };
 
-template<>
-class random_choice<unsigned int> : public detail::random_choice_walker<unsigned int, unsigned int, double> {
-private:
-  typedef detail::random_choice_walker<unsigned int, unsigned int, double> base_type;
-public:
+template <>
+class random_choice<unsigned int>
+    : public detail::random_choice_walker<unsigned int, unsigned int, double> {
+ private:
+  typedef detail::random_choice_walker<unsigned int, unsigned int, double>
+      base_type;
+
+ public:
   random_choice() : base_type() {}
-  template<class CONT>
+  template <class CONT>
   random_choice(const CONT& weights) : base_type(weights) {}
 };
 
-} // end namespace alps
+}  // end namespace alps
 
-#endif // ALPS_RANDOM_CHOICE_HPP
+#endif  // ALPS_RANDOM_CHOICE_HPP

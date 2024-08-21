@@ -14,12 +14,12 @@ namespace numeric {
 namespace bindings {
 namespace detail {
 
-template< typename Target, typename Source >
+template <typename Target, typename Source>
 struct convert_to {};
 
-} // namespace detail
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace detail
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

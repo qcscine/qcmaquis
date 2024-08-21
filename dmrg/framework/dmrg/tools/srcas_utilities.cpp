@@ -1,28 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2023 Reiher Group, ETH Zurich
- *               2023- by Nina Glaser <nglaser@phys.chem.ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher
+ * Group. See LICENSE.txt for details.
+ */
 
 #include "srcas_utilities.h"
 #include "dmrg/utils/DmrgParameters.h"
@@ -146,6 +127,36 @@ std::vector<int> SRCAS<ScalarType>::generateNewDet_() {
         }
       } while (!(detTmp_[i] < detSpace_[i])); // Only accept valid occupations
     }
+    if (detSpace_.size() != numParticles_) {
+      for (int i = 1; i < numParticles_; i++) {
+        maxDetStr_ += ",";
+        maxDetStr_ += parms_["Nmax"].str();
+      }
+      std::vector<int> tmpVec(numParticles_, std::stoi(parms_["Nmax"].str()));
+      detSpace_ = std::move(tmpVec);
+    }
+  } else if (parms_["MODEL"] == "quantum_chemistry") {
+    if (parms_["symmetry"] == "su2u1" || parms_["symmetry"] == "su2u1pg") {
+      numParticles_ = parms_["nelec"];
+      maquis::cout
+          << "WARNING: SU2 symmetry is not properly supported in SRCAS (yet)!"
+          << std::endl;
+    } else {
+      numParticles_ =
+          int(parms_["u1_total_charge1"]) + int(parms_["u1_total_charge2"]);
+    }
+    maxDetStr_ = "4";
+    for (int i = 1; i < parms_["L"]; i++) {
+      maxDetStr_ += ",4";
+    }
+    std::vector<int> tmpVec(parms_["L"], 4);
+    detSpace_ = std::move(tmpVec);
+  } else {
+    throw std::runtime_error(
+        "The SRCAS class supports only vibrational and electronic Hamiltonians "
+        "so far"
+    );
+  }
 
   } else if (parms_["MODEL"] == "quantum_chemistry") {
     do {
@@ -273,7 +284,7 @@ SRCAS<ScalarType>::SRCAS(DmrgParameters &parameters, std::shared_ptr<InterfaceTy
   this->setupInitState_();
 }
 
-template <typename ScalarType> // real or complex, nmode or canonical (watson)
+template <typename ScalarType>
 void SRCAS<ScalarType>::printSRCASSettings() {
   maquis::cout << std::endl << "----- SRCAS SETTINGS -----" << std::endl;
   maquis::cout << "MPS taken from:                             " << parms_["chkpfile"].str() << std::endl;
@@ -367,7 +378,7 @@ void SRCAS<ScalarType>::run() {
 // +---------------+
 //   FINAL PRINTING
 // +---------------+
-template <typename ScalarType> // real or complex, nmode or canonical (watson)
+template <typename ScalarType>  // real or complex, nmode or canonical (watson)
 void SRCAS<ScalarType>::printResults() {
   maquis::cout << "----------------------------------------------------------------" << std::endl;
   maquis::cout << std::endl << "--- Finished SRCAS ---" << std::endl;
@@ -400,17 +411,17 @@ void SRCAS<ScalarType>::printResults() {
   }
 }
 
-template <typename ScalarType> // real or complex, nmode or canonical (watson)
+template <typename ScalarType>  // real or complex, nmode or canonical (watson)
 std::vector<int> SRCAS<ScalarType>::getCurrentQueen() {
   return detQueen_;
 }
 
-template <typename ScalarType> // real or complex, nmode or canonical (watson)
+template <typename ScalarType>  // real or complex, nmode or canonical (watson)
 std::map<std::vector<int>, ScalarType> SRCAS<ScalarType>::getDetTable() {
   return hashTable_;
 }
 
-template <typename ScalarType> // real or complex, nmode or canonical (watson)
+template <typename ScalarType>  // real or complex, nmode or canonical (watson)
 double SRCAS<ScalarType>::getCompleteness() {
   return completeness_;
 }

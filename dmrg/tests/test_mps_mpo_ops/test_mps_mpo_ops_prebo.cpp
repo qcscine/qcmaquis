@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
- *            See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 // This files contains the tests that check the functionality of the
@@ -15,7 +15,7 @@
 #include <boost/test/included/unit_test.hpp>
 #include "utils/fpcomparison.h"
 #include <boost/mpl/list.hpp>
-#include "utils/io.hpp" // has to be first include because of impi
+#include "utils/io.hpp"  // has to be first include because of impi
 #include <iostream>
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mps_rotate.h"
@@ -23,74 +23,90 @@
 #include "Fixtures/PreBOTimeEvolversFixture.h"
 #include "test_mps.h"
 
-typedef boost::mpl::list<
-NU1_template<4>
-> symmetries;
+typedef boost::mpl::list<NU1_template<4> > symmetries;
 
 /**
- * @brief Checks that the MPO-MPS contraction fulfill the Hermitianity of the Hamiltonian
- * Note that this test uses the "standard" implementation of the expval function, which uses the left boundary.
+ * @brief Checks that the MPO-MPS contraction fulfill the Hermitianity of the
+ * Hamiltonian Note that this test uses the "standard" implementation of the
+ * expval function, which uses the left boundary.
  */
-BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPS_MPO_Hermitian_Left_Electronic, S, symmetries, PreBOTestTimeEvolverFixture )
-{
-    // Generates the HF MPS
-    auto lattice = Lattice(parametersPreBOReal);
-    auto modelHF = Model<matrix, S>(lattice, parametersPreBOReal);
-    auto mpsHF = MPS<matrix, S>(lattice.size(), *(modelHF.initializer(lattice, parametersPreBOReal)));
-    // Generates the const guess. Note that the bond dimension will be != than that of the HF
-    // guess, so we check that the contraction routines work also for MPS with different bond dimension.
-    parametersPreBOReal.set("init_type", "const");
-    auto modelConst = Model<matrix, S>(lattice, parametersPreBOReal);
-    auto mpsConst = MPS<matrix, S>(lattice.size(), *(modelConst.initializer(lattice, parametersPreBOReal)));
-    // Generates the default guess
-    parametersPreBOReal.set("init_type", "default");
-    auto modelDefault = Model<matrix, S>(lattice, parametersPreBOReal);
-    auto mpsDefault = MPS<matrix, S>(lattice.size(), *(modelDefault.initializer(lattice, parametersPreBOReal)));
-    // Calculates the MPO (any model would work here)
-    auto mpo = make_mpo(lattice, modelConst);
-    // Check 1
-    double expVal1 = expval(mpsDefault, mpsConst, mpo);
-    double expVal2 = expval(mpsConst, mpsDefault, mpo);
-    BOOST_CHECK_CLOSE(expVal1, expVal2, 1.E-10);
-    // Check 2
-    expVal1 = expval(mpsHF, mpsConst, mpo);
-    expVal2 = expval(mpsConst, mpsHF, mpo);
-    BOOST_CHECK_CLOSE(expVal1, expVal2, 1.E-10);
-    // Check 3
-    expVal1 = expval(mpsDefault, mpsHF, mpo);
-    expVal2 = expval(mpsHF, mpsDefault, mpo);
-    BOOST_CHECK_CLOSE(expVal1, expVal2, 1.E-10);
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(
+    Test_MPS_MPO_Hermitian_Left_Electronic, S, symmetries,
+    PreBOTestTimeEvolverFixture
+) {
+  // Generates the HF MPS
+  auto lattice = Lattice(parametersPreBOReal);
+  auto modelHF = Model<matrix, S>(lattice, parametersPreBOReal);
+  auto mpsHF = MPS<matrix, S>(
+      lattice.size(), *(modelHF.initializer(lattice, parametersPreBOReal))
+  );
+  // Generates the const guess. Note that the bond dimension will be != than
+  // that of the HF guess, so we check that the contraction routines work also
+  // for MPS with different bond dimension.
+  parametersPreBOReal.set("init_type", "const");
+  auto modelConst = Model<matrix, S>(lattice, parametersPreBOReal);
+  auto mpsConst = MPS<matrix, S>(
+      lattice.size(), *(modelConst.initializer(lattice, parametersPreBOReal))
+  );
+  // Generates the default guess
+  parametersPreBOReal.set("init_type", "default");
+  auto modelDefault = Model<matrix, S>(lattice, parametersPreBOReal);
+  auto mpsDefault = MPS<matrix, S>(
+      lattice.size(), *(modelDefault.initializer(lattice, parametersPreBOReal))
+  );
+  // Calculates the MPO (any model would work here)
+  auto mpo = make_mpo(lattice, modelConst);
+  // Check 1
+  double expVal1 = expval(mpsDefault, mpsConst, mpo);
+  double expVal2 = expval(mpsConst, mpsDefault, mpo);
+  BOOST_CHECK_CLOSE(expVal1, expVal2, 1.E-10);
+  // Check 2
+  expVal1 = expval(mpsHF, mpsConst, mpo);
+  expVal2 = expval(mpsConst, mpsHF, mpo);
+  BOOST_CHECK_CLOSE(expVal1, expVal2, 1.E-10);
+  // Check 3
+  expVal1 = expval(mpsDefault, mpsHF, mpo);
+  expVal2 = expval(mpsHF, mpsDefault, mpo);
+  BOOST_CHECK_CLOSE(expVal1, expVal2, 1.E-10);
 }
 
 /** @brief Same as above, but with the right boundaries */
-BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPS_MPO_Hermitian_Right_Electronic, S, symmetries, PreBOTestTimeEvolverFixture )
-{
-    // Generates the HF MPS
-    auto lattice = Lattice(parametersPreBOReal);
-    auto modelHF = Model<matrix, S>(lattice, parametersPreBOReal);
-    auto mpsHF = MPS<matrix, S>(lattice.size(), *(modelHF.initializer(lattice, parametersPreBOReal)));
-    // Generates the const guess. Note that the bond dimension will be != than that of the HF
-    // guess, so we check that the contraction routines work also for MPS with different bond dimension.
-    parametersPreBOReal.set("init_type", "const");
-    auto modelConst = Model<matrix, S>(lattice, parametersPreBOReal);
-    auto mpsConst = MPS<matrix, S>(lattice.size(), *(modelConst.initializer(lattice, parametersPreBOReal)));
-    // Generates the default guess
-    parametersPreBOReal.set("init_type", "default");
-    auto modelDefault = Model<matrix, S>(lattice, parametersPreBOReal);
-    auto mpsDefault = MPS<matrix, S>(lattice.size(), *(modelDefault.initializer(lattice, parametersPreBOReal)));
-    // Calculates the MPO (any model would work here)
-    auto mpo = make_mpo(lattice, modelConst);
-    // Check 1
-    double expVal1 = expvalFromRight(mpsDefault, mpsConst, mpo);
-    double expVal2 = expvalFromRight(mpsConst, mpsDefault, mpo);
-    BOOST_CHECK_CLOSE(expVal1, expVal2, 1.E-10);
-    // Check 2
-    expVal1 = expvalFromRight(mpsHF, mpsConst, mpo);
-    expVal2 = expvalFromRight(mpsConst, mpsHF, mpo);
-    BOOST_CHECK_CLOSE(expVal1, expVal2, 1.E-10);
-    // Check 3
-    expVal1 = expvalFromRight(mpsDefault, mpsHF, mpo);
-    expVal2 = expvalFromRight(mpsHF, mpsDefault, mpo);
-    BOOST_CHECK_CLOSE(expVal1, expVal2, 1.E-10);
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(
+    Test_MPS_MPO_Hermitian_Right_Electronic, S, symmetries,
+    PreBOTestTimeEvolverFixture
+) {
+  // Generates the HF MPS
+  auto lattice = Lattice(parametersPreBOReal);
+  auto modelHF = Model<matrix, S>(lattice, parametersPreBOReal);
+  auto mpsHF = MPS<matrix, S>(
+      lattice.size(), *(modelHF.initializer(lattice, parametersPreBOReal))
+  );
+  // Generates the const guess. Note that the bond dimension will be != than
+  // that of the HF guess, so we check that the contraction routines work also
+  // for MPS with different bond dimension.
+  parametersPreBOReal.set("init_type", "const");
+  auto modelConst = Model<matrix, S>(lattice, parametersPreBOReal);
+  auto mpsConst = MPS<matrix, S>(
+      lattice.size(), *(modelConst.initializer(lattice, parametersPreBOReal))
+  );
+  // Generates the default guess
+  parametersPreBOReal.set("init_type", "default");
+  auto modelDefault = Model<matrix, S>(lattice, parametersPreBOReal);
+  auto mpsDefault = MPS<matrix, S>(
+      lattice.size(), *(modelDefault.initializer(lattice, parametersPreBOReal))
+  );
+  // Calculates the MPO (any model would work here)
+  auto mpo = make_mpo(lattice, modelConst);
+  // Check 1
+  double expVal1 = expvalFromRight(mpsDefault, mpsConst, mpo);
+  double expVal2 = expvalFromRight(mpsConst, mpsDefault, mpo);
+  BOOST_CHECK_CLOSE(expVal1, expVal2, 1.E-10);
+  // Check 2
+  expVal1 = expvalFromRight(mpsHF, mpsConst, mpo);
+  expVal2 = expvalFromRight(mpsConst, mpsHF, mpo);
+  BOOST_CHECK_CLOSE(expVal1, expVal2, 1.E-10);
+  // Check 3
+  expVal1 = expvalFromRight(mpsDefault, mpsHF, mpo);
+  expVal2 = expvalFromRight(mpsHF, mpsDefault, mpo);
+  BOOST_CHECK_CLOSE(expVal1, expVal2, 1.E-10);
 }
-

@@ -51,11 +51,13 @@ namespace detail {
 // * netlib-compatible LAPACK backend (the default), and
 // * float value-type.
 //
-inline std::ptrdiff_t ptsv( const fortran_int_t n, const fortran_int_t nrhs,
-        float* d, float* e, float* b, const fortran_int_t ldb ) {
-    fortran_int_t info(0);
-    LAPACK_SPTSV( &n, &nrhs, d, e, b, &ldb, &info );
-    return info;
+inline std::ptrdiff_t ptsv(
+    const fortran_int_t n, const fortran_int_t nrhs, float* d, float* e,
+    float* b, const fortran_int_t ldb
+) {
+  fortran_int_t info(0);
+  LAPACK_SPTSV(&n, &nrhs, d, e, b, &ldb, &info);
+  return info;
 }
 
 //
@@ -63,11 +65,13 @@ inline std::ptrdiff_t ptsv( const fortran_int_t n, const fortran_int_t nrhs,
 // * netlib-compatible LAPACK backend (the default), and
 // * double value-type.
 //
-inline std::ptrdiff_t ptsv( const fortran_int_t n, const fortran_int_t nrhs,
-        double* d, double* e, double* b, const fortran_int_t ldb ) {
-    fortran_int_t info(0);
-    LAPACK_DPTSV( &n, &nrhs, d, e, b, &ldb, &info );
-    return info;
+inline std::ptrdiff_t ptsv(
+    const fortran_int_t n, const fortran_int_t nrhs, double* d, double* e,
+    double* b, const fortran_int_t ldb
+) {
+  fortran_int_t info(0);
+  LAPACK_DPTSV(&n, &nrhs, d, e, b, &ldb, &info);
+  return info;
 }
 
 //
@@ -75,12 +79,13 @@ inline std::ptrdiff_t ptsv( const fortran_int_t n, const fortran_int_t nrhs,
 // * netlib-compatible LAPACK backend (the default), and
 // * complex<float> value-type.
 //
-inline std::ptrdiff_t ptsv( const fortran_int_t n, const fortran_int_t nrhs,
-        float* d, std::complex<float>* e, std::complex<float>* b,
-        const fortran_int_t ldb ) {
-    fortran_int_t info(0);
-    LAPACK_CPTSV( &n, &nrhs, d, e, b, &ldb, &info );
-    return info;
+inline std::ptrdiff_t ptsv(
+    const fortran_int_t n, const fortran_int_t nrhs, float* d,
+    std::complex<float>* e, std::complex<float>* b, const fortran_int_t ldb
+) {
+  fortran_int_t info(0);
+  LAPACK_CPTSV(&n, &nrhs, d, e, b, &ldb, &info);
+  return info;
 }
 
 //
@@ -88,113 +93,128 @@ inline std::ptrdiff_t ptsv( const fortran_int_t n, const fortran_int_t nrhs,
 // * netlib-compatible LAPACK backend (the default), and
 // * complex<double> value-type.
 //
-inline std::ptrdiff_t ptsv( const fortran_int_t n, const fortran_int_t nrhs,
-        double* d, std::complex<double>* e, std::complex<double>* b,
-        const fortran_int_t ldb ) {
-    fortran_int_t info(0);
-    LAPACK_ZPTSV( &n, &nrhs, d, e, b, &ldb, &info );
-    return info;
+inline std::ptrdiff_t ptsv(
+    const fortran_int_t n, const fortran_int_t nrhs, double* d,
+    std::complex<double>* e, std::complex<double>* b, const fortran_int_t ldb
+) {
+  fortran_int_t info(0);
+  LAPACK_ZPTSV(&n, &nrhs, d, e, b, &ldb, &info);
+  return info;
 }
 
-} // namespace detail
+}  // namespace detail
 
 //
 // Value-type based template class. Use this class if you need a type
 // for dispatching to ptsv.
 //
-template< typename Value, typename Enable = void >
+template <typename Value, typename Enable = void>
 struct ptsv_impl {};
 
 //
 // This implementation is enabled if Value is a real type.
 //
-template< typename Value >
-struct ptsv_impl< Value, typename boost::enable_if< is_real< Value > >::type > {
+template <typename Value>
+struct ptsv_impl<Value, typename boost::enable_if<is_real<Value> >::type> {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
-
-    //
-    // Static member function, that
-    // * Deduces the required arguments for dispatching to LAPACK, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename VectorD, typename VectorE, typename MatrixB >
-    static std::ptrdiff_t invoke( VectorD& d, VectorE& e, MatrixB& b ) {
-        namespace bindings = ::boost::numeric::bindings;
-        BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixB >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
-                typename bindings::value_type< VectorD >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                VectorE >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
-                typename bindings::value_type< VectorD >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                MatrixB >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorD >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorE >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< MatrixB >::value) );
-        BOOST_ASSERT( bindings::size(d) >= bindings::size(d) );
-        BOOST_ASSERT( bindings::size(d) >= 0 );
-        BOOST_ASSERT( bindings::size(e) >= bindings::size(d)-1 );
-        BOOST_ASSERT( bindings::size_column(b) >= 0 );
-        BOOST_ASSERT( bindings::size_minor(b) == 1 ||
-                bindings::stride_minor(b) == 1 );
-        BOOST_ASSERT( bindings::stride_major(b) >= std::max< std::ptrdiff_t >(1,
-                bindings::size(d)) );
-        return detail::ptsv( bindings::size(d), bindings::size_column(b),
-                bindings::begin_value(d), bindings::begin_value(e),
-                bindings::begin_value(b), bindings::stride_major(b) );
-    }
-
+  //
+  // Static member function, that
+  // * Deduces the required arguments for dispatching to LAPACK, and
+  // * Asserts that most arguments make sense.
+  //
+  template <typename VectorD, typename VectorE, typename MatrixB>
+  static std::ptrdiff_t invoke(VectorD& d, VectorE& e, MatrixB& b) {
+    namespace bindings = ::boost::numeric::bindings;
+    BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixB>::value));
+    BOOST_STATIC_ASSERT(
+        (boost::is_same<
+            typename remove_const<
+                typename bindings::value_type<VectorD>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<VectorE>::type>::type>::value)
+    );
+    BOOST_STATIC_ASSERT(
+        (boost::is_same<
+            typename remove_const<
+                typename bindings::value_type<VectorD>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<MatrixB>::type>::type>::value)
+    );
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorD>::value));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorE>::value));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<MatrixB>::value));
+    BOOST_ASSERT(bindings::size(d) >= bindings::size(d));
+    BOOST_ASSERT(bindings::size(d) >= 0);
+    BOOST_ASSERT(bindings::size(e) >= bindings::size(d) - 1);
+    BOOST_ASSERT(bindings::size_column(b) >= 0);
+    BOOST_ASSERT(
+        bindings::size_minor(b) == 1 || bindings::stride_minor(b) == 1
+    );
+    BOOST_ASSERT(
+        bindings::stride_major(b) >=
+        std::max<std::ptrdiff_t>(1, bindings::size(d))
+    );
+    return detail::ptsv(
+        bindings::size(d), bindings::size_column(b), bindings::begin_value(d),
+        bindings::begin_value(e), bindings::begin_value(b),
+        bindings::stride_major(b)
+    );
+  }
 };
 
 //
 // This implementation is enabled if Value is a complex type.
 //
-template< typename Value >
-struct ptsv_impl< Value, typename boost::enable_if< is_complex< Value > >::type > {
+template <typename Value>
+struct ptsv_impl<Value, typename boost::enable_if<is_complex<Value> >::type> {
+  typedef Value value_type;
+  typedef typename remove_imaginary<Value>::type real_type;
 
-    typedef Value value_type;
-    typedef typename remove_imaginary< Value >::type real_type;
-
-    //
-    // Static member function, that
-    // * Deduces the required arguments for dispatching to LAPACK, and
-    // * Asserts that most arguments make sense.
-    //
-    template< typename VectorD, typename VectorE, typename MatrixB >
-    static std::ptrdiff_t invoke( VectorD& d, VectorE& e, MatrixB& b ) {
-        namespace bindings = ::boost::numeric::bindings;
-        BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixB >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
-                typename bindings::value_type< VectorE >::type >::type,
-                typename remove_const< typename bindings::value_type<
-                MatrixB >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorD >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< VectorE >::value) );
-        BOOST_STATIC_ASSERT( (bindings::is_mutable< MatrixB >::value) );
-        BOOST_ASSERT( bindings::size(d) >= bindings::size(d) );
-        BOOST_ASSERT( bindings::size(d) >= 0 );
-        BOOST_ASSERT( bindings::size(e) >= bindings::size(d)-1 );
-        BOOST_ASSERT( bindings::size_column(b) >= 0 );
-        BOOST_ASSERT( bindings::size_minor(b) == 1 ||
-                bindings::stride_minor(b) == 1 );
-        BOOST_ASSERT( bindings::stride_major(b) >= std::max< std::ptrdiff_t >(1,
-                bindings::size(d)) );
-        return detail::ptsv( bindings::size(d), bindings::size_column(b),
-                bindings::begin_value(d), bindings::begin_value(e),
-                bindings::begin_value(b), bindings::stride_major(b) );
-    }
-
+  //
+  // Static member function, that
+  // * Deduces the required arguments for dispatching to LAPACK, and
+  // * Asserts that most arguments make sense.
+  //
+  template <typename VectorD, typename VectorE, typename MatrixB>
+  static std::ptrdiff_t invoke(VectorD& d, VectorE& e, MatrixB& b) {
+    namespace bindings = ::boost::numeric::bindings;
+    BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixB>::value));
+    BOOST_STATIC_ASSERT(
+        (boost::is_same<
+            typename remove_const<
+                typename bindings::value_type<VectorE>::type>::type,
+            typename remove_const<
+                typename bindings::value_type<MatrixB>::type>::type>::value)
+    );
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorD>::value));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<VectorE>::value));
+    BOOST_STATIC_ASSERT((bindings::is_mutable<MatrixB>::value));
+    BOOST_ASSERT(bindings::size(d) >= bindings::size(d));
+    BOOST_ASSERT(bindings::size(d) >= 0);
+    BOOST_ASSERT(bindings::size(e) >= bindings::size(d) - 1);
+    BOOST_ASSERT(bindings::size_column(b) >= 0);
+    BOOST_ASSERT(
+        bindings::size_minor(b) == 1 || bindings::stride_minor(b) == 1
+    );
+    BOOST_ASSERT(
+        bindings::stride_major(b) >=
+        std::max<std::ptrdiff_t>(1, bindings::size(d))
+    );
+    return detail::ptsv(
+        bindings::size(d), bindings::size_column(b), bindings::begin_value(d),
+        bindings::begin_value(e), bindings::begin_value(b),
+        bindings::stride_major(b)
+    );
+  }
 };
-
 
 //
 // Functions for direct use. These functions are overloaded for temporaries,
 // so that wrapped types can still be passed and used for write-access. In
 // addition, if applicable, they are overloaded for user-defined workspaces.
-// Calls to these functions are passed to the ptsv_impl classes. In the 
+// Calls to these functions are passed to the ptsv_impl classes. In the
 // documentation, most overloads are collapsed to avoid a large number of
 // prototypes which are very similar.
 //
@@ -202,15 +222,16 @@ struct ptsv_impl< Value, typename boost::enable_if< is_complex< Value > >::type 
 //
 // Overloaded function for ptsv. Its overload differs for
 //
-template< typename VectorD, typename VectorE, typename MatrixB >
-inline std::ptrdiff_t ptsv( VectorD& d, VectorE& e, MatrixB& b ) {
-    return ptsv_impl< typename bindings::value_type<
-            VectorE >::type >::invoke( d, e, b );
+template <typename VectorD, typename VectorE, typename MatrixB>
+inline std::ptrdiff_t ptsv(VectorD& d, VectorE& e, MatrixB& b) {
+  return ptsv_impl<typename bindings::value_type<VectorE>::type>::invoke(
+      d, e, b
+  );
 }
 
-} // namespace lapack
-} // namespace bindings
-} // namespace numeric
-} // namespace boost
+}  // namespace lapack
+}  // namespace bindings
+}  // namespace numeric
+}  // namespace boost
 
 #endif

@@ -1,7 +1,7 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group.
  *            See LICENSE.txt for details.
  */
 
@@ -33,18 +33,19 @@ struct coded_model_factory<Matrix, TwoU1>
             return (parms["transcorrelated_hamiltonian"] == "yes") ?
                     impl_ptr(new FermiHubbardRealTwoU1<Matrix>(lattice, parms, true)) :
                     impl_ptr(new FermiHubbardRealTwoU1<Matrix>(lattice, parms, false));
-        }
-        else if (parms["MODEL"] == std::string("fermi_hubbard_momentum")) {
+        } else if (parms["MODEL"] == std::string("fermi_hubbard_momentum")) {
             return (parms["transcorrelated_hamiltonian"] == "yes") ?
                     impl_ptr(new FermiHubbardMomentumTwoU1<Matrix>(lattice, parms, true)) :
                     impl_ptr(new FermiHubbardMomentumTwoU1<Matrix>(lattice, parms, false));
-        }
-#ifdef HAVE_NU1
-        else if (parms["MODEL"] == std::string("PreBO")) {
+#if defined(HAVE_NU1) && defined(DMRG_PREBO)
+        } else if (parms["MODEL"] == std::string("PreBO")) {
             return impl_ptr( new PreBO<Matrix, 2>(lattice, parms) );
-        }
 #endif
-        else {
+#if defined(HAVE_NU1) && defined(DMRG_VIBRATIONAL)
+        } else if (parms["MODEL"] == std::string("nmode")) {
+            return impl_ptr( new NMode<Matrix, 2>(lattice, parms, false) );
+#endif
+        } else {
             throw std::runtime_error("Don't know this model!");
             return impl_ptr();
         }
