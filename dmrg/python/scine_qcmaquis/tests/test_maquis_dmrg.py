@@ -115,6 +115,8 @@ def test_maquis_dmrg_sweep_from_fcidump():
     dmrg._parameters.erase("lattice_library")
     dmrg._parameters.erase("model_library")
     dmrg._parameters.erase("LATTICE")
+    dmrg.set_parameter("chkfile", "blub.h5")
+    dmrg.set_parameter("resultfile", "blub_res.h5")
     dmrg.set_entropies()
 
     dmrg.set_fcidump("fcidump_mock")
