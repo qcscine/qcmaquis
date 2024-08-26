@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, List, Union
+from typing import Any, List, Optional
 
 # pylint: disable=import-error
 from _dmrg import DmrgComplex, DmrgReal
@@ -18,8 +18,6 @@ class RunOptions(Enum):
     """For time dependent DMRG."""
     FEAST = "feast"
     """For FEAST calculations."""
-    TRANSCORRELATED = "transcorrelated"
-    """For transcorrelated calculations."""
 
 
 class DmrgWrapper:
@@ -74,14 +72,14 @@ class DmrgWrapper:
         else:
             self._dmrg = DmrgReal(parameters.get_parameters())
 
-    def get_fiedler(self, hf_occupations: List[List[int]] = None, n_states: int = None) -> str:
+    def get_fiedler(self, hf_occupations: Optional[List[List[int]]] = None, n_states: Optional[int] = None) -> str:
         """Evaluate Fiedler ordering.
 
         Parameters
         ----------
-        hf_occupations : List[List[int]]
+        hf_occupations : List[List[int]], optional
             The mean field occupation for each state
-        n_states : int
+        n_states : int, optional
             number of states
 
         Return
@@ -98,7 +96,12 @@ class DmrgWrapper:
             hf_occupations = []
 
         # fiedler_calculator = self._dmrg
-        fiedler_string = self._dmrg.fiedler_order(n_states, hf_occupations, "fiedler")
+        zero_based_fiedler_string = self._dmrg.fiedler_order(n_states, hf_occupations, "fiedler")
+        fiedler_string = ""
+        for i in zero_based_fiedler_string.split(","):
+            fiedler_string += str(int(i) + 1) + ","
+
+        fiedler_string = fiedler_string[:-1]
 
         self._dmrg = None
         return fiedler_string
@@ -114,7 +117,7 @@ class DmrgWrapper:
         if self._dmrg is None:
             raise ValueError("Set parameters before running dmrg!")
 
-        if type(integral_map.get()) is ComplexTCIntegralMap or type(integral_map.get()) is TCIntegralMap:
+        if isinstance(integral_map.get(), (ComplexTCIntegralMap, TCIntegralMap)):
             self._dmrg.update_tc_integrals(integral_map.get())
         else:
             self._dmrg.update_integrals(integral_map.get())
@@ -139,7 +142,9 @@ class DmrgWrapper:
 
         self._run_flag = True
 
-    def get_energy(self) -> Union[List[float], float]:
+    # TODO: Make this for feast
+    # def get_energy(self) -> Union[List[float], float]:
+    def get_energy(self) -> float:
         """Get the energy from last calculation.
 
         Return
@@ -150,15 +155,15 @@ class DmrgWrapper:
         if self._run_flag is False:
             raise ValueError("Run DMRG before asking for energies")
         # Feast gives you all energies at once
-        if self._run_option == RunOptions.FEAST:
-            energies = []
-            for i in range(self._feast_states):
-                try:
-                    energies.append(self._dmrg.energyFEAST(i))
-                # there are more states requested by feast than valid
-                except RuntimeError:
-                    pass
-            return energies
+        # if self._run_option == RunOptions.FEAST:
+        #     energies = []
+        #     for i in range(self._feast_states):
+        #         try:
+        #             energies.append(self._dmrg.energyFEAST(i))
+        #         # there are more states requested by feast than valid
+        #         except RuntimeError:
+        #             pass
+        #     return energies
         return self._dmrg.energy()
 
     def measure(self) -> Any:

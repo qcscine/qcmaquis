@@ -71,11 +71,28 @@ def test_parameters_wrapper_convenience_functions():
     assert parameters._results_path == "/abc/cde/results.h5"
 
     parameters.set_checkpoint_path("/abc/cde/checkpoint")
-    assert parameters._parameter_dict["chkpfile"] == "/abc/cde/checkpoint"
-    assert parameters._checkpoint_path == "/abc/cde/checkpoint"
+    assert parameters._parameter_dict["chkpfile"] == "/abc/cde/checkpoint.h5"
+    assert parameters._checkpoint_path == "/abc/cde/checkpoint.h5"
+
+
+def test_parameters_wrapper_maquis_dump_files():
+    parameters = ParametersWrapper()
+
+    parameters.set_result_path("/abc/cde/results.h5")
+    assert parameters._parameter_dict["resultfile"] == "/abc/cde/results.h5"
+    assert parameters._results_path == "/abc/cde/results.h5"
+
+    parameters.set_checkpoint_path("/abc/cde/checkpoint")
+    assert parameters._parameter_dict["chkpfile"] == "/abc/cde/checkpoint.h5"
+    assert parameters._checkpoint_path == "/abc/cde/checkpoint.h5"
+
+    parameters.set_storage_dir("/abc/cde/storagedir")
+    assert parameters._parameter_dict["storagedir"] == "/abc/cde/storagedir"
+    assert parameters._storage_dir == "/abc/cde/storagedir"
 
 
 if __name__ == "__main__":
     test_parameters_wrapper_hf_occupation()
     test_parameters_wrapper_set_system()
     test_parameters_wrapper_convenience_functions()
+    test_parameters_wrapper_maquis_dump_files()
