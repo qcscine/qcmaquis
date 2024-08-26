@@ -51,11 +51,15 @@ get_symm_files(
 # DMRG_MODELS_SOURCES "models/ll/ll_models.cpp") endif(ENABLE_LL_MODELS)
 
 # *** Libraries
-add_library(
-  dmrg_utils STATIC
+add_library(dmrg_utils STATIC
   block_matrix/symmetry/su2_wrapper.cpp
   block_matrix/symmetry.cpp
-  tools/srcas_utilities.cpp
+  tools/electronic_srcas.cpp
+  tools/determinant.cpp
+  tools/base_srcas.cpp
+  tools/onv.cpp
+  tools/vib_onv.cpp
+  tools/vib_srcas.cpp
   utils/utils.cpp
   utils/DmrgOptions.cpp
   utils/time_stopper.cpp
