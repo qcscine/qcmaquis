@@ -108,11 +108,10 @@ int main(int argc, char** argv) {
 
       sim_timer.end();
     } else {
-      std::cerr
-          << "ERROR: No simulation type specified. Please specify a simulation "
-             "type using the 'simulation_type' parameter.\n"
-             "Valid options are: 'optimize', 'evolve', 'ipi', 'feast' or 'transcorrelated'\n";
-      exit(1);
+      std::cerr << "No simulation type specified. Please specify a simulation "
+                   "type using the 'simulation_type' parameter.\n"
+                   "Valid options are: optimize, evolve, ipi, feast, "
+                   "transcorrelated\n";
     }
   }
 }
