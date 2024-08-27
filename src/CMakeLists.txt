@@ -20,9 +20,7 @@ endif(NOT DEFAULT_BLAS_LAPACK)
 # Project START
 # ##############################################################################
 
-# @kszenes: this overwrites the PROJECT_SOURCE_DIR variable, should not be removed
 set(PROJECT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 

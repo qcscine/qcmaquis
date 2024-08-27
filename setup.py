@@ -71,7 +71,7 @@ setup(
     description="",
     long_description="",
     ext_modules=[CMakeExtension("_dmrg")],
-    package_dir={"": "python"},
+    package_dir={"": "src/python"},
     packages=find_packages(where="python"),
     setup_requires=["numpy"],
     install_requires=["numpy"],  # Add any of your other dependencies here

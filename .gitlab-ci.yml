@@ -21,7 +21,7 @@ build-electronic:
   tags:
     - default_docker
   script:
-    - cmake -B buildElectronic -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG" -DCMAKE_BUILD_TYPE=Release -DBUILD_DMRG_FEAST=ON -DBUILD_SRCAS=ON src
+    - cmake -B buildElectronic -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG" -DCMAKE_BUILD_TYPE=Release -DBUILD_DMRG_FEAST=ON -DBUILD_SRCAS=ON
     - cmake --build buildElectronic -j2
   artifacts:
     paths:
@@ -44,7 +44,7 @@ build-relativistic:
   tags:
     - default_docker
   script:
-    - cmake -B buildRelativistic -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG;U1DG" -DCMAKE_BUILD_TYPE=Release src
+    - cmake -B buildRelativistic -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG;U1DG" -DCMAKE_BUILD_TYPE=Release
     - cmake --build buildRelativistic -j2
   artifacts:
     paths:
@@ -67,7 +67,7 @@ buildPreBO:
   tags:
     - default_docker
   script:
-    - cmake -B buildNU1 -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG;U1DG;NU1" -DCMAKE_BUILD_TYPE=Release -DBUILD_PREBO=ON -DDMRG_NUMSYMM=5 src
+    - cmake -B buildNU1 -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG;U1DG;NU1" -DCMAKE_BUILD_TYPE=Release -DBUILD_PREBO=ON -DDMRG_NUMSYMM=5
     - cmake --build buildNU1 -j2
   artifacts:
     paths:
@@ -89,7 +89,7 @@ buildVibrationalHamiltonians:
   tags:
     - default_docker
   script:
-    - cmake -B buildVibrational -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="NU1;NONE" -DCMAKE_BUILD_TYPE=Release -DBUILD_VIBRATIONAL=ON -DBUILD_DMRG_FEAST=ON -DBUILD_SRCAS=ON -DBUILD_MPS2CI=ON -DDMRG_NUMSYMM=5 -DDMRG_ORDERNONE=12 src
+    - cmake -B buildVibrational -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="NU1;NONE" -DCMAKE_BUILD_TYPE=Release -DBUILD_VIBRATIONAL=ON -DBUILD_DMRG_FEAST=ON -DBUILD_SRCAS=ON -DBUILD_MPS2CI=ON -DDMRG_NUMSYMM=5 -DDMRG_ORDERNONE=12
     - cmake --build buildVibrational -j2
   artifacts:
     paths:
@@ -111,7 +111,7 @@ buildVibronicHamiltonians:
   tags:
     - default_docker
   script:
-    - cmake -B buildVibronic -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1PG;SU2U1PG;NU1;U1" -DCMAKE_BUILD_TYPE=Release -DBUILD_VIBRONIC=ON src
+    - cmake -B buildVibronic -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1PG;SU2U1PG;NU1;U1" -DCMAKE_BUILD_TYPE=Release -DBUILD_VIBRONIC=ON
     - cmake --build buildVibronic -j2
   artifacts:
     paths:
@@ -138,7 +138,7 @@ build-TD-conventional:
   tags:
     - default_docker
   script:
-    - cmake -B buildTDConventional -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG" -DCMAKE_BUILD_TYPE=Release -DBUILD_DMRG_EVOLVE=ON -DBUILD_TRANSCORRELATED_DMRG=ON src
+    - cmake -B buildTDConventional -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG" -DCMAKE_BUILD_TYPE=Release -DBUILD_DMRG_EVOLVE=ON -DBUILD_TRANSCORRELATED_DMRG=ON
     - cmake --build buildTDConventional -j2
   artifacts:
     paths:
@@ -161,7 +161,7 @@ build-TD-with-all-symmetries:
   tags:
     - default_docker
   script:
-    - cmake -B buildTDAllSymmetries -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG;U1DG;NU1;U1" -DCMAKE_BUILD_TYPE=Release -DBUILD_DMRG_EVOLVE=ON -DBUILD_PREBO=ON -DBUILD_VIBRONIC=ON -DBUILD_MPS2CI=ON -DBUILD_MPS_OVERLAP=ON -DBUILD_TRANSCORRELATED_DMRG=ON src
+    - cmake -B buildTDAllSymmetries -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG;U1DG;NU1;U1" -DCMAKE_BUILD_TYPE=Release -DBUILD_DMRG_EVOLVE=ON -DBUILD_PREBO=ON -DBUILD_VIBRONIC=ON -DBUILD_MPS2CI=ON -DBUILD_MPS_OVERLAP=ON -DBUILD_TRANSCORRELATED_DMRG=ON
     - cmake --build buildTDAllSymmetries -j2
   artifacts:
     paths:
