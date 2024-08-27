@@ -10,7 +10,7 @@ from scine_qcmaquis.maquis_dmrg import MaquisDmrg
 def test_maquis_dmrg_sweep_from_fcidump():
     def _write_fcidump():
         with open("fcidump_mock", "w") as tmp_fcidump:
-            tmp_fcidump.write("&FCI NORB=4, NELEC=4, MS2=0,\n")
+            tmp_fcidump.write("&FCI NORB=4, NELEC=2, MS2=0,\n")
             tmp_fcidump.write("ORBSYM=1,1,1,1,\n")
             tmp_fcidump.write("ISYM=1,\n")
             tmp_fcidump.write("&END\n")
@@ -96,10 +96,9 @@ def test_maquis_dmrg_sweep_from_fcidump():
     dmrg.set_entropies()
 
     dmrg.set_fcidump("fcidump_mock")
-    dmrg.run(4, 4, 0, fiedler=False)
+    dmrg.run(4, 2, 0, fiedler=False)
     # from cpp test2
-    print(dmrg.get_energy())
-    # assert abs(dmrg.get_energy() - -7.90435750473166) < 1e-14
+    assert abs(dmrg.get_energy() - -7.90435750473166) < 1e-14
 
     s1, s2, mut_inf = dmrg.get_entropies()
 
@@ -120,9 +119,8 @@ def test_maquis_dmrg_sweep_from_fcidump():
     dmrg.set_entropies()
 
     dmrg.set_fcidump("fcidump_mock")
-    dmrg.run(4, 4, 0, fiedler=True)
+    dmrg.run(4, 2, 0, fiedler=True)
     # from cpp test2
-    print(dmrg.get_energy())
     assert abs(dmrg.get_energy() - -7.90435750473166) < 1e-14
 
     s1_fiedler, s2_fiedler, mut_inf_fielder = dmrg.get_entropies()
