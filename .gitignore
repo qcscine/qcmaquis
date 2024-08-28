@@ -6,7 +6,6 @@ build*/
 my*
 *.vscode
 *.idea
-**check*
 examples/**/*resfile*
 examples/**/*result*
 **resfile*
