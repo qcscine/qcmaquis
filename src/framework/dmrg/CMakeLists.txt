@@ -72,6 +72,8 @@ add_library(dmrg_models STATIC ${DMRG_MODELS_SOURCES})
 
 set_property(TARGET dmrg_utils dmrg_models PROPERTY POSITION_INDEPENDENT_CODE
                                                     TRUE)
+get_target_property(DMRG_UTILS_INCLUDE_DIRS dmrg_models INCLUDE_DIRECTORIES)
+message(STATUS "DMRG_UTILS_INCLUDE_DIRS: ${DMRG_UTILS_INCLUDE_DIRS}")
 
 # *** Install
 
