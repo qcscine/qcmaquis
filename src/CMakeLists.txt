@@ -526,7 +526,8 @@ endif(ENABLE_OMP)
 # Include / link directories
 # ##############################################################################
 set(ALPS_INCLUDE_DIRS ${ALPS_SOURCE_DIR}/src
-                      ${PROJECT_BINARY_DIR}/src/${ALPS_SOURCE_DIR}/src)
+                      ${PROJECT_BINARY_DIR}/src/${ALPS_SOURCE_DIR}/src
+                      ${PROJECT_SOURCE_DIR}/${ALPS_SOURCE_DIR}/src)
 list(APPEND DMRG_INCLUDE_DIRS ${MATRICES_DIR} ${HDF5_INCLUDE_DIR}
      ${ALPS_INCLUDE_DIRS})
 list(APPEND DMRG_LIBRARY_DIRS ${ALPS_LIBRARY_DIRS})
