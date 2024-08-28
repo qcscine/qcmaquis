@@ -139,7 +139,7 @@ build-TD-conventional:
     - default_docker
   script:
     - cmake -B buildTDConventional -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG" -DCMAKE_BUILD_TYPE=Release -DBUILD_DMRG_EVOLVE=ON -DBUILD_TRANSCORRELATED_DMRG=ON
-    - cmake --build buildTDConventional -j2
+    - cmake --build buildTDConventional -j1
   artifacts:
     paths:
       - buildTDConventional/

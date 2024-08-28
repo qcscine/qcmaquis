@@ -105,7 +105,6 @@ configure_file(src/alps/version.h.in
 # ##############################################################################
 include_directories(${PROJECT_BINARY_DIR}/src)
 include_directories(${PROJECT_BINARY_DIR}/src/${ALPS_SOURCE_DIR}/src)
-message(STATUS "TMP_DIR: ${PROJECT_BINARY_DIR}/src/${ALPS_SOURCE_DIR}/src")
 include_directories(src)
 
 # ##############################################################################
