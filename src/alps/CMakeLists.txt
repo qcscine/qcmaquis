@@ -96,15 +96,16 @@ check_include_file_cxx(valarray ALPS_HAVE_VALARRAY)
 
 # configure files
 configure_file(src/alps/config.h.in
-               ${PROJECT_BINARY_DIR}/${ALPS_SOURCE_DIR}/src/alps/config.h)
+               ${PROJECT_BINARY_DIR}/src/${ALPS_SOURCE_DIR}/src/alps/config.h)
 configure_file(src/alps/version.h.in
-               ${PROJECT_BINARY_DIR}/${ALPS_SOURCE_DIR}/src/alps/version.h)
+               ${PROJECT_BINARY_DIR}/src/${ALPS_SOURCE_DIR}/src/alps/version.h)
 
 # ##############################################################################
 # include directories
 # ##############################################################################
 include_directories(${PROJECT_BINARY_DIR}/src)
-include_directories(${PROJECT_BINARY_DIR}/${ALPS_SOURCE_DIR}/src)
+include_directories(${PROJECT_BINARY_DIR}/src/${ALPS_SOURCE_DIR}/src)
+message(STATUS "TMP_DIR: ${PROJECT_BINARY_DIR}/src/${ALPS_SOURCE_DIR}/src")
 include_directories(src)
 
 # ##############################################################################
