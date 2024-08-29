@@ -68,7 +68,7 @@ contains
       DIMENSION AMATRX(ROWDIM,COLDIM)
       CHARACTER*1 ASA(3), BLANK, CTL
       CHARACTER   PFMT*20, COLUMN*8
-      LOGICAL, external :: IS_NAN
+      ! LOGICAL, external :: IS_NAN
       PARAMETER (ZERO=0.D00, KCOLP=5, KCOLN=8)
       PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
       DATA COLUMN/'Column  '/, BLANK/' '/, ASA/' ', '0', '-'/
@@ -78,14 +78,15 @@ contains
 !
       AMAX = ZERO
       N_NAN = 0
-      DO 10 J = COLLOW,COLHI
-         DO 10 I = ROWLOW,ROWHI
+      DO J = COLLOW,COLHI
+         DO I = ROWLOW,ROWHI
 !           IF ( IS_NAN(AMATRX(I,J),AMATRX(I,J)) ) THEN
 !              N_NAN = N_NAN + 1
 !           ELSE
                AMAX = MAX( AMAX, ABS(AMATRX(I,J)) )
 !           END IF
-   10 CONTINUE
+         END DO
+     END DO
       IF (N_NAN .GT. 0) WRITE (LUPRI,'(/T6,A,I10,A)') 'WARNING: matrix contains',N_NAN,' NaN.'
       IF (AMAX <= 1.0d-20) THEN
          WRITE (LUPRI,'(/T6,A)') 'Zero matrix.'
@@ -123,7 +124,8 @@ contains
          GO TO 1
     5       WRITE (LUPRI,PFMT) CTL,K,(AMATRX(K,I), I = BEGIN,LAST)
     1    CONTINUE
-    2 LAST = MIN(LAST+KCOL,COLHI)
+    2    END DO
+    LAST = MIN(LAST+KCOL,COLHI)
     3 WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
       RETURN
  1000 FORMAT (/10X,8(5X,A6,I4))
@@ -187,7 +189,7 @@ contains
 
       !! For Fiedler ordering: calculate the length of a string that would fit the Fiedler ordering
       !! i.e., for a given integer N, give the length of a string that fits numbers "1,2,...,N" with commas included
-      integer(kind=8) function fiedlerorder_length(L) result(res)
+      integer*8 function fiedlerorder_length(L) result(res)
           implicit none
           integer, intent(in) :: L
           integer p,n,c ! temporary variables
@@ -220,7 +222,7 @@ contains
 
       subroutine file_name_generator(iroot, prototype_name, suffix, generated_name)
           implicit none
-          integer(kind=8), intent(in)                :: iroot
+          integer*8, intent(in)                :: iroot
           character(len=*), intent(in)       :: prototype_name
           character(len=*), intent(in)       :: suffix
           character(len=2300), intent(inout) :: generated_name
@@ -499,7 +501,8 @@ contains
                  if(dabs(oneint(offset)-(corenergy/dble(dmrg_state%nactel))) < threshold)then
                    cycle
                  else
-                   write(fcidump,form1) oneint(offset)-(corenergy/dble(dmrg_state%nactel)), & ! subtract scaled inactive energy from diagonal elements
+                   ! subtract scaled inactive energy from diagonal elements
+                   write(fcidump,form1) oneint(offset)-(corenergy/dble(dmrg_state%nactel)), &
                                                         i+ndummy, j+ndummy,0, 0
                  end if
               else
@@ -546,28 +549,22 @@ contains
         character(len=500)                :: sweeps
         character(len=500)                :: sweeps_tolerance
         character(len=500)                :: jcd_tolerance
-        character(len=500)                :: jcd_maxiter
         character(len=500)                :: svd_tolerance_initial
         character(len=500)                :: svd_tolerance_final
-        character(len=500)                :: orbital_ordering
         character(len=500)                :: line
-        character(len=5)                  :: state_tag
-        character(len=5)                  :: full_state_tag
-        integer                           :: i, irootm1
+        integer                           :: i
 
         if(dmrg_host_program_settings%myrank == 0)then
           mstates               = '0'
           sweeps                = '0'
-          jcd_maxiter           = '10'
           svd_tolerance_initial = '1e-50'
-          orbital_ordering      = 'ascending in numerical order (default)'
           svd_tolerance_final   = ' '
           sweeps_tolerance      = ' '
           jcd_tolerance         = ' '
 
-          write(      sweeps_tolerance,'(e9.3)') thre
-          write(         jcd_tolerance,'(e9.3)') thre*0.001  ! same as molcas for Davidson
-          write(   svd_tolerance_final,'(e9.3)') thre*0.001  !  in order to match Davidson
+          write(      sweeps_tolerance,'(e10.3)') thre
+          write(         jcd_tolerance,'(e10.3)') thre*0.001  ! same as molcas for Davidson
+          write(   svd_tolerance_final,'(e10.3)') thre*0.001  !  in order to match Davidson
 
           do i = 1, size(dmrg_input%qcmaquis_input),2
             line(1:500) = dmrg_input%qcmaquis_input(i)(1:500)
@@ -578,8 +575,6 @@ contains
               svd_tolerance_final        = trim(dmrg_input%qcmaquis_input(i+1))
             else if(trim(line) == 'IETL_JCD_TOL')then
               jcd_tolerance         = trim(dmrg_input%qcmaquis_input(i+1))
-            else if(trim(line) == 'IETL_JCD_MAXITER')then
-              jcd_maxiter          = trim(dmrg_input%qcmaquis_input(i+1))
             else if(trim(line) == 'CONV_THRESH')then
               sweeps_tolerance     = trim(dmrg_input%qcmaquis_input(i+1))
             else if(trim(line) == 'MAX_BOND_DIMENSION')then
@@ -592,11 +587,16 @@ contains
           if(trim(mstates) == '0') mstates = 'dynamically changing (according to sweep_bond_dimensions)'
 
           write(lupri,fmt2//'a,t45,5x,a)') 'Number of renormalized states           ', trim(mstates)
-    !       if(dmrg_warmup%doCIDEAS)then
-    !         write(lupri,fmt2//'a,t45,5x,a)') 'Start guess in warm-up sweep            ','CI-DEAS'
-    !       else
-    !         write(lupri,fmt2//'a,t45,5x,a)') 'Start guess in warm-up sweep            ', trim(start_guess)
-    !       end if
+          if(dmrg_warmup%doCIDEAS)then
+            write(lupri,fmt2//'a,t45,5x,a)') 'Start guess in warm-up sweep            ','CI-DEAS'
+          else
+            write(lupri,fmt2//'a,t45,5x,a)') 'Start guess in warm-up sweep            ', trim(start_guess)
+          end if
+          if(dmrg_warmup%doFiedler)then
+            write(lupri,fmt2//'a,t45,5x,a)') 'Fiedler ordering                        ','ON'
+          else
+            write(lupri,fmt2//'a,t45,5x,a)') 'Fiedler ordering                        ','OFF'
+          end if
           write(lupri,fmt2//'a,t45,5x,a)') '(Max) number of sweeps                  ', trim(sweeps)
           write(lupri,fmt2//'a,t45,5x,a)') 'Convergence threshold (sweep tolerance) ', trim(sweeps_tolerance)
           write(lupri,fmt2//'a,t45,5x,a)') 'Jacobi-Davidson threshold               ', trim(jcd_tolerance)

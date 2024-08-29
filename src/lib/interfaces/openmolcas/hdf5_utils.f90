@@ -208,7 +208,12 @@ module hdf5_utils
         integer(HERR_T) :: err
 
         err = hdf5_close_c(myfile_id)
-        ! error handling is ignored?
+        if (err.lt.0) then
+          error = -1
+        else
+          error = 0
+        end if
+
 
       end subroutine hdf5_close
 !------------------------------------------------------------------------
@@ -720,7 +725,6 @@ module hdf5_utils
        character(c_char),dimension(*), intent(out),target :: data_out
 !------------------------------------------------------------------------
        integer(c_int)                                     :: data_rank
-       integer                                            :: null_char_idx
 !------------------------------------------------------------------------
 
        !> possibly use internal conversion from integer*8 to *4
