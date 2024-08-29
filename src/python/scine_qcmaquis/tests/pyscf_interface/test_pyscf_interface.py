@@ -7,15 +7,16 @@ from pyscf import gto, mcscf, scf
 from scine_qcmaquis.pyscf_interface.pyscf_interface import QcMaquis
 
 class TestPySCFInterface:
-    def teardown_method(self):
-        if os.path.isdir("checkpoint_DMRGSCF.h5"):
-            os.removedirs("checkpoint_DMRGSCF.h5")
-        if os.path.isdir("checkpoint_gs.h5"):
-            os.removedirs("checkpoint_gs.h5")
-        if os.path.exists("results_DMRGSCF.h5"):
-            os.remove("results_DMRGSCF.h5")
-        if os.path.exists("results_file.h5"):
-            os.remove("results_file.h5")
+    def teardown_class(self):
+        file_path = os.path.dirname(os.path.abspath(__file__))
+        if os.path.isdir(f"{file_path}/checkpoint_DMRGSCF.h5"):
+            shutil.rmtree(f"{file_path}/checkpoint_DMRGSCF.h5")
+        if os.path.isdir(f"{file_path}/checkpoint_gs.h5"):
+            shutil.rmtree(f"{file_path}/checkpoint_gs.h5")
+        if os.path.exists(f"{file_path}/results_DMRGSCF.h5"):
+            os.remove(f"{file_path}/results_DMRGSCF.h5")
+        if os.path.exists(f"{file_path}/results_file.h5"):
+            os.remove(f"{file_path}/results_file.h5")
 
     def test_dmrgci(self):
         mol = gto.Mole()
