@@ -6,9 +6,8 @@ import pytest
 from scine_qcmaquis.entropy_builder import EntropyBuilder
 from scine_qcmaquis.maquis_dmrg import MaquisDmrg
 
-
-def test_maquis_dmrg_sweep_from_fcidump():
-    def _write_fcidump():
+class TestMaquisDmrg:
+    def setup_method(self):
         with open("fcidump_mock", "w") as tmp_fcidump:
             tmp_fcidump.write("&FCI NORB=4, NELEC=2, MS2=0,\n")
             tmp_fcidump.write("ORBSYM=1,1,1,1,\n")
@@ -80,52 +79,61 @@ def test_maquis_dmrg_sweep_from_fcidump():
             tmp_fcidump.write(" -0.670886115563e-07    4  3  0  0\n")
             tmp_fcidump.write(" -0.240135259399        4  4  0  0\n")
             tmp_fcidump.write("  -6.71049529388        0  0  0  0")
-    _write_fcidump()
-    dmrg = MaquisDmrg()
-    dmrg.set_parameter("nsweeps", 2)
-    dmrg.set_parameter("max_bond_dimension", 100)
-    dmrg.set_parameter("n_ortho_states", 0)
-    dmrg.set_parameter("ortho_states", "")
-    dmrg.set_parameter("symmetry", "su2u1pg")
-    dmrg._parameters.erase("init_type")
-    dmrg._parameters.erase("conv_thresh")
-    dmrg._parameters.erase("CONSERVED_QUANTUMNUMBERS")
-    dmrg._parameters.erase("lattice_library")
-    dmrg._parameters.erase("model_library")
-    dmrg._parameters.erase("LATTICE")
-    dmrg.set_entropies()
 
-    dmrg.set_fcidump("fcidump_mock")
-    dmrg.run(4, 2, 0, fiedler=False)
-    # from cpp test2
-    assert abs(dmrg.get_energy() - -7.90435750473166) < 1e-14
+    def teardown_class(self):
+        if os.path.exists("fcidump_mock"):
+            os.remove("fcidump_mock")
 
-    s1, s2, mut_inf = dmrg.get_entropies()
+        if os.path.exists("blub_res.h5"):
+            os.remove("blub_res.h5")
 
-    dmrg = MaquisDmrg()
-    dmrg.set_parameter("nsweeps", 2)
-    dmrg.set_parameter("max_bond_dimension", 100)
-    dmrg.set_parameter("n_ortho_states", 0)
-    dmrg.set_parameter("ortho_states", "")
-    dmrg.set_parameter("symmetry", "su2u1pg")
-    dmrg._parameters.erase("init_type")
-    dmrg._parameters.erase("conv_thresh")
-    dmrg._parameters.erase("CONSERVED_QUANTUMNUMBERS")
-    dmrg._parameters.erase("lattice_library")
-    dmrg._parameters.erase("model_library")
-    dmrg._parameters.erase("LATTICE")
-    dmrg.set_parameter("chkfile", "blub.h5")
-    dmrg.set_parameter("resultfile", "blub_res.h5")
-    dmrg.set_entropies()
+        if os.path.isdir("blub.h5"):
+            os.removedirs("blub.h5")
 
-    dmrg.set_fcidump("fcidump_mock")
-    dmrg.run(4, 2, 0, fiedler=True)
-    # from cpp test2
-    assert abs(dmrg.get_energy() - -7.90435750473166) < 1e-14
 
-    s1_fiedler, s2_fiedler, mut_inf_fielder = dmrg.get_entropies()
-    assert (np.abs(s1 - s1_fiedler)).sum() < 1e-10
-    assert (np.abs(mut_inf - mut_inf_fielder)).sum() < 1e-10
+    def test_maquis_dmrg_sweep_from_fcidump(self):
+        dmrg = MaquisDmrg()
+        dmrg.set_parameter("nsweeps", 2)
+        dmrg.set_parameter("max_bond_dimension", 100)
+        dmrg.set_parameter("n_ortho_states", 0)
+        dmrg.set_parameter("ortho_states", "")
+        dmrg.set_parameter("symmetry", "su2u1pg")
+        dmrg._parameters.erase("init_type")
+        dmrg._parameters.erase("conv_thresh")
+        dmrg._parameters.erase("CONSERVED_QUANTUMNUMBERS")
+        dmrg._parameters.erase("lattice_library")
+        dmrg._parameters.erase("model_library")
+        dmrg._parameters.erase("LATTICE")
+        dmrg.set_entropies()
 
-if __name__ == "__main__":
-    test_maquis_dmrg_sweep_from_fcidump()
+        dmrg.set_fcidump("fcidump_mock")
+        dmrg.run(4, 2, 0, fiedler=False)
+        # from cpp test2
+        assert abs(dmrg.get_energy() - -7.90435750473166) < 1e-14
+
+        s1, s2, mut_inf = dmrg.get_entropies()
+
+        dmrg = MaquisDmrg()
+        dmrg.set_parameter("nsweeps", 2)
+        dmrg.set_parameter("max_bond_dimension", 100)
+        dmrg.set_parameter("n_ortho_states", 0)
+        dmrg.set_parameter("ortho_states", "")
+        dmrg.set_parameter("symmetry", "su2u1pg")
+        dmrg._parameters.erase("init_type")
+        dmrg._parameters.erase("conv_thresh")
+        dmrg._parameters.erase("CONSERVED_QUANTUMNUMBERS")
+        dmrg._parameters.erase("lattice_library")
+        dmrg._parameters.erase("model_library")
+        dmrg._parameters.erase("LATTICE")
+        dmrg.set_parameter("chkfile", "blub.h5")
+        dmrg.set_parameter("resultfile", "blub_res.h5")
+        dmrg.set_entropies()
+
+        dmrg.set_fcidump("fcidump_mock")
+        dmrg.run(4, 2, 0, fiedler=True)
+        # from cpp test2
+        assert abs(dmrg.get_energy() - -7.90435750473166) < 1e-14
+
+        s1_fiedler, s2_fiedler, mut_inf_fielder = dmrg.get_entropies()
+        assert (np.abs(s1 - s1_fiedler)).sum() < 1e-10
+        assert (np.abs(mut_inf - mut_inf_fielder)).sum() < 1e-10
