@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Script that changes the names of QCMaquis checkpoint files inside OpenMOLCAS *.h5 files
 # Required for MPSSI calculations
