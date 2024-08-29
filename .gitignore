@@ -21,6 +21,7 @@ ip64test
 compile_commands.json
 *.egg-info
 *.h5
+*.so
 
 *.cache*
 CMakeCache.txt

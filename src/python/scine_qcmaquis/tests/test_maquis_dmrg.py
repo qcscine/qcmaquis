@@ -127,9 +127,5 @@ def test_maquis_dmrg_sweep_from_fcidump():
     assert (np.abs(s1 - s1_fiedler)).sum() < 1e-10
     assert (np.abs(mut_inf - mut_inf_fielder)).sum() < 1e-10
 
-    os.remove("fcidump_mock")
-    os.remove("blub.h5")
-
-
 if __name__ == "__main__":
     test_maquis_dmrg_sweep_from_fcidump()
