@@ -222,9 +222,7 @@ class correlations : public measurement<Matrix, SymmGroup> {
           std::back_inserter(this->labels_num)
       );
 
-      // Reordering is buggy
-      // std::vector<std::string> lbt = label_strings(lattice, num_labels);
-      std::vector<std::string> lbt = label_strings(num_labels);
+      std::vector<std::string> lbt = label_strings(lattice, num_labels);
       std::copy(lbt.begin(), lbt.end(), std::back_inserter(this->labels));
     }
   }
