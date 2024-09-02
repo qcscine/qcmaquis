@@ -44,7 +44,7 @@ class QcMaquis:
     """
 
     # pylint: disable=W0613
-    def __init__(self, mol: Any, **kwargs: Any) -> None:
+    def __init__(self, mol: Any, verbose: Optional[int] = None, fiedler: bool=False, **kwargs: Any) -> None:
         """Initialize interface.
 
         Parameters
@@ -57,7 +57,7 @@ class QcMaquis:
         # Pyscf stuff
         self.mol: Any = mol
         """Pyscf molecule"""
-        self.verbose = mol.verbose
+        self.verbose = verbose if verbose is not None else mol.verbose
         """Output verbosity"""
         self.orbsym: List[int] = []
         """Orbital symmetries"""
@@ -69,7 +69,7 @@ class QcMaquis:
         """DMRG method, e.g. conventional, ..."""
         self.n_states: Optional[int] = None
         """Number of states."""
-        self.fiedler: bool = False
+        self.fiedler: bool = fiedler
         """Enable fiedler ordering"""
 
         # QCMaquis related stuff

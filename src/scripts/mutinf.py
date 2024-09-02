@@ -15,6 +15,8 @@ from matplotlib import lines
 from pylab import pi
 import pyalpslite as pyalps
 
+np.set_printoptions(precision=3, suppress=True, linewidth=200)
+
 def plot_mutinf(mat_I, vec_s1, order, title = None):
     #MUTUAL INFORMATION PLOT:
     plt.figure()
@@ -37,7 +39,7 @@ def plot_mutinf(mat_I, vec_s1, order, title = None):
     ax = plt.subplot(111, polar=True)
     ax.set_xticklabels([])
     ax.set_yticklabels([])
-    ax.grid(b=False)
+    ax.grid()
     c = plt.scatter(theta,r,c="Red",s=area)
 
     if title is not None:
@@ -110,10 +112,13 @@ if __name__ == '__main__':
 
     guinea_pig = entropy.MaquisMeasurement(inputfile)
 
-    print("s1 matrix")
+    print("s1 vector")
     print(guinea_pig.s1())
 
-    print("I matrix")
+    print("\ns2 matrix")
+    print(guinea_pig.s2())
+
+    print("\nI matrix")
     print(guinea_pig.I())
 
     # take orbital order from result file else assume standard order
