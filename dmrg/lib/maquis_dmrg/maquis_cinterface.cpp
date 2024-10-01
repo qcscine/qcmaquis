@@ -384,9 +384,7 @@ extern "C"
         }
         else
             *nsweeps = 0; // If iter is empty, no iterations have been made and thus we return all zeros
-
-
-
+        printf("nsweeps: %d, m: %zu, truncated_weight: %f, truncated_fraction: %f, smallest_ev: %f\n", *nsweeps, *m, *truncated_weight, *truncated_fraction, *smallest_ev);
     }
 
     double qcmaquis_interface_get_overlap(const char* filename)
