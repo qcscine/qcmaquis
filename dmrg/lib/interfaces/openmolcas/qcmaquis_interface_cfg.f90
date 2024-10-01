@@ -125,6 +125,7 @@ module qcmaquis_interface_cfg
        real*8 , allocatable :: dmrg_state_specific(:)
        real*8 , allocatable :: max_truncW(:)
        integer*8, allocatable :: num_sweeps(:)
+       real*8 , allocatable :: bond_dim(:)
   end type type_energy
   type (type_energy), save :: dmrg_energy
 

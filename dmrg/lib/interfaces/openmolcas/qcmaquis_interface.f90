@@ -232,6 +232,10 @@ module qcmaquis_interface
         stop ' Error in allocation: max_truncW(:)'
         dmrg_energy%max_truncW     = 0
 
+        allocate(dmrg_energy%bond_dim(lroot), stat=ierr); if( ierr /= 0 ) &
+        stop ' Error in allocation: bond_dim(:)'
+        dmrg_energy%bond_dim     = 0
+
         allocate(dmrg_file%qcmaquis_checkpoint_file(lroot), stat=ierr); if( ierr /= 0 ) &
         stop ' Error in allocation: qcmaquis_checkpoint_file(:)'
         dmrg_file%qcmaquis_checkpoint_file = ''
@@ -800,6 +804,7 @@ module qcmaquis_interface
       ! save number of sweeps
       dmrg_energy%num_sweeps(i) = nsweeps-nsweeps_prev
       dmrg_energy%max_truncW(i) = truncated_weight
+      dmrg_energy%bond_dim(i) = m
 
     end do
     ! SA energy
@@ -820,6 +825,7 @@ module qcmaquis_interface
       if (present(spd)) call GA_Brdcst(MT_DBL, spd, size(spd)*storage_size(spd(1,1))/8, 0)
       call GA_Brdcst(MT_INT, dmrg_energy%num_sweeps, size(dmrg_energy%num_sweeps)*storage_size(dmrg_energy%num_sweeps)/8, 0)
       call GA_Brdcst(MT_DBL, dmrg_energy%max_truncW, size(dmrg_energy%max_truncW)*storage_size(dmrg_energy%max_truncW)/8, 0)
+      call GA_Brdcst(MT_DBL, dmrg_energy%bond_dim, size(dmrg_energy%bond_dim)*storage_size(dmrg_energy%bond_dim)/8, 0)
     endif
 #endif
   end subroutine
@@ -1831,6 +1837,7 @@ module qcmaquis_interface
     if(allocated(dmrg_energy%dmrg_state_specific))    deallocate(dmrg_energy%dmrg_state_specific)
     if(allocated(dmrg_energy%num_sweeps))             deallocate(dmrg_energy%num_sweeps)
     if(allocated(dmrg_energy%max_truncW))             deallocate(dmrg_energy%max_truncW)
+    if(allocated(dmrg_energy%bond_dim))             deallocate(dmrg_energy%bond_dim)
     if(allocated(dmrg_input%qcmaquis_input))          deallocate(dmrg_input%qcmaquis_input)
     if(allocated(dmrg_file%qcmaquis_checkpoint_file)) deallocate(dmrg_file%qcmaquis_checkpoint_file)
 
