@@ -373,9 +373,11 @@ extern "C"
             const std::vector<boost::any>& tw_vec = (iter.has("TruncatedWeight")) ? iter["TruncatedWeight"].get() : std::vector<boost::any>();
             const std::vector<boost::any>& tf_vec = (iter.has("TruncatedFraction")) ? iter["TruncatedFraction"].get() : std::vector<boost::any>();
 
+            // return maximum bond dimension
+            *m = 0; for (auto&& m_ : m_vec) *m = std::max(*m, boost::any_cast<std::size_t>(m_));
+            
             // We return the sum of these values for the last sweep
             // this should be done with transform_reduce
-            *m = 0; for (auto&& m_ : m_vec) *m += boost::any_cast<std::size_t>(m_);
             *truncated_weight = 0; for (auto&& tw_ : tw_vec) *truncated_weight += boost::any_cast<V>(tw_);
             *truncated_fraction = 0; for (auto&& tf_ : tf_vec) *truncated_fraction += boost::any_cast<V>(tf_);
             *smallest_ev = 0; for (auto&& ev_ : ev_vec) *smallest_ev += boost::any_cast<V>(ev_);
@@ -384,7 +386,7 @@ extern "C"
         }
         else
             *nsweeps = 0; // If iter is empty, no iterations have been made and thus we return all zeros
-        printf("nsweeps: %d, m: %zu, truncated_weight: %f, truncated_fraction: %f, smallest_ev: %f\n", *nsweeps, *m, *truncated_weight, *truncated_fraction, *smallest_ev);
+        std::cout << "maximum bond dimension: " << *m << std::endl;
     }
 
     double qcmaquis_interface_get_overlap(const char* filename)
