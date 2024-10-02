@@ -386,7 +386,6 @@ extern "C"
         }
         else
             *nsweeps = 0; // If iter is empty, no iterations have been made and thus we return all zeros
-        printf("maximum bond dimension: %zu\n", *m);
     }
 
     double qcmaquis_interface_get_overlap(const char* filename)

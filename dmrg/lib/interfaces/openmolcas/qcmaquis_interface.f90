@@ -390,11 +390,12 @@ module qcmaquis_interface
       end interface
         integer,intent(inout) :: nsweeps, m
         real*8,intent(inout) :: truncated_weight, truncated_fraction, smallest_ev
-        integer(c_int) :: nsweeps_ = 0, m_ = 0
+        integer(c_int) :: nsweeps_ = 0
+        integer(c_size_t) :: m_ = 0
         real(c_double) :: truncated_weight_ = 0.0d0, truncated_fraction_ = 0.0d0, smallest_ev_ = 0.0d0
 
         ! call C interface
-        call qcmaquis_interface_get_iteration_results_C(nsweeps_, int(m_, c_size_t), truncated_weight_, &
+        call qcmaquis_interface_get_iteration_results_C(nsweeps_, m_, truncated_weight_, &
                                             truncated_fraction_, smallest_ev_)
         ! convert types
         nsweeps = int(nsweeps_)
@@ -805,7 +806,6 @@ module qcmaquis_interface
       dmrg_energy%num_sweeps(i) = nsweeps-nsweeps_prev
       dmrg_energy%max_truncW(i) = truncated_weight
       dmrg_energy%bond_dim(i) = m
-
     end do
     ! SA energy
     ! If weights are present, use them, otherwise equal weights
