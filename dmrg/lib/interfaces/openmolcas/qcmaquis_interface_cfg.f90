@@ -33,7 +33,7 @@ module qcmaquis_interface_cfg
        ! TODO: consider also sweep_bond_dimensions
 
        !! OpenMOLCAS project name & current directory
-       character*256 :: project_name = '' ! MOLCAS/QCMaquis project prefix
+       character*256 :: project_name = 'WorkDir' ! MOLCAS/QCMaquis project prefix
        character*512 :: currdir = '' ! MOLCAS current directory
 
       !! OpenMOLCAS wavefunction settings (possibly redundant)
