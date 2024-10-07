@@ -369,10 +369,6 @@ extern "C"
             const std::vector<boost::any>& m_vec = iter["BondDimension"].get();
             const std::vector<boost::any>& ev_vec = iter["SmallestEV"].get();
 
-            for (auto&& m_ : m_vec) {
-              printf("bond_dim = %zu\n", boost::any_cast<std::size_t>(m_));
-            }
-
             // if we do single-site optimization, we will not have TruncatedWeight or TruncatedFraction, so check whether we have it
             const std::vector<boost::any>& tw_vec = (iter.has("TruncatedWeight")) ? iter["TruncatedWeight"].get() : std::vector<boost::any>();
             const std::vector<boost::any>& tf_vec = (iter.has("TruncatedFraction")) ? iter["TruncatedFraction"].get() : std::vector<boost::any>();
