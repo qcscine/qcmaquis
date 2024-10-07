@@ -322,10 +322,8 @@ truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
     delete[] keeps;
 
     std::size_t bond_dimension = S.basis().sum_of_left_sizes();
-    if (verbose) {
-        maquis::cout << "Bond dimension before truncation: " << old_basis.sum_of_sizes() << std::endl;
-        maquis::cout << "Bond dimension after truncation: " << bond_dimension << std::endl;
-    }
+    maquis::cout << "Bond dimension before truncation: " << old_basis.sum_of_sizes() << std::endl;
+    maquis::cout << "Bond dimension after truncation: " << bond_dimension << std::endl;
 
     // MD: for singuler values we care about summing the square of the discraded
     // MD: sum of the discarded values is stored elsewhere
