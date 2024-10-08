@@ -48,8 +48,7 @@ void checkEnabledSimulationType(const std::string& sim_type) {
 // @brief Checks that the requested simulation type is valid
 void checkSimulationType(const std::string& sim_type) {
   std::vector<std::string> valid_types = {
-      "optimize", "evolve", "ipi", "feast", "transcorrelation"
-  };
+      "optimize", "evolve", "ipi", "feast", "transcorrelation"};
   if (std::find(valid_types.begin(), valid_types.end(), sim_type) ==
       valid_types.end()) {
     std::cerr << "Unknown simulation type: \"" << sim_type
@@ -85,16 +84,17 @@ int main(int argc, char** argv) {
       DCOLLECTOR_SET_SIZE(svd_collector, opt.parms["max_bond_dimension"] + 1)
 
       Timer sim_timer(
-          "\n*********************************************************\nQCMAQUIS " + sim_type +
-          " simulation"
+          "\n*********************************************************"
+          "\nQCMAQUIS " +
+          sim_type + " simulation"
       );
       sim_timer.begin();
 
-      if (!opt.parms["COMPLEX"]) {
-        maquis::DMRGInterface<double> interface(opt.parms);
+      if (opt.parms["COMPLEX"] && opt.parms["simulation_type"] == "evolve") {
+        maquis::DMRGInterface<std::complex<double>> interface(opt.parms);
         interface.run(sim_type);
       } else {
-        maquis::DMRGInterface<std::complex<double>> interface(opt.parms);
+        maquis::DMRGInterface<double> interface(opt.parms);
         interface.run(sim_type);
       }
 
