@@ -1853,8 +1853,8 @@ module qcmaquis_interface
       end subroutine
     end interface
 
-    real, dimension(:) :: epsa
-    integer, intent(in) :: nasht
+    real(c_double), dimension(:) :: epsa
+    integer(c_int), intent(in) :: nasht
 
     call qcmaquis_interface_contract_with_fock_3rdm_C(epsa, nasht)
 
