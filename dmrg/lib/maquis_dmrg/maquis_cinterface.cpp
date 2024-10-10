@@ -13,6 +13,10 @@
 #include "starting_guess.h"
 #include "dmrg/utils/stdout_redirector.hpp"
 #include "dmrg/models/measurements/measurements_details.h" // for 4-RDM functions
+                                                           
+// For CASPT2
+#include "dmrg/models/generate_mpo.hpp"
+#include "dmrg/mp_tensors/mpo_times_mps.hpp"
 
 std::unique_ptr<maquis::DMRGInterface<double> > interface_ptr;
 DmrgParameters parms;
@@ -467,5 +471,32 @@ extern "C"
         std::ofstream fs(filename);
         fs << parms_rdm;
 
+    }
+
+    void qcmaquis_interface_contract_with_fock_3rdm(double* epsa, int nasht) {
+      printf("contract_with_fock epsa = \n");
+      for (int i = 0; i < nasht; ++i) {
+        printf("%f ", epsa[i]);
+      }
+      printf("\n");
+      // MPS<matrix, TwoU1PG> mps;
+      // load(parms["chkpfile"], mps);
+      //
+      // maquis::integral_map<double> int_map;
+      // for (int i = 1; i < nasht + 1; ++i) {
+      //   int_map[{i, i, 0, 0}] = epsa[i];
+      // }
+      // BaseParameters parms_caspt2 = parms;
+      // parms.erase("integral_file");
+      // parms.erase("integrals");
+      // parms.erase("integrals_binary");
+      // parms.set("integrals_binary", maquis::serialize(int_map));
+      // auto lattice = Lattice(parms_caspt2);
+      // auto model = Model<matrix, TwoU1PG>(lattice, parms_caspt2);
+      // auto mpo = make_mpo(lattice, model);
+      // auto traitClass = MPOTimesMPSTraitClass<tmatrix<double>, TwoU1PG>(
+      //     mps, model, lattice, model.total_quantum_numbers(parms),
+      //     parms["max_bond_dimension"]);
+      // auto outputMPS = traitClass.applyMPO(mpo);
     }
 }
