@@ -1845,7 +1845,7 @@ module qcmaquis_interface
 
   subroutine qcmaquis_interface_contract_with_fock_3rdm(epsa, nasht)
     interface
-      subroutine qcmaquis_interface_contract_with_fock_3rdm_C(epsa, nasht)
+      subroutine qcmaquis_interface_contract_with_fock_3rdm_C(epsa, nasht) &
         bind(C,name='qcmaquis_interface_contract_with_fock_3rdm')
         import c_int, c_double
         real(c_double), dimension(:) :: epsa
