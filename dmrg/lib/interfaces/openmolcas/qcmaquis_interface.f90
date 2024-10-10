@@ -1848,15 +1848,15 @@ module qcmaquis_interface
       subroutine qcmaquis_interface_contract_with_fock_3rdm_C(epsa, nasht) &
         bind(C,name='qcmaquis_interface_contract_with_fock_3rdm')
         import c_int, c_double
-        real(c_double), dimension(:) :: epsa
+        real(c_double), dimension(*) :: epsa
         integer(c_int), intent(in), value :: nasht
       end subroutine
     end interface
 
     real(c_double), dimension(:) :: epsa
-    integer(c_int), intent(in) :: nasht
+    integer, intent(in) :: nasht
 
-    call qcmaquis_interface_contract_with_fock_3rdm_C(epsa, nasht)
+    call qcmaquis_interface_contract_with_fock_3rdm_C(epsa, int(nasht, c_int))
 
   end subroutine qcmaquis_interface_contract_with_fock_3rdm
 

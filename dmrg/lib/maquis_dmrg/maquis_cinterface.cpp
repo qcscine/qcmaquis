@@ -473,12 +473,13 @@ extern "C"
 
     }
 
-    void qcmaquis_interface_contract_with_fock_3rdm(double* epsa, int nasht) {
+    void qcmaquis_interface_contract_with_fock_3rdm(const double* epsa, int nasht) {
       printf("contract_with_fock epsa = \n");
       for (int i = 0; i < nasht; ++i) {
         printf("%f ", epsa[i]);
       }
       printf("\n");
+
       // MPS<matrix, TwoU1PG> mps;
       // load(parms["chkpfile"], mps);
       //

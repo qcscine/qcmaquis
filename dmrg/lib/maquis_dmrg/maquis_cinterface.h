@@ -134,7 +134,7 @@ extern "C"
     // state_j: second state for 3-TDM measurements, unused for 4-RDM
     void qcmaquis_interface_prepare_hirdm_template(const char* filename, int state, HIRDM_Template tpl, int state_j);
 
-    void qcmaquis_interface_contract_with_fock_3rdm(double* epsa, int nasht);
+    void qcmaquis_interface_contract_with_fock_3rdm(const double* epsa, int nasht);
 }
 
 #endif
