@@ -12,5 +12,8 @@ target_link_libraries(dmrg ${DMRG_APP_LIBRARIES})
 add_executable(dmrgIPI dmrg_ipi.cpp)
 target_link_libraries(dmrgIPI ${DMRG_APP_LIBRARIES})
 
+add_executable(fww-mpo fww-mpo.cpp)
+target_link_libraries(fww-mpo ${DMRG_APP_LIBRARIES})
+
 # *** Install
 install(TARGETS dmrgIPI RUNTIME DESTINATION bin COMPONENT applications)

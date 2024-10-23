@@ -14,3 +14,4 @@ dmrg/doc/qcmaquis_manual.log
 dmrg/doc/qcmaquis_manual.out
 dmrg/doc/qcmaquis_manual.pdf
 dmrg/doc/qcmaquis_manual.toc
+*.cache
