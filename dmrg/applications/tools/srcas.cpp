@@ -118,7 +118,7 @@ int main(int argc, char** argv) {
   bool restart = false;
   if (opt.parms.is_set("srcas_restart")) {
     restart = true;
-    maquis::cout << "NOT IMPLEMENTED YET!!!!" << std::endl;
+    // maquis::cout << "NOT IMPLEMENTED YET!!!!" << std::endl;
     maquis::cout << "Restart from " << opt.parms["srcas_restart"] << std::endl;
   }
 

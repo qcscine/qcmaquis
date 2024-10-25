@@ -10,7 +10,7 @@ from scine_qcmaquis.maquis_dmrg import MaquisDmrg
 def test_maquis_dmrg_sweep_from_fcidump():
     def _write_fcidump():
         tmp_fcidump = open("fcidump_mock", "w")
-        tmp_fcidump.write("&FCI NORB=4, NELEC=4, MS2=0,\n")
+        tmp_fcidump.write("&FCI NORB=4, NELEC=2, MS2=0,\n")
         tmp_fcidump.write("ORBSYM=1,1,1,1,\n")
         tmp_fcidump.write("ISYM=1,\n")
         tmp_fcidump.write("&END\n")
