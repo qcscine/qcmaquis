@@ -7,7 +7,8 @@
 
 #include "dmrg/tools/base_srcas.h"
 #include "dmrg/tools/electronic_srcas.h"
-#include "dmrg/tools/vib_srcas.h"
+// #include "dmrg/tools/vib_srcas.h"
+#include "dmrg/tools/srcas_utilities_old.h"
 #include "dmrg/utils/DmrgOptions.h"
 #include "maquis_dmrg.h"
 #include <sys/stat.h>
@@ -140,8 +141,16 @@ int main(int argc, char** argv) {
     }
 
     else {
-      maquis::srcas::VibSRCAS<ScalarType> srcas(opt.parms, interface);
-      detail::runSRCAS(srcas);
+      // TODO: enable vibSRCAS class
+      // maquis::srcas::VibSRCAS<ScalarType> srcas(opt.parms, interface);
+      // detail::runSRCAS(srcas);
+      // For now, the old vibrational srcas
+      SRCAS<ScalarType> srcas(opt.parms, interface);
+      srcas.printSRCASSettings();
+      srcas.run();
+      srcas.printResults();
+      // maquis::srcas::VibSRCAS<ScalarType> srcas(opt.parms, interface);
+      // detail::runSRCAS(srcas);
     }
 
     return 0;
@@ -163,8 +172,16 @@ int main(int argc, char** argv) {
   }
 
   else {
-    maquis::srcas::VibSRCAS<ScalarType> srcas(opt.parms, interface);
-    detail::runSRCAS(srcas);
+    // TODO: enable vibSRCAS class
+    // maquis::srcas::VibSRCAS<ScalarType> srcas(opt.parms, interface);
+    // detail::runSRCAS(srcas);
+    // For now, the old vibrational srcas
+    SRCAS<ScalarType> srcas(opt.parms, interface);
+    srcas.printSRCASSettings();
+    srcas.run();
+    srcas.printResults();
+    // maquis::srcas::VibSRCAS<ScalarType> srcas(opt.parms, interface);
+    // detail::runSRCAS(srcas);
   }
 
   return 0;

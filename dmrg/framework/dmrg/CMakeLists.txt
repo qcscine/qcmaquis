@@ -51,6 +51,7 @@ add_library(dmrg_utils STATIC
   block_matrix/symmetry/su2_wrapper.cpp
   block_matrix/symmetry.cpp
   tools/electronic_srcas.cpp
+  tools/srcas_utilities_old.cpp
   tools/determinant.cpp
   tools/base_srcas.cpp
   tools/onv.cpp

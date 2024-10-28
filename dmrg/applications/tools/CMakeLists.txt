@@ -2,6 +2,7 @@ add_definitions(-DHAVE_ALPS_HDF5 -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING -DALP
 
 set(DMRG_APP_LIBRARIES maquis_dmrg dmrg_models dmrg_utils ${DMRG_LIBRARIES})
 
+
 macro(create_tools_symm_target TNAME SYMM CPPFILE LIBS)
   get_symm_group_name(SYMM_NAME ${SYMM})
   if(DMRG_HAS_${SYMM_NAME})
@@ -80,7 +81,6 @@ if (BUILD_MPS2CI)
   # create_tools_symm_target("srcas_2u1pg"          "TWOU1PG"   "srcas.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
   if(BUILD_VIBRATIONAL)
     create_tools_target( "mps2ci_vib"  "mps2ci_vibrational.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
-    create_tools_vib_target( "srcas_vib"            "srcas_vibrational.cpp"   "dmrg_models;${DMRG_APP_LIBRARIES}")
   endif()
 endif (BUILD_MPS2CI)
 
