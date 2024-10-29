@@ -85,61 +85,6 @@ PYBIND11_MODULE(_dmrg, module) {
   /* DmrgParameters */
   py::class_<DmrgParameters, BaseParameters>(module, "DmrgParameters").def(py::init<>());
 
-  // TODO: Make srcas work again
-  //
-  // /* Base Real Electronic SRCAS class */
-  // py::class_<maquis::srcas::BaseSRCAS<double, maquis::srcas::Determinant>>(module, "BaseRealElectronicSRCAS")
-  //     .def("run", &maquis::srcas::BaseSRCAS<double, maquis::srcas::Determinant>::run)
-  //     .def("currentQueen", &maquis::srcas::BaseSRCAS<double, maquis::srcas::Determinant>::currentQueen)
-  //     .def("sampledTable", &maquis::srcas::BaseSRCAS<double, maquis::srcas::Determinant>::sampledTable)
-  //     .def("completeness", &maquis::srcas::BaseSRCAS<double, maquis::srcas::Determinant>::completeness)
-  //     .def("printSettings", &maquis::srcas::BaseSRCAS<double, maquis::srcas::Determinant>::printSettings)
-  //     .def("printResults", &maquis::srcas::BaseSRCAS<double, maquis::srcas::Determinant>::printResults);
-  // /* Real Electronic SRCAS */
-  // py::class_<maquis::srcas::ElectronicSRCAS<double>, maquis::srcas::BaseSRCAS<double, maquis::srcas::Determinant>>(
-  //     module, "RealElectronicSRCAS")
-  //     .def(py::init<DmrgParameters&, std::shared_ptr<maquis::DMRGInterface<double>>>());
-  //
-  // /* Base Complex Electronic SRCAS class */
-  // py::class_<maquis::srcas::BaseSRCAS<std::complex<double>, maquis::srcas::Determinant>>(module,
-  //                                                                                        "BaseComplexElectronicSRCAS")
-  //     .def("run", &maquis::srcas::BaseSRCAS<std::complex<double>, maquis::srcas::Determinant>::run)
-  //     .def("currentQueen", &maquis::srcas::BaseSRCAS<std::complex<double>, maquis::srcas::Determinant>::currentQueen)
-  //     .def("sampledTable", &maquis::srcas::BaseSRCAS<std::complex<double>, maquis::srcas::Determinant>::sampledTable)
-  //     .def("completeness", &maquis::srcas::BaseSRCAS<std::complex<double>, maquis::srcas::Determinant>::completeness)
-  //     .def("printSettings", &maquis::srcas::BaseSRCAS<std::complex<double>,
-  //     maquis::srcas::Determinant>::printSettings) .def("printResults",
-  //     &maquis::srcas::BaseSRCAS<std::complex<double>, maquis::srcas::Determinant>::printResults);
-  // /* Complex Electronic SRCAS */
-  // py::class_<maquis::srcas::ElectronicSRCAS<std::complex<double>>, maquis::srcas::BaseSRCAS<std::complex<double>,
-  // maquis::srcas::Determinant>>(
-  //     module, "ComplexElectronicSRCAS")
-  //     .def(py::init<DmrgParameters&, std::shared_ptr<maquis::DMRGInterface<std::complex<double>>>>());
-  //
-  // /* Base Real Electronic SRCAS class */
-  // py::class_<maquis::srcas::BaseSRCAS<double, maquis::srcas::VibONV>>(module, "BaseRealVibSRCAS")
-  //     .def("run", &maquis::srcas::BaseSRCAS<double, maquis::srcas::VibONV>::run)
-  //     .def("currentQueen", &maquis::srcas::BaseSRCAS<double, maquis::srcas::VibONV>::currentQueen)
-  //     .def("sampledTable", &maquis::srcas::BaseSRCAS<double, maquis::srcas::VibONV>::sampledTable)
-  //     .def("completeness", &maquis::srcas::BaseSRCAS<double, maquis::srcas::VibONV>::completeness)
-  //     .def("printSettings", &maquis::srcas::BaseSRCAS<double, maquis::srcas::VibONV>::printSettings)
-  //     .def("printResults", &maquis::srcas::BaseSRCAS<double, maquis::srcas::VibONV>::printResults);
-  // /* Real Vibrational SRCAS */
-  // py::class_<maquis::srcas::VibSRCAS<double>>(module, "RealVibrationalSRCAS")
-  //     .def(py::init<DmrgParameters&, std::shared_ptr<maquis::DMRGInterface<double>>>());
-  //
-  // /* Base Complex Electronic SRCAS class */
-  // py::class_<maquis::srcas::BaseSRCAS<std::complex<double>, maquis::srcas::VibONV>>(module, "BaseComplexVibSRCAS")
-  //     .def("run", &maquis::srcas::BaseSRCAS<std::complex<double>, maquis::srcas::VibONV>::run)
-  //     .def("currentQueen", &maquis::srcas::BaseSRCAS<std::complex<double>, maquis::srcas::VibONV>::currentQueen)
-  //     .def("sampledTable", &maquis::srcas::BaseSRCAS<std::complex<double>, maquis::srcas::VibONV>::sampledTable)
-  //     .def("completeness", &maquis::srcas::BaseSRCAS<std::complex<double>, maquis::srcas::VibONV>::completeness)
-  //     .def("printSettings", &maquis::srcas::BaseSRCAS<std::complex<double>, maquis::srcas::VibONV>::printSettings)
-  //     .def("printResults", &maquis::srcas::BaseSRCAS<std::complex<double>, maquis::srcas::VibONV>::printResults);
-  // /* Complex Vibrational SRCAS */
-  // py::class_<maquis::srcas::VibSRCAS<std::complex<double>>>(module, "ComplexVibrationalSRCAS")
-  //     .def(py::init<DmrgParameters&, std::shared_ptr<maquis::DMRGInterface<std::complex<double>>>>());
-
   /* Real Electronic DMRG Interface */
   py::class_<maquis::DMRGInterface<double>, std::shared_ptr<maquis::DMRGInterface<double>>>(module, "DmrgReal")
       .def(py::init<DmrgParameters&>())

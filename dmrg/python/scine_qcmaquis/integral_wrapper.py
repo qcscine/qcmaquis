@@ -135,8 +135,8 @@ class IntegralMapWrapper:
         else:
             self._integral_map = TCIntegralMap()
             for key in self._parser.get_unique_indices():
-                new_key = (key[0], key[1], key[2], key[3], key[4], key[5])
-                self._integral_map.set(new_key, float(self._parser.get_integral_value(key)))
+                new_key_tc = (key[0], key[1], key[2], key[3], key[4], key[5])
+                self._integral_map.set(new_key_tc, float(self._parser.get_integral_value(key)))
 
 
 class IntegralsParser:
@@ -218,7 +218,7 @@ class IntegralsParser:
         """Get unique integrals."""
         return self._unique_term.keys()
 
-    def get_integral_value(self, key: Tuple[int, int, int, int]) -> float:
+    def get_integral_value(self, key: Union[Tuple[int, int, int, int], Tuple[int, int, int, int, int, int]]) -> float:
         """Get integral_value.
 
         Parameters
@@ -233,7 +233,7 @@ class IntegralsParser:
         """
         return self._unique_term[key]
 
-    def parse_fcidump(self, fcidump: str):
+    def parse_fcidump(self, fcidumpstr: str):
         """Parse fcidump.
 
         Parameters
@@ -241,7 +241,7 @@ class IntegralsParser:
         fcidump : str
             path to fcidump
         """
-        fcidump = open(fcidump, "r")
+        fcidump = open(fcidumpstr, "r")
         self._parse_fcidump_header(fcidump)
         self._parse_fcidump_body(fcidump)
 
@@ -317,7 +317,7 @@ class IntegralsParser:
             self._add_term(line)
             line = file.readline()
 
-    def _add_term(self, line: str):
+    def _add_term(self, fullline: str):
         """Add terms to unique terms.
 
         Checks line from fcidump body for uniqueness and adds it to the internal dict.
@@ -328,7 +328,7 @@ class IntegralsParser:
         line : str
             The string to be parsed
         """
-        line = line.split()
+        line = fullline.split()
         value = float(line[0])
         # pylint: disable=invalid-name
         p = int(line[1])
