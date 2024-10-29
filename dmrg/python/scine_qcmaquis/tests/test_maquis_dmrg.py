@@ -1,4 +1,5 @@
 import os
+import shutil
 
 import numpy as np
 import pytest
@@ -94,6 +95,8 @@ def test_maquis_dmrg_sweep_from_fcidump():
     dmrg._parameters.erase("lattice_library")
     dmrg._parameters.erase("model_library")
     dmrg._parameters.erase("LATTICE")
+    dmrg.set_parameter("chkfile", "test1.h5")
+    dmrg.set_parameter("resultfile", "test1_res.h5")
     dmrg.set_entropies()
 
     dmrg.set_fcidump("fcidump_mock")
@@ -115,8 +118,8 @@ def test_maquis_dmrg_sweep_from_fcidump():
     dmrg._parameters.erase("lattice_library")
     dmrg._parameters.erase("model_library")
     dmrg._parameters.erase("LATTICE")
-    dmrg.set_parameter("chkfile", "blub.h5")
-    dmrg.set_parameter("resultfile", "blub_res.h5")
+    dmrg.set_parameter("chkfile", "test2.h5")
+    dmrg.set_parameter("resultfile", "test2_res.h5")
     dmrg.set_entropies()
 
     dmrg.set_fcidump("fcidump_mock")
@@ -126,7 +129,9 @@ def test_maquis_dmrg_sweep_from_fcidump():
 
     s1_fiedler, s2_fiedler, mut_inf_fielder = dmrg.get_entropies()
     assert (np.abs(s1 - s1_fiedler)).sum() < 1e-10
-    # assert (np.abs(mut_inf - mut_inf_fielder)).sum() < 1e-10
+    os.remove("test1_res.h5")
+    os.remove("fcidump_mock")
+    os.remove("test2_res.h5")
 
 
 if __name__ == "__main__":

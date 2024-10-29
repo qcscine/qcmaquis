@@ -202,6 +202,7 @@ def test_integral_parser_parse_fcidump_body_incorrect_symmetry_in_fcidump():
         (4, 4, 4, 4): 1.4153931193989575e-01,
     }
     assert unique_terms == parser._unique_term
+    os.remove("fcidump_mock")
 
 
 def test_integral_parser_parse_fcidump_body():
@@ -305,6 +306,7 @@ def test_integral_parser_parse_fcidump_body():
         (4, 4, 4, 4): 1.4153931193989575e-01,
     }
     assert unique_terms == parser._unique_term
+    os.remove("fcidump_mock")
 
 
 def test_integral_set_core():
@@ -619,6 +621,7 @@ def test_integral_wrapper_fcidump_body_incorrect_symmetry_in_fcidump():
         (4, 4, 4, 4): 1.4153931193989575e-01,
     }
     assert unique_terms == parser._unique_term
+    os.remove("fcidump_mock")
 
 
 def test_integral_wrapper_fcidump():
@@ -725,6 +728,7 @@ def test_integral_wrapper_fcidump():
         (4, 4, 4, 4): 1.4153931193989575e-01,
     }
     assert unique_terms == integral_map._parser._unique_term
+    os.remove("fcidump_mock")
 
 
 if __name__ == "__main__":

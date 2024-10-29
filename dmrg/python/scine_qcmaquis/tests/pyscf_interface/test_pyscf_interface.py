@@ -7,15 +7,6 @@ from pyscf import gto, mcscf, scf
 from scine_qcmaquis.pyscf_interface.pyscf_interface import QcMaquis
 
 
-def remove_checkpoint_and_results_file():
-    path = os.path.dirname(os.path.abspath(__file__))
-    os.chdir(path)
-    shutil.rmtree("checkpoint_DMRGSCF.h5", ignore_errors=True)
-    shutil.rmtree("checkpoint_gs.h5", ignore_errors=True)
-    os.remove("results_DMRGSCF.h5")
-    os.remove("results_file.h5")
-
-
 def test_dmrgci():
     mol = gto.Mole()
     mol.build(
@@ -46,6 +37,7 @@ def test_dmrgci():
     print('Maquis-CI  = %.15g CASCI  = %.15g' % (emc_0, emc_0ref))
     print('Diff = %.15g' % (emc_0 - emc_0ref))
     assert abs(emc_0ref - emc_0) < 1e-9
+    remove_checkpoint_and_results_file()
 
 
 def test_dmrgscf():
@@ -79,6 +71,7 @@ def test_dmrgscf():
     print('Maquis-SCF = %.15g CASSCF = %.15g' % (emc_1, emc_1ref))
     print('Diff = %.15g' % (emc_1 - emc_1ref))
     assert abs(emc_1ref - emc_1) < 1e-9
+    remove_checkpoint_and_results_file()
 
 
 def test_dmrgscf_with_checkpoint():
@@ -115,6 +108,7 @@ def test_dmrgscf_with_checkpoint():
     print('Maquis-SCF = %.15g CASSCF = %.15g' % (emc_1, emc_1ref))
     print('Diff = %.15g' % (emc_1 - emc_1ref))
     assert abs(emc_1ref - emc_1) < 5e-9
+    remove_checkpoint_and_results_file()
 
 
 def test_dmrgscf_with_existing_checkpoint():
@@ -151,7 +145,28 @@ def test_dmrgscf_with_existing_checkpoint():
     print('Maquis-SCF = %.15g CASSCF = %.15g' % (emc_1, emc_1ref))
     print('Diff = %.15g' % (emc_1 - emc_1ref))
     assert abs(emc_1ref - emc_1) < 5e-9
+    remove_checkpoint_and_results_file()
 
+
+def remove_checkpoint_and_results_file():
+    path = os.path.dirname(os.path.abspath(__file__))
+    os.chdir(path)
+    try:
+        shutil.rmtree("checkpoint_DMRGSCF.h5", ignore_errors=True)
+    except: 
+        pass
+    try:
+        shutil.rmtree("checkpoint_gs.h5", ignore_errors=True)
+    except: 
+        pass
+    try:
+        os.remove("results_DMRGSCF.h5")
+    except: 
+        pass
+    try:
+        os.remove("results_file.h5")
+    except: 
+        pass
 
 if __name__ == "__main__":
     test_dmrgci()
