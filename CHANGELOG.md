@@ -6,6 +6,9 @@
 - Removed keyword "ipi_sweeps_per_system", instead the standard keyword "nsweeps" is used.
 - Added support for vibrational Hamiltonians within the n-mode quantization framework.
 - Added functionality to calculate one- and two-modal RDMs in n-mode quantization framework.
+- Added Python-bindings for electronic DMRG
+- Added PySCF interface
+- Enhanced SRCAS for electronic DMRG
 
 ## Release 3.1.3
 
