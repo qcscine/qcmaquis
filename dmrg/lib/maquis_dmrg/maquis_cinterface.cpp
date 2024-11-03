@@ -17,6 +17,7 @@
 // For CASPT2
 #include "dmrg/models/generate_mpo.hpp"
 #include "dmrg/mp_tensors/mpo_times_mps.hpp"
+#include "maquis_dmrg_detail.h"
 
 std::unique_ptr<maquis::DMRGInterface<double> > interface_ptr;
 DmrgParameters parms;
@@ -480,8 +481,13 @@ extern "C"
       }
       printf("\n");
 
+      printf("Loading MPS\n");
       MPS<matrix, TwoU1PG> mps;
       load(parms["chkpfile"], mps);
+
+      // Transform SU2 to 2U1 since MPOTimesMPS not implemented for SU2
+      printf("Transforming MPS\n");
+      maquis::transform(pname, 0);
       
       maquis::integral_map<double> int_map;
       for (int i = 1; i < nasht + 1; ++i) {
@@ -507,6 +513,7 @@ extern "C"
       std::string MPStimesMPOstr = "MPStimesMPO.h5";
       save(MPStimesMPOstr, outputMPS);
 
+      // Measurement fails if props.h5 not present
       storage::archive ar(MPStimesMPOstr + "/props.h5", "w");
       ar["/parameters"] << parms_caspt2;
 
