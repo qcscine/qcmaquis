@@ -487,7 +487,12 @@ extern "C"
 
       // Transform SU2 to 2U1 since MPOTimesMPS not implemented for SU2
       printf("Transforming MPS\n");
-      maquis::transform(pname, 0);
+      std::string twou1_chkp_name;
+      int Nup;
+      int Ndown;
+      std::tie(twou1_chkp_name, Nup, Ndown) = maquis::interface_detail::twou1_name_Nup_Ndown(pname, 0, parms["nelec"], parms["spin"]);
+      printf("twou1_chkp_name = %s\n", twou1_chkp_name.c_str());
+      maquis::transform(pname, 0, parms["spin"]);
       
       maquis::integral_map<double> int_map;
       for (int i = 1; i < nasht + 1; ++i) {
