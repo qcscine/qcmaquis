@@ -480,24 +480,25 @@ extern "C"
       }
       printf("\n");
 
-      // MPS<matrix, TwoU1PG> mps;
-      // load(parms["chkpfile"], mps);
-      //
-      // maquis::integral_map<double> int_map;
-      // for (int i = 1; i < nasht + 1; ++i) {
-      //   int_map[{i, i, 0, 0}] = epsa[i];
-      // }
-      // BaseParameters parms_caspt2 = parms;
-      // parms.erase("integral_file");
-      // parms.erase("integrals");
-      // parms.erase("integrals_binary");
-      // parms.set("integrals_binary", maquis::serialize(int_map));
-      // auto lattice = Lattice(parms_caspt2);
-      // auto model = Model<matrix, TwoU1PG>(lattice, parms_caspt2);
-      // auto mpo = make_mpo(lattice, model);
-      // auto traitClass = MPOTimesMPSTraitClass<tmatrix<double>, TwoU1PG>(
-      //     mps, model, lattice, model.total_quantum_numbers(parms),
-      //     parms["max_bond_dimension"]);
-      // auto outputMPS = traitClass.applyMPO(mpo);
+      MPS<matrix, TwoU1PG> mps;
+      load(parms["chkpfile"], mps);
+      
+      maquis::integral_map<double> int_map;
+      for (int i = 1; i < nasht + 1; ++i) {
+        int_map[{i, i, 0, 0}] = epsa[i];
+      }
+
+      BaseParameters parms_caspt2 = parms;
+      parms.erase("integral_file");
+      parms.erase("integrals");
+      parms.erase("integrals_binary");
+      parms.set("integrals_binary", maquis::serialize(int_map));
+      auto lattice = Lattice(parms_caspt2);
+      auto model = Model<matrix, TwoU1PG>(lattice, parms_caspt2);
+      auto mpo = make_mpo(lattice, model);
+      auto traitClass = MPOTimesMPSTraitClass<tmatrix<double>, TwoU1PG>(
+          mps, model, lattice, model.total_quantum_numbers(parms),
+          parms["max_bond_dimension"]);
+      auto outputMPS = traitClass.applyMPO(mpo);
     }
 }
