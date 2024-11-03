@@ -481,18 +481,20 @@ extern "C"
       }
       printf("\n");
 
+      DmrgParameters parms_copy = parms;
+
       printf("Loading MPS\n");
       MPS<matrix, TwoU1PG> mps;
-      load(parms["chkpfile"], mps);
+      load(parms_copy["chkpfile"], mps);
 
       // Transform SU2 to 2U1 since MPOTimesMPS not implemented for SU2
       printf("Transforming MPS\n");
       std::string twou1_chkp_name;
       int Nup;
       int Ndown;
-      std::tie(twou1_chkp_name, Nup, Ndown) = maquis::interface_detail::twou1_name_Nup_Ndown(pname, 0, parms["nelec"], parms["spin"]);
+      std::tie(twou1_chkp_name, Nup, Ndown) = maquis::interface_detail::twou1_name_Nup_Ndown(pname, 0, parms_copy["nelec"], parms_copy["spin"]);
       printf("twou1_chkp_name = %s\n", twou1_chkp_name.c_str());
-      maquis::transform(pname, 0, parms["spin"]);
+      maquis::transform(pname, 0, parms_copy["spin"]);
       
       maquis::integral_map<double> int_map;
       for (int i = 1; i < nasht + 1; ++i) {
@@ -501,18 +503,20 @@ extern "C"
 
       // Compute MPO * |MPS>
       printf("Building MPO\n");
-      DmrgParameters parms_caspt2 = parms;
+      DmrgParameters parms_caspt2 = parms_copy;
       parms_caspt2.erase("integral_file");
       parms_caspt2.erase("integrals");
       parms_caspt2.erase("integrals_binary");
       parms_caspt2.set("integrals_binary", maquis::serialize(int_map));
+      parms_caspt2.set("u1_total_charge1", Nup);
+      parms_caspt2.set("u1_total_charge2", Ndown);
       auto lattice = Lattice(parms_caspt2);
       auto model = Model<matrix, TwoU1PG>(lattice, parms_caspt2);
       auto mpo = make_mpo(lattice, model);
       printf("Applying MPO\n");
       auto traitClass = MPOTimesMPSTraitClass<tmatrix<double>, TwoU1PG>(
-          mps, model, lattice, model.total_quantum_numbers(parms),
-          parms["max_bond_dimension"]);
+          mps, model, lattice, model.total_quantum_numbers(parms_copy),
+          parms_copy["max_bond_dimension"]);
       auto outputMPS = traitClass.applyMPO(mpo);
       printf("Saving MPS\n");
       std::string MPStimesMPOstr = "MPStimesMPO.h5";
@@ -525,7 +529,7 @@ extern "C"
       // === Measure trans3RDM ===
       printf("Measuring 3RDM\n");
       parms_caspt2.set("MEASURE[trans3rdm]", MPStimesMPOstr);
-      parms_caspt2.set("chkpfile", MPStimesMPOstr);
+      parms_caspt2.set("chkpfile", twou1_chkp_name);
       parms_caspt2.set("resultfile", "results.h5");
       maquis::DMRGInterface<double> interface_measure(parms_caspt2);
       interface_measure.measure();
