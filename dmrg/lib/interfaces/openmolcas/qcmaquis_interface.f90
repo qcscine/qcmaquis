@@ -1843,6 +1843,7 @@ module qcmaquis_interface
 
   end subroutine qcmaquis_interface_deinit
 
+  !! TODO: This should be deleted. Only used as example
   subroutine qcmaquis_interface_contract_with_fock_3rdm(epsa, nasht)
     interface
       subroutine qcmaquis_interface_contract_with_fock_3rdm_C(epsa, nasht) &
