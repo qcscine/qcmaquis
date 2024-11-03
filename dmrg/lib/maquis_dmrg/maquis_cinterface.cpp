@@ -495,9 +495,15 @@ extern "C"
       std::tie(twou1_chkp_name, Nup, Ndown) = maquis::interface_detail::twou1_name_Nup_Ndown(pname, 0, parms_copy["nelec"], parms_copy["spin"]);
       printf("twou1_chkp_name = %s\n", twou1_chkp_name.c_str());
       maquis::transform(pname, 0, parms_copy["spin"]);
+
       parms_copy.set("u1_total_charge1", Nup);
       parms_copy.set("u1_total_charge2", Ndown);
       parms_copy.set("symmetry", "2u1pg");
+      parms_copy.erase("MEASURE[1rdm]");
+      parms_copy.erase("MEASURE[2rdm]");
+      parms_copy.erase("MEASURE[3rdm]");
+      parms_copy.erase("MEASURE[4rdm]");
+      parms_copy.erase("MEASURE[ChemEntropy]");
       
       maquis::integral_map<double> int_map;
       for (int i = 1; i < nasht + 1; ++i) {
@@ -510,9 +516,6 @@ extern "C"
       parms_caspt2.erase("integrals");
       parms_caspt2.erase("integrals_binary");
       parms_caspt2.set("integrals_binary", maquis::serialize(int_map));
-      parms_caspt2.set("u1_total_charge1", Nup);
-      parms_caspt2.set("u1_total_charge2", Ndown);
-      parms_caspt2.set("symmetry", "2u1pg");
       printf("Building Lattice\n");
       auto lattice = Lattice(parms_caspt2);
       printf("Building model\n");
