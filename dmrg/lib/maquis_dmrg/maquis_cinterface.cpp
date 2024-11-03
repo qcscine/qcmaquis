@@ -495,6 +495,8 @@ extern "C"
       std::tie(twou1_chkp_name, Nup, Ndown) = maquis::interface_detail::twou1_name_Nup_Ndown(pname, 0, parms_copy["nelec"], parms_copy["spin"]);
       printf("twou1_chkp_name = %s\n", twou1_chkp_name.c_str());
       maquis::transform(pname, 0, parms_copy["spin"]);
+      parms_copy.set("u1_total_charge1", Nup);
+      parms_copy.set("u1_total_charge2", Ndown);
       
       maquis::integral_map<double> int_map;
       for (int i = 1; i < nasht + 1; ++i) {
