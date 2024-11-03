@@ -491,10 +491,10 @@ extern "C"
       // Compute MPO * |MPS>
       printf("Building MPO\n");
       DmrgParameters parms_caspt2 = parms;
-      parms.erase("integral_file");
-      parms.erase("integrals");
-      parms.erase("integrals_binary");
-      parms.set("integrals_binary", maquis::serialize(int_map));
+      parms_caspt2.erase("integral_file");
+      parms_caspt2.erase("integrals");
+      parms_caspt2.erase("integrals_binary");
+      parms_caspt2.set("integrals_binary", maquis::serialize(int_map));
       auto lattice = Lattice(parms_caspt2);
       auto model = Model<matrix, TwoU1PG>(lattice, parms_caspt2);
       auto mpo = make_mpo(lattice, model);
