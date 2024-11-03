@@ -489,6 +489,7 @@ extern "C"
       }
 
       // Compute MPO * |MPS>
+      printf("Building MPO\n");
       DmrgParameters parms_caspt2 = parms;
       parms.erase("integral_file");
       parms.erase("integrals");
@@ -497,10 +498,12 @@ extern "C"
       auto lattice = Lattice(parms_caspt2);
       auto model = Model<matrix, TwoU1PG>(lattice, parms_caspt2);
       auto mpo = make_mpo(lattice, model);
+      printf("Applying MPO\n");
       auto traitClass = MPOTimesMPSTraitClass<tmatrix<double>, TwoU1PG>(
           mps, model, lattice, model.total_quantum_numbers(parms),
           parms["max_bond_dimension"]);
       auto outputMPS = traitClass.applyMPO(mpo);
+      printf("Saving MPS\n");
       std::string MPStimesMPOstr = "MPStimesMPO.h5";
       save(MPStimesMPOstr, outputMPS);
 
