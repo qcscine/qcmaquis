@@ -502,7 +502,6 @@ extern "C"
       }
 
       // Compute MPO * |MPS>
-      printf("Building MPO\n");
       DmrgParameters parms_caspt2 = parms_copy;
       parms_caspt2.erase("integral_file");
       parms_caspt2.erase("integrals");
@@ -510,8 +509,11 @@ extern "C"
       parms_caspt2.set("integrals_binary", maquis::serialize(int_map));
       parms_caspt2.set("u1_total_charge1", Nup);
       parms_caspt2.set("u1_total_charge2", Ndown);
+      printf("Building Lattice\n");
       auto lattice = Lattice(parms_caspt2);
+      printf("Building model\n");
       auto model = Model<matrix, TwoU1PG>(lattice, parms_caspt2);
+      printf("Building MPO\n");
       auto mpo = make_mpo(lattice, model);
       printf("Applying MPO\n");
       auto traitClass = MPOTimesMPSTraitClass<tmatrix<double>, TwoU1PG>(
