@@ -11,7 +11,7 @@ std::unique_ptr<maquis::CASPT2_Interface<double>> caspt2_interface_ptr;
 
 extern "C" {
 typedef double V;
-void qcmaquis_caspt2_init(const double* epsa, int nasht) {
+void qcmaquis_interface_caspt2_init(const double* epsa, int nasht) {
   std::vector<double> epsa_vec(epsa, epsa + nasht);
   caspt2_interface_ptr.reset(
       new maquis::CASPT2_Interface<double>(epsa_vec));

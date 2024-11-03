@@ -10,7 +10,7 @@
 #include "caspt2_interface.h"
 
 extern "C" {
-void qcmaquis_caspt2_init(const double *epsa, int nasht);
+void qcmaquis_interface_caspt2_init(const double *epsa, int nasht);
 }
 
 #endif
