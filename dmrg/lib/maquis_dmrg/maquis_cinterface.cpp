@@ -515,10 +515,11 @@ extern "C"
       auto model = Model<matrix, TwoU1PG>(lattice, parms_caspt2);
       printf("Building MPO\n");
       auto mpo = make_mpo(lattice, model);
-      printf("Applying MPO\n");
+      printf("Building Trait\n");
       auto traitClass = MPOTimesMPSTraitClass<tmatrix<double>, TwoU1PG>(
           mps, model, lattice, model.total_quantum_numbers(parms_copy),
           parms_copy["max_bond_dimension"]);
+      printf("Applying MPO\n");
       auto outputMPS = traitClass.applyMPO(mpo);
       printf("Saving MPS\n");
       std::string MPStimesMPOstr = "MPStimesMPO.h5";
