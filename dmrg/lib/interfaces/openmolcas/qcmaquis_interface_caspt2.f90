@@ -17,7 +17,7 @@
 !!  You should have received a copy of the GNU Lesser General Public License
 !!  along with dmrg-interface-utils. If not, see <http://www.gnu.org/licenses/>.
 
-module qcmaquis_interface_capst2
+module qcmaquis_interface_caspt2
 ! Module for Fortran-C interoperability with the new (non-Python) QCMaquis interface
 
   use iso_c_binding
@@ -44,4 +44,4 @@ module qcmaquis_interface_capst2
     call qcmaquis_interface_caspt2_init_C(epsa, int(nasht, c_int))
 
   end subroutine qcmaquis_interface_caspt2_init
-  end module qcmaquis_interface_capst2
+  end module qcmaquis_interface_caspt2
