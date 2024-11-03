@@ -488,7 +488,8 @@ extern "C"
         int_map[{i, i, 0, 0}] = epsa[i];
       }
 
-      BaseParameters parms_caspt2 = parms;
+      // Compute MPO * |MPS>
+      DmrgParameters parms_caspt2 = parms;
       parms.erase("integral_file");
       parms.erase("integrals");
       parms.erase("integrals_binary");
@@ -500,5 +501,18 @@ extern "C"
           mps, model, lattice, model.total_quantum_numbers(parms),
           parms["max_bond_dimension"]);
       auto outputMPS = traitClass.applyMPO(mpo);
+      std::string MPStimesMPOstr = "MPStimesMPO.h5";
+      save(MPStimesMPOstr, outputMPS);
+
+      storage::archive ar(MPStimesMPOstr + "/props.h5", "w");
+      ar["/parameters"] << parms_caspt2;
+
+      // === Measure trans3RDM ===
+      printf("Measuring 3RDM\n");
+      parms_caspt2.set("MEASURE[trans3rdm]", MPStimesMPOstr);
+      parms_caspt2.set("chkpfile", MPStimesMPOstr);
+      parms_caspt2.set("resultfile", "results.h5");
+      maquis::DMRGInterface<double> interface_measure(parms_caspt2);
+      interface_measure.measure();
     }
 }
