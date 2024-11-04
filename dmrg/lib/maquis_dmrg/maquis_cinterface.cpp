@@ -531,7 +531,7 @@ extern "C"
       printf("Applying MPO\n");
       auto output_mps = traitClass.applyMPO(mpo);
       printf("Saving MPS\n");
-      std::string MPStimesMPOstr = "MPStimesMPO.h5";
+      std::string MPStimesMPOstr = pname + "MPStimesMPO.h5";
       save(MPStimesMPOstr, output_mps);
 
       // Measurement fails if props.h5 not present
