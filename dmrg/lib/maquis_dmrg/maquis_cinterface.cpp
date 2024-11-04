@@ -523,7 +523,7 @@ extern "C"
       
       // Build integral map
       maquis::integral_map<double> int_map;
-      for (int i = 1; i < nasht + 1; ++i) {
+      for (int i = 0; i < nasht; ++i) {
         int_map[{i, i, 0, 0}] = epsa[i];
       }
 

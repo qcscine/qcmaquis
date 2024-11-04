@@ -267,7 +267,6 @@ public:
     }
     typename TwoU1::charge total_quantum_numbers(BaseParameters & parms) const
     {
-        printf("=== Enetering total_quantum_numbers  2u1 ===\n");
         typename TwoU1::charge ret(0);
         ret[0] = static_cast<int>(parms["u1_total_charge1"]);
         ret[1] = static_cast<int>(parms["u1_total_charge2"]);
