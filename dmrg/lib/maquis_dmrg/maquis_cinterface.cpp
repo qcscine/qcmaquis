@@ -474,6 +474,20 @@ extern "C"
 
     }
 
+    // Convert project name to working directory by striping last characters
+    std::string pname2workdir(const std::string& pname) {
+      // Find the last occurrence of '/'
+      size_t lastSlashPos = pname.find_last_of('/');
+
+      // If '/' is found, return the substring up to and including the last '/'
+      if (lastSlashPos != std::string::npos) {
+        return pname.substr(0, lastSlashPos + 1);
+      }
+
+      // If no '/' is found, return the original string (or handle accordingly)
+      return pname;
+    }
+
     void qcmaquis_interface_contract_with_fock_3rdm(const double* epsa, int nasht) {
       printf("contract_with_fock epsa = \n");
       for (int i = 0; i < nasht; ++i) {
@@ -531,7 +545,7 @@ extern "C"
       printf("Applying MPO\n");
       auto output_mps = traitClass.applyMPO(mpo);
       printf("Saving MPS\n");
-      std::string MPStimesMPOstr = pname + "MPStimesMPO.h5";
+      std::string MPStimesMPOstr = pname2workdir(pname) + "MPStimesMPO.h5";
       save(MPStimesMPOstr, output_mps);
 
       // Measurement fails if props.h5 not present
