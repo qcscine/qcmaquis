@@ -482,10 +482,16 @@ extern "C"
       printf("\n");
 
       DmrgParameters parms_copy = parms;
+      parms_copy.erase("MEASURE[1rdm]");
+      parms_copy.erase("MEASURE[2rdm]");
+      parms_copy.erase("MEASURE[3rdm]");
+      parms_copy.erase("MEASURE[4rdm]");
+      parms_copy.erase("MEASURE[1spdm]");
+      parms_copy.erase("MEASURE[ChemEntropy]");
 
       printf("Loading MPS\n");
-      MPS<matrix, TwoU1PG> mps;
-      load(parms_copy["chkpfile"], mps);
+      MPS<matrix, TwoU1PG> optimized_mps;
+      load(parms_copy["chkpfile"], optimized_mps);
 
       // Transform SU2 to 2U1 since MPOTimesMPS not implemented for SU2
       printf("Transforming MPS\n");
@@ -500,6 +506,7 @@ extern "C"
       parms_copy.set("u1_total_charge2", Ndown);
       parms_copy.set("symmetry", "2u1pg");
       
+      // Build integral map
       maquis::integral_map<double> int_map;
       for (int i = 1; i < nasht + 1; ++i) {
         int_map[{i, i, 0, 0}] = epsa[i];
@@ -519,34 +526,26 @@ extern "C"
       auto mpo = make_mpo(lattice, model);
       printf("Building Trait\n");
       auto traitClass = MPOTimesMPSTraitClass<tmatrix<double>, TwoU1PG>(
-          mps, model, lattice, model.total_quantum_numbers(parms_copy),
-          parms_copy["max_bond_dimension"]);
+          optimized_mps, model, lattice, model.total_quantum_numbers(parms_caspt2),
+          parms_caspt2["max_bond_dimension"]);
       printf("Applying MPO\n");
-      auto outputMPS = traitClass.applyMPO(mpo);
+      auto output_mps = traitClass.applyMPO(mpo);
       printf("Saving MPS\n");
       std::string MPStimesMPOstr = "MPStimesMPO.h5";
-      save(MPStimesMPOstr, outputMPS);
+      save(MPStimesMPOstr, output_mps);
 
       // Measurement fails if props.h5 not present
-      storage::archive ar(MPStimesMPOstr + "/props.h5", "w");
-      ar["/parameters"] << parms_caspt2;
+      // storage::archive ar(MPStimesMPOstr + "/props.h5", "w");
+      // ar["/parameters"] << parms_caspt2;
 
       // === Measure trans3RDM ===
       printf("Measuring 3RDM\n");
-      parms_caspt2.erase("MEASURE[1rdm]");
-      parms_caspt2.erase("MEASURE[2rdm]");
-      parms_caspt2.erase("MEASURE[3rdm]");
-      parms_caspt2.erase("MEASURE[4rdm]");
-      parms_caspt2.erase("MEASURE[1spdm]");
-      parms_caspt2.erase("MEASURE[ChemEntropy]");
-
-      parms_caspt2.set("MEASURE[4rdm]", 1); // test
-      // parms_caspt2.set("MEASURE[trans3rdm]", MPStimesMPOstr);
+      // parms_caspt2.set("MEASURE[4rdm]", 1); // test
+      parms_caspt2.set("MEASURE[trans3rdm]", MPStimesMPOstr);
       parms_caspt2.set("chkpfile", twou1_chkp_name);
       parms_caspt2.set("resultfile", "results.h5");
       maquis::DMRGInterface<double> interface_measure(parms_caspt2);
       interface_measure.measure();
       printf("Measurements done\n");
-      exit(1);
     }
 }
