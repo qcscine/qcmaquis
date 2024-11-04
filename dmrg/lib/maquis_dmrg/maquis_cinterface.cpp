@@ -535,8 +535,8 @@ extern "C"
       save(MPStimesMPOstr, output_mps);
 
       // Measurement fails if props.h5 not present
-      // storage::archive ar(MPStimesMPOstr + "/props.h5", "w");
-      // ar["/parameters"] << parms_caspt2;
+      storage::archive ar(MPStimesMPOstr + "/props.h5", "w");
+      ar["/parameters"] << parms_caspt2;
 
       // === Measure trans3RDM ===
       printf("Measuring 3RDM\n");
