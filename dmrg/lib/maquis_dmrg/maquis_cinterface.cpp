@@ -539,7 +539,7 @@ extern "C"
       ar["/parameters"] << parms_caspt2;
 
       // === Measure trans3RDM ===
-      printf("Measuring 3RDM\n");
+      printf("Measuring 3RDM between\n  ket=%s\n  bra=%s\n", twou1_chkp_name.c_str(), MPStimesMPOstr.c_str());
       // parms_caspt2.set("MEASURE[4rdm]", 1); // test
       parms_caspt2.set("MEASURE[trans3rdm]", MPStimesMPOstr);
       parms_caspt2.set("chkpfile", twou1_chkp_name);
