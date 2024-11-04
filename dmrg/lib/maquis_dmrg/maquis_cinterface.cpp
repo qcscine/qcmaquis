@@ -571,7 +571,7 @@ extern "C"
       printf("Conducting measurements interface\n");
       interface_measure.measure();
       printf("Extracting t-3RDM from measurements");
-      const typename maquis::meas_with_results_type<V>& meas = interface_measure.getMeasurement("trans3rdm");
+      const typename maquis::meas_with_results_type<V>& meas = interface_measure.getMeasurement("transition_threeptdm");
 
       printf("Measurements done\n");
     }
