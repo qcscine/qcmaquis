@@ -165,6 +165,15 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
             STRING "Choose the type of build." FORCE)
 endif()
 
+if(NOT ${CMAKE_CXX_FLAGS_RELEASE} MATCHES "-Wno-unknown-pragmas")
+    set(CMAKE_CXX_FLAGS_RELEASE "-Wno-unknown-pragmas ${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING "CMAKE_CXX_FLAGS_RELEASE: Flags used by the compiler during release builds" FORCE)
+endif()
+if(NOT ${CMAKE_CXX_FLAGS_RELWITHDEBINFO} MATCHES "-Wno-unknown-pragmas")
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Wno-unknown-pragmas ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}" CACHE STRING "CMAKE_CXX_FLAGS_RELWITHDEBINFO: Flags used by the compiler during Release with Debug Info builds." FORCE)
+endif()
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}" CACHE STRING "CMAKE_C_FLAGS_RELEASE: Flags used by the compiler during release builds" FORCE)
+
+
 if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
   # message(STATUS "Debug build: Adding Address Sanitizer")
   # message(STATUS "Debug warnings = ${COMPILER_WARNING_FLAGS}")
@@ -531,7 +540,8 @@ if(PYTHON_BINDINGS)
     import_pybind11()
     pybind11_add_module(_dmrg ${CMAKE_CURRENT_SOURCE_DIR}/python/QcmaquisPython.cpp)
     target_link_libraries(_dmrg PUBLIC maquis_dmrg)
-    set_target_properties(_dmrg PROPERTIES LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/python_module)
+    set_target_properties(_dmrg PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/python_module)
+    # set_target_properties(_dmrg PROPERTIES LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/python_module)
 
     # copy files
     file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/python/scine_qcmaquis DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/python_module)
@@ -708,7 +718,7 @@ install(FILES
             framework/dmrg/utils/DmrgOptions.h
             framework/dmrg/utils/BaseParameters.h
             framework/dmrg/utils/results_collector.h
-        framework/dmrg/utils/parameter_proxy.h
+            framework/dmrg/utils/parameter_proxy.h
         DESTINATION include/framework/dmrg/utils
         COMPONENT headers
     )

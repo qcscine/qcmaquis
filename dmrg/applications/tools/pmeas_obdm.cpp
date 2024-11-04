@@ -73,10 +73,17 @@ void measure_correlation_parallel(
       vals.push_bask(val);
       num_labels.push_bask(lab);
     }
+    int nthread = omp_thread_num();
+    all_vals[nthread] = vals;
+    // Reordering is buggy
+    // all_labels[nthread] = label_strings(lat, num_labels);
+    all_labels[nthread] = label_strings( num_labels);
   }
   int nthread = omp_thread_num();
   all_vals[nthread] = vals;
-  all_labels[nthread] = label_strings(lat, num_labels);
+  // Reordering is buggy
+  // all_labels[nthread] = label_strings(lat, num_labels);
+  all_labels[nthread] = label_strings( num_labels);
 }
 
 int main(int argc, char** argv) {

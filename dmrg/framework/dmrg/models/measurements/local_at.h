@@ -37,7 +37,9 @@ class local_at : public measurement<Matrix, SymmGroup> {
         identities(identities_),
         fillings(fillings_),
         ops(ops_) {
-    this->labels = label_strings(lattice, positions);
+    // Reordering is buggy
+    // this->labels = label_strings(lattice, positions);
+    this->labels = label_strings(positions);
     this->labels_num = positions;
     this->cast_to_real = false;
   }

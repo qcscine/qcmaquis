@@ -2,6 +2,7 @@ add_definitions(-DHAVE_ALPS_HDF5 -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING -DALP
 
 set(DMRG_APP_LIBRARIES maquis_dmrg dmrg_models dmrg_utils ${DMRG_LIBRARIES})
 
+
 macro(create_tools_symm_target TNAME SYMM CPPFILE LIBS)
   get_symm_group_name(SYMM_NAME ${SYMM})
   if(DMRG_HAS_${SYMM_NAME})

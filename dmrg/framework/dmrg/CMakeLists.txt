@@ -16,7 +16,7 @@ DESTINATION include/dmrg/sim)
 
 # *** List all needed sources
 ## Lattice library
-set(DMRG_MODELS_SOURCES "models/lattice/lattice_factory.cpp")
+set(DMRG_MODELS_SOURCES "models/lattice/lattice_factory.cpp" models/MolecularHamiltonians/2u1/normal_order.h)
 ## Model library
 ## Set the variable MAQUIS_INCLUDE_FACTORIES_${GROUP_NAME} for each symmetry
 foreach(SYMM ${BUILD_SYMMETRIES})
@@ -47,7 +47,23 @@ get_symm_files(APPEND DMRG_MODELS_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/models/mo
 
 
 # *** Libraries
-add_library(dmrg_utils STATIC block_matrix/symmetry/su2_wrapper.cpp block_matrix/symmetry.cpp tools/srcas_utilities.cpp utils/utils.cpp utils/DmrgOptions.cpp utils/time_stopper.cpp utils/proc_statm.cpp utils/proc_status.cpp utils/BaseParameters.cpp utils/results_collector.cpp)
+add_library(dmrg_utils STATIC
+  block_matrix/symmetry/su2_wrapper.cpp
+  block_matrix/symmetry.cpp
+  tools/electronic_srcas.cpp
+  tools/srcas_utilities_old.cpp
+  tools/determinant.cpp
+  tools/base_srcas.cpp
+  tools/onv.cpp
+  tools/vib_onv.cpp
+  tools/vib_srcas.cpp
+  utils/utils.cpp
+  utils/DmrgOptions.cpp
+  utils/time_stopper.cpp
+  utils/proc_statm.cpp
+  utils/proc_status.cpp
+  utils/BaseParameters.cpp
+  utils/results_collector.cpp)
 add_library(dmrg_models STATIC ${DMRG_MODELS_SOURCES})
 #target_link_libraries(dmrg_models Eigen3::Eigen)
 

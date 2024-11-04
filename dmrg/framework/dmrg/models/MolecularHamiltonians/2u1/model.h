@@ -8,20 +8,23 @@
 #ifndef QC_HAMILTONIANS_H
 #define QC_HAMILTONIANS_H
 
-#include <cmath>
-#include <sstream>
-#include <fstream>
 #include <iterator>
 #include <boost/tokenizer.hpp>
 #include <regex>
 
 #include "dmrg/models/model.h"
-#include "dmrg/models/measurements.h"
 #include "dmrg/utils/BaseParameters.h"
 
 #include "dmrg/models/MolecularHamiltonians/util.h"
-#include "dmrg/models/MolecularHamiltonians/parse_integrals.h"
 #include "dmrg/models/MolecularHamiltonians/pg_util.h"
+
+// These are unused
+// #include <cmath>
+// #include <sstream>
+// #include <fstream>
+// #include <unordered_set>
+#include "dmrg/models/measurements.h"
+#include "dmrg/models/MolecularHamiltonians/parse_integrals.h"
 #include "dmrg/models/MolecularHamiltonians/2u1/term_maker.h"
 #include "dmrg/models/MolecularHamiltonians/2u1/chem_helper.h"
 #include "dmrg/utils/checks.h"
@@ -1005,7 +1008,6 @@ class qc_model : public model_impl<Matrix, SymmGroup> {
                 std::make_pair(meas_operators, factor)
             );
           }
-
           std::vector<pos_t> positions;
           meas.push_back(new measurements::TaggedNRankRDM<Matrix, SymmGroup>(
               name, lat, tag_handler, ident, fill, synchronous_meas_operators,
@@ -1161,6 +1163,8 @@ class qc_model : public model_impl<Matrix, SymmGroup> {
 
     return ret;
   }
+    void create_terms_not_normal_ordered();
+    void create_terms_normal_ordered();
 };
 
 #include "dmrg/models/MolecularHamiltonians/2u1/model.hpp"

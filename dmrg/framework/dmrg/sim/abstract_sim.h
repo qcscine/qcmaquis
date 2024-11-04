@@ -63,7 +63,7 @@ class abstract_interface_sim {
   virtual typename Matrix::value_type get_overlap(const std::string&) = 0;
   virtual typename Matrix::value_type getCICoefficient(std::string ciVector
   ) = 0;
-  //  virtual std::string ... get_fiedler_order
+  virtual std::string get_fiedler_order(int n_states, const std::vector<std::vector<int>>& hf_occupations, std::string checkpoint_name) = 0;
 };
 
 #endif
