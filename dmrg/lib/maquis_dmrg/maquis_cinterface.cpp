@@ -546,5 +546,7 @@ extern "C"
       parms_caspt2.set("resultfile", "results.h5");
       maquis::DMRGInterface<double> interface_measure(parms_caspt2);
       interface_measure.measure();
+      printf("Measurements done");
+      exit(1);
     }
 }
