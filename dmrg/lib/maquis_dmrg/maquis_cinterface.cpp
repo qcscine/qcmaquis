@@ -553,6 +553,8 @@ extern "C"
 
       // Measurement fails if props.h5 not present
       boost::filesystem::copy(twou1_chkp_name + "/props.h5", MPStimesMPOstr + "/props.h5");
+      storage::archive ar_out(MPStimesMPOstr + "/props.h5", "w");
+      ar_out["/parameters"] << parms_caspt2;
 
       // === Measure trans3RDM ===
       printf("Measuring 3RDM between\n  ket=%s\n  bra=%s\n", twou1_chkp_name.c_str(), MPStimesMPOstr.c_str());
