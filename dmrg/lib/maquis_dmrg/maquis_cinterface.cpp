@@ -533,20 +533,20 @@ extern "C"
 
       // === Measure trans3RDM ===
       printf("Measuring 3RDM\n");
-      parms_copy.erase("MEASURE[1rdm]");
-      parms_copy.erase("MEASURE[2rdm]");
-      parms_copy.erase("MEASURE[3rdm]");
-      parms_copy.erase("MEASURE[4rdm]");
-      parms_copy.erase("MEASURE[1spdm]");
-      parms_copy.erase("MEASURE[ChemEntropy]");
+      parms_caspt2.erase("MEASURE[1rdm]");
+      parms_caspt2.erase("MEASURE[2rdm]");
+      parms_caspt2.erase("MEASURE[3rdm]");
+      parms_caspt2.erase("MEASURE[4rdm]");
+      parms_caspt2.erase("MEASURE[1spdm]");
+      parms_caspt2.erase("MEASURE[ChemEntropy]");
 
-      parms_copy.set("MEASURE[4rdm]", 1); // test
+      parms_caspt2.set("MEASURE[4rdm]", 1); // test
       // parms_caspt2.set("MEASURE[trans3rdm]", MPStimesMPOstr);
       parms_caspt2.set("chkpfile", twou1_chkp_name);
       parms_caspt2.set("resultfile", "results.h5");
       maquis::DMRGInterface<double> interface_measure(parms_caspt2);
       interface_measure.measure();
-      printf("Measurements done");
+      printf("Measurements done\n");
       exit(1);
     }
 }
