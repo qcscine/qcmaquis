@@ -499,11 +499,6 @@ extern "C"
       parms_copy.set("u1_total_charge1", Nup);
       parms_copy.set("u1_total_charge2", Ndown);
       parms_copy.set("symmetry", "2u1pg");
-      parms_copy.erase("MEASURE[1rdm]");
-      parms_copy.erase("MEASURE[2rdm]");
-      parms_copy.erase("MEASURE[3rdm]");
-      parms_copy.erase("MEASURE[4rdm]");
-      parms_copy.erase("MEASURE[ChemEntropy]");
       
       maquis::integral_map<double> int_map;
       for (int i = 1; i < nasht + 1; ++i) {
@@ -538,9 +533,16 @@ extern "C"
 
       // === Measure trans3RDM ===
       printf("Measuring 3RDM\n");
-      parms_caspt2.set("MEASURE[trans3rdm]", MPStimesMPOstr);
-      parms_caspt2.set("chkpfile", twou1_chkp_name);
-      parms_caspt2.set("resultfile", "results.h5");
+      parms_copy.erase("MEASURE[1rdm]");
+      parms_copy.erase("MEASURE[2rdm]");
+      parms_copy.erase("MEASURE[3rdm]");
+      parms_copy.erase("MEASURE[4rdm]");
+      parms_copy.erase("MEASURE[1spdm]");
+      parms_copy.erase("MEASURE[ChemEntropy]");
+      parms_copy.erase("MEASURE[4rdm]"); // test
+      // parms_caspt2.set("MEASURE[trans3rdm]", MPStimesMPOstr);
+      // parms_caspt2.set("chkpfile", twou1_chkp_name);
+      // parms_caspt2.set("resultfile", "results.h5");
       maquis::DMRGInterface<double> interface_measure(parms_caspt2);
       interface_measure.measure();
     }
