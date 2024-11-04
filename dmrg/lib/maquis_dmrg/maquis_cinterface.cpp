@@ -504,9 +504,9 @@ extern "C"
       parms_copy.erase("MEASURE[1spdm]");
       parms_copy.erase("MEASURE[ChemEntropy]");
 
-      printf("Loading MPS\n");
-      MPS<matrix, TwoU1PG> optimized_mps;
-      load(parms_copy["chkpfile"], optimized_mps);
+      printf("Loading MPS in SU2\n");
+      MPS<matrix, SU2U1PG> optimized_mps_su2;
+      load(parms_copy["chkpfile"], optimized_mps_su2);
 
       // Transform SU2 to 2U1 since MPOTimesMPS not implemented for SU2
       printf("Transforming MPS\n");
@@ -516,6 +516,10 @@ extern "C"
       std::tie(twou1_chkp_name, Nup, Ndown) = maquis::interface_detail::twou1_name_Nup_Ndown(pname, 0, parms_copy["nelec"], parms_copy["spin"]);
       printf("twou1_chkp_name = %s\n", twou1_chkp_name.c_str());
       maquis::transform(pname, 0, parms_copy["spin"]);
+
+      printf("Loading MPS in 2U1\n");
+      MPS<matrix, TwoU1PG> optimized_mps_2u1;
+      load(twou1_chkp_name, optimized_mps_2u1);
 
       parms_copy.set("u1_total_charge1", Nup);
       parms_copy.set("u1_total_charge2", Ndown);
@@ -543,7 +547,7 @@ extern "C"
       auto mpo = make_mpo(lattice, model);
       printf("Building Trait\n");
       auto traitClass = MPOTimesMPSTraitClass<tmatrix<double>, TwoU1PG>(
-          optimized_mps, model, lattice, model.total_quantum_numbers(parms_caspt2),
+          optimized_mps_2u1, model, lattice, model.total_quantum_numbers(parms_caspt2),
           parms_caspt2["max_bond_dimension"]);
       printf("Applying MPO\n");
       auto output_mps = traitClass.applyMPO(mpo);
