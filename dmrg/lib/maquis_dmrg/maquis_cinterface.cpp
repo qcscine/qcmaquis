@@ -568,8 +568,11 @@ extern "C"
       parms_caspt2.set("resultfile", pname2workdir(pname) + "results.h5");
       printf("Building interface\n");
       maquis::DMRGInterface<double> interface_measure(parms_caspt2);
-      // printf("Conducting measurements interface\n");
+      printf("Conducting measurements interface\n");
       interface_measure.measure();
+      printf("Extracting t-3RDM from measurements");
+      const typename maquis::meas_with_results_type<V>& meas = interface_measure.getMeasurement("trans3rdm");
+
       printf("Measurements done\n");
     }
 }
