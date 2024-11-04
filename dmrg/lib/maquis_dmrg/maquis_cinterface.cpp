@@ -18,6 +18,7 @@
 #include "dmrg/models/generate_mpo.hpp"
 #include "dmrg/mp_tensors/mpo_times_mps.hpp"
 #include "maquis_dmrg_detail.h"
+#include <filesystem>
 
 std::unique_ptr<maquis::DMRGInterface<double> > interface_ptr;
 DmrgParameters parms;
@@ -549,8 +550,7 @@ extern "C"
       save(MPStimesMPOstr, output_mps);
 
       // Measurement fails if props.h5 not present
-      storage::archive ar(MPStimesMPOstr + "/props.h5", "w");
-      ar["/parameters"] << parms_caspt2;
+      boost::filesystem::copy(twou1_chkp_name + "/props.h5", MPStimesMPOstr + "/props.h5");
 
       // === Measure trans3RDM ===
       printf("Measuring 3RDM between\n  ket=%s\n  bra=%s\n", twou1_chkp_name.c_str(), MPStimesMPOstr.c_str());
