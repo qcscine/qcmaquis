@@ -539,10 +539,11 @@ extern "C"
       parms_copy.erase("MEASURE[4rdm]");
       parms_copy.erase("MEASURE[1spdm]");
       parms_copy.erase("MEASURE[ChemEntropy]");
-      parms_copy.erase("MEASURE[4rdm]"); // test
+
+      parms_copy.set("MEASURE[4rdm]", 1); // test
       // parms_caspt2.set("MEASURE[trans3rdm]", MPStimesMPOstr);
-      // parms_caspt2.set("chkpfile", twou1_chkp_name);
-      // parms_caspt2.set("resultfile", "results.h5");
+      parms_caspt2.set("chkpfile", twou1_chkp_name);
+      parms_caspt2.set("resultfile", "results.h5");
       maquis::DMRGInterface<double> interface_measure(parms_caspt2);
       interface_measure.measure();
     }
