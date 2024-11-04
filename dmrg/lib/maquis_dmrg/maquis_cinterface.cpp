@@ -565,11 +565,11 @@ extern "C"
       // parms_caspt2.set("MEASURE[4rdm]", 1); // test
       parms_caspt2.set("MEASURE[trans3rdm]", twou1_chkp_name);
       parms_caspt2.set("chkpfile", MPStimesMPOstr);
-      // parms_caspt2.set("resultfile", pname2workdir(pname) + "results.h5");
+      parms_caspt2.set("resultfile", pname2workdir(pname) + "results.h5");
       printf("Building interface\n");
       maquis::DMRGInterface<double> interface_measure(parms_caspt2);
       // printf("Conducting measurements interface\n");
-      // interface_measure.measure();
+      interface_measure.measure();
       printf("Measurements done\n");
     }
 }
