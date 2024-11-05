@@ -561,8 +561,7 @@ extern "C"
       ar_out["/parameters"] << parms_caspt2;
 
       // === Measure trans3RDM ===
-      printf("Measuring 3RDM between\n  ket=%s\n  bra=%s\n", twou1_chkp_name.c_str(), MPStimesMPOstr.c_str());
-      // parms_caspt2.set("MEASURE[4rdm]", 1); // test
+      printf("Measuring in file %s 3RDM between\n  ket=%s\n  bra=%s\n", (pname2workdir(pname) + "results.h5").c_str(), twou1_chkp_name.c_str(), MPStimesMPOstr.c_str());
       parms_caspt2.set("MEASURE[trans3rdm]", twou1_chkp_name);
       parms_caspt2.set("chkpfile", MPStimesMPOstr);
       parms_caspt2.set("resultfile", pname2workdir(pname) + "results.h5");
@@ -570,7 +569,7 @@ extern "C"
       maquis::DMRGInterface<double> interface_measure(parms_caspt2);
       printf("Conducting measurements interface\n");
       interface_measure.measure();
-      printf("Extracting t-3RDM from measurements");
+      printf("Extracting t-3RDM from measurements\n");
       const typename maquis::meas_with_results_type<V>& meas = interface_measure.getMeasurement("transition_threeptdm");
 
       printf("Measurements done\n");
