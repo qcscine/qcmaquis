@@ -596,7 +596,7 @@ extern "C"
       printf("Building Trait\n");
       auto traitClass = MPOTimesMPSTraitClass<tmatrix<double>, TwoU1PG>(
           optimized_mps_2u1, model, lattice, model.total_quantum_numbers(parms_caspt2),
-          parms_caspt2["max_bond_dimension"]);
+          2 * parms_caspt2["max_bond_dimension"]);
       printf("Applying MPO\n");
       auto output_mps = traitClass.applyMPO(mpo);
       printf("Saving MPS\n");
