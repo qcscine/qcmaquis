@@ -489,6 +489,53 @@ extern "C"
       return pname;
     }
 
+
+    void write_mpo(MPO<matrix, TwoU1PG> const & mpo, std::string filename, bool save_space) 
+    {        
+      std::string space(" ");
+
+      for (int p = 0; p < mpo.size(); ++p) {
+        std::ofstream ofs(std::string(filename+boost::lexical_cast<std::string>(p)+".dat").c_str());
+
+        typename MPOTensor<matrix, TwoU1PG>::op_table_ptr op_table = mpo[p].get_operator_table();
+        unsigned maxtag = op_table->size();
+        int padding = 2;
+        if (maxtag < 100 || save_space) padding = 1;
+        for (int b1 = 0; b1 < mpo[p].row_dim(); ++b1) {
+          for (int b2 = 0; b2 < mpo[p].col_dim(); ++b2) {
+            if (mpo[p].has(b1, b2)) {
+              MPOTensor_detail::term_descriptor<matrix, TwoU1PG, true> access =
+                mpo[p].at(b1, b2);
+              int tag = mpo[p].tag_number(b1, b2, 0);
+              if (access.size() > 1)
+                ofs << std::string(padding - 1, ' ') << "X" << access.size()
+                  << ' ';
+              else if (tag < 10)
+                ofs << std::string(padding, ' ') << tag << ' ';
+              else if (tag < 100)
+                ofs << std::string(padding - 1, ' ') << tag << ' ';
+              else if (tag % 100 < 10)
+                if (save_space)
+                  ofs << std::string(padding, ' ') << tag % 100 << ' ';
+                else
+                  ofs << tag % 100 << ' ';
+              else
+                ofs << tag << ' ';
+            } else
+              ofs << std::string(padding, ' ') << ".";
+          }
+          ofs << std::endl;
+        }
+
+        ofs << std::endl;
+
+        for (unsigned tag=0; tag<op_table->size(); ++tag) {
+          ofs << "TAG " << tag << std::endl;
+          ofs << " * op :\n" << (*op_table)[tag] << std::endl;
+        }
+      }
+    }
+
     void qcmaquis_interface_contract_with_fock_3rdm(const double* epsa, int nasht) {
       printf("contract_with_fock epsa = \n");
       for (int i = 0; i < nasht; ++i) {
@@ -545,6 +592,7 @@ extern "C"
       auto model = Model<matrix, TwoU1PG>(lattice, parms_caspt2);
       printf("Building MPO\n");
       auto mpo = make_mpo(lattice, model);
+      write_mpo(mpo, "mpo.data", true);
       printf("Building Trait\n");
       auto traitClass = MPOTimesMPSTraitClass<tmatrix<double>, TwoU1PG>(
           optimized_mps_2u1, model, lattice, model.total_quantum_numbers(parms_caspt2),
