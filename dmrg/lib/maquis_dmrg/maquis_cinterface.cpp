@@ -609,7 +609,7 @@ extern "C"
       auto model_su2 = Model<matrix, SU2U1PG>(lattice, parms_caspt2);
       auto mpo_su2 = make_mpo(lattice, model_su2);
       auto energySU2 = expval(optimized_mps_su2, mpo_su2)/norm(optimized_mps_su2);
-      printf("Ref: %f\nVal: %f\nSU2: %f\n", energyFromExpVal, energyFromMPSTimesMPO, energySU2);
+      printf("Ref: %f\nVal: %f\nSU2: %f\nCORE: %f\n", energyFromExpVal, energyFromMPSTimesMPO, energySU2, mpo.getCoreEnergy());
       // exit(1);
 
       // Measurement fails if props.h5 not present
