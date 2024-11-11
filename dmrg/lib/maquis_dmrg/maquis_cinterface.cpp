@@ -562,7 +562,7 @@ extern "C"
       int Ndown;
       std::tie(twou1_chkp_name, Nup, Ndown) = maquis::interface_detail::twou1_name_Nup_Ndown(pname, 0, parms_copy["nelec"], parms_copy["spin"]);
       printf("twou1_chkp_name = %s\n", twou1_chkp_name.c_str());
-      maquis::transform(pname, 0, parms_copy["spin"]);
+      maquis::transform(pname, 0);
 
       printf("Loading MPS in 2U1\n");
       MPS<matrix, TwoU1PG> optimized_mps_2u1;
