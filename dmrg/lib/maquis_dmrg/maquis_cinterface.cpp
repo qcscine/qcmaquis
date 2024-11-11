@@ -622,7 +622,7 @@ extern "C"
       parms_caspt2.set("MEASURE[trans3rdm]", twou1_chkp_name);
       parms_caspt2.set("MEASURE[3rdm]", 1);
       parms_caspt2.set("MEASURE[4rdm]", 1);
-      parms_caspt2.set("chkpfile", twou1_chkp_name);
+      parms_caspt2.set("chkpfile", MPStimesMPOstr);
       parms_caspt2.set("resultfile", pname2workdir(pname) + "results.h5");
       printf("Building interface\n");
       maquis::DMRGInterface<double> interface_measure(parms_caspt2);
