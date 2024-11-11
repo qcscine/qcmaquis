@@ -575,7 +575,7 @@ extern "C"
       // Build integral map
       maquis::integral_map<double> int_map;
       for (int i = 0; i < nasht; ++i) {
-        int_map[{i+1, i+1, 0, 0}] = 1.0;
+        int_map[{i+1, i+1, 0, 0}] = epsa[i];
       }
 
       // Compute MPO * |MPS>
