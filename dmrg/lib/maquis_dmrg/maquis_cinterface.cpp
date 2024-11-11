@@ -555,6 +555,12 @@ extern "C"
       std::string MPStimesMPOstr = pname2workdir(pname) + "MPStimesMPO.h5";
       save(MPStimesMPOstr, output_mps);
 
+      // Check that multiplication worked
+      auto energyFromMPSTimesMPO = overlap(optimized_mps_2u1, output_mps)/norm(optimized_mps_2u1) + mpo.getCoreEnergy();
+      auto energyFromExpVal = expval(optimized_mps_2u1, mpo)/norm(optimized_mps_2u1);
+      printf("Ref: %f\nVal: %f\n", energyFromExpVal, energyFromMPSTimesMPO);
+      exit(1);
+
       // Measurement fails if props.h5 not present
       boost::filesystem::copy(twou1_chkp_name + "/props.h5", MPStimesMPOstr + "/props.h5");
       storage::archive ar_out(MPStimesMPOstr + "/props.h5", "w");
