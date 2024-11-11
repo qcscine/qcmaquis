@@ -558,7 +558,10 @@ extern "C"
       // Check that multiplication worked
       auto energyFromMPSTimesMPO = overlap(optimized_mps_2u1, output_mps)/norm(optimized_mps_2u1) + mpo.getCoreEnergy();
       auto energyFromExpVal = expval(optimized_mps_2u1, mpo)/norm(optimized_mps_2u1);
-      printf("Ref: %f\nVal: %f\n", energyFromExpVal, energyFromMPSTimesMPO);
+      auto model_su2 = Model<matrix, SU2U1PG>(lattice, parms_caspt2);
+      auto mpo_su2 = make_mpo(lattice, model_su2);
+      auto energySU2 = expval(optimized_mps_su2, mpo_su2)/norm(optimized_mps_su2);
+      printf("Ref: %f\nVal: %f\nSU2: %f\n", energyFromExpVal, energyFromMPSTimesMPO, energySU2);
       exit(1);
 
       // Measurement fails if props.h5 not present
