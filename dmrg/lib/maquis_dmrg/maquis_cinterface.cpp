@@ -640,8 +640,8 @@ extern "C"
       // === Measure trans3RDM ===
       printf("Measuring in file %s 3RDM between\n  ket=%s\n  bra=%s\n", (pname2workdir(pname) + "results.h5").c_str(), twou1_chkp_name.c_str(), MPStimesMPOstr.c_str());
       parms_caspt2.set("MEASURE[trans3rdm]", MPStimesMPOstr);
-      parms_caspt2.set("MEASURE[3rdm]", 1);
-      parms_caspt2.set("MEASURE[4rdm]", 1);
+      // parms_caspt2.set("MEASURE[3rdm]", 1);
+      // parms_caspt2.set("MEASURE[4rdm]", 1);
       parms_caspt2.set("chkpfile", twou1_chkp_name);
       parms_caspt2.set("resultfile", pname2workdir(pname) + "results.h5");
       printf("Building interface\n");
