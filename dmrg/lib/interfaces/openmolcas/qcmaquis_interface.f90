@@ -119,6 +119,13 @@ module qcmaquis_interface
       integer(c_int), value :: size
     end subroutine
 
+    subroutine qcmaquis_interface_get_transition_3rdm_C(indices, values, size) bind(C,  name='qcmaquis_interface_get_transition_3rdm')
+      import c_int, c_double
+      integer(c_int), dimension(*) :: indices
+      real(c_double), dimension(*) :: values
+      integer(c_int), value :: size
+    end subroutine
+
   end interface
 
   contains
@@ -1095,6 +1102,64 @@ module qcmaquis_interface
     if (allocated(values)) deallocate(values)
     if (allocated(indices)) deallocate(indices)
   end subroutine qcmaquis_interface_get_3rdm_full
+
+
+  ! Get 3-RDM and save it into an 6-dimensional array. (Used by CASPT2)
+  subroutine qcmaquis_interface_get_transition_3rdm_full(d3)
+    real*8, intent(inout) :: d3(:,:,:,:,:,:)
+    integer(c_int) :: sz ! size
+
+    ! indices and values that are obtained from QCMaquis interface
+    integer(c_int), allocatable :: indices(:)
+    real*8, allocatable :: values(:)
+    integer :: nact
+    integer :: vv,ii ! counters for values and indices
+    integer :: i,j,k,l,m,n
+
+    nact = qcmaquis_param%L
+    sz = qcmaquis_interface_get_3rdm_elements(.true.)
+
+    allocate(values(sz))
+    values(:) = 0.0d0
+    allocate(indices(6*sz))
+    ! initialise indices to -1, see in 1RDM code why
+    indices(:) = -1
+    ! obtain the rdms from qcmaquis
+    call qcmaquis_interface_get_transition_3rdm_C(indices, values, sz)
+
+    d3(:,:,:,:,:,:) = 0.0d0
+    ! copy the values into the matrix
+    ! the indices are i,k,m,j,l,n
+    do vv=0,sz-1
+      ii = 6*vv
+
+      i = indices(ii+1)+1
+      j = indices(ii+2)+1
+      k = indices(ii+3)+1
+      l = indices(ii+4)+1
+      m = indices(ii+5)+1
+      n = indices(ii+6)+1
+
+      d3(i,j,k,l,m,n) = -1.0d0*values(vv+1)
+      d3(i,k,j,l,n,m) = -1.0d0*values(vv+1)
+      d3(j,i,k,m,l,n) = -1.0d0*values(vv+1)
+      d3(j,k,i,m,n,l) = -1.0d0*values(vv+1)
+      d3(k,i,j,n,l,m) = -1.0d0*values(vv+1)
+      d3(k,j,i,n,m,l) = -1.0d0*values(vv+1)
+
+      ! conjugate transpose
+      d3(l,m,n,i,j,k) = -1.0d0*values(vv+1)
+      d3(l,n,m,i,k,j) = -1.0d0*values(vv+1)
+      d3(m,l,n,j,i,k) = -1.0d0*values(vv+1)
+      d3(m,n,l,j,k,i) = -1.0d0*values(vv+1)
+      d3(n,l,m,k,i,j) = -1.0d0*values(vv+1)
+      d3(n,m,l,k,j,i) = -1.0d0*values(vv+1)
+
+    end do
+
+    if (allocated(values)) deallocate(values)
+    if (allocated(indices)) deallocate(indices)
+  end subroutine qcmaquis_interface_get_transition_3rdm_full
 
 
   ! Get 4-RDM and save it into an 5-dimensional array. (Used by CASPT2)

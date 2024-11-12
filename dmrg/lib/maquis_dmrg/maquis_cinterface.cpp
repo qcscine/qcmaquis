@@ -305,6 +305,26 @@ extern "C"
         }
     }
 
+    // hooray for copy-paste
+    void qcmaquis_interface_get_transition_3rdm(int* indices, V* values, int size)
+    {
+        const typename maquis::meas_with_results_type<V>& meas = interface_ptr->getMeasurement("transitions_threerdm");
+
+        assert(size >= meas.first.size());
+        assert(size >= meas.second.size());
+        for (int i = 0; i < meas.first.size(); i++)
+        {
+            values[i] = meas.second[i];
+            indices[6*i] = meas.first[i][0];
+            indices[6*i+1] = meas.first[i][1];
+            indices[6*i+2] = meas.first[i][2];
+            indices[6*i+3] = meas.first[i][3];
+            indices[6*i+4] = meas.first[i][4];
+            indices[6*i+5] = meas.first[i][5];
+
+        }
+    }
+
     #define measure_and_save_rdm(N, state) \
     std::string res_name = maquis::interface_detail::su2u1_result_name(pname, state); \
     BaseParameters meas_parms = parms.measurements(); \
