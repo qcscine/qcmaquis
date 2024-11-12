@@ -627,9 +627,9 @@ extern "C"
       maquis::DMRGInterface<double> interface_measure(parms_caspt2);
       printf("Conducting measurements interface\n");
       interface_measure.measure();
-      exit(1);
       printf("Extracting t-3RDM from measurements\n");
       const typename maquis::meas_with_results_type<V>& trans3rdm_meas = interface_measure.getMeasurement("transition_threeptdm");
+      exit(1);
       printf("Reording t-3RDM from measurements\n");
       assert(size >= trans3rdm_meas.first.size());
       assert(size >= trans3rdm_meas.second.size());
