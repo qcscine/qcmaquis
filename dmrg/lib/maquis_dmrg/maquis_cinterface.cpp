@@ -638,10 +638,10 @@ extern "C"
       ar_out["/parameters"] << parms_caspt2;
 
       // === Measure trans3RDM ===
-      printf("Measuring 3RDM between\n  ket=%s\n  bra=%s\n", twou1_chkp_name.c_str(), MPStimesMPOstr.c_str());
+      printf("Measuring 3RDM in file %s between\n  ket=%s\n  bra=%s\n", parms.get<std::string>("resultfile").c_str(), twou1_chkp_name.c_str(), MPStimesMPOstr.c_str());
       parms_caspt2.set("MEASURE[trans3rdm]", twou1_chkp_name);
       parms_caspt2.set("chkpfile", MPStimesMPOstr);
-      parms_caspt2.set("resultfile", parms["resultfile"]);
+      parms_caspt2.set("resultfile", parms.get<std::string>("resultfile"));
       printf("Building interface\n");
       maquis::DMRGInterface<double> interface_measure(parms_caspt2);
       printf("Conducting measurements interface\n");
