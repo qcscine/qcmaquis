@@ -9,6 +9,7 @@
 #include <string>
 #include <array>
 #include <regex>
+#include "dmrg/models/chem/transform_symmetry.hpp"
 #include "maquis_dmrg.h"
 #include "starting_guess.h"
 #include "dmrg/utils/stdout_redirector.hpp"
@@ -490,60 +491,8 @@ extern "C"
     }
 
 
-    void write_mpo(MPO<matrix, TwoU1PG> const & mpo, std::string filename, bool save_space) 
-    {        
-      std::string space(" ");
-
-      for (int p = 0; p < mpo.size(); ++p) {
-        std::ofstream ofs(std::string(filename+boost::lexical_cast<std::string>(p)+".dat").c_str());
-
-        typename MPOTensor<matrix, TwoU1PG>::op_table_ptr op_table = mpo[p].get_operator_table();
-        unsigned maxtag = op_table->size();
-        int padding = 2;
-        if (maxtag < 100 || save_space) padding = 1;
-        for (int b1 = 0; b1 < mpo[p].row_dim(); ++b1) {
-          for (int b2 = 0; b2 < mpo[p].col_dim(); ++b2) {
-            if (mpo[p].has(b1, b2)) {
-              MPOTensor_detail::term_descriptor<matrix, TwoU1PG, true> access =
-                mpo[p].at(b1, b2);
-              int tag = mpo[p].tag_number(b1, b2, 0);
-              if (access.size() > 1)
-                ofs << std::string(padding - 1, ' ') << "X" << access.size()
-                  << ' ';
-              else if (tag < 10)
-                ofs << std::string(padding, ' ') << tag << ' ';
-              else if (tag < 100)
-                ofs << std::string(padding - 1, ' ') << tag << ' ';
-              else if (tag % 100 < 10)
-                if (save_space)
-                  ofs << std::string(padding, ' ') << tag % 100 << ' ';
-                else
-                  ofs << tag % 100 << ' ';
-              else
-                ofs << tag << ' ';
-            } else
-              ofs << std::string(padding, ' ') << ".";
-          }
-          ofs << std::endl;
-        }
-
-        ofs << std::endl;
-
-        for (unsigned tag=0; tag<op_table->size(); ++tag) {
-          ofs << "TAG " << tag << std::endl;
-          ofs << " * op :\n" << (*op_table)[tag] << std::endl;
-        }
-      }
-    }
-
     // Used for CASPT2
     void qcmaquis_interface_get_fock_contracted_4rdm(const double* epsa, int nasht, int* indices, V* values, int size) {
-      printf("contract_with_fock epsa = \n");
-      for (int i = 0; i < nasht; ++i) {
-        printf("%f ", epsa[i]);
-      }
-      printf("\n");
-
       DmrgParameters parms_copy = parms;
       parms_copy.erase("MEASURE[1rdm]");
       parms_copy.erase("MEASURE[2rdm]");
@@ -552,20 +501,19 @@ extern "C"
       parms_copy.erase("MEASURE[1spdm]");
       parms_copy.erase("MEASURE[ChemEntropy]");
 
-      printf("Loading MPS in SU2 from %s\n", parms_copy["chkpfile"].c_str());
+      // printf("Loading MPS in SU2 from %s\n", parms_copy["chkpfile"].c_str());
       MPS<matrix, SU2U1PG> optimized_mps_su2;
       load(parms_copy["chkpfile"], optimized_mps_su2);
 
       // Transform SU2 to 2U1 since MPOTimesMPS not implemented for SU2
-      printf("Transforming MPS\n");
+      // printf("Transforming MPS\n");
       std::string twou1_chkp_name;
       int Nup;
       int Ndown;
       std::tie(twou1_chkp_name, Nup, Ndown) = maquis::interface_detail::twou1_name_Nup_Ndown(pname, 0, parms_copy["nelec"], parms_copy["spin"]);
-      printf("twou1_chkp_name = %s\n", twou1_chkp_name.c_str());
+      // printf("twou1_chkp_name = %s\n", twou1_chkp_name.c_str());
       maquis::transform(pname, 0);
 
-      printf("Loading MPS in 2U1\n");
       MPS<matrix, TwoU1PG> optimized_mps_2u1;
       load(twou1_chkp_name, optimized_mps_2u1);
 
@@ -587,31 +535,18 @@ extern "C"
       parms_caspt2.erase("integrals");
       parms_caspt2.erase("integrals_binary");
       parms_caspt2.set("integrals_binary", maquis::serialize(int_map));
-      printf("Building Lattice\n");
+
       auto lattice = Lattice(parms_caspt2);
-      printf("Building model\n");
       auto model = Model<matrix, TwoU1PG>(lattice, parms_caspt2);
-      printf("Building MPO\n");
+      // This MPO has bond dimension 2, might increase size of MPS when applied
       auto mpo = make_mpo(lattice, model);
-      write_mpo(mpo, "mpo.data", true);
-      printf("Building Trait\n");
+      int bond_dim_factor = 2;
       auto traitClass = MPOTimesMPSTraitClass<tmatrix<double>, TwoU1PG>(
           optimized_mps_2u1, model, lattice, model.total_quantum_numbers(parms_caspt2),
-          2 * parms_caspt2["max_bond_dimension"]);
-      printf("Applying MPO\n");
+          bond_dim_factor * parms_caspt2["max_bond_dimension"]);
       auto output_mps = traitClass.applyMPO(mpo);
-      printf("Saving MPS\n");
       std::string MPStimesMPOstr = pname2workdir(pname) + "MPStimesMPO.h5";
       save(MPStimesMPOstr, output_mps);
-
-      // Check that multiplication worked
-      auto energyFromMPSTimesMPO = overlap(optimized_mps_2u1, output_mps)/norm(optimized_mps_2u1) + mpo.getCoreEnergy();
-      auto energyFromExpVal = expval(optimized_mps_2u1, mpo)/norm(optimized_mps_2u1);
-      auto model_su2 = Model<matrix, SU2U1PG>(lattice, parms_caspt2);
-      auto mpo_su2 = make_mpo(lattice, model_su2);
-      auto energySU2 = expval(optimized_mps_su2, mpo_su2)/norm(optimized_mps_su2);
-      printf("Ref: %f\nVal: %f\nSU2: %f\nCORE: %f\n", energyFromExpVal, energyFromMPSTimesMPO, energySU2, mpo.getCoreEnergy());
-      // exit(1);
 
       // Measurement fails if props.h5 not present
       boost::filesystem::copy(twou1_chkp_name + "/props.h5", MPStimesMPOstr + "/props.h5");
@@ -619,18 +554,13 @@ extern "C"
       ar_out["/parameters"] << parms_caspt2;
 
       // === Measure trans3RDM ===
-      printf("Measuring 3RDM in file %s between\n  ket=%s\n  bra=%s\n", (pname2workdir(pname) + "results.h5").c_str(), twou1_chkp_name.c_str(), MPStimesMPOstr.c_str());
+      // printf("Measuring 3RDM in file %s between\n  ket=%s\n  bra=%s\n", (pname2workdir(pname) + "results.h5").c_str(), twou1_chkp_name.c_str(), MPStimesMPOstr.c_str());
       parms_caspt2.set("MEASURE[trans3rdm]", twou1_chkp_name);
       parms_caspt2.set("chkpfile", MPStimesMPOstr);
       parms_caspt2.set("resultfile", pname2workdir(pname) + "results.h5");
-      printf("Building interface\n");
       maquis::DMRGInterface<double> interface_measure(parms_caspt2);
-      printf("Conducting measurements interface\n");
       interface_measure.measure();
-      printf("Extracting t-3RDM from measurements\n");
       const typename maquis::meas_with_results_type<V>& trans3rdm_meas = interface_measure.getMeasurement("transition_threeptdm");
-      printf("Reording t-3RDM from measurements\n");
-      printf("Size of values = %d\n", size);
       assert(size >= trans3rdm_meas.first.size());
       assert(size >= trans3rdm_meas.second.size());
       for (int i = 0; i < trans3rdm_meas.first.size(); i++)
