@@ -642,7 +642,7 @@ extern "C"
         indices[6*i+3] = trans3rdm_meas.first[i][3];
         indices[6*i+4] = trans3rdm_meas.first[i][4];
         indices[6*i+5] = trans3rdm_meas.first[i][5];
-        printf("i = %d\n", i);
       }
+      exit(1);
     }
 }
