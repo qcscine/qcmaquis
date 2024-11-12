@@ -1912,23 +1912,5 @@ module qcmaquis_interface
 
   end subroutine qcmaquis_interface_deinit
 
-  ! !! TODO: This should be deleted. Only used as example
-  ! subroutine qcmaquis_interface_contract_with_fock_3rdm(epsa, nasht)
-  !   interface
-  !     subroutine qcmaquis_interface_contract_with_fock_3rdm_C(epsa, nasht) &
-  !       bind(C,name='qcmaquis_interface_contract_with_fock_3rdm')
-  !       import c_int, c_double
-  !       real(c_double), dimension(*) :: epsa
-  !       integer(c_int), intent(in), value :: nasht
-  !     end subroutine
-  !   end interface
-  !
-  !   real(c_double), dimension(:) :: epsa
-  !   integer, intent(in) :: nasht
-  !
-  !   call qcmaquis_interface_contract_with_fock_3rdm_C(epsa, int(nasht, c_int))
-  !
-  ! end subroutine qcmaquis_interface_contract_with_fock_3rdm
-
 
 end module qcmaquis_interface
