@@ -629,7 +629,6 @@ extern "C"
       interface_measure.measure();
       printf("Extracting t-3RDM from measurements\n");
       const typename maquis::meas_with_results_type<V>& trans3rdm_meas = interface_measure.getMeasurement("transition_threeptdm");
-      exit(1);
       printf("Reording t-3RDM from measurements\n");
       assert(size >= trans3rdm_meas.first.size());
       assert(size >= trans3rdm_meas.second.size());
@@ -642,6 +641,7 @@ extern "C"
         indices[6*i+3] = trans3rdm_meas.first[i][3];
         indices[6*i+4] = trans3rdm_meas.first[i][4];
         indices[6*i+5] = trans3rdm_meas.first[i][5];
+        exit(1);
       }
     }
 }
