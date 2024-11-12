@@ -305,26 +305,6 @@ extern "C"
         }
     }
 
-    // hooray for copy-paste
-    void qcmaquis_interface_get_transition_3rdm(int* indices, V* values, int size)
-    {
-        const typename maquis::meas_with_results_type<V>& meas = interface_ptr->getMeasurement("transition_threeptdm");
-
-        assert(size >= meas.first.size());
-        assert(size >= meas.second.size());
-        for (int i = 0; i < meas.first.size(); i++)
-        {
-            values[i] = meas.second[i];
-            indices[6*i] = meas.first[i][0];
-            indices[6*i+1] = meas.first[i][1];
-            indices[6*i+2] = meas.first[i][2];
-            indices[6*i+3] = meas.first[i][3];
-            indices[6*i+4] = meas.first[i][4];
-            indices[6*i+5] = meas.first[i][5];
-
-        }
-    }
-
     #define measure_and_save_rdm(N, state) \
     std::string res_name = maquis::interface_detail::su2u1_result_name(pname, state); \
     BaseParameters meas_parms = parms.measurements(); \
@@ -556,7 +536,8 @@ extern "C"
       }
     }
 
-    void qcmaquis_interface_contract_with_fock_3rdm(const double* epsa, int nasht) {
+    // Used for CASPT2
+    void qcmaquis_interface_get_fock_contracted_4rdm(const double* epsa, int nasht, int* indices, V* values, int size) {
       printf("contract_with_fock epsa = \n");
       for (int i = 0; i < nasht; ++i) {
         printf("%f ", epsa[i]);
@@ -647,8 +628,18 @@ extern "C"
       printf("Conducting measurements interface\n");
       interface_measure.measure();
       printf("Extracting t-3RDM from measurements\n");
-      const typename maquis::meas_with_results_type<V>& meas = interface_measure.getMeasurement("transition_threeptdm");
-
-      printf("Measurements done\n");
+      const typename maquis::meas_with_results_type<V>& trans3rdm_meas = interface_measure.getMeasurement("transition_threeptdm");
+      assert(size >= trans3rdm_meas.first.size());
+      assert(size >= trans3rdm_meas.second.size());
+      for (int i = 0; i < trans3rdm_meas.first.size(); i++)
+      {
+        values[i] = trans3rdm_meas.second[i];
+        indices[6*i] = trans3rdm_meas.first[i][0];
+        indices[6*i+1] = trans3rdm_meas.first[i][1];
+        indices[6*i+2] = trans3rdm_meas.first[i][2];
+        indices[6*i+3] = trans3rdm_meas.first[i][3];
+        indices[6*i+4] = trans3rdm_meas.first[i][4];
+        indices[6*i+5] = trans3rdm_meas.first[i][5];
+      }
     }
 }

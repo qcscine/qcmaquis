@@ -101,10 +101,6 @@ extern "C"
     // size: size of values array, size of indices array = 8*size
     void qcmaquis_interface_get_4rdm(int* indices, V* values, int size);
 
-    // Get transition 3-RDM
-    // size: size of values array, size of indices array = 6*size
-    void qcmaquis_interface_get_transition_3rdm(int* indices, V* values, int size);
-
     // Measure 3/4-RDM and save it into HDF5 result file (using project name passed to qcmaquis_interface_preinit)
     // state: state index (starting from 0)
     // Warning: this reinitialises the interface and loads a checkpoint corresponding to the state index
@@ -138,7 +134,7 @@ extern "C"
     // state_j: second state for 3-TDM measurements, unused for 4-RDM
     void qcmaquis_interface_prepare_hirdm_template(const char* filename, int state, HIRDM_Template tpl, int state_j);
 
-    void qcmaquis_interface_contract_with_fock_3rdm(const double* epsa, int nasht);
+    void qcmaquis_interface_contract_with_fock_3rdm(const double* epsa, int nasht, int* indices, V* values, int size);
 }
 
 #endif

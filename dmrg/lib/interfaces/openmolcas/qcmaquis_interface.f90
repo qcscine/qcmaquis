@@ -119,8 +119,10 @@ module qcmaquis_interface
       integer(c_int), value :: size
     end subroutine
 
-    subroutine qcmaquis_interface_get_transition_3rdm_C(indices, values, size) bind(C,  name='qcmaquis_interface_get_transition_3rdm')
+    subroutine qcmaquis_interface_get_fock_contracted_4rdm_C(epsa, nasht, indices, values, size) bind(C, name='qcmaquis_interface_get_fock_contracted_4rdm')
       import c_int, c_double
+      real(c_double), dimension(*) :: epsa
+      integer(c_int), intent(in), value :: nasht
       integer(c_int), dimension(*) :: indices
       real(c_double), dimension(*) :: values
       integer(c_int), value :: size
@@ -1104,10 +1106,11 @@ module qcmaquis_interface
   end subroutine qcmaquis_interface_get_3rdm_full
 
 
-  ! Get 3-RDM and save it into an 6-dimensional array. (Used by CASPT2)
-  subroutine qcmaquis_interface_get_transition_3rdm_full(d3)
+  ! Get contracted Fock with 4-RDM and save it into an 6-dimensional array. (Used by CASPT2)
+  subroutine qcmaquis_interface_get_fock_contracted_4rdm_full(d3, epsa)
     real*8, intent(inout) :: d3(:,:,:,:,:,:)
     integer(c_int) :: sz ! size
+    real(c_double), dimension(:) :: epsa ! Fock elements
 
     ! indices and values that are obtained from QCMaquis interface
     integer(c_int), allocatable :: indices(:)
@@ -1125,7 +1128,7 @@ module qcmaquis_interface
     ! initialise indices to -1, see in 1RDM code why
     indices(:) = -1
     ! obtain the rdms from qcmaquis
-    call qcmaquis_interface_get_transition_3rdm_C(indices, values, sz)
+    call qcmaquis_interface_get_fock_contracted_4rdm_C(epsa, int(nact, c_int), indices, values, sz)
 
     d3(:,:,:,:,:,:) = 0.0d0
     ! copy the values into the matrix
@@ -1159,7 +1162,7 @@ module qcmaquis_interface
 
     if (allocated(values)) deallocate(values)
     if (allocated(indices)) deallocate(indices)
-  end subroutine qcmaquis_interface_get_transition_3rdm_full
+  end subroutine qcmaquis_interface_get_fock_contracted_4rdm_full
 
 
   ! Get 4-RDM and save it into an 5-dimensional array. (Used by CASPT2)
