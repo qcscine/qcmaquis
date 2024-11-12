@@ -476,20 +476,6 @@ extern "C"
 
     }
 
-    // Convert project name to working directory by striping last characters
-    std::string pname2workdir(const std::string& pname) {
-      // Find the last occurrence of '/'
-      size_t lastSlashPos = pname.find_last_of('/');
-
-      // If '/' is found, return the substring up to and including the last '/'
-      if (lastSlashPos != std::string::npos) {
-        return pname.substr(0, lastSlashPos + 1);
-      }
-
-      // If no '/' is found, return the original string (or handle accordingly)
-      return pname;
-    }
-
 
     // Used for CASPT2
     void qcmaquis_interface_get_fock_contracted_4rdm(const double* epsa, int nasht, int* indices, V* values, int size) {
@@ -545,7 +531,7 @@ extern "C"
           optimized_mps_2u1, model, lattice, model.total_quantum_numbers(parms_caspt2),
           bond_dim_factor * parms_caspt2["max_bond_dimension"]);
       auto output_mps = traitClass.applyMPO(mpo);
-      std::string MPStimesMPOstr = pname2workdir(pname) + "MPStimesMPO.h5";
+      std::string MPStimesMPOstr = maquis::interface_detail::pname2workdir(pname) + "MPStimesMPO.h5";
       save(MPStimesMPOstr, output_mps);
 
       // Measurement fails if props.h5 not present
@@ -557,7 +543,7 @@ extern "C"
       // printf("Measuring 3RDM in file %s between\n  ket=%s\n  bra=%s\n", (pname2workdir(pname) + "results.h5").c_str(), twou1_chkp_name.c_str(), MPStimesMPOstr.c_str());
       parms_caspt2.set("MEASURE[trans3rdm]", twou1_chkp_name);
       parms_caspt2.set("chkpfile", MPStimesMPOstr);
-      parms_caspt2.set("resultfile", pname2workdir(pname) + "results.h5");
+      parms_caspt2.set("resultfile",maquis::interface_detail::pname2workdir(pname) + "results.h5");
       maquis::DMRGInterface<double> interface_measure(parms_caspt2);
       interface_measure.measure();
       const typename maquis::meas_with_results_type<V>& trans3rdm_meas = interface_measure.getMeasurement("transition_threeptdm");
