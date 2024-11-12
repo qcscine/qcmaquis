@@ -629,6 +629,7 @@ extern "C"
       interface_measure.measure();
       printf("Extracting t-3RDM from measurements\n");
       const typename maquis::meas_with_results_type<V>& trans3rdm_meas = interface_measure.getMeasurement("transition_threeptdm");
+      printf("Reording t-3RDM from measurements\n");
       assert(size >= trans3rdm_meas.first.size());
       assert(size >= trans3rdm_meas.second.size());
       for (int i = 0; i < trans3rdm_meas.first.size(); i++)
