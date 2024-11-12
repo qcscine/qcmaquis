@@ -1092,12 +1092,12 @@ module qcmaquis_interface
       d3(k,j,i,n,m,l) = -1.0d0*values(vv+1)
 
       ! conjugate transpose
-      ! d3(l,m,n,i,j,k) = -1.0d0*values(vv+1)
-      ! d3(l,n,m,i,k,j) = -1.0d0*values(vv+1)
-      ! d3(m,l,n,j,i,k) = -1.0d0*values(vv+1)
-      ! d3(m,n,l,j,k,i) = -1.0d0*values(vv+1)
-      ! d3(n,l,m,k,i,j) = -1.0d0*values(vv+1)
-      ! d3(n,m,l,k,j,i) = -1.0d0*values(vv+1)
+      d3(l,m,n,i,j,k) = -1.0d0*values(vv+1)
+      d3(l,n,m,i,k,j) = -1.0d0*values(vv+1)
+      d3(m,l,n,j,i,k) = -1.0d0*values(vv+1)
+      d3(m,n,l,j,k,i) = -1.0d0*values(vv+1)
+      d3(n,l,m,k,i,j) = -1.0d0*values(vv+1)
+      d3(n,m,l,k,j,i) = -1.0d0*values(vv+1)
 
     end do
 
