@@ -13,7 +13,6 @@ set(OPENMOLCAS_INTERFACE_SOURCES
     qcmaquis_interface_utility_routines.f90
     qcmaquis_interface.f90
     qcmaquis_interface_mpssi.f90
-    qcmaquis_interface_caspt2.f90
     )
 
 set(HDF5_INTERFACE_SOURCES
