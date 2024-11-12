@@ -638,7 +638,6 @@ extern "C"
       ar_out["/parameters"] << parms_caspt2;
 
       // === Measure trans3RDM ===
-      std::cout << parms["resultfile"] << std::endl;
       printf("Measuring 3RDM between\n  ket=%s\n  bra=%s\n", twou1_chkp_name.c_str(), MPStimesMPOstr.c_str());
       parms_caspt2.set("MEASURE[trans3rdm]", twou1_chkp_name);
       parms_caspt2.set("chkpfile", MPStimesMPOstr);
