@@ -1,7 +1,5 @@
 import os
 import shutil
-# import sys
-# from functools import reduce
 from typing import Any, List, Optional, Tuple, Union
 
 import numpy as np
@@ -44,7 +42,7 @@ class QcMaquis:
     """
 
     # pylint: disable=W0613
-    def __init__(self, mol: Any, verbose: Optional[int] = None, fiedler: bool=False, **kwargs: Any) -> None:
+    def __init__(self, mol: Any, **kwargs: Any) -> None:
         """Initialize interface.
 
         Parameters
@@ -57,7 +55,7 @@ class QcMaquis:
         # Pyscf stuff
         self.mol: Any = mol
         """Pyscf molecule"""
-        self.verbose = verbose if verbose is not None else mol.verbose
+        self.verbose = mol.verbose
         """Output verbosity"""
         self.orbsym: List[int] = []
         """Orbital symmetries"""
@@ -69,7 +67,7 @@ class QcMaquis:
         """DMRG method, e.g. conventional, ..."""
         self.n_states: Optional[int] = None
         """Number of states."""
-        self.fiedler: bool = fiedler
+        self.fiedler: bool = False
         """Enable fiedler ordering"""
 
         # QCMaquis related stuff
@@ -87,36 +85,6 @@ class QcMaquis:
         """Name of DMRGSCF checkpoint file"""
         self._dmrgscf_results_name = "results_DMRGSCF.h5"
         """Name of DMRGSCF results file"""
-
-        # self.measure_entropies: bool = False
-        # """Enable measurements for s1, s2 and mut inf."""
-        # self.orbital_optimization: bool = True
-        # """Enable measurements for 1rdm and 2rdm"""
-        # self.checkpoint_name: str = "qcmaquis_checkpoint.h5"
-        # """Name of qcmaquis checkpoint."""
-        # self.results_name: str = "qcmaquis_result_file.h5"
-        # """Name of qcmaquis results file."""
-
-        # DMRG parameters
-        # self.energy_threshold: float = 1e-6
-        # """Energy threshold."""
-        # self.nsweeps: int = 100
-        # """Max number of sweeps."""
-        # self.bond_dim: int = 250
-        # """Bond dimension."""
-        # self.initial_truncation_thresh: float = 1e-16  # 1e-6
-        # """Truncation threshold for first sweeps"""
-        # self.final_truncation_thresh: float = 1e-16  # 1e-10
-        # """Truncation threshold for final sweeps"""
-
-        # Set other parameters directly through qcmaquis parameters
-        # self.feast_window = None
-        # self.feast_states = None
-        # self.nroots = 1
-        # self.stdout = mol.stdout
-
-        # Do I need this?
-        # self._keys = set(self.__dict__.keys())
     # pylint: enable =W0613
 
     def dump_flags(self, verbose: Optional[int] = None):
@@ -183,28 +151,6 @@ class QcMaquis:
         rdm2 = rdm2.transpose(0, 3, 1, 2)
         return rdm2
 
-    # TODO: enable excited states
-    def _set_excited_state_options(self):
-        """Set excited state settings."""
-        pass
-        # Consistency with excited states
-        # if self.n_states is None:
-        #     pass
-        # elif self.n_states >= 1:
-        #     self.n_states = None
-
-        # FEAST
-        # if self.method.lower() == "feast":
-        #     if self.feast_states is not None and self.feast_window is not None:
-        #         self.dmrg.set_feast(self.feast_window, self.feast_states)
-        #     else:
-        #         raise ValueError("For a feast calculation a feast_window and feast_states")
-
-        # ORTHO
-        # if self.method.lower() == "ortho":
-        #     if self.n_states is None:
-        #         raise ValueError("For a feast calculation a feast_window and feast_states")
-
     def _check_spin(self, nelec: Union[int, Tuple[int, int]]) -> Tuple[int, int]:
         """Check spin based on numpy electron definition.
 
@@ -239,10 +185,6 @@ class QcMaquis:
         """
         if self.dmrg is not None:
             energy = self.dmrg.get_energy()
-            # convert complex to float
-            # if self.method.lower() == "feast":
-            #     for i, ener in enumerate(energy):
-            #         energy[i] = ener.real
             return energy
         raise ValueError("Run DMRG before requesting energies")
 
@@ -263,8 +205,6 @@ class QcMaquis:
         self.parameters.set_orbital_optimization()
         self.dmrg.replace_parameters(self.parameters)
         self.dmrg.set_integrals(ecore, h1e, eri, norb)
-        # TODO: excited states are not supported yet
-        self._set_excited_state_options()
         nelec, spin2 = self._check_spin(nelec)
 
         # Always run DMRG if no file path is set

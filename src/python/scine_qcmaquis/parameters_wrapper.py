@@ -211,7 +211,7 @@ class ParametersWrapper:
         "time_step" = 0.2
         """
 
-        self.set("simulation_type", "TD")
+        self.set("simulation_type", "evolve")
         self.set("transcorrelated_hamiltonian", "yes")
         self.set("propagator_accuracy", 1.0E-10)
         self.set("propagator_maxiter", 10)
