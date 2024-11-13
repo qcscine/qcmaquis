@@ -143,8 +143,8 @@ class EntropyBuilder:
         self.L: int = lattice_size
         """size of the lattice"""
         if not orbital_order:
-            orbital_order = list(range(lattice_size))
-        elif isinstance(orbital_order, str):
+            orbital_order = [i for i in range(lattice_size)]
+        elif type(orbital_order) is str:
             orbital_order = self._get_list_from_fiedler_string(orbital_order)
         self.orbital_order: np.ndarray = np.array(orbital_order)
         """Order of the orbitals"""
@@ -356,6 +356,7 @@ class EntropyBuilder:
 
         # p, q is the orbital index from whole space
         # pylint: disable=C0103
+        # pylint: disable=W503
         for p in range(self.L):
             for q in range(p + 1, self.L):
                 two_ordm[p, q, 0, 0] = (

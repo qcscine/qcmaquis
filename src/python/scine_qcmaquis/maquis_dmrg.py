@@ -8,6 +8,9 @@ from .entropy_builder import EntropyBuilder
 from .integral_wrapper import ComplexTCIntegralMap, IntegralMap, IntegralMapWrapper, IntegralType, TCIntegralMap
 from .parameters_wrapper import ExcitedStates, ParametersWrapper
 
+# from .utils.ci_coeffs import (make_doubles_aa, make_doubles_ab, make_doubles_bb, make_ref, make_singles_aa,
+#                               make_singles_bb)
+
 # pylint: enable=import-error
 
 
@@ -55,6 +58,7 @@ class MaquisDmrg:
         """Handler for parameters."""
         self._integral_map = IntegralMapWrapper()
         """Handler for integrals."""
+
         self._transcorrelated = False
         """Flag for transcorrelation."""
         self._orbital_optimization = False
@@ -321,6 +325,7 @@ class MaquisDmrg:
 
         self._dmrg.run()
         # excited states
+        # TODO: test this for feast
         if n_states is not None:
             self._energy = []
             self._energy.append(self._dmrg.get_energy())
@@ -398,3 +403,57 @@ class MaquisDmrg:
             The corresponding ci coefficient
         """
         return self._dmrg.get_ci_coefficient(determinant_string)
+
+    # def get_singles_and_doubles(self, nocc: int, norb: int) -> Tuple[float, np.ndarray, np.ndarray]:
+    #     """Get all singles and doubles coefficients.
+    #
+    #     Parameters
+    #     ----------
+    #     nocc : int
+    #         number of occupied orbitals
+    #     norb : int
+    #         number of orbitals
+    #
+    #     Returns
+    #     -------
+    #     coeff_hf : float
+    #         coefficient of mean field determinant
+    #     singles : np.ndarray
+    #         coefficients of singly excited determinants
+    #     doubles : np.ndarray
+    #         coefficients of doubly excited determinants
+    #     """
+    #
+    #     nvir = norb - nocc
+    #     hf_string, sign = make_ref(nocc, norb)
+    #     coeff_hf = self._dmrg.get_ci_coefficient(hf_string).real
+    #     print(hf_string, coeff_hf)
+    #     singles = np.ndarray((nocc * 2, nvir * 2))
+    #     singles.fill(0)
+    #     for i in range(nocc):
+    #         for a in range(nvir):
+    #             singles_aa_string, sign_aa = make_singles_aa(nocc, norb, i, a)
+    #             coeff_aa = self._dmrg.get_ci_coefficient(singles_aa_string)
+    #             singles_bb_string, sign_bb = make_singles_bb(nocc, norb, i, a)
+    #             coeff_bb = self._dmrg.get_ci_coefficient(singles_bb_string)
+    #             singles[i * 2, a * 2] = coeff_aa.real
+    #             singles[i * 2 + 1, a * 2 + 1] = coeff_bb.real
+    #
+    #     doubles = np.ndarray((nocc * 2, nocc * 2, nvir * 2, nvir * 2))
+    #     doubles.fill(0)
+    #     for i in range(nocc):
+    #         for j in range(nocc):
+    #             for a in range(nvir):
+    #                 for b in range(nvir):
+    #                     if nocc > 1 and nvir > 1 and i != j and a != b:
+    #                         doubles_aa_string, sign_aa = make_doubles_aa(nocc, norb, i, j, a, b)
+    #                         coeff_aa = self._dmrg.get_ci_coefficient(doubles_aa_string)
+    #                         doubles_bb_string, sign_bb = make_doubles_bb(nocc, norb, i, j, a, b)
+    #                         coeff_bb = self._dmrg.get_ci_coefficient(doubles_bb_string)
+    #                         doubles[i * 2, j * 2, a * 2, b * 2] = coeff_aa.real
+    #                         doubles[i * 2 + 1, j * 2 + 1, a * 2 + 1, b * 2 + 1] = coeff_bb.real
+    #                     doubles_ab_string, sign_ab = make_doubles_ab(nocc, norb, i, j, a, b)
+    #                     coeff_ab = self._dmrg.get_ci_coefficient(doubles_ab_string)
+    #                     doubles[i * 2, j * 2 + 1, a * 2, b * 2 + 1] = coeff_ab.real
+    #                     doubles[i * 2 + 1, j * 2, a * 2 + 1, b * 2] = coeff_ab.real
+    #     return coeff_hf, singles, doubles
