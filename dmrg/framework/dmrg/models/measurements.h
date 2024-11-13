@@ -15,7 +15,7 @@
 #include "dmrg/models/measurements/local_at.h"
 #include "dmrg/models/measurements/correlations.h"
 #include "dmrg/models/measurements/tagged_nrankrdm.h"
-//#include "dmrg/models/measurements/rel_nrankrdm.h"
+// #include "dmrg/models/measurements/rel_nrankrdm.h"
 #include "dmrg/models/measurements/custom.h"
 #include "dmrg/models/measurements/overlap.h"
 #include "dmrg/models/measurements/entanglement.h"
@@ -36,18 +36,18 @@ class measure_and_save {
         mps(mps_),
         rmps(mps) {}
 
-void operator()(measurement<Matrix, SymmGroup>& meas) const {
+  void operator()(measurement<Matrix, SymmGroup>& meas) const {
     int num_threads;
 #ifdef MAQUIS_OPENMP
-    #pragma omp parallel
+#pragma omp parallel
     {
-        #pragma omp single
-        num_threads = omp_get_num_threads();
+#pragma omp single
+      num_threads = omp_get_num_threads();
     }
 #endif
 
     maquis::cout << "Number of threads used: " << num_threads << std::endl;
-    
+
 #ifdef MAQUIS_OPENMP
 #pragma omp critical
 #endif
@@ -70,7 +70,7 @@ void operator()(measurement<Matrix, SymmGroup>& meas) const {
         );
       }
     }
-}
+  }
 
   meas_with_results_type meas_out(measurement<Matrix, SymmGroup>& meas) const {
     maquis::cout << "Measuring " << meas.name() << std::endl;

@@ -370,7 +370,8 @@ BOOST_FIXTURE_TEST_CASE(
 ) {
   std::vector<std::pair<double, double>> jValues = {
       std::make_pair(0.3, -0.2), std::make_pair(0.5, -0.1),
-      std::make_pair(0.1, -1.2)};
+      std::make_pair(0.1, -1.2)
+  };
   for (const auto& iJPair : jValues) {
     parameters2x2_MomentumSpace_U4_2Alpha1Beta.set(
         "transcorrelated_nsweeps_TI", 0

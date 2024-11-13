@@ -214,8 +214,8 @@ void transform_site(
           }  // sectors
         }
       }  // SU2 input physical_i_in
-    }    // m_in block
-  }      // pass
+    }  // m_in block
+  }  // pass
 }
 
 template <class Matrix, class SymmGroup, class = void>

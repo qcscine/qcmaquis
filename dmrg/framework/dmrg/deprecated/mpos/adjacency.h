@@ -33,7 +33,7 @@
 namespace adj {
 class Adjacency {
  public:
-  virtual ~Adjacency(){};
+  virtual ~Adjacency() {};
   virtual std::vector<int> forward(int) const = 0;
   virtual std::vector<int> all(int) const = 0;
   virtual int size() const = 0;

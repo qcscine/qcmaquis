@@ -20,13 +20,13 @@ namespace maquis {
 // results
 template <typename ScalarType>
 using meas_with_results_type =
-    std::pair<std::vector<std::vector<int> >, std::vector<ScalarType> >;
+    std::pair<std::vector<std::vector<int>>, std::vector<ScalarType>>;
 
 // All measurements -- a map with measurement names as keys and results as
 // values
 template <typename ScalarType>
 using results_map_type =
-    std::map<std::string, meas_with_results_type<ScalarType> >;
+    std::map<std::string, meas_with_results_type<ScalarType>>;
 
 template <
     typename ScalarType,
@@ -99,9 +99,11 @@ class DMRGInterface {
   /** @brief Updates the integrals and re-initialize the model */
   void update_integrals(std::string fileName);
   void update_integrals(const integral_map<ScalarType>& integrals);
-/** @brief get fiedler ordering */
-std::string fiedler_order(int n_states, const std::vector<std::vector<int>>& hf_occupations, std::string checkpoint_name = "");
-
+  /** @brief get fiedler ordering */
+  std::string fiedler_order(
+      int n_states, const std::vector<std::vector<int>>& hf_occupations,
+      std::string checkpoint_name = ""
+  );
 
   // Get RDMs
   // TODO: This does not work for 2U1/2U1PG symmetry because "oneptdm"

@@ -139,7 +139,8 @@ class RelChemHelper {
             ),
             static_cast<int>(
                 op_j[lat.get_prop<typename SymmGroup::subcharge>("type", j)]
-            )})
+            )
+        })
     );
     if (four_terms.count(id) == 0)
       four_terms[id] = term;

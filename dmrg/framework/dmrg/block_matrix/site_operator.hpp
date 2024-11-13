@@ -314,7 +314,7 @@ template <class Archive>
 void SiteOperator<Matrix, SymmGroup>::serialize(
     Archive& ar, const unsigned int version
 ) {
-  ar& bm_;
+  ar & bm_;
 }
 
 namespace SiteOperator_detail {

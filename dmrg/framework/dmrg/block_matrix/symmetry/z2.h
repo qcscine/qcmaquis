@@ -66,7 +66,7 @@ template <class Archive>
 inline void serialize(
     Archive& ar, Ztwo::charge& c, const unsigned int version
 ) {
-  ar& c;
+  ar & c;
 }
 
 inline Ztwo::charge operator-(Ztwo::charge a) { return a; }

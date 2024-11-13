@@ -15,7 +15,6 @@
 #include <memory>
 #include <string>
 
-
 // TODO: change key of map for python bindings
 namespace maquis {
 namespace srcas {
@@ -25,11 +24,11 @@ namespace srcas {
  *
  * @tparam ScalarType double or complex
  */
-template <typename ScalarType> // real or complex
+template <typename ScalarType>  // real or complex
 class SRCAS {
   using InterfaceType = maquis::DMRGInterface<ScalarType>;
 
-public:
+ public:
   /**
    * @brief Constructor
    *
@@ -44,13 +43,13 @@ public:
   /** @brief Print SRCAS results */
   void printResults();
   /**
-   * @brief get last determinant queen 
+   * @brief get last determinant queen
    *
-   * @return vector representation of current queen 
-   **/ 
+   * @return vector representation of current queen
+   **/
   std::vector<int> getCurrentQueen();
   /**
-   * @brief getter map with all sampled determinants above the threshold 
+   * @brief getter map with all sampled determinants above the threshold
    *
    * @retrun map with vector representation as key and correpsonding value
    **/
@@ -62,18 +61,18 @@ public:
    */
   double getCompleteness();
 
-private:
+ private:
   /** @brief setup SRCAS for different models */
   void setupModel_();
   /** @brief setup SRCAS init state for different models */
   void setupInitState_();
   /** @brief generate a new determinant form current queen */
   std::vector<int> generateNewDet_();
-  /** @brief a simple quicksort 
+  /** @brief a simple quicksort
    *
-   * @param dets 
-   * @param b 
-   * @param left  
+   * @param dets
+   * @param b
+   * @param left
    * @param right
    **/
   void quicksort_(std::string dets[], ScalarType b[], int left, int right);
@@ -99,9 +98,12 @@ private:
   /** @brief boost geometric distribution **/
   boost::geometric_distribution<double> geomDist_;
   /** @brief boost uniform distribution generator **/
-  boost::variate_generator<boost::mt19937 &, boost::uniform_real<double>> uniformRandomNumber_;
+  boost::variate_generator<boost::mt19937 &, boost::uniform_real<double>>
+      uniformRandomNumber_;
   /** @brief boost geometric distribution generator **/
-  boost::variate_generator<boost::mt19937 &, boost::geometric_distribution<double>> geometricRandomNumber_;
+  boost::variate_generator<
+      boost::mt19937 &, boost::geometric_distribution<double>>
+      geometricRandomNumber_;
   /** @brief all DMRG parameters **/
   DmrgParameters &parms_;
   /** @brief DMRG interface **/
@@ -119,16 +121,15 @@ private:
   /** @brief determines the possible space for each determinant **/
   std::vector<int> detSpace_;
   /** @brief modes or electrons **/
-  int numParticles_; 
+  int numParticles_;
   /** @brief current completeness **/
   double completeness_;
   /** @brief all sampled coeffs above threshold **/
   std::map<std::vector<int>, ScalarType> hashTable_;
-  
-  typename std::map<std::vector<int>, ScalarType>::iterator iter_;
 
+  typename std::map<std::vector<int>, ScalarType>::iterator iter_;
 };
-} // namespace srcas
-} // namespace maquis
+}  // namespace srcas
+}  // namespace maquis
 
 #endif

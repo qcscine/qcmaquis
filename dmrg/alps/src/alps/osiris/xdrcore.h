@@ -76,14 +76,14 @@ using boost::int32_t;
 using boost::int8_t;
 using boost::uint16_t;
 using boost::uint8_t;
-//# ifdef ALPS_HAVE_HDF5
-// hdf5 introduce its own uint32_t, int64_t, uint64_t
-//#   include <alps/hdf5.hpp>
-//# else
+// # ifdef ALPS_HAVE_HDF5
+//  hdf5 introduce its own uint32_t, int64_t, uint64_t
+// #   include <alps/hdf5.hpp>
+// # else
 using boost::int64_t;
 using boost::uint32_t;
 using boost::uint64_t;
-//# endif
+// # endif
 #endif
 
 #include <sys/types.h>
@@ -196,7 +196,7 @@ struct XDR {
     /* get a int from underlying stream */
     bool_t (*x_putint32)(XDR *__xdrs, __const int32_t *__ip);
     /* put a int to " */
-  } * x_ops;
+  } *x_ops;
   caddr_t x_public;  /* users' data */
   caddr_t x_private; /* pointer to private data */
   caddr_t x_base;    /* private used for position info */

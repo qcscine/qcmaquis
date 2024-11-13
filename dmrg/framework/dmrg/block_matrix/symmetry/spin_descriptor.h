@@ -77,7 +77,7 @@ class SpinDescriptor<symm_traits::SU2Tag> {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar& twoS& diff_;
+    ar & twoS & diff_;
   }
 
  private:

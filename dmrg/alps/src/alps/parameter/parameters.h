@@ -249,13 +249,13 @@ class ALPS_DECL Parameters {
   /// support for Boost serialization
   template <class Archive>
   void save(Archive& ar, const unsigned int) const {
-    ar& list_;
+    ar & list_;
   }
 
   /// support for Boost serialization
   template <class Archive>
   void load(Archive& ar, const unsigned int) {
-    ar& list_;
+    ar & list_;
     for (iterator itr = list_.begin(); itr != list_.end(); ++itr)
       map_[itr->key()] = itr;
   }

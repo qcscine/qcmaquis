@@ -64,7 +64,9 @@ BOOST_FIXTURE_TEST_CASE(Test_ExpVal_None_BraKetHermitian, WatsonFixture) {
   BOOST_CHECK_CLOSE(energy1, energy2, 1e-7);
 }
 
-BOOST_FIXTURE_TEST_CASE(Test_ExpVal_H2CO_InternalCoords_BraKetHermitian, WatsonFixture) {
+BOOST_FIXTURE_TEST_CASE(
+    Test_ExpVal_H2CO_InternalCoords_BraKetHermitian, WatsonFixture
+) {
   auto lattice = Lattice(parametersH2COWatsonInternal);
   auto watsonModel =
       Model<matrix, TrivialGroup>(lattice, parametersH2COWatsonInternal);

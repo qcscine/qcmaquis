@@ -189,7 +189,7 @@ class FEASTPostProcessor {
     currentFEASTMPSs = std::make_shared<VectorOfMPSs>(nStates);
     for (auto& iMPS : *mpsContainer) iMPS.second[0] /= refNorm;
     // Actual back-transformation
-    //#pragma omp parallel for collapse(2)
+    // #pragma omp parallel for collapse(2)
     for (int iOutput = 0; iOutput < nStates; iOutput++) {
       if (accepted[iOutput] == EigenvalueSelection::Accepted) {
         for (int iInput = 0; iInput < nStates; iInput++) {
@@ -233,7 +233,7 @@ class FEASTPostProcessor {
         }
       }
     }
-    //#pragma omp parallel for
+    // #pragma omp parallel for
     for (int iOutput = 0; iOutput < nStates; iOutput++) {
       // If the state has been accepted,
       if (accepted[iOutput] == EigenvalueSelection::Accepted) {

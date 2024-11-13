@@ -76,8 +76,9 @@ class hash<std::pair<NU1ChargeDG<N, S>, NU1ChargeDG<N, S> > > {
   size_t operator()(
       std::pair<NU1ChargeDG<N, S>, NU1ChargeDG<N, S> > const &Pair_of_charge
   ) const {
-    return hash<std::pair<NU1ChargePG<N, S>, NU1ChargePG<N, S> > >(
-    )(Pair_of_charge);
+    return hash<std::pair<NU1ChargePG<N, S>, NU1ChargePG<N, S> > >()(
+        Pair_of_charge
+    );
   }
 };
 

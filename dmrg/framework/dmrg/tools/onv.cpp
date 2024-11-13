@@ -15,13 +15,11 @@ std::string ONV::string() const {
   return detString;
 }
 
-size_t ONV::nIndices() const {
-  return nIndices_;
-}
+size_t ONV::nIndices() const { return nIndices_; }
 
 bool ONV::operator==(const ONV& rhs) const {
   return this->nIndices_ == rhs.nIndices_;
 }
 
-} // namespace srcas
-} // namespace maquis
+}  // namespace srcas
+}  // namespace maquis

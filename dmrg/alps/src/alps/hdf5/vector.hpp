@@ -95,7 +95,11 @@ struct set_extent<std::vector<T, A> > {
         set_extent(
             *it, std::vector<std::size_t>(extent.begin() + 1, extent.end())
         );
-    else if (extent.size() == 1 && ((!boost::is_enum<T>::value && !boost::is_same<typename scalar_type<T>::type, T>::value) || (boost::is_enum<T>::value && is_continuous<T>::value && sizeof(T) != sizeof(typename scalar_type<T>::type))))
+    else if (extent.size() == 1 &&
+             ((!boost::is_enum<T>::value &&
+               !boost::is_same<typename scalar_type<T>::type, T>::value) ||
+              (boost::is_enum<T>::value && is_continuous<T>::value &&
+               sizeof(T) != sizeof(typename scalar_type<T>::type))))
       throw archive_error("dimensions do not match" + ALPS_STACKTRACE);
   }
 };
@@ -221,7 +225,8 @@ void save(
   } else {
     if (path.find_last_of('@') == std::string::npos && ar.is_data(path))
       ar.delete_data(path);
-    else if (path.find_last_of('@') != std::string::npos && ar.is_attribute(path))
+    else if (path.find_last_of('@') != std::string::npos &&
+             ar.is_attribute(path))
       ar.delete_attribute(path);
     for (typename std::vector<T, A>::const_iterator it = value.begin();
          it != value.end(); ++it)

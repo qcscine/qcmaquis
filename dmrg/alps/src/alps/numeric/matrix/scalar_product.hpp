@@ -40,7 +40,7 @@
 //
 // FIXME: not needed right now, since blas is dispatch is deactivated (see
 // below)
-//#include <boost/numeric/bindings/blas/level1/dot.hpp>
+// #include <boost/numeric/bindings/blas/level1/dot.hpp>
 //
 #include <functional>
 #include <numeric>

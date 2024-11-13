@@ -109,30 +109,32 @@ int main() {
     delete[] d;
   }
 
-  {{my_class c(42);
-  alps::hdf5::archive ar("data.h5", "w");
-  ar << alps::make_pvp("/my/class", c);
-}
-{
-  my_class c;
-  alps::hdf5::archive ar("data.h5");
-  ar >> alps::make_pvp("/my/class", c);
-}
-}
+  {
+    {
+      my_class c(42);
+      alps::hdf5::archive ar("data.h5", "w");
+      ar << alps::make_pvp("/my/class", c);
+    }
+    {
+      my_class c;
+      alps::hdf5::archive ar("data.h5");
+      ar >> alps::make_pvp("/my/class", c);
+    }
+  }
 
-{
-  alps::hdf5::archive ar("data.h5", "w");
-  // the parent of an attribute must exist
-  ar.create_group("/foo");
-  ar << alps::make_pvp("/foo/@bar", std::string("hello"));
-}
+  {
+    alps::hdf5::archive ar("data.h5", "w");
+    // the parent of an attribute must exist
+    ar.create_group("/foo");
+    ar << alps::make_pvp("/foo/@bar", std::string("hello"));
+  }
 
-{
-  alps::hdf5::archive ar("data.h5");
-  std::string str;
-  ar >> alps::make_pvp("/foo/@bar", str);
-}
+  {
+    alps::hdf5::archive ar("data.h5");
+    std::string str;
+    ar >> alps::make_pvp("/foo/@bar", str);
+  }
 
-boost::filesystem::remove(boost::filesystem::path("data.h5"));
-return 0;
+  boost::filesystem::remove(boost::filesystem::path("data.h5"));
+  return 0;
 }

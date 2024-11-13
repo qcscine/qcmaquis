@@ -283,12 +283,14 @@ BOOST_FIXTURE_TEST_CASE(Test_MPS_Initializers_Electronic_LiH_CISD, LiHFixture) {
 BOOST_FIXTURE_TEST_CASE(Test_MPS_Initializers_SU2vs2U1, LiHFixture) {
   // == SINGLE EXCITATION ==
   // List of all possible single excitations
-  auto singleExcitationsAlphaBeta = std::vector<std::string>{
-      "4,3,2,1,1,1", "4,3,1,2,1,1", "4,3,1,1,2,1", "4,3,1,1,1,2",
-      "3,4,2,1,1,1", "3,4,1,2,1,1", "3,4,1,1,2,1", "3,4,1,1,1,2"};
-  auto singleExcitationsBetaAlpha = std::vector<std::string>{
-      "4,2,3,1,1,1", "4,2,1,3,1,1", "4,2,1,1,3,1", "4,2,1,1,1,3",
-      "2,4,3,1,1,1", "2,4,1,3,1,1", "2,4,1,1,3,1", "2,4,1,1,1,3"};
+  auto singleExcitationsAlphaBeta =
+      std::vector<std::string>{"4,3,2,1,1,1", "4,3,1,2,1,1", "4,3,1,1,2,1",
+                               "4,3,1,1,1,2", "3,4,2,1,1,1", "3,4,1,2,1,1",
+                               "3,4,1,1,2,1", "3,4,1,1,1,2"};
+  auto singleExcitationsBetaAlpha =
+      std::vector<std::string>{"4,2,3,1,1,1", "4,2,1,3,1,1", "4,2,1,1,3,1",
+                               "4,2,1,1,1,3", "2,4,3,1,1,1", "2,4,1,3,1,1",
+                               "2,4,1,1,3,1", "2,4,1,1,1,3"};
   auto latticeLiH = Lattice(parametersLiH_STO3G);
   // Generates the MPS for the SU2U1 symmetry
   double scaling = 1.;

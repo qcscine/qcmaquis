@@ -45,8 +45,8 @@ alps::accumulator::autocorrelation_proxy_type<T> fct() {
 BOOST_AUTO_TEST_CASE(test_wrapper_for_modular_accum) {
   fct<int>();
   //~ typedef alps::accumulator::accumulator<int,
-  //alps::accumulator::features<alps::accumulator::tag::mean> > accum; ~ accum
-  //acci;
+  // alps::accumulator::features<alps::accumulator::tag::mean> > accum; ~ accum
+  // acci;
   //~
   //~ alps::accumulator::detail::accumulator_wrapper m(acci);
   //~
@@ -57,6 +57,6 @@ BOOST_AUTO_TEST_CASE(test_wrapper_for_modular_accum) {
 
   //~ BOOST_REQUIRE( m.get<int>().mean() == 50);
   //~ BOOST_REQUIRE(
-  //alps::accumulator::mean(alps::accumulator::extract<accum>(m)) == 50); ~
-  //BOOST_REQUIRE( alps::accumulator::mean(m.extract<accum>()) == 50);
+  // alps::accumulator::mean(alps::accumulator::extract<accum>(m)) == 50); ~
+  // BOOST_REQUIRE( alps::accumulator::mean(m.extract<accum>()) == 50);
 }

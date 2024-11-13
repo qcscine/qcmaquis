@@ -74,7 +74,7 @@ class model_impl {
 
   // optionally delay the assemly of the operator terms until the MPO is
   // actually created
-  virtual void create_terms(){};
+  virtual void create_terms() {};
 
  protected:
   terms_type terms_;

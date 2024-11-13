@@ -32,7 +32,7 @@ class Boundary
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar& data_;
+    ar & data_;
   }
 
   Boundary(

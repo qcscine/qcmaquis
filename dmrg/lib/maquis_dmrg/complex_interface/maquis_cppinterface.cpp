@@ -90,7 +90,8 @@ void qcmaquis_interface_update_integrals(
   for (int i = 0; i < integral_size; i++) {
     std::array<int, 4> idx{
         integral_indices[i][0], integral_indices[i][1], integral_indices[i][2],
-        integral_indices[i][3]};
+        integral_indices[i][3]
+    };
     V value = integral_values.at(i);
     integrals[idx] = value;
   }
@@ -210,7 +211,8 @@ void qcmaquis_interface_get_2rdm(
     // std::cout << " 2-rdm from meas ... element " <<  i << " is --> " <<
     // meas.second[i] << std::endl;
     std::array<int, 4> pos_ = {
-        meas.first[i][0], meas.first[i][1], meas.first[i][2], meas.first[i][3]};
+        meas.first[i][0], meas.first[i][1], meas.first[i][2], meas.first[i][3]
+    };
     rdm2->push_back(std::make_pair(meas.second[i], pos_));
   }
 }
@@ -241,7 +243,8 @@ void qcmaquis_interface_get_2rdm(V* rdm2) {
 
   for (int i = 0; i < meas.first.size(); i++) {
     std::array<int, 4> pos_ = {
-        meas.first[i][0], meas.first[i][1], meas.first[i][2], meas.first[i][3]};
+        meas.first[i][0], meas.first[i][1], meas.first[i][2], meas.first[i][3]
+    };
 
     // permutation           m                         n o p
     rdm2

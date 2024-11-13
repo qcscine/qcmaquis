@@ -73,14 +73,14 @@ class integral_map {
 
   /** @brief Move constructor */
   explicit integral_map(map_t &&map, value_type cutoff = 0.0)
-      : map_(map), cutoff_(cutoff){};
+      : map_(map), cutoff_(cutoff) {};
 
   /** @brief Initializer list construction */
   integral_map(
       std::initializer_list<typename map_t::value_type> l,
       value_type cutoff = 0.0
   )
-      : integral_map(map_t(l), cutoff){};
+      : integral_map(map_t(l), cutoff) {};
 
   // Iterator classes
   iterator begin() { return map_.begin(); };
@@ -129,7 +129,7 @@ class integral_map {
   friend void serialize(
       Archive &ar, integral_map &i, const unsigned int version
   ) {
-    ar &i.map_;
+    ar & i.map_;
   }
 };
 

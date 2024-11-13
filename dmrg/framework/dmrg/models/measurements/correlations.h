@@ -35,16 +35,16 @@ inline std::vector<std::vector<pos_t>> resort_labels(
 #endif
     ret[i].resize(labels[i].size());
 
-for (int j = 0; j < order.size(); ++j) {
-  if (is_nn) {
-    ret[i][order[j]] = labels[i][2 * j];
-    ret[i][order[j] + 1] = labels[i][2 * j + 1];
-  } else {
-    ret[i][order[j]] = labels[i][j];
+    for (int j = 0; j < order.size(); ++j) {
+      if (is_nn) {
+        ret[i][order[j]] = labels[i][2 * j];
+        ret[i][order[j] + 1] = labels[i][2 * j + 1];
+      } else {
+        ret[i][order[j]] = labels[i][j];
+      }
+    }
   }
-}
-}
-return ret;
+  return ret;
 }
 
 template <class Matrix, class SymmGroup>

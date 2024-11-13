@@ -92,8 +92,8 @@ class average : public measurement<Matrix, SymmGroup> {
       MPS<Matrix, SymmGroup> super_mpo = mpo_to_smps(mpo, this->phys_psi);
       // static_cast needed for icpc 12.x
 #ifdef __INTEL_COMPILER
-      typedef typename MPS<Matrix, SymmGroup>::scalar_type (*overlap_func
-      )(MPS<Matrix, SymmGroup> const&, MPS<Matrix, SymmGroup> const&);
+      typedef typename MPS<Matrix, SymmGroup>::
+          scalar_type (*overlap_func)(MPS<Matrix, SymmGroup> const&, MPS<Matrix, SymmGroup> const&);
       this->result = static_cast<overlap_func>(&overlap)(super_mpo, mps) / nn;
 #else
       this->result = ::overlap<Matrix, SymmGroup>(super_mpo, mps) / nn;

@@ -294,7 +294,9 @@ struct ALPS_DECL archivecontext : boost::noncopyable {
               )
           );
         }
-      } else if ((file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDONLY, prop_id)) < 0)
+      } else if ((file_id_ = H5Fopen(
+                      (filename_ + suffix_).c_str(), H5F_ACC_RDONLY, prop_id
+                  )) < 0)
         throw archive_not_found(
             "file does not exists or is not a valid hdf5 archive: " +
             filename_ + suffix_ + ALPS_STACKTRACE
@@ -310,8 +312,7 @@ struct ALPS_DECL archivecontext : boost::noncopyable {
         for (std::size_t i = 0; boost::filesystem::exists(
                  filename_ + (suffix_ = ".tmp." + cast<std::string>(i))
              );
-             ++i)
-          ;
+             ++i);
       if (write_ && replace_ && boost::filesystem::exists(filename_))
         boost::filesystem::copy_file(filename_, filename_ + suffix_);
       if (large_) {
@@ -348,7 +349,9 @@ struct ALPS_DECL archivecontext : boost::noncopyable {
                 )
             );
           }
-        } else if ((file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDONLY, prop_id)) < 0)
+        } else if ((file_id_ = H5Fopen(
+                        (filename_ + suffix_).c_str(), H5F_ACC_RDONLY, prop_id
+                    )) < 0)
           throw archive_not_found(
               "file does not exists or is not a valid hdf5 archive: " +
               filename_ + suffix_ + ALPS_STACKTRACE
@@ -924,19 +927,29 @@ detail::archive_proxy<archive> archive::operator[](std::string const &path) {
   return detail::archive_proxy<archive>(path, *this);
 }
 
-#define ALPS_NGS_HDF5_READ_SCALAR_DATA_HELPER(U, T)                                                                                                                       \
-  }                                                                                                                                                                       \
-  else if (detail::check_error(H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(detail::get_native_type(alps::detail::type_wrapper<U>::type())))) > 0) { \
-    U u;                                                                                                                                                                  \
-    detail::check_error(                                                                                                                                                  \
-        H5Dread(data_id, native_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &u)                                                                                                    \
-    );                                                                                                                                                                    \
+#define ALPS_NGS_HDF5_READ_SCALAR_DATA_HELPER(U, T)                    \
+  }                                                                    \
+  else if (detail::check_error(H5Tequal(                               \
+               detail::type_type(H5Tcopy(native_id)),                  \
+               detail::type_type(detail::get_native_type(              \
+                   alps::detail::type_wrapper<U>::type()               \
+               ))                                                      \
+           )) > 0) {                                                   \
+    U u;                                                               \
+    detail::check_error(                                               \
+        H5Dread(data_id, native_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &u) \
+    );                                                                 \
     value = cast<T>(u);
-#define ALPS_NGS_HDF5_READ_SCALAR_ATTRIBUTE_HELPER(U, T)                                                                                                                  \
-  }                                                                                                                                                                       \
-  else if (detail::check_error(H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(detail::get_native_type(alps::detail::type_wrapper<U>::type())))) > 0) { \
-    U u;                                                                                                                                                                  \
-    detail::check_error(H5Aread(attribute_id, native_id, &u));                                                                                                            \
+#define ALPS_NGS_HDF5_READ_SCALAR_ATTRIBUTE_HELPER(U, T)       \
+  }                                                            \
+  else if (detail::check_error(H5Tequal(                       \
+               detail::type_type(H5Tcopy(native_id)),          \
+               detail::type_type(detail::get_native_type(      \
+                   alps::detail::type_wrapper<U>::type()       \
+               ))                                              \
+           )) > 0) {                                           \
+    U u;                                                       \
+    detail::check_error(H5Aread(attribute_id, native_id, &u)); \
     value = cast<T>(u);
 #define ALPS_NGS_HDF5_READ_SCALAR(T)                                           \
   void archive::read(std::string path, T &value) const {                       \
@@ -1019,49 +1032,59 @@ ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_READ_SCALAR)
 #undef ALPS_NGS_HDF5_READ_SCALAR_DATA_HELPER
 #undef ALPS_NGS_HDF5_READ_SCALAR_ATTRIBUTE_HELPER
 
-#define ALPS_NGS_HDF5_READ_VECTOR_DATA_HELPER(U, T)                                                                                                                       \
-  }                                                                                                                                                                       \
-  else if (detail::check_error(H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(detail::get_native_type(alps::detail::type_wrapper<U>::type())))) > 0) { \
-    std::size_t len = std::accumulate(                                                                                                                                    \
-        chunk.begin(), chunk.end(), std::size_t(1),                                                                                                                       \
-        std::multiplies<std::size_t>()                                                                                                                                    \
-    );                                                                                                                                                                    \
-    boost::scoped_array<U> raw(new alps::detail::type_wrapper<U>::type[len]);                                                                                             \
-    if (std::equal(chunk.begin(), chunk.end(), data_size.begin())) {                                                                                                      \
-      detail::check_error(H5Dread(                                                                                                                                        \
-          data_id, native_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, raw.get()                                                                                                    \
-      ));                                                                                                                                                                 \
-      cast(raw.get(), raw.get() + len, value);                                                                                                                            \
-    } else {                                                                                                                                                              \
-      std::vector<hsize_t> offset_hid(offset.begin(), offset.end()),                                                                                                      \
-          chunk_hid(chunk.begin(), chunk.end());                                                                                                                          \
-      detail::space_type space_id(H5Dget_space(data_id));                                                                                                                 \
-      detail::check_error(H5Sselect_hyperslab(                                                                                                                            \
-          space_id, H5S_SELECT_SET, &offset_hid.front(), NULL,                                                                                                            \
-          &chunk_hid.front(), NULL                                                                                                                                        \
-      ));                                                                                                                                                                 \
-      detail::space_type mem_id(H5Screate_simple(                                                                                                                         \
-          static_cast<int>(chunk_hid.size()), &chunk_hid.front(), NULL                                                                                                    \
-      ));                                                                                                                                                                 \
-      detail::check_error(H5Dread(                                                                                                                                        \
-          data_id, native_id, mem_id, space_id, H5P_DEFAULT, raw.get()                                                                                                    \
-      ));                                                                                                                                                                 \
-      cast(raw.get(), raw.get() + len, value);                                                                                                                            \
+#define ALPS_NGS_HDF5_READ_VECTOR_DATA_HELPER(U, T)                           \
+  }                                                                           \
+  else if (detail::check_error(H5Tequal(                                      \
+               detail::type_type(H5Tcopy(native_id)),                         \
+               detail::type_type(detail::get_native_type(                     \
+                   alps::detail::type_wrapper<U>::type()                      \
+               ))                                                             \
+           )) > 0) {                                                          \
+    std::size_t len = std::accumulate(                                        \
+        chunk.begin(), chunk.end(), std::size_t(1),                           \
+        std::multiplies<std::size_t>()                                        \
+    );                                                                        \
+    boost::scoped_array<U> raw(new alps::detail::type_wrapper<U>::type[len]); \
+    if (std::equal(chunk.begin(), chunk.end(), data_size.begin())) {          \
+      detail::check_error(H5Dread(                                            \
+          data_id, native_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, raw.get()        \
+      ));                                                                     \
+      cast(raw.get(), raw.get() + len, value);                                \
+    } else {                                                                  \
+      std::vector<hsize_t> offset_hid(offset.begin(), offset.end()),          \
+          chunk_hid(chunk.begin(), chunk.end());                              \
+      detail::space_type space_id(H5Dget_space(data_id));                     \
+      detail::check_error(H5Sselect_hyperslab(                                \
+          space_id, H5S_SELECT_SET, &offset_hid.front(), NULL,                \
+          &chunk_hid.front(), NULL                                            \
+      ));                                                                     \
+      detail::space_type mem_id(H5Screate_simple(                             \
+          static_cast<int>(chunk_hid.size()), &chunk_hid.front(), NULL        \
+      ));                                                                     \
+      detail::check_error(H5Dread(                                            \
+          data_id, native_id, mem_id, space_id, H5P_DEFAULT, raw.get()        \
+      ));                                                                     \
+      cast(raw.get(), raw.get() + len, value);                                \
     }
-#define ALPS_NGS_HDF5_READ_VECTOR_ATTRIBUTE_HELPER(U, T)                                                                                                                  \
-  }                                                                                                                                                                       \
-  else if (detail::check_error(H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(detail::get_native_type(alps::detail::type_wrapper<U>::type())))) > 0) { \
-    std::size_t len = std::accumulate(                                                                                                                                    \
-        chunk.begin(), chunk.end(), std::size_t(1),                                                                                                                       \
-        std::multiplies<std::size_t>()                                                                                                                                    \
-    );                                                                                                                                                                    \
-    boost::scoped_array<U> raw(new alps::detail::type_wrapper<U>::type[len]);                                                                                             \
-    if (std::equal(chunk.begin(), chunk.end(), data_size.begin())) {                                                                                                      \
-      detail::check_error(H5Aread(attribute_id, native_id, raw.get()));                                                                                                   \
-      cast(raw.get(), raw.get() + len, value);                                                                                                                            \
-    } else                                                                                                                                                                \
-      throw std::logic_error(                                                                                                                                             \
-          "Not Implemented, path: " + path + ALPS_STACKTRACE                                                                                                              \
+#define ALPS_NGS_HDF5_READ_VECTOR_ATTRIBUTE_HELPER(U, T)                      \
+  }                                                                           \
+  else if (detail::check_error(H5Tequal(                                      \
+               detail::type_type(H5Tcopy(native_id)),                         \
+               detail::type_type(detail::get_native_type(                     \
+                   alps::detail::type_wrapper<U>::type()                      \
+               ))                                                             \
+           )) > 0) {                                                          \
+    std::size_t len = std::accumulate(                                        \
+        chunk.begin(), chunk.end(), std::size_t(1),                           \
+        std::multiplies<std::size_t>()                                        \
+    );                                                                        \
+    boost::scoped_array<U> raw(new alps::detail::type_wrapper<U>::type[len]); \
+    if (std::equal(chunk.begin(), chunk.end(), data_size.begin())) {          \
+      detail::check_error(H5Aread(attribute_id, native_id, raw.get()));       \
+      cast(raw.get(), raw.get() + len, value);                                \
+    } else                                                                    \
+      throw std::logic_error(                                                 \
+          "Not Implemented, path: " + path + ALPS_STACKTRACE                  \
       );
 #define ALPS_NGS_HDF5_READ_VECTOR(T)                                           \
   void archive::read(                                                          \

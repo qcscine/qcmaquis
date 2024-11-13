@@ -300,7 +300,8 @@ BOOST_FIXTURE_TEST_CASE(
   interfaceBenzene.runFEAST();
   std::vector<double> vectorOFEnergies = {
       maquis::real(interfaceBenzene.energyFEAST(0)),
-      maquis::real(interfaceBenzene.energyFEAST(1))};
+      maquis::real(interfaceBenzene.energyFEAST(1))
+  };
   std::sort(vectorOFEnergies.begin(), vectorOFEnergies.end());
   // Now sets the intervals to be smaller.
   parametersBenzene.set("feast_emin", vectorOFEnergies[0] - 0.001);
@@ -322,7 +323,8 @@ BOOST_FIXTURE_TEST_CASE(
   interfaceBenzenePG.runFEAST();
   std::vector<double> vectorOFEnergiesPG = {
       maquis::real(interfaceBenzenePG.energyFEAST(0)),
-      maquis::real(interfaceBenzenePG.energyFEAST(1))};
+      maquis::real(interfaceBenzenePG.energyFEAST(1))
+  };
   std::sort(vectorOFEnergiesPG.begin(), vectorOFEnergiesPG.end());
   // Now sets the intervals to be smaller.
   parametersBenzene.set("feast_emin", vectorOFEnergiesPG[1] - 0.001);

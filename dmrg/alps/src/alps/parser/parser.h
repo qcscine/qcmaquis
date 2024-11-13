@@ -90,13 +90,7 @@ struct XMLTag {
     /// \end{tabulate}
     /// \endlatexonly
   */
-  enum {
-    OPENING,
-    CLOSING,
-    SINGLE,
-    COMMENT,
-    PROCESSING
-  } type;
+  enum { OPENING, CLOSING, SINGLE, COMMENT, PROCESSING } type;
   /// returns true if the tag is a comment
   bool is_comment() { return type == COMMENT; }
   /// returns true if the tag is a processing instruction

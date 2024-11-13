@@ -102,9 +102,10 @@ static Boundary<Matrix, SymmGroup> left_boundary_tensor_mpo(
   ret.resize(mpo.col_dim());
   omp_for(index_type b2, parallel::range<index_type>(0, loop_max), {
     ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
-    Kernel(
-    )(b2, contr_grid, left, t, mpo, mps.data().basis(), mps.data().basis(),
-      right_i, out_left_i, in_right_pb, out_left_pb, true);
+    Kernel()(
+        b2, contr_grid, left, t, mpo, mps.data().basis(), mps.data().basis(),
+        right_i, out_left_i, in_right_pb, out_left_pb, true
+    );
     swap(ret[b2], contr_grid(0, 0));
   });
   return ret;
@@ -139,9 +140,10 @@ static Boundary<Matrix, SymmGroup> right_boundary_tensor_mpo(
   index_type loop_max = mpo.row_dim();
   omp_for(index_type b1, parallel::range<index_type>(0, loop_max), {
     // parallel::guard group(scheduler(b1), parallel::groups_granularity);
-    Kernel(
-    )(b1, ret[b1], right, t, mpo, mps.data().basis(), mps.data().basis(),
-      left_i, out_right_i, in_left_pb, out_right_pb, true);
+    Kernel()(
+        b1, ret[b1], right, t, mpo, mps.data().basis(), mps.data().basis(),
+        left_i, out_right_i, in_left_pb, out_right_pb, true
+    );
   });
   return ret;
 }
@@ -186,12 +188,14 @@ static Boundary<OtherMatrix, SymmGroup> overlap_mpo_left_step(
   omp_for(index_type b2, parallel::range<index_type>(0, loop_max), {
     if (mpo.herm_info.right_skip(b2) && isHermitian) continue;
     ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
-    Kernel(
-    )(b2, contr_grid, left, t, mpo, ket_basis_transpose, bra_basis, right_i,
-      out_left_i, in_right_pb, out_left_pb, isHermitian);
-    typename Gemm::gemm(
-    )(transpose(contr_grid(0, 0)), bra_conj, ret[b2],
-      MPOTensor_detail::get_spin(mpo, b2, false));
+    Kernel()(
+        b2, contr_grid, left, t, mpo, ket_basis_transpose, bra_basis, right_i,
+        out_left_i, in_right_pb, out_left_pb, isHermitian
+    );
+    typename Gemm::gemm()(
+        transpose(contr_grid(0, 0)), bra_conj, ret[b2],
+        MPOTensor_detail::get_spin(mpo, b2, false)
+    );
   });
   /*
   // hermiticity check
@@ -253,13 +257,15 @@ static Boundary<OtherMatrix, SymmGroup> overlap_mpo_right_step(
     if (mpo.herm_info.left_skip(b1) && isHermitian) {
       continue;
     }
-    Kernel(
-    )(b1, ret[b1], right, t, mpo, ket_cpy.data().basis(), bra_basis, left_i,
-      out_right_i, in_left_pb, out_right_pb, isHermitian);
+    Kernel()(
+        b1, ret[b1], right, t, mpo, ket_cpy.data().basis(), bra_basis, left_i,
+        out_right_i, in_left_pb, out_right_pb, isHermitian
+    );
     block_matrix<Matrix, SymmGroup> tmp;
-    typename Gemm::gemm(
-    )(ret[b1], transpose(bra_conj), tmp,
-      MPOTensor_detail::get_spin(mpo, b1, true));
+    typename Gemm::gemm()(
+        ret[b1], transpose(bra_conj), tmp,
+        MPOTensor_detail::get_spin(mpo, b1, true)
+    );
     // gemm(ret[b1], transpose(bra_conj), tmp,
     // parallel::scheduler_size_indexed(ret[b1]));
     swap(ret[b1], tmp);
@@ -319,9 +325,10 @@ static Boundary<OtherMatrix, SymmGroup> generate_left_mpo_basis(
   omp_for(index_type b2, parallel::range<index_type>(0, loop_max), {
     if (mpo.herm_info.right_skip(b2)) continue;
     ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
-    Kernel(
-    )(b2, contr_grid, left, t, mpo, ket_basis_transpose, ket_basis_transpose,
-      right_i, out_left_i, in_right_pb, out_left_pb, true);
+    Kernel()(
+        b2, contr_grid, left, t, mpo, ket_basis_transpose, ket_basis_transpose,
+        right_i, out_left_i, in_right_pb, out_left_pb, true
+    );
     // Final contraction with the MPS
     ret[b2] = contr_grid(0, 0);
   });
@@ -365,10 +372,11 @@ static Boundary<OtherMatrix, SymmGroup> generate_right_mpo_basis(
   // Main loop
   omp_for(index_type b1, parallel::range<index_type>(0, loop_max), {
     if (mpo.herm_info.left_skip(b1)) continue;
-    Kernel(
-    )(b1, ret[b1], right, t, mpo, ket_cpy.data().basis(),
-      ket_cpy.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb,
-      true);
+    Kernel()(
+        b1, ret[b1], right, t, mpo, ket_cpy.data().basis(),
+        ket_cpy.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb,
+        true
+    );
   });
   return ret;
 }

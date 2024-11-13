@@ -351,20 +351,20 @@ struct TermMakerSU2 {
     HERMITIAN(create_couple_up, destroy_couple_up)
 #undef HERMITIAN
 
-    //#define PRINT(op) maquis::cout << #op << "\t" << op << std::endl;
-    //    PRINT(ident)
-    //    PRINT(ident_full)
-    //    PRINT(fill)
-    //    PRINT(create_fill)
-    //    PRINT(create)
-    //    PRINT(destroy_fill)
-    //    PRINT(destroy)
-    //    PRINT(count)
-    //    PRINT(count_fill)
-    //    PRINT(docc)
-    //    PRINT(e2d)
-    //    PRINT(d2e)
-    //#undef PRINT
+    // #define PRINT(op) maquis::cout << #op << "\t" << op << std::endl;
+    //     PRINT(ident)
+    //     PRINT(ident_full)
+    //     PRINT(fill)
+    //     PRINT(create_fill)
+    //     PRINT(create)
+    //     PRINT(destroy_fill)
+    //     PRINT(destroy)
+    //     PRINT(count)
+    //     PRINT(count_fill)
+    //     PRINT(docc)
+    //     PRINT(e2d)
+    //     PRINT(d2e)
+    // #undef PRINT
 
     return ret;
   }
@@ -635,7 +635,8 @@ class SpinSumSU2 {
       return two_termB1(matrix_element, i, k, l, j, ops, lat);
     } else if (i == l && j == k && i != j) {
       return two_termB2(matrix_element, i, k, l, j, ops, lat);
-    } else if ((i == k && k == l) || (k == l && l == j) || (i == l && l == j) || (i == k && k == j)) {
+    } else if ((i == k && k == l) || (k == l && l == j) || (i == l && l == j) ||
+               (i == k && k == j)) {
       return two_termC(matrix_element, i, k, l, j, ops, lat);
     } else {
       throw std::runtime_error("Unexpected index arrangement for V_ijjj term\n"

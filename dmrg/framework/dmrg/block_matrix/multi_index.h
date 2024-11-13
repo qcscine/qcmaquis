@@ -8,7 +8,7 @@
 #ifndef MULTI_INDEX_H
 #define MULTI_INDEX_H
 
-//#include "dmrg/block_matrix/indexing.h"
+// #include "dmrg/block_matrix/indexing.h"
 
 #include <vector>
 #include <algorithm>

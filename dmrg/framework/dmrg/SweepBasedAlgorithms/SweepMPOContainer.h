@@ -38,7 +38,7 @@ class SweepMPOContainer<Matrix, SymmGroup, SweepOptimizationType::SingleSite> {
   using MPOType = MPO<Matrix, SymmGroup>;
 
   /** @brief Class constructor */
-  SweepMPOContainer(const MPOType& mpo, const MPSType& mps) : mpo_(mpo){};
+  SweepMPOContainer(const MPOType& mpo, const MPSType& mps) : mpo_(mpo) {};
 
   /** @brief Getter for the MPOTensor */
   const auto& getMPOTensor(int site) const { return mpo_[site]; }

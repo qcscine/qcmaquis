@@ -428,7 +428,8 @@ void block_matrix<Matrix, SymmGroup>::match_and_add_block(
     if (num_rows(mtx) == num_rows((*this)[match]) &&
         num_cols(mtx) == num_cols((*this)[match])) {
       (*this)[match] += mtx;
-    } else if (num_rows(mtx) > num_rows((*this)[match]) && num_cols(mtx) > num_cols((*this)[match])) {
+    } else if (num_rows(mtx) > num_rows((*this)[match]) &&
+               num_cols(mtx) > num_cols((*this)[match])) {
       resize_block(match, num_rows(mtx), num_cols(mtx));
       (*this)[match] += mtx;
     } else {
@@ -542,7 +543,7 @@ template <class Archive>
 void block_matrix<Matrix, SymmGroup>::serialize(
     Archive& ar, const unsigned int version
 ) {
-  ar& basis_& data_;
+  ar & basis_ & data_;
 }
 
 template <class Matrix, class SymmGroup>

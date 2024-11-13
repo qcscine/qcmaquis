@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(test_fixed_size_bin_with_error_archetype) {
   accd << .6;
 
   //~ BOOST_REQUIRE( alps::accumulator::fixed_size_binning(accd).bin_size() ==
-  //10);
+  // 10);
 
   alps::accumulator::fixed_size_binning(accd);
   accd.fixed_size_binning();

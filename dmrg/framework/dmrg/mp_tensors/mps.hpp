@@ -351,7 +351,7 @@ template <class Archive>
 void MPS<Matrix, SymmGroup>::serialize(
     Archive& ar, const unsigned int version
 ) {
-  ar& canonized_i& data_;
+  ar & canonized_i & data_;
 }
 
 template <class Matrix, class SymmGroup>
@@ -360,8 +360,7 @@ void load(std::string const& dirname, MPS<Matrix, SymmGroup>& mps) {
   std::size_t L = 0;
   while (std::filesystem::exists(
       dirname + "/mps" + boost::lexical_cast<std::string>(++L) + ".h5"
-  ))
-    ;
+  ));
 
   /// load tensors
   MPS<Matrix, SymmGroup> tmp(L);

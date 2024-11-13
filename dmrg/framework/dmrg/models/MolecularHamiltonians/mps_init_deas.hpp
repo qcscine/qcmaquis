@@ -337,8 +337,9 @@ struct deas_mps_init : public mps_initializer<Matrix, SymmGroup> {
         det[i] = 4;
       } else if (charge_vec[i] == phys_dims[site_types[i]][1].first) {
         det[i] = 3;
-      } else if (charge_vec[i] == phys_dims[site_types[i]][2].first)  // singly-occ
-                                                                      // (2)
+      } else if (charge_vec[i] ==
+                 phys_dims[site_types[i]][2].first)  // singly-occ
+                                                     // (2)
       {
         det[i] = 2;
       } else if (charge_vec[i] == phys_dims[site_types[i]][3].first) {

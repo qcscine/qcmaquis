@@ -107,7 +107,8 @@ void qcmaquis_interface_update_integrals(
   for (int i = 0; i < integral_size; i++) {
     std::array<int, 4> idx{
         integral_indices[4 * i], integral_indices[4 * i + 1],
-        integral_indices[4 * i + 2], integral_indices[4 * i + 3]};
+        integral_indices[4 * i + 2], integral_indices[4 * i + 3]
+    };
     V value = integral_values[i];
     integrals[idx] = value;
   }

@@ -38,7 +38,7 @@ template <
     class Matrix, class SymmGroup, Hamiltonian HamiltonianType,
     HamiltonianTransformation Transcorrelated>
 qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::qc_model(
-    Lattice const& lat_, BaseParameters& parms_
+    Lattice const &lat_, BaseParameters &parms_
 )
     : lat(lat_),
       parms(parms_),
@@ -237,498 +237,734 @@ qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::qc_model(
       tag_handler->hermitian_pair(cdnutf.first[opType], ftddnu.first[opType]);
       tag_handler->hermitian_pair(ddcu.first[opType], ducd.first[opType]);
     }
-    }
+  }
 
-    // TODO: fix this TMP Solution??
-    if(parms_.defined("srcas_numSamples")) {
-        if(parms_["srcas_numSamples"] != 1) {
-            return; 
-        }
+  // TODO: fix this TMP Solution??
+  if (parms_.defined("srcas_numSamples")) {
+    if (parms_["srcas_numSamples"] != 1) {
+      return;
     }
+  }
 
-    if (isTranscorrelated_)
-        maquis::cout << "Transcorrelated Hamiltonian modality activated" << std::endl;
+  if (isTranscorrelated_)
+    maquis::cout << "Transcorrelated Hamiltonian modality activated"
+                 << std::endl;
 }
 
 /** @brief Create the Hamiltonian terms */
-template<class Matrix, class SymmGroup, Hamiltonian HamiltonianType, HamiltonianTransformation Transcorrelated>
-void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms() {
-    bool is_normal_ordered = (parms["transcorrelated_3body_normal_ordered"] == "yes");
+template <
+    class Matrix, class SymmGroup, Hamiltonian HamiltonianType,
+    HamiltonianTransformation Transcorrelated>
+void qc_model<
+    Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms() {
+  bool is_normal_ordered =
+      (parms["transcorrelated_3body_normal_ordered"] == "yes");
 
-    if(isTranscorrelated_ && is_normal_ordered) {
-        create_terms_normal_ordered();
-    } else {
-        create_terms_not_normal_ordered();
-    }
+  if (isTranscorrelated_ && is_normal_ordered) {
+    create_terms_normal_ordered();
+  } else {
+    create_terms_not_normal_ordered();
+  }
 }
 
 /** @brief Create the Hamiltonian terms */
-template<class Matrix, class SymmGroup, Hamiltonian HamiltonianType, HamiltonianTransformation Transcorrelated>
-void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms_not_normal_ordered() {
-    // Generates the data required to form the Hamiltonian
-    auto jw = JordanWignerHandler<Matrix, SymmGroup>(lat, fill, create_up, create_down, destroy_up, destroy_down);
-    MapOfOperatorsType mapOfOperators;
-    bool isTcAndQuantum = isQuantumComputingFormat && isTranscorrelated_;
-    chem::detail::ChemHelper<Matrix, SymmGroup, HamiltonianType, Transcorrelated> term_assistant(parms, lat, ident, fill, tag_handler, !isTcAndQuantum);
-    auto& matrix_elements = term_assistant.getMatrixElements();
-    // Tmp objects.
-    std::vector<OperatorType> oneBodyVec1 = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
-    std::vector<OperatorType> oneBodyVec2 = {OperatorType::CreateBeta, OperatorType::DestroyBeta};
-    std::vector<std::vector<OperatorType> > oneBodyElementaryOperators = {oneBodyVec1, oneBodyVec2};
+template <
+    class Matrix, class SymmGroup, Hamiltonian HamiltonianType,
+    HamiltonianTransformation Transcorrelated>
+void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::
+    create_terms_not_normal_ordered() {
+  // Generates the data required to form the Hamiltonian
+  auto jw = JordanWignerHandler<Matrix, SymmGroup>(
+      lat, fill, create_up, create_down, destroy_up, destroy_down
+  );
+  MapOfOperatorsType mapOfOperators;
+  bool isTcAndQuantum = isQuantumComputingFormat && isTranscorrelated_;
+  chem::detail::ChemHelper<Matrix, SymmGroup, HamiltonianType, Transcorrelated>
+      term_assistant(parms, lat, ident, fill, tag_handler, !isTcAndQuantum);
+  auto &matrix_elements = term_assistant.getMatrixElements();
+  // Tmp objects.
+  std::vector<OperatorType> oneBodyVec1 = {
+      OperatorType::CreateAlpha, OperatorType::DestroyAlpha
+  };
+  std::vector<OperatorType> oneBodyVec2 = {
+      OperatorType::CreateBeta, OperatorType::DestroyBeta
+  };
+  std::vector<std::vector<OperatorType>> oneBodyElementaryOperators = {
+      oneBodyVec1, oneBodyVec2
+  };
 
-    std::vector<OperatorType> twoBodyVec1 = {OperatorType::CreateAlpha, OperatorType::CreateBeta,
-                                             OperatorType::DestroyBeta, OperatorType::DestroyAlpha};
-    std::vector<OperatorType> twoBodyVec2 = {OperatorType::CreateBeta, OperatorType::CreateAlpha,
-                                             OperatorType::DestroyAlpha, OperatorType::DestroyBeta};
-    std::vector<OperatorType> twoBodyVec3 = {OperatorType::CreateAlpha, OperatorType::CreateAlpha,
-                                             OperatorType::DestroyAlpha, OperatorType::DestroyAlpha};
-    std::vector<OperatorType> twoBodyVec4 = {OperatorType::CreateBeta, OperatorType::CreateBeta,
-                                             OperatorType::DestroyBeta, OperatorType::DestroyBeta};
-    std::vector<std::vector<OperatorType> > twoBodyElementaryOperators = {twoBodyVec1, twoBodyVec2, twoBodyVec3, twoBodyVec4};
+  std::vector<OperatorType> twoBodyVec1 = {
+      OperatorType::CreateAlpha, OperatorType::CreateBeta,
+      OperatorType::DestroyBeta, OperatorType::DestroyAlpha
+  };
+  std::vector<OperatorType> twoBodyVec2 = {
+      OperatorType::CreateBeta, OperatorType::CreateAlpha,
+      OperatorType::DestroyAlpha, OperatorType::DestroyBeta
+  };
+  std::vector<OperatorType> twoBodyVec3 = {
+      OperatorType::CreateAlpha, OperatorType::CreateAlpha,
+      OperatorType::DestroyAlpha, OperatorType::DestroyAlpha
+  };
+  std::vector<OperatorType> twoBodyVec4 = {
+      OperatorType::CreateBeta, OperatorType::CreateBeta,
+      OperatorType::DestroyBeta, OperatorType::DestroyBeta
+  };
+  std::vector<std::vector<OperatorType>> twoBodyElementaryOperators = {
+      twoBodyVec1, twoBodyVec2, twoBodyVec3, twoBodyVec4
+  };
 
-    bool normal_ordered_integral = (parms["normal_ordered_integral_file"] == "yes") && isTranscorrelated_;
-    std::unordered_set<std::size_t> hole_states;
-    if(normal_ordered_integral) {
-        std::vector<std::size_t> hole_state_vec = parms["normal_ordered_hole_states"];
-        hole_states.insert(hole_state_vec.begin(), hole_state_vec.end());
-        std::cout << "Reading integral in normally ordered form, with reference states ";
-        for(auto i : hole_states) {
-            std::cout << i << ",";
-        }
-        std::cout << std::endl;
+  bool normal_ordered_integral =
+      (parms["normal_ordered_integral_file"] == "yes") && isTranscorrelated_;
+  std::unordered_set<std::size_t> hole_states;
+  if (normal_ordered_integral) {
+    std::vector<std::size_t> hole_state_vec =
+        parms["normal_ordered_hole_states"];
+    hole_states.insert(hole_state_vec.begin(), hole_state_vec.end());
+    std::cout
+        << "Reading integral in normally ordered form, with reference states ";
+    for (auto i : hole_states) {
+      std::cout << i << ",";
     }
+    std::cout << std::endl;
+  }
 
-    for (std::size_t iElement = 0; iElement < matrix_elements.size(); iElement++) {
-        int i = term_assistant.idx(iElement, 0);
-        int j = term_assistant.idx(iElement, 1);
-        int k = term_assistant.idx(iElement, 2);
-        int l = term_assistant.idx(iElement, 3);
-        int m = -1;
-        int n = -1;
-        auto matrixElement = static_cast<value_type>(matrix_elements[iElement]);
-        if (isTranscorrelated_) {
-            m = term_assistant.idx(iElement, 4);
-            n = term_assistant.idx(iElement, 5);
-        }
-        // Core electrons energy
-        if (i == -1 && j == -1 && k == -1 && l == -1 && m == -1 && n == -1) {
-            term_descriptor term;
-            term.coeff = matrixElement;
-            term.push_back(std::make_pair(0, ident[lat.get_prop<typename SymmGroup::subcharge>("type", 0)]));
+  for (std::size_t iElement = 0; iElement < matrix_elements.size();
+       iElement++) {
+    int i = term_assistant.idx(iElement, 0);
+    int j = term_assistant.idx(iElement, 1);
+    int k = term_assistant.idx(iElement, 2);
+    int l = term_assistant.idx(iElement, 3);
+    int m = -1;
+    int n = -1;
+    auto matrixElement = static_cast<value_type>(matrix_elements[iElement]);
+    if (isTranscorrelated_) {
+      m = term_assistant.idx(iElement, 4);
+      n = term_assistant.idx(iElement, 5);
+    }
+    // Core electrons energy
+    if (i == -1 && j == -1 && k == -1 && l == -1 && m == -1 && n == -1) {
+      term_descriptor term;
+      term.coeff = matrixElement;
+      term.push_back(std::make_pair(
+          0, ident[lat.get_prop<typename SymmGroup::subcharge>("type", 0)]
+      ));
 
-            this->terms_.push_back(term);
+      this->terms_.push_back(term);
 
-        }
-        // One-body contribution
-        else if (k == -1 && l == -1 && m==-1 && n==-1) {
-            std::vector< std::array<int, 2> > posVector = isTranscorrelated_ ? std::vector<std::array<int, 2>>({std::array<int, 2>({i, j})})
-                                                                             : TermMaker<Matrix, SymmGroup>::generateTwofoldSymmetricIndex(i, j);
-            for (auto& iOp: oneBodyElementaryOperators) {
-                for (auto& iTerm: posVector) {
-                    std::vector< pos_t > localPosVector = { iTerm[0], iTerm[1] };
-                    if(!normal_ordered_integral) {
-                        auto term = jw.getTerm(localPosVector, iOp, tag_handler, true, matrixElement);
-                        addTerm(mapOfOperators, term);
-                    } else {
-                        auto noOp(iOp);
-                        double sign = applyNormalOrdering(localPosVector, noOp, hole_states);
-                        auto term = jw.getTerm(localPosVector, noOp, tag_handler, true, sign * matrixElement);
-                        addTerm(mapOfOperators, term);
-                    }
-                }
-            }
-        }
-
-        // Two-body contribution
-        else if (m==-1 && n==-1) {
-            std::vector< OperatorType > opVector1, opVector2, opVector3, opVector4;
-            if (isQuantumComputingFormat) {
-                opVector1 = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
-                opVector2 = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::CreateBeta, OperatorType::DestroyBeta};
-                opVector3 = {OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
-                opVector4 = {OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::CreateBeta, OperatorType::DestroyBeta};
-            }
-            else {
-                opVector1 = {OperatorType::CreateAlpha, OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::DestroyAlpha};
-                opVector2 = {OperatorType::CreateBeta, OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::DestroyBeta};
-                opVector3 = {OperatorType::CreateAlpha, OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::DestroyAlpha};
-                opVector4 = {OperatorType::CreateBeta, OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::DestroyBeta};
-            }
-            std::vector< std::vector< OperatorType > > twoBodyElementaryOperators = { opVector1, opVector2, opVector3, opVector4 };
-            std::vector< std::array<int, 4> > tmp;
-            if (isTranscorrelated_) {
-                tmp = TermMaker<Matrix, SymmGroup>::generateTwofoldSymmetricIndex(i, j, k, l);
-            }
-            else {
-                tmp = TermMaker<Matrix, SymmGroup>::generateEightfoldSymmetricIndex(i, j, k, l);
-            }
-            //
-            for (auto& iOp: twoBodyElementaryOperators) {
-                for (auto& iTerm: tmp) {
-                    auto posVector = (isQuantumComputingFormat) ? std::vector< pos_t >{ iTerm[0], iTerm[1], iTerm[2], iTerm[3] }
-                                                                : std::vector< pos_t >{ iTerm[0], iTerm[2], iTerm[3], iTerm[1] };
-                    if(!normal_ordered_integral) {
-                        auto term = jw.getTerm(posVector, iOp, tag_handler, true, matrixElement / 2.);
-                        if (term.size() > 0) {
-                          addTerm(mapOfOperators, term);
-                        }
-                    } else {
-                        if (!(posVector[0] == posVector[1] && iOp[0] == iOp[1]) &&
-                            !(posVector[2] == posVector[3] && iOp[2] == iOp[3])) {
-                            auto noOp(iOp);
-                            double sign = applyNormalOrdering(posVector, noOp, hole_states);
-                            auto term = jw.getTerm(posVector, noOp, tag_handler, true, sign * matrixElement / 2.);
-                            if (term.size() > 0) {
-                              addTerm(mapOfOperators, term);
-                            }
-                        }
-                    }
-
-                }
-            }
-        }
-            // Three-body contribution
-        else {
-            if (isTranscorrelated_) {
-                // No normal ordering
-                if (parms["transcorrelated_3body"] == "yes") {
-                    std::set<int> nonEqualIndices{i, j, k, l, m, n};
-                    int couplingDegree = nonEqualIndices.size();
-                    int maxDegree = parms["transcorrelated_3body_max_coupling"];
-                    if (couplingDegree <= maxDegree) {
-                        std::vector< std::array<int, 6> > tmp;
-                        if (isQuantumComputingFormat) {
-                            tmp = std::vector<std::array<int, 6>>({std::array<int, 6>({i, j, k, l, m, n})});
-                        }
-                        else {
-                            tmp = TermMaker<Matrix, SymmGroup>::generateThreeBodySymmetricIndex(i, j, k, l, m, n);
-                        }
-                        std::vector< OperatorType > opVector1, opVector2, opVector3, opVector4, opVector5, opVector6, opVector7, opVector8;
-                        value_type scalingFactor = (isQuantumComputingFormat) ? 1. : -1./6.;
-                        if (isQuantumComputingFormat) {
-                            // aaa
-                            opVector1 = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
-                                         OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
-                                         OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
-                            // aab
-                            opVector2 = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
-                                         OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
-                                         OperatorType::CreateBeta,  OperatorType::DestroyBeta};
-                            // abb
-                            opVector3 = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
-                                         OperatorType::CreateBeta,  OperatorType::DestroyBeta,
-                                         OperatorType::CreateBeta,  OperatorType::DestroyBeta};
-                            // aba
-                            opVector4 = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
-                                         OperatorType::CreateBeta,  OperatorType::DestroyBeta,
-                                         OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
-                            // baa
-                            opVector5 = {OperatorType::CreateBeta,  OperatorType::DestroyBeta,
-                                         OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
-                                         OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
-                            // bab
-                            opVector6 = {OperatorType::CreateBeta,  OperatorType::DestroyBeta,
-                                         OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
-                                         OperatorType::CreateBeta,  OperatorType::DestroyBeta};
-                            // bbb
-                            opVector7 = {OperatorType::CreateBeta,  OperatorType::DestroyBeta,
-                                         OperatorType::CreateBeta,  OperatorType::DestroyBeta,
-                                         OperatorType::CreateBeta,  OperatorType::DestroyBeta};
-                            // bba
-                            opVector8 = {OperatorType::CreateBeta,  OperatorType::DestroyBeta,
-                                         OperatorType::CreateBeta,  OperatorType::DestroyBeta,
-                                         OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
-                        }
-                        else {
-                            opVector1 = {OperatorType::CreateAlpha, OperatorType::CreateAlpha, OperatorType::CreateAlpha,
-                                         OperatorType::DestroyAlpha, OperatorType::DestroyAlpha, OperatorType::DestroyAlpha};
-                            opVector2 = {OperatorType::CreateAlpha, OperatorType::CreateAlpha, OperatorType::CreateBeta,
-                                         OperatorType::DestroyBeta, OperatorType::DestroyAlpha, OperatorType::DestroyAlpha};
-                            opVector3 = {OperatorType::CreateAlpha, OperatorType::CreateBeta, OperatorType::CreateBeta,
-                                         OperatorType::DestroyBeta, OperatorType::DestroyBeta, OperatorType::DestroyAlpha};
-                            opVector4 = {OperatorType::CreateAlpha, OperatorType::CreateBeta, OperatorType::CreateAlpha,
-                                         OperatorType::DestroyAlpha, OperatorType::DestroyBeta, OperatorType::DestroyAlpha};
-                            opVector5 = {OperatorType::CreateBeta, OperatorType::CreateAlpha, OperatorType::CreateAlpha,
-                                         OperatorType::DestroyAlpha, OperatorType::DestroyAlpha, OperatorType::DestroyBeta};
-                            opVector6 = {OperatorType::CreateBeta, OperatorType::CreateAlpha, OperatorType::CreateBeta,
-                                         OperatorType::DestroyBeta, OperatorType::DestroyAlpha, OperatorType::DestroyBeta};
-                            opVector7 = {OperatorType::CreateBeta, OperatorType::CreateBeta, OperatorType::CreateBeta,
-                                         OperatorType::DestroyBeta, OperatorType::DestroyBeta, OperatorType::DestroyBeta};
-                            opVector8 = {OperatorType::CreateBeta, OperatorType::CreateBeta, OperatorType::CreateAlpha,
-                                         OperatorType::DestroyAlpha, OperatorType::DestroyBeta, OperatorType::DestroyBeta};
-                        }
-                        std::vector< std::vector< OperatorType > > threeBodyElementaryOperators = { opVector1, opVector2, opVector3, opVector4,
-                                                                                                    opVector5, opVector6, opVector7, opVector8 };
-                        for (auto& iOp: threeBodyElementaryOperators) {
-                            for (auto& iTerm: tmp) {
-                                auto posVector = (isQuantumComputingFormat) ? std::vector< pos_t >{ iTerm[0], iTerm[1], iTerm[2], iTerm[3], iTerm[4], iTerm[5] }
-                                                                            : std::vector< pos_t >{ iTerm[0], iTerm[2], iTerm[4], iTerm[5], iTerm[3], iTerm[1] };
-                                if(!normal_ordered_integral) {
-                                        auto term = jw.getTerm(posVector, iOp, tag_handler, true, - matrixElement / 6.);
-                                        addTerm(mapOfOperators, term);
-                                } else {
-                                    if (!(posVector[0] == posVector[1] && iOp[0] == iOp[1]) &&
-                                        !(posVector[0] == posVector[2] && iOp[0] == iOp[2]) &&
-                                        !(posVector[1] == posVector[2] && iOp[1] == iOp[2]) &&
-                                        !(posVector[4] == posVector[5] && iOp[4] == iOp[5]) &&
-                                        !(posVector[3] == posVector[5] && iOp[3] == iOp[5]) &&
-                                        !(posVector[4] == posVector[3] && iOp[4] == iOp[3])) {
-                                            auto noOp(iOp);
-                                            double sign = applyNormalOrdering(posVector, noOp, hole_states);
-                                            auto term = jw.getTerm(posVector, noOp, tag_handler, true, -sign * matrixElement/ 6.);
-                                            addTerm(mapOfOperators, term);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-            } else {
-                throw std::runtime_error("Three-body term for non transcorrelated Hamiltonian not yet available");
+    }
+    // One-body contribution
+    else if (k == -1 && l == -1 && m == -1 && n == -1) {
+      std::vector<std::array<int, 2>> posVector =
+          isTranscorrelated_
+              ? std::vector<std::array<int, 2>>({std::array<int, 2>({i, j})})
+              : TermMaker<Matrix, SymmGroup>::generateTwofoldSymmetricIndex(
+                    i, j
+                );
+      for (auto &iOp : oneBodyElementaryOperators) {
+        for (auto &iTerm : posVector) {
+          std::vector<pos_t> localPosVector = {iTerm[0], iTerm[1]};
+          if (!normal_ordered_integral) {
+            auto term = jw.getTerm(
+                localPosVector, iOp, tag_handler, true, matrixElement
+            );
+            addTerm(mapOfOperators, term);
+          } else {
+            auto noOp(iOp);
+            double sign =
+                applyNormalOrdering(localPosVector, noOp, hole_states);
+            auto term = jw.getTerm(
+                localPosVector, noOp, tag_handler, true, sign * matrixElement
+            );
+            addTerm(mapOfOperators, term);
+          }
         }
       }
     }
 
-    for (const auto &idx: mapOfOperators) {
-        this->terms_.push_back(term_descriptor(idx.first, idx.second, true));
-    }
-    // Registers all Hermitian conjugate
-    /*
-    int originalSize = tag_handler->total_size();
-    for (int iTag = 0; iTag < originalSize; iTag++) {
-        auto fermType = (tag_handler->is_fermionic(iTag)) ? tag_detail::fermionic : tag_detail::bosonic;
-        auto resPairCC = tag_handler->checked_register(adjoint(tag_handler->get_op(iTag)), fermType);
-        if (resPairCC.first >= originalSize)
-            std::cout << "Registered new Hermitian Conjugate operator" << std::endl; 202
-        if (iTag < resPairCC.first) {
-            if (std::abs(resPairCC.second-1.) < 1.0E-16) {
-                tag_handler->hermitian_pair(iTag, resPairCC.first);
+    // Two-body contribution
+    else if (m == -1 && n == -1) {
+      std::vector<OperatorType> opVector1, opVector2, opVector3, opVector4;
+      if (isQuantumComputingFormat) {
+        opVector1 = {
+            OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
+            OperatorType::CreateAlpha, OperatorType::DestroyAlpha
+        };
+        opVector2 = {
+            OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
+            OperatorType::CreateBeta, OperatorType::DestroyBeta
+        };
+        opVector3 = {
+            OperatorType::CreateBeta, OperatorType::DestroyBeta,
+            OperatorType::CreateAlpha, OperatorType::DestroyAlpha
+        };
+        opVector4 = {
+            OperatorType::CreateBeta, OperatorType::DestroyBeta,
+            OperatorType::CreateBeta, OperatorType::DestroyBeta
+        };
+      } else {
+        opVector1 = {
+            OperatorType::CreateAlpha, OperatorType::CreateBeta,
+            OperatorType::DestroyBeta, OperatorType::DestroyAlpha
+        };
+        opVector2 = {
+            OperatorType::CreateBeta, OperatorType::CreateAlpha,
+            OperatorType::DestroyAlpha, OperatorType::DestroyBeta
+        };
+        opVector3 = {
+            OperatorType::CreateAlpha, OperatorType::CreateAlpha,
+            OperatorType::DestroyAlpha, OperatorType::DestroyAlpha
+        };
+        opVector4 = {
+            OperatorType::CreateBeta, OperatorType::CreateBeta,
+            OperatorType::DestroyBeta, OperatorType::DestroyBeta
+        };
+      }
+      std::vector<std::vector<OperatorType>> twoBodyElementaryOperators = {
+          opVector1, opVector2, opVector3, opVector4
+      };
+      std::vector<std::array<int, 4>> tmp;
+      if (isTranscorrelated_) {
+        tmp = TermMaker<Matrix, SymmGroup>::generateTwofoldSymmetricIndex(
+            i, j, k, l
+        );
+      } else {
+        tmp = TermMaker<Matrix, SymmGroup>::generateEightfoldSymmetricIndex(
+            i, j, k, l
+        );
+      }
+      //
+      for (auto &iOp : twoBodyElementaryOperators) {
+        for (auto &iTerm : tmp) {
+          auto posVector =
+              (isQuantumComputingFormat)
+                  ? std::vector<pos_t>{iTerm[0], iTerm[1], iTerm[2], iTerm[3]}
+                  : std::vector<pos_t>{iTerm[0], iTerm[2], iTerm[3], iTerm[1]};
+          if (!normal_ordered_integral) {
+            auto term = jw.getTerm(
+                posVector, iOp, tag_handler, true, matrixElement / 2.
+            );
+            if (term.size() > 0) {
+              addTerm(mapOfOperators, term);
             }
-            else {
-                auto tmp = tag_handler->register_op(adjoint(tag_handler->get_op(iTag)), fermType);
-                tag_handler->hermitian_pair(iTag, tmp);
+          } else {
+            if (!(posVector[0] == posVector[1] && iOp[0] == iOp[1]) &&
+                !(posVector[2] == posVector[3] && iOp[2] == iOp[3])) {
+              auto noOp(iOp);
+              double sign = applyNormalOrdering(posVector, noOp, hole_states);
+              auto term = jw.getTerm(
+                  posVector, noOp, tag_handler, true, sign * matrixElement / 2.
+              );
+              if (term.size() > 0) {
+                addTerm(mapOfOperators, term);
+              }
             }
+          }
         }
+      }
     }
-    */
-    maquis::cout << "The hamiltonian will contain " << this->terms_.size() << " terms" << std::endl;
+    // Three-body contribution
+    else {
+      if (isTranscorrelated_) {
+        // No normal ordering
+        if (parms["transcorrelated_3body"] == "yes") {
+          std::set<int> nonEqualIndices{i, j, k, l, m, n};
+          int couplingDegree = nonEqualIndices.size();
+          int maxDegree = parms["transcorrelated_3body_max_coupling"];
+          if (couplingDegree <= maxDegree) {
+            std::vector<std::array<int, 6>> tmp;
+            if (isQuantumComputingFormat) {
+              tmp = std::vector<std::array<int, 6>>(
+                  {std::array<int, 6>({i, j, k, l, m, n})}
+              );
+            } else {
+              tmp =
+                  TermMaker<Matrix, SymmGroup>::generateThreeBodySymmetricIndex(
+                      i, j, k, l, m, n
+                  );
+            }
+            std::vector<OperatorType> opVector1, opVector2, opVector3,
+                opVector4, opVector5, opVector6, opVector7, opVector8;
+            value_type scalingFactor =
+                (isQuantumComputingFormat) ? 1. : -1. / 6.;
+            if (isQuantumComputingFormat) {
+              // aaa
+              opVector1 = {
+                  OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
+                  OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
+                  OperatorType::CreateAlpha, OperatorType::DestroyAlpha
+              };
+              // aab
+              opVector2 = {
+                  OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
+                  OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
+                  OperatorType::CreateBeta,  OperatorType::DestroyBeta
+              };
+              // abb
+              opVector3 = {
+                  OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
+                  OperatorType::CreateBeta,  OperatorType::DestroyBeta,
+                  OperatorType::CreateBeta,  OperatorType::DestroyBeta
+              };
+              // aba
+              opVector4 = {
+                  OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
+                  OperatorType::CreateBeta,  OperatorType::DestroyBeta,
+                  OperatorType::CreateAlpha, OperatorType::DestroyAlpha
+              };
+              // baa
+              opVector5 = {
+                  OperatorType::CreateBeta,  OperatorType::DestroyBeta,
+                  OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
+                  OperatorType::CreateAlpha, OperatorType::DestroyAlpha
+              };
+              // bab
+              opVector6 = {
+                  OperatorType::CreateBeta,  OperatorType::DestroyBeta,
+                  OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
+                  OperatorType::CreateBeta,  OperatorType::DestroyBeta
+              };
+              // bbb
+              opVector7 = {OperatorType::CreateBeta, OperatorType::DestroyBeta,
+                           OperatorType::CreateBeta, OperatorType::DestroyBeta,
+                           OperatorType::CreateBeta, OperatorType::DestroyBeta};
+              // bba
+              opVector8 = {
+                  OperatorType::CreateBeta,  OperatorType::DestroyBeta,
+                  OperatorType::CreateBeta,  OperatorType::DestroyBeta,
+                  OperatorType::CreateAlpha, OperatorType::DestroyAlpha
+              };
+            } else {
+              opVector1 = {
+                  OperatorType::CreateAlpha,  OperatorType::CreateAlpha,
+                  OperatorType::CreateAlpha,  OperatorType::DestroyAlpha,
+                  OperatorType::DestroyAlpha, OperatorType::DestroyAlpha
+              };
+              opVector2 = {
+                  OperatorType::CreateAlpha,  OperatorType::CreateAlpha,
+                  OperatorType::CreateBeta,   OperatorType::DestroyBeta,
+                  OperatorType::DestroyAlpha, OperatorType::DestroyAlpha
+              };
+              opVector3 = {
+                  OperatorType::CreateAlpha, OperatorType::CreateBeta,
+                  OperatorType::CreateBeta,  OperatorType::DestroyBeta,
+                  OperatorType::DestroyBeta, OperatorType::DestroyAlpha
+              };
+              opVector4 = {
+                  OperatorType::CreateAlpha, OperatorType::CreateBeta,
+                  OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
+                  OperatorType::DestroyBeta, OperatorType::DestroyAlpha
+              };
+              opVector5 = {
+                  OperatorType::CreateBeta,   OperatorType::CreateAlpha,
+                  OperatorType::CreateAlpha,  OperatorType::DestroyAlpha,
+                  OperatorType::DestroyAlpha, OperatorType::DestroyBeta
+              };
+              opVector6 = {
+                  OperatorType::CreateBeta,   OperatorType::CreateAlpha,
+                  OperatorType::CreateBeta,   OperatorType::DestroyBeta,
+                  OperatorType::DestroyAlpha, OperatorType::DestroyBeta
+              };
+              opVector7 = {
+                  OperatorType::CreateBeta,  OperatorType::CreateBeta,
+                  OperatorType::CreateBeta,  OperatorType::DestroyBeta,
+                  OperatorType::DestroyBeta, OperatorType::DestroyBeta
+              };
+              opVector8 = {
+                  OperatorType::CreateBeta,  OperatorType::CreateBeta,
+                  OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
+                  OperatorType::DestroyBeta, OperatorType::DestroyBeta
+              };
+            }
+            std::vector<std::vector<OperatorType>>
+                threeBodyElementaryOperators = {opVector1, opVector2, opVector3,
+                                                opVector4, opVector5, opVector6,
+                                                opVector7, opVector8};
+            for (auto &iOp : threeBodyElementaryOperators) {
+              for (auto &iTerm : tmp) {
+                auto posVector =
+                    (isQuantumComputingFormat)
+                        ? std::vector<pos_t>{iTerm[0], iTerm[1], iTerm[2],
+                                             iTerm[3], iTerm[4], iTerm[5]}
+                        : std::vector<pos_t>{iTerm[0], iTerm[2], iTerm[4],
+                                             iTerm[5], iTerm[3], iTerm[1]};
+                if (!normal_ordered_integral) {
+                  auto term = jw.getTerm(
+                      posVector, iOp, tag_handler, true, -matrixElement / 6.
+                  );
+                  addTerm(mapOfOperators, term);
+                } else {
+                  if (!(posVector[0] == posVector[1] && iOp[0] == iOp[1]) &&
+                      !(posVector[0] == posVector[2] && iOp[0] == iOp[2]) &&
+                      !(posVector[1] == posVector[2] && iOp[1] == iOp[2]) &&
+                      !(posVector[4] == posVector[5] && iOp[4] == iOp[5]) &&
+                      !(posVector[3] == posVector[5] && iOp[3] == iOp[5]) &&
+                      !(posVector[4] == posVector[3] && iOp[4] == iOp[3])) {
+                    auto noOp(iOp);
+                    double sign =
+                        applyNormalOrdering(posVector, noOp, hole_states);
+                    auto term = jw.getTerm(
+                        posVector, noOp, tag_handler, true,
+                        -sign * matrixElement / 6.
+                    );
+                    addTerm(mapOfOperators, term);
+                  }
+                }
+              }
+            }
+          }
+        }
 
+      } else {
+        throw std::runtime_error(
+            "Three-body term for non transcorrelated Hamiltonian not yet "
+            "available"
+        );
+      }
+    }
+  }
+
+  for (const auto &idx : mapOfOperators) {
+    this->terms_.push_back(term_descriptor(idx.first, idx.second, true));
+  }
+  // Registers all Hermitian conjugate
+  /*
+  int originalSize = tag_handler->total_size();
+  for (int iTag = 0; iTag < originalSize; iTag++) {
+      auto fermType = (tag_handler->is_fermionic(iTag)) ? tag_detail::fermionic
+  : tag_detail::bosonic; auto resPairCC =
+  tag_handler->checked_register(adjoint(tag_handler->get_op(iTag)), fermType);
+      if (resPairCC.first >= originalSize)
+          std::cout << "Registered new Hermitian Conjugate operator" <<
+  std::endl; 202 if (iTag < resPairCC.first) { if (std::abs(resPairCC.second-1.)
+  < 1.0E-16) { tag_handler->hermitian_pair(iTag, resPairCC.first);
+          }
+          else {
+              auto tmp =
+  tag_handler->register_op(adjoint(tag_handler->get_op(iTag)), fermType);
+              tag_handler->hermitian_pair(iTag, tmp);
+          }
+      }
+  }
+  */
+  maquis::cout << "The hamiltonian will contain " << this->terms_.size()
+               << " terms" << std::endl;
 }
 
 /** @brief Create the Hamiltonian terms */
-template<class Matrix, class SymmGroup, Hamiltonian HamiltonianType, HamiltonianTransformation Transcorrelated>
-void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms_normal_ordered() {
-    // Generates the data required to form the Hamiltonian
-    auto jw = JordanWignerHandler<Matrix, SymmGroup>(lat, fill, create_up, create_down, destroy_up, destroy_down);
-    MapOfOperatorsType mapOfOperators;
-    chem::detail::ChemHelper<Matrix, SymmGroup, HamiltonianType, Transcorrelated> term_assistant(parms, lat, ident, fill, tag_handler);
-    auto &matrix_elements = term_assistant.getMatrixElements();
-    // Tmp objects.
-    std::vector<OperatorType> oneBodyVec1 = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
-    std::vector<OperatorType> oneBodyVec2 = {OperatorType::CreateBeta, OperatorType::DestroyBeta};
-    std::vector<std::vector<OperatorType> > oneBodyElementaryOperators = {oneBodyVec1, oneBodyVec2};
+template <
+    class Matrix, class SymmGroup, Hamiltonian HamiltonianType,
+    HamiltonianTransformation Transcorrelated>
+void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::
+    create_terms_normal_ordered() {
+  // Generates the data required to form the Hamiltonian
+  auto jw = JordanWignerHandler<Matrix, SymmGroup>(
+      lat, fill, create_up, create_down, destroy_up, destroy_down
+  );
+  MapOfOperatorsType mapOfOperators;
+  chem::detail::ChemHelper<Matrix, SymmGroup, HamiltonianType, Transcorrelated>
+      term_assistant(parms, lat, ident, fill, tag_handler);
+  auto &matrix_elements = term_assistant.getMatrixElements();
+  // Tmp objects.
+  std::vector<OperatorType> oneBodyVec1 = {
+      OperatorType::CreateAlpha, OperatorType::DestroyAlpha
+  };
+  std::vector<OperatorType> oneBodyVec2 = {
+      OperatorType::CreateBeta, OperatorType::DestroyBeta
+  };
+  std::vector<std::vector<OperatorType>> oneBodyElementaryOperators = {
+      oneBodyVec1, oneBodyVec2
+  };
 
-    std::vector<OperatorType> twoBodyVec1 = {OperatorType::CreateAlpha, OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::DestroyAlpha};
-    std::vector<OperatorType> twoBodyVec2 = {OperatorType::CreateBeta, OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::DestroyBeta};
-    std::vector<OperatorType> twoBodyVec3 = {OperatorType::CreateAlpha, OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::DestroyAlpha};
-    std::vector<OperatorType> twoBodyVec4 = {OperatorType::CreateBeta, OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::DestroyBeta};
-    std::vector<std::vector<OperatorType> > twoBodyElementaryOperators = {twoBodyVec1, twoBodyVec2, twoBodyVec3, twoBodyVec4};
+  std::vector<OperatorType> twoBodyVec1 = {
+      OperatorType::CreateAlpha, OperatorType::CreateBeta,
+      OperatorType::DestroyBeta, OperatorType::DestroyAlpha
+  };
+  std::vector<OperatorType> twoBodyVec2 = {
+      OperatorType::CreateBeta, OperatorType::CreateAlpha,
+      OperatorType::DestroyAlpha, OperatorType::DestroyBeta
+  };
+  std::vector<OperatorType> twoBodyVec3 = {
+      OperatorType::CreateAlpha, OperatorType::CreateAlpha,
+      OperatorType::DestroyAlpha, OperatorType::DestroyAlpha
+  };
+  std::vector<OperatorType> twoBodyVec4 = {
+      OperatorType::CreateBeta, OperatorType::CreateBeta,
+      OperatorType::DestroyBeta, OperatorType::DestroyBeta
+  };
+  std::vector<std::vector<OperatorType>> twoBodyElementaryOperators = {
+      twoBodyVec1, twoBodyVec2, twoBodyVec3, twoBodyVec4
+  };
 
-    std::vector<OperatorType> threeBodyVec1 = {OperatorType::CreateAlpha, OperatorType::CreateAlpha, OperatorType::CreateAlpha,
-                                               OperatorType::DestroyAlpha, OperatorType::DestroyAlpha, OperatorType::DestroyAlpha};
-    std::vector<OperatorType> threeBodyVec2 = {OperatorType::CreateAlpha, OperatorType::CreateAlpha, OperatorType::CreateBeta,
-                                               OperatorType::DestroyBeta, OperatorType::DestroyAlpha, OperatorType::DestroyAlpha};
-    std::vector<OperatorType> threeBodyVec3 = {OperatorType::CreateAlpha, OperatorType::CreateBeta, OperatorType::CreateBeta,
-                                               OperatorType::DestroyBeta, OperatorType::DestroyBeta, OperatorType::DestroyAlpha};
-    std::vector<OperatorType> threeBodyVec4 = {OperatorType::CreateAlpha, OperatorType::CreateBeta, OperatorType::CreateAlpha,
-                                               OperatorType::DestroyAlpha, OperatorType::DestroyBeta, OperatorType::DestroyAlpha};
-    std::vector<OperatorType> threeBodyVec5 = {OperatorType::CreateBeta, OperatorType::CreateAlpha, OperatorType::CreateAlpha,
-                                               OperatorType::DestroyAlpha, OperatorType::DestroyAlpha, OperatorType::DestroyBeta};
-    std::vector<OperatorType> threeBodyVec6 = {OperatorType::CreateBeta, OperatorType::CreateAlpha, OperatorType::CreateBeta,
-                                               OperatorType::DestroyBeta, OperatorType::DestroyAlpha, OperatorType::DestroyBeta};
-    std::vector<OperatorType> threeBodyVec7 = {OperatorType::CreateBeta, OperatorType::CreateBeta, OperatorType::CreateBeta,
-                                               OperatorType::DestroyBeta, OperatorType::DestroyBeta, OperatorType::DestroyBeta};
-    std::vector<OperatorType> threeBodyVec8 = {OperatorType::CreateBeta, OperatorType::CreateBeta, OperatorType::CreateAlpha,
-                                               OperatorType::DestroyAlpha, OperatorType::DestroyBeta,OperatorType::DestroyBeta};
-    std::vector<std::vector<OperatorType> > threeBodyElementaryOperators = {threeBodyVec1, threeBodyVec2, threeBodyVec3, threeBodyVec4,
-                                                                            threeBodyVec5, threeBodyVec6, threeBodyVec7, threeBodyVec8};
-    bool added_0b = false;
+  std::vector<OperatorType> threeBodyVec1 = {
+      OperatorType::CreateAlpha,  OperatorType::CreateAlpha,
+      OperatorType::CreateAlpha,  OperatorType::DestroyAlpha,
+      OperatorType::DestroyAlpha, OperatorType::DestroyAlpha
+  };
+  std::vector<OperatorType> threeBodyVec2 = {
+      OperatorType::CreateAlpha,  OperatorType::CreateAlpha,
+      OperatorType::CreateBeta,   OperatorType::DestroyBeta,
+      OperatorType::DestroyAlpha, OperatorType::DestroyAlpha
+  };
+  std::vector<OperatorType> threeBodyVec3 = {
+      OperatorType::CreateAlpha, OperatorType::CreateBeta,
+      OperatorType::CreateBeta,  OperatorType::DestroyBeta,
+      OperatorType::DestroyBeta, OperatorType::DestroyAlpha
+  };
+  std::vector<OperatorType> threeBodyVec4 = {
+      OperatorType::CreateAlpha, OperatorType::CreateBeta,
+      OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
+      OperatorType::DestroyBeta, OperatorType::DestroyAlpha
+  };
+  std::vector<OperatorType> threeBodyVec5 = {
+      OperatorType::CreateBeta,   OperatorType::CreateAlpha,
+      OperatorType::CreateAlpha,  OperatorType::DestroyAlpha,
+      OperatorType::DestroyAlpha, OperatorType::DestroyBeta
+  };
+  std::vector<OperatorType> threeBodyVec6 = {
+      OperatorType::CreateBeta,   OperatorType::CreateAlpha,
+      OperatorType::CreateBeta,   OperatorType::DestroyBeta,
+      OperatorType::DestroyAlpha, OperatorType::DestroyBeta
+  };
+  std::vector<OperatorType> threeBodyVec7 = {
+      OperatorType::CreateBeta,  OperatorType::CreateBeta,
+      OperatorType::CreateBeta,  OperatorType::DestroyBeta,
+      OperatorType::DestroyBeta, OperatorType::DestroyBeta
+  };
+  std::vector<OperatorType> threeBodyVec8 = {
+      OperatorType::CreateBeta,  OperatorType::CreateBeta,
+      OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
+      OperatorType::DestroyBeta, OperatorType::DestroyBeta
+  };
+  std::vector<std::vector<OperatorType>> threeBodyElementaryOperators = {
+      threeBodyVec1, threeBodyVec2, threeBodyVec3, threeBodyVec4,
+      threeBodyVec5, threeBodyVec6, threeBodyVec7, threeBodyVec8
+  };
+  bool added_0b = false;
 
-
-    // Find hole states for normal ordering
-    int n_electrons = parms["nelec"];
-    int n_hole_states = (n_electrons + 1) / 2;
-    std::unordered_set<std::size_t> hole_states;
-    std::vector<std::pair<std::size_t, typename chem::detail::ChemHelper<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::value_type>> diagonals;
-    for (std::size_t iElement = 0; iElement < matrix_elements.size(); iElement++) {
-        if (term_assistant.idx(iElement, 2) == -1 && term_assistant.idx(iElement, 3) == -1
-            && term_assistant.idx(iElement, 4) == -1 && term_assistant.idx(iElement, 5) == -1
-            && term_assistant.idx(iElement, 0) == term_assistant.idx(iElement, 1) && term_assistant.idx(iElement, 0) != -1) { // Check if diagonal
-            diagonals.push_back({iElement, matrix_elements[iElement]});
-        }
+  // Find hole states for normal ordering
+  int n_electrons = parms["nelec"];
+  int n_hole_states = (n_electrons + 1) / 2;
+  std::unordered_set<std::size_t> hole_states;
+  std::vector<std::pair<
+      std::size_t,
+      typename chem::detail::ChemHelper<
+          Matrix, SymmGroup, HamiltonianType, Transcorrelated>::value_type>>
+      diagonals;
+  for (std::size_t iElement = 0; iElement < matrix_elements.size();
+       iElement++) {
+    if (term_assistant.idx(iElement, 2) == -1 &&
+        term_assistant.idx(iElement, 3) == -1 &&
+        term_assistant.idx(iElement, 4) == -1 &&
+        term_assistant.idx(iElement, 5) == -1 &&
+        term_assistant.idx(iElement, 0) == term_assistant.idx(iElement, 1) &&
+        term_assistant.idx(iElement, 0) != -1) {  // Check if diagonal
+      diagonals.push_back({iElement, matrix_elements[iElement]});
     }
-    std::sort(diagonals.begin(), diagonals.end(), 
-        [](auto a, auto b) {
-            return a.second < b.second;
-        }
-    );
-    for (auto it = diagonals.begin(); it < diagonals.begin() + n_hole_states; ++it) {
-        hole_states.insert(term_assistant.idx(it->first, 0));
+  }
+  std::sort(diagonals.begin(), diagonals.end(), [](auto a, auto b) {
+    return a.second < b.second;
+  });
+  for (auto it = diagonals.begin(); it < diagonals.begin() + n_hole_states;
+       ++it) {
+    hole_states.insert(term_assistant.idx(it->first, 0));
+  }
+
+  std::cout << "Normal ordering according to hole states ";
+  for (auto h : hole_states) {
+    std::cout << h << ", ";
+  }
+  std::cout << std::endl;
+
+  // Normal ordering helper that generates indices for normal ordering
+  NormalOrderingHelper<Matrix, SymmGroup, HamiltonianType, Transcorrelated>
+      no_helper(term_assistant);
+
+  for (std::size_t iElement = 0; iElement < matrix_elements.size();
+       iElement++) {
+    int i = term_assistant.idx(iElement, 0);
+    int j = term_assistant.idx(iElement, 1);
+    int k = term_assistant.idx(iElement, 2);
+    int l = term_assistant.idx(iElement, 3);
+    int m = term_assistant.idx(iElement, 4);
+    int n = term_assistant.idx(iElement, 5);
+    auto matrixElement = static_cast<value_type>(matrix_elements[iElement]);
+
+    // Core electrons energy
+    if (i == -1 && j == -1 && k == -1 && l == -1 && m == -1 && n == -1) {
+      term_descriptor term;
+      term.coeff = matrixElement;
+      term.push_back(std::make_pair(
+          0, ident[lat.get_prop<typename SymmGroup::subcharge>("type", 0)]
+      ));
+
+      // NO zero body contribution
+      term.coeff += no_helper.getNoZeroBodyContribution(
+          term_assistant, matrix_elements.size(), parms["L"], hole_states
+      );
+
+      this->terms_.push_back(term);
+
+      added_0b = true;
     }
-
-    std::cout << "Normal ordering according to hole states ";
-    for(auto h : hole_states) {
-        std::cout << h << ", ";
+    // One-body contribution
+    else if (k == -1 && l == -1 && m == -1 && n == -1) {
+      std::vector<std::array<int, 2>> posVector =
+          std::vector<std::array<int, 2>>({std::array<int, 2>({i, j})});
+      for (auto &iOp : oneBodyElementaryOperators) {
+        for (auto &iTerm : posVector) {
+          std::vector<pos_t> localPosVector = {iTerm[0], iTerm[1]};
+          auto noOp(iOp);
+          double sign = applyNormalOrdering(localPosVector, noOp, hole_states);
+          auto term = jw.getTerm(
+              localPosVector, noOp, tag_handler, true, sign * matrixElement
+          );
+          addTerm(mapOfOperators, term);
+        }
+      }
     }
-    std::cout << std::endl;
-
-    // Normal ordering helper that generates indices for normal ordering
-    NormalOrderingHelper<Matrix, SymmGroup, HamiltonianType, Transcorrelated> no_helper(term_assistant);
-
-    for (std::size_t iElement = 0; iElement < matrix_elements.size(); iElement++) {
-        int i = term_assistant.idx(iElement, 0);
-        int j = term_assistant.idx(iElement, 1);
-        int k = term_assistant.idx(iElement, 2);
-        int l = term_assistant.idx(iElement, 3);
-        int m = term_assistant.idx(iElement, 4);
-        int n = term_assistant.idx(iElement, 5);
-        auto matrixElement = static_cast<value_type>(matrix_elements[iElement]);
-
-        // Core electrons energy
-        if (i == -1 && j == -1 && k == -1 && l == -1 && m == -1 && n == -1) {
-            term_descriptor term;
-            term.coeff = matrixElement;
-            term.push_back(std::make_pair(0, ident[lat.get_prop<typename SymmGroup::subcharge>("type", 0)]));
-
-            // NO zero body contribution
-            term.coeff += no_helper.getNoZeroBodyContribution(term_assistant, matrix_elements.size(), parms["L"], hole_states);
-
-            this->terms_.push_back(term);
-
-            added_0b = true;
-        }
-            // One-body contribution
-        else if (k == -1 && l == -1 && m == -1 && n == -1) {
-            std::vector<std::array<int, 2> > posVector = std::vector<std::array<int, 2>>({std::array<int, 2>({i, j})});
-            for (auto &iOp: oneBodyElementaryOperators) {
-                for (auto &iTerm: posVector) {
-                    std::vector<pos_t> localPosVector = {iTerm[0], iTerm[1]};
-                    auto noOp(iOp);
-                    double sign = applyNormalOrdering(localPosVector, noOp, hole_states);
-                    auto term = jw.getTerm(localPosVector, noOp, tag_handler, true, sign * matrixElement);
-                    addTerm(mapOfOperators, term);
-                }
-            }
-        }
-            // Normal ordered 2B contribution of 2B operator
-        else if (m == -1 && n == -1) {
-            std::vector<std::array<int, 4> > tmp = TermMaker<Matrix, SymmGroup>::generateTwofoldSymmetricIndex(i, j, k, l);
-            for (auto &iOp: twoBodyElementaryOperators) {
-                for (auto &iTerm: tmp) {
-                    std::vector<pos_t> posVector = {iTerm[0], iTerm[2], iTerm[3], iTerm[1]};
-                    if (!(posVector[0] == posVector[1] && iOp[0] == iOp[1]) &&
-                        !(posVector[2] == posVector[3] && iOp[2] == iOp[3])) {
-                        auto noOp(iOp);
-                        double sign = applyNormalOrdering(posVector, noOp, hole_states);
-                        auto term = jw.getTerm(posVector, noOp, tag_handler, true, sign * matrixElement / 2.);
-                        addTerm(mapOfOperators, term);
-                    }
-                }
-            }
-        } else {
-            // Normal ordered 3B contribution of 3B operator
-            if (parms["transcorrelated_3body"] == "yes") {
-                std::vector<std::array<int, 6> > tmp = TermMaker<Matrix, SymmGroup>::generateThreeBodySymmetricIndex(i, j, k, l, m, n);
-
-                for (auto &iOp: threeBodyElementaryOperators) {
-                    for (auto &iTerm: tmp) {
-                        std::vector<pos_t> posVector = {iTerm[0], iTerm[2], iTerm[4], iTerm[5], iTerm[3], iTerm[1]};
-                        if (!(posVector[0] == posVector[1] && iOp[0] == iOp[1]) &&
-                            !(posVector[0] == posVector[2] && iOp[0] == iOp[2]) &&
-                            !(posVector[1] == posVector[2] && iOp[1] == iOp[2]) &&
-                            !(posVector[4] == posVector[5] && iOp[4] == iOp[5]) &&
-                            !(posVector[3] == posVector[5] && iOp[3] == iOp[5]) &&
-                            !(posVector[4] == posVector[3] && iOp[4] == iOp[3])) {
-                            auto noOp(iOp);
-                            double sign = applyNormalOrdering(posVector, noOp, hole_states);
-                            auto term = jw.getTerm(posVector, noOp, tag_handler, true, -sign * matrixElement / 6.);
-                            addTerm(mapOfOperators, term);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // Normal ordered 2B contribution
-    std::unordered_map<std::tuple<int, int, int, int>, double, intTupleHash> twoBodyIndices;
-    twoBodyIndices = no_helper.getNoTwoBodyCoefficients(term_assistant, matrix_elements.size(), parms["L"], hole_states);
-
-    int cnt = 0;
-    for (auto &iOp: twoBodyElementaryOperators) {
-        for (auto p: twoBodyIndices) {
-            std::vector<int> posVector = {std::get<0>(p.first), std::get<2>(p.first), std::get<3>(p.first), std::get<1>(p.first)};
-            if (!(posVector[0] == posVector[1] && iOp[0] == iOp[1]) &&
-                !(posVector[2] == posVector[3] && iOp[2] == iOp[3])) {
-                if(cnt < 20) {
-                  std::cout << "Normal ordered " << posVector[0] << " " << posVector[1] <<" " << posVector[2] << " " << posVector[3] << ": " << std::setprecision(16) << p.second << std::endl;
-                }
-                ++cnt;
-                auto noOp(iOp);
-                double sign = applyNormalOrdering(posVector, noOp, hole_states);
-                auto term = jw.getTerm(posVector, noOp, tag_handler, true, sign * p.second);
-                addTerm(mapOfOperators, term);
-            }
-        }
-    }
-
-    // Normal ordered 1B contribution
-    cnt = 0;
-    std::unordered_map<std::pair<int, int>, double, intPairHash> oneBodyIndices;
-    oneBodyIndices = no_helper.getNoOneBodyCoefficients(term_assistant, matrix_elements.size(), parms["L"], hole_states);
-    for (auto &iOp: oneBodyElementaryOperators) {
-        for (auto p: oneBodyIndices) {
-            std::vector<int> posVector = {p.first.first, p.first.second};
+    // Normal ordered 2B contribution of 2B operator
+    else if (m == -1 && n == -1) {
+      std::vector<std::array<int, 4>> tmp =
+          TermMaker<Matrix, SymmGroup>::generateTwofoldSymmetricIndex(
+              i, j, k, l
+          );
+      for (auto &iOp : twoBodyElementaryOperators) {
+        for (auto &iTerm : tmp) {
+          std::vector<pos_t> posVector = {
+              iTerm[0], iTerm[2], iTerm[3], iTerm[1]
+          };
+          if (!(posVector[0] == posVector[1] && iOp[0] == iOp[1]) &&
+              !(posVector[2] == posVector[3] && iOp[2] == iOp[3])) {
             auto noOp(iOp);
-            if(cnt < 20) {
-                std::cout << "Normal ordered " << posVector[0] << " " << posVector[1] << ": " << std::setprecision(16) <<  p.second << std::endl;
-            }
-            ++cnt;
             double sign = applyNormalOrdering(posVector, noOp, hole_states);
-            auto term = jw.getTerm(posVector, noOp, tag_handler, true, sign * p.second);
-            //std::cout << term << '\t';
+            auto term = jw.getTerm(
+                posVector, noOp, tag_handler, true, sign * matrixElement / 2.
+            );
             addTerm(mapOfOperators, term);
+          }
         }
-    }
+      }
+    } else {
+      // Normal ordered 3B contribution of 3B operator
+      if (parms["transcorrelated_3body"] == "yes") {
+        std::vector<std::array<int, 6>> tmp =
+            TermMaker<Matrix, SymmGroup>::generateThreeBodySymmetricIndex(
+                i, j, k, l, m, n
+            );
 
-    // Normal ordered 0B contribution
-    if (!added_0b) {
-        term_descriptor term;
-        term.push_back(std::make_pair(0, ident[lat.get_prop<typename SymmGroup::subcharge>("type", 0)]));
-        term.coeff = no_helper.getNoZeroBodyContribution(term_assistant, matrix_elements.size(), parms["L"], hole_states);
-        std::cout << "Adding 0B " << std::setprecision(16) << term.coeff << std::endl;
-        this->terms_.push_back(term);
+        for (auto &iOp : threeBodyElementaryOperators) {
+          for (auto &iTerm : tmp) {
+            std::vector<pos_t> posVector = {iTerm[0], iTerm[2], iTerm[4],
+                                            iTerm[5], iTerm[3], iTerm[1]};
+            if (!(posVector[0] == posVector[1] && iOp[0] == iOp[1]) &&
+                !(posVector[0] == posVector[2] && iOp[0] == iOp[2]) &&
+                !(posVector[1] == posVector[2] && iOp[1] == iOp[2]) &&
+                !(posVector[4] == posVector[5] && iOp[4] == iOp[5]) &&
+                !(posVector[3] == posVector[5] && iOp[3] == iOp[5]) &&
+                !(posVector[4] == posVector[3] && iOp[4] == iOp[3])) {
+              auto noOp(iOp);
+              double sign = applyNormalOrdering(posVector, noOp, hole_states);
+              auto term = jw.getTerm(
+                  posVector, noOp, tag_handler, true, -sign * matrixElement / 6.
+              );
+              addTerm(mapOfOperators, term);
+            }
+          }
+        }
+      }
     }
+  }
 
-    for (const auto &idx: mapOfOperators) {
-        this->terms_.push_back(term_descriptor(idx.first, idx.second, true));
+  // Normal ordered 2B contribution
+  std::unordered_map<std::tuple<int, int, int, int>, double, intTupleHash>
+      twoBodyIndices;
+  twoBodyIndices = no_helper.getNoTwoBodyCoefficients(
+      term_assistant, matrix_elements.size(), parms["L"], hole_states
+  );
+
+  int cnt = 0;
+  for (auto &iOp : twoBodyElementaryOperators) {
+    for (auto p : twoBodyIndices) {
+      std::vector<int> posVector = {
+          std::get<0>(p.first), std::get<2>(p.first), std::get<3>(p.first),
+          std::get<1>(p.first)
+      };
+      if (!(posVector[0] == posVector[1] && iOp[0] == iOp[1]) &&
+          !(posVector[2] == posVector[3] && iOp[2] == iOp[3])) {
+        if (cnt < 20) {
+          std::cout << "Normal ordered " << posVector[0] << " " << posVector[1]
+                    << " " << posVector[2] << " " << posVector[3] << ": "
+                    << std::setprecision(16) << p.second << std::endl;
+        }
+        ++cnt;
+        auto noOp(iOp);
+        double sign = applyNormalOrdering(posVector, noOp, hole_states);
+        auto term =
+            jw.getTerm(posVector, noOp, tag_handler, true, sign * p.second);
+        addTerm(mapOfOperators, term);
+      }
     }
+  }
 
-    maquis::cout << "The hamiltonian will contain " << this->terms_.size() << " terms" << std::endl;
+  // Normal ordered 1B contribution
+  cnt = 0;
+  std::unordered_map<std::pair<int, int>, double, intPairHash> oneBodyIndices;
+  oneBodyIndices = no_helper.getNoOneBodyCoefficients(
+      term_assistant, matrix_elements.size(), parms["L"], hole_states
+  );
+  for (auto &iOp : oneBodyElementaryOperators) {
+    for (auto p : oneBodyIndices) {
+      std::vector<int> posVector = {p.first.first, p.first.second};
+      auto noOp(iOp);
+      if (cnt < 20) {
+        std::cout << "Normal ordered " << posVector[0] << " " << posVector[1]
+                  << ": " << std::setprecision(16) << p.second << std::endl;
+      }
+      ++cnt;
+      double sign = applyNormalOrdering(posVector, noOp, hole_states);
+      auto term =
+          jw.getTerm(posVector, noOp, tag_handler, true, sign * p.second);
+      // std::cout << term << '\t';
+      addTerm(mapOfOperators, term);
+    }
+  }
+
+  // Normal ordered 0B contribution
+  if (!added_0b) {
+    term_descriptor term;
+    term.push_back(std::make_pair(
+        0, ident[lat.get_prop<typename SymmGroup::subcharge>("type", 0)]
+    ));
+    term.coeff = no_helper.getNoZeroBodyContribution(
+        term_assistant, matrix_elements.size(), parms["L"], hole_states
+    );
+    std::cout << "Adding 0B " << std::setprecision(16) << term.coeff
+              << std::endl;
+    this->terms_.push_back(term);
+  }
+
+  for (const auto &idx : mapOfOperators) {
+    this->terms_.push_back(term_descriptor(idx.first, idx.second, true));
+  }
+
+  maquis::cout << "The hamiltonian will contain " << this->terms_.size()
+               << " terms" << std::endl;
 }
 
 /** @brief Adds an operator to the underyling operator map */
-template<class Matrix, class SymmGroup, Hamiltonian HamiltonianType, HamiltonianTransformation Transcorrelated>
-void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::addTerm(MapOfOperatorsType &mapOfOperators, const term_descriptor &term) const {
-    //
-    if (term.size() != 0) {
-        if (mapOfOperators.find(term.getBase()) == mapOfOperators.end()) {
-            mapOfOperators.insert({term.getBase(), term.coeff });
-        }
-        else {
-            mapOfOperators[term.getBase()] += term.coeff;
-        }
+template <
+    class Matrix, class SymmGroup, Hamiltonian HamiltonianType,
+    HamiltonianTransformation Transcorrelated>
+void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::addTerm(
+    MapOfOperatorsType &mapOfOperators, const term_descriptor &term
+) const {
+  //
+  if (term.size() != 0) {
+    if (mapOfOperators.find(term.getBase()) == mapOfOperators.end()) {
+      mapOfOperators.insert({term.getBase(), term.coeff});
+    } else {
+      mapOfOperators[term.getBase()] += term.coeff;
+    }
   }
 }
 

@@ -258,8 +258,8 @@ void lanczos<MATRIX, VS>::eigenvectors(
           if (ma > maMax) maMax = ma;
           lambda = eval[nth];
         }  // end of if(ma != 0), inner.
-      }    // end of else{//if error is small enough.
-    }      // end of if(ma != 0).
+      }  // end of else{//if error is small enough.
+    }  // end of if(ma != 0).
 
     eigenval_a.push_back(lambda);  // for Info object.
     Ma.push_back(ma);              // for Info object.
@@ -309,7 +309,7 @@ void lanczos<MATRIX, VS>::eigenvectors(
       eigenvectors_itr++;
       Tvectors_itr++;
     }  // end of while loop.
-  }    // end of for(int j = 2; j < maMax; j++).
+  }  // end of for(int j = 2; j < maMax; j++).
      // end of basis transformation.
 
   // copying to the output iterator & residuum calculation starts:
@@ -369,7 +369,7 @@ void lanczos<MATRIX, VS>::find_m1m2(IN in_eigvals_start, IN in_eigvals_end) {
       M1_itr++;
       M2_itr++;
     }  // end of inner while loop.
-  }    // end of outer while loop.
+  }  // end of outer while loop.
 }  // end of function find_m1m2.
 
 //------------------------------------------------------

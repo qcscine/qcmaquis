@@ -445,25 +445,28 @@ struct multigrid {
                   ),
                   std::make_pair(out_right_c, out_right_offset + beta->second)
                 ) +=
-                    mps_large[2 * p].data(
-                    )(std::make_pair(
-                          in1_left_c,
-                          in1_left_offset +
-                              s1->second *
-                                  alpha_basis.size_of_block(alpha->first) +
-                              alpha->second
-                      ),
-                      std::make_pair(in1_right_c, in1_right_offset + b->second)
+                    mps_large[2 * p].data()(
+                        std::make_pair(
+                            in1_left_c,
+                            in1_left_offset +
+                                s1->second *
+                                    alpha_basis.size_of_block(alpha->first) +
+                                alpha->second
+                        ),
+                        std::make_pair(
+                            in1_right_c, in1_right_offset + b->second
+                        )
                     ) *
-                    mps_large[2 * p + 1].data(
-                    )(std::make_pair(in2_left_c, in2_left_offset + b->second),
-                      std::make_pair(
-                          in2_right_c,
-                          in2_right_offset +
-                              s2->second *
-                                  beta_basis.size_of_block(beta->first) +
-                              beta->second
-                      ));
+                    mps_large[2 * p + 1].data()(
+                        std::make_pair(in2_left_c, in2_left_offset + b->second),
+                        std::make_pair(
+                            in2_right_c,
+                            in2_right_offset +
+                                s2->second *
+                                    beta_basis.size_of_block(beta->first) +
+                                beta->second
+                        )
+                    );
               }
 
       mps_small[p] = MPSTensor<Matrix, SymmGroup>(
@@ -555,14 +558,15 @@ struct multigrid {
                       s2->second * beta_basis.size_of_block(beta->first) +
                       beta->second
               )) =
-                mps_small.data(
-                )(std::make_pair(
-                      in_left_c,
-                      in_left_offset +
-                          s.second * alpha_basis.size_of_block(alpha->first) +
-                          alpha->second
-                  ),
-                  std::make_pair(in_right_c, in_right_offset + beta->second));
+                mps_small.data()(
+                    std::make_pair(
+                        in_left_c,
+                        in_left_offset +
+                            s.second * alpha_basis.size_of_block(alpha->first) +
+                            alpha->second
+                    ),
+                    std::make_pair(in_right_c, in_right_offset + beta->second)
+                );
           }
 
     block_matrix<Matrix, SymmGroup> V, left, right;

@@ -106,7 +106,7 @@ class transpose_view {
   //        const_element_iterator;                       // Const version of
   //        element_iterator (REALLY SLOW! USE row_-/column_iterators INSTEAD!)
 
-  explicit transpose_view(Matrix const& m) : m_(m){};
+  explicit transpose_view(Matrix const& m) : m_(m) {};
 
   operator Matrix() const { return transpose_helper<Matrix>::apply(*this); }
 

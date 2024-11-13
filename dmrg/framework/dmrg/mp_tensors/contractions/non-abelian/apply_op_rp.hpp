@@ -119,9 +119,9 @@ void lbtm_kernel_rp(
               r_size, w_block, couplings
           );
         }  // wblock
-      }    // lblock
-    }      // op_index
-  }        // b1
+      }  // lblock
+    }  // op_index
+  }  // b1
 }
 
 }  // namespace SU2

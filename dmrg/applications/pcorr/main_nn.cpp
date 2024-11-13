@@ -206,8 +206,8 @@ void measure_correlation(
 
     std::copy(dct.begin(), dct.end(), std::back_inserter(dc));
 
-    //Reordering is buggy
-    // std::vector<std::string> lbt = label_strings(lattice, numeric_labels);
+    // Reordering is buggy
+    //  std::vector<std::string> lbt = label_strings(lattice, numeric_labels);
     std::vector<std::string> lbt = label_strings(numeric_labels);
     std::copy(lbt.begin(), lbt.end(), std::back_inserter(labels));
     tim.end();
@@ -288,7 +288,8 @@ int main(int argc, char** argv) {
               bool is_ferm = tag_handler->is_fermionic(tag);
               if (kind == uknown)
                 kind = is_ferm ? fermionic : bosonic;
-              else if ((is_ferm && kind == bosonic) || (!is_ferm && kind == fermionic))
+              else if ((is_ferm && kind == bosonic) ||
+                       (!is_ferm && kind == fermionic))
                 throw std::runtime_error(
                     "Model is inconsitent. On some site the operator " + *it2 +
                     "fermionic, on others is bosonic."

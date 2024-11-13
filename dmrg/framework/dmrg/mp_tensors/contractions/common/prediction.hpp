@@ -75,8 +75,9 @@ static block_matrix<Matrix, SymmGroup> getZeroSiteTensorL2R(
   U.make_left_paired();
   block_matrix<Matrix, SymmGroup> tmp;
   // The factor to be included in the following site is SU^T = U^TM
-  typename Gemm::gemm(
-  )(transpose(conjugate(U.data())), mpsCurrentSite.data(), tmp);
+  typename Gemm::gemm()(
+      transpose(conjugate(U.data())), mpsCurrentSite.data(), tmp
+  );
   return tmp;
 }
 
@@ -153,8 +154,9 @@ static block_matrix<Matrix, SymmGroup> getZeroSiteTensorR2L(
   mpsCurrentSite.make_right_paired();
   U.make_right_paired();
   block_matrix<Matrix, SymmGroup> tmp;
-  typename Gemm::gemm(
-  )(mpsCurrentSite.data(), transpose(conjugate(U.data())), tmp);
+  typename Gemm::gemm()(
+      mpsCurrentSite.data(), transpose(conjugate(U.data())), tmp
+  );
   return tmp;
 }
 

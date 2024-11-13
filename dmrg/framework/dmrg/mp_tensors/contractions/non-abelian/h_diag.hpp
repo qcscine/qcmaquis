@@ -124,10 +124,10 @@ block_matrix<Matrix, SymmGroup> lbtm_diag_kernel(
               }
             }
           }  // wblock
-        }    // phys_i s
-      }      // ket block
-    }        // op_index
-  }          // b1
+        }  // phys_i s
+      }  // ket block
+    }  // op_index
+  }  // b1
   return ret;
 }
 

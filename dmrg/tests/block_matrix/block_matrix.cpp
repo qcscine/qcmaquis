@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(BlockMatrixCheckOMP) {
 #pragma omp critical
     { ba.insert_block(m, chargeL, chargeR); }
   }
-  //#pragma omp critical
+  // #pragma omp critical
   BOOST_CHECK_EQUAL(ba.n_blocks(), 100);
 }
 #endif

@@ -339,11 +339,11 @@ class DualIndex {
 
   template <class Archive>
   void load(Archive& ar, const unsigned int version) {
-    ar& data_;
+    ar & data_;
   }
   template <class Archive>
   void save(Archive& ar, const unsigned int version) const {
-    ar& data_;
+    ar & data_;
   }
 
   BOOST_SERIALIZATION_SPLIT_MEMBER()

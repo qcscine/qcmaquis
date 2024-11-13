@@ -383,7 +383,10 @@ class cast_type<
     if (base_type::has_u == v.has_u) return false;
     if (base_type::has_u)
       return v == *this;
-    else if (base_type::t.second.size() == 3 && base_type::t.second[0] == v.u.size() && base_type::t.second[1] == v.u[0].size() && base_type::t.second[2] == v.u[0][0].size()) {
+    else if (base_type::t.second.size() == 3 &&
+             base_type::t.second[0] == v.u.size() &&
+             base_type::t.second[1] == v.u[0].size() &&
+             base_type::t.second[2] == v.u[0][0].size()) {
       for (std::size_t i = 0; i < v.u.size(); ++i)
         for (std::size_t j = 0; j < v.u[i].size(); ++j)
           for (std::size_t k = 0; k < v.u[i][j].size(); ++k)

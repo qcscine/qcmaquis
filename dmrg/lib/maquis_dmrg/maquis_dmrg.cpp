@@ -39,7 +39,7 @@ struct DMRGInterface<ScalarType, HamiltonianType>::Impl {
   using sim_ptr = typename simulation_traits<ScalarType>::shared_ptr;
   sim_ptr sim;
 
-  Impl(sim_ptr sim_) : sim(std::move(sim_)){};
+  Impl(sim_ptr sim_) : sim(std::move(sim_)) {};
   ~Impl() = default;
 };
 
@@ -186,11 +186,14 @@ void DMRGInterface<ScalarType, HamiltonianType>::update_integrals(
   impl_->sim->update_integrals(fileName);
 }
 template <typename ScalarType, Hamiltonian HamiltonianType>
-std::string DMRGInterface<ScalarType, HamiltonianType>::fiedler_order(int n_states, const std::vector<std::vector<int>>& hf_occupations, std::string checkpoint_name)
-{
+std::string DMRGInterface<ScalarType, HamiltonianType>::fiedler_order(
+    int n_states, const std::vector<std::vector<int>>& hf_occupations,
+    std::string checkpoint_name
+) {
   results_map_type tmp_measurements = measurements_;
   DmrgParameters tmp_parms = parms;
-  std::string ordering = impl_->sim->get_fiedler_order(n_states, hf_occupations, checkpoint_name);
+  std::string ordering =
+      impl_->sim->get_fiedler_order(n_states, hf_occupations, checkpoint_name);
   measurements_ = tmp_measurements;
   parms = tmp_parms;
   return ordering;

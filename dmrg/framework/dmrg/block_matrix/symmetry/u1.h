@@ -37,7 +37,7 @@ class U1 {
 
 template <class Archive>
 inline void serialize(Archive &ar, U1::charge &c, const unsigned int version) {
-  ar &c;
+  ar & c;
 }
 
 #endif

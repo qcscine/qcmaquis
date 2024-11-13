@@ -66,7 +66,7 @@ class SingleSiteTimeEvolution
   )
       : base(
             mps, mpo, parms, stop_callback, to_site(mps.length(), initial_site_)
-        ){};
+        ) {};
 
   /**
    * @brief Convert a number in [0,2L] to the actual site in [0,L] by mapping
@@ -149,13 +149,11 @@ class SingleSiteTimeEvolution
       double alpha, time_step_effective;
       int ngs = parms_.template get<int>("ngrowsweeps"),
           nms = parms_.template get<int>("nmainsweeps");
-      if (sweep < ngs){
+      if (sweep < ngs) {
         alpha = parms_.template get<double>("alpha_initial");
-      }
-      else if (sweep < ngs + nms){
+      } else if (sweep < ngs + nms) {
         alpha = parms_.template get<double>("alpha_main");
-      }
-      else{
+      } else {
         alpha = parms_.template get<double>("alpha_final");
       }
       //
@@ -163,7 +161,7 @@ class SingleSiteTimeEvolution
         time_step_effective = parms_["time_step_larger"];
       else
         time_step_effective = time_step_;
-      perturber_->update_alpha(alpha); //not used in twosite time evolver
+      perturber_->update_alpha(alpha);  // not used in twosite time evolver
       // Update of the MPS
       double cutoff = this->get_cutoff(sweep);
       int Mmax = this->get_Mmax(sweep);

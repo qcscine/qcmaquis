@@ -105,7 +105,8 @@ class FermiHubbardRealTwoU1 : public model_impl<Matrix, TwoU1> {
     if (!parms.is_set("tx_FermiHubbard") && !parms.is_set("tx_FermiHubbard")) {
       tx = parms["t_FermiHubbard"].as<value_type>();
       ty = parms["t_FermiHubbard"].as<value_type>();
-    } else if (parms.is_set("tx_FermiHubbard") && parms.is_set("tx_FermiHubbard")) {
+    } else if (parms.is_set("tx_FermiHubbard") &&
+               parms.is_set("tx_FermiHubbard")) {
       tx = parms["tx_FermiHubbard"].as<value_type>();
       ty = parms["ty_FermiHubbard"].as<value_type>();
     } else {
@@ -127,7 +128,8 @@ class FermiHubbardRealTwoU1 : public model_impl<Matrix, TwoU1> {
     for (int iSite = 0; iSite < height * width; iSite++) {
       std::vector<OperatorType> opVector = {
           OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
-          OperatorType::CreateBeta, OperatorType::DestroyBeta};
+          OperatorType::CreateBeta, OperatorType::DestroyBeta
+      };
       std::vector<pos_t> positions = {iSite, iSite, iSite, iSite};
       this->terms_.push_back(
           jw.getTerm(positions, opVector, tag_handler, true, U)
@@ -160,7 +162,8 @@ class FermiHubbardRealTwoU1 : public model_impl<Matrix, TwoU1> {
       value_type coeffx = -tx;
       value_type coeffy = -ty;
       std::vector<OperatorType> opVector = {
-          OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
+          OperatorType::CreateAlpha, OperatorType::DestroyAlpha
+      };
       this->terms_.push_back(
           jw.getTerm(posVectorLeft, opVector, tag_handler, true, coeffx)
       );
@@ -213,37 +216,42 @@ class FermiHubbardRealTwoU1 : public model_impl<Matrix, TwoU1> {
                                    iSite + 1, iSite, iSite};
         } else {
           posVectorDownTC_1 = {
-              iSite, iSite - height + 1, iSite - height + 1,
-              iSite - height + 1};
+              iSite, iSite - height + 1, iSite - height + 1, iSite - height + 1
+          };
           posVectorDownHermTC_1 = {iSite - height + 1, iSite, iSite, iSite};
           posVectorDownTC_2 = {iSite, iSite - height + 1, iSite, iSite};
           posVectorDownHermTC_2 = {
-              iSite - height + 1, iSite, iSite - height + 1,
-              iSite - height + 1};
+              iSite - height + 1, iSite, iSite - height + 1, iSite - height + 1
+          };
           posVectorDownTC_3 = {iSite, iSite - height + 1, iSite,
                                iSite, iSite - height + 1, iSite - height + 1};
           posVectorDownHermTC_3 = {
               iSite - height + 1, iSite, iSite - height + 1,
-              iSite - height + 1, iSite, iSite};
+              iSite - height + 1, iSite, iSite
+          };
         }
         if (hasRight) {
           posVectorLeftTC_1 = {
-              iSite, iSite + height, iSite + height, iSite + height};
+              iSite, iSite + height, iSite + height, iSite + height
+          };
           posVectorLeftHermTC_1 = {iSite + height, iSite, iSite, iSite};
           posVectorLeftTC_2 = {iSite, iSite + height, iSite, iSite};
           posVectorLeftHermTC_2 = {
-              iSite + height, iSite, iSite + height, iSite + height};
+              iSite + height, iSite, iSite + height, iSite + height
+          };
           posVectorLeftTC_3 = {iSite, iSite + height, iSite,
                                iSite, iSite + height, iSite + height};
           posVectorLeftHermTC_3 = {iSite + height, iSite, iSite + height,
                                    iSite + height, iSite, iSite};
         } else {
           posVectorLeftTC_1 = {
-              iSite, iSite % height, iSite % height, iSite % height};
+              iSite, iSite % height, iSite % height, iSite % height
+          };
           posVectorLeftHermTC_1 = {iSite % height, iSite, iSite, iSite};
           posVectorLeftTC_2 = {iSite, iSite % height, iSite, iSite};
           posVectorLeftHermTC_2 = {
-              iSite % height, iSite, iSite % height, iSite % height};
+              iSite % height, iSite, iSite % height, iSite % height
+          };
           posVectorLeftTC_3 = {iSite, iSite % height, iSite,
                                iSite, iSite % height, iSite % height};
           posVectorLeftHermTC_3 = {iSite % height, iSite, iSite % height,
@@ -255,7 +263,8 @@ class FermiHubbardRealTwoU1 : public model_impl<Matrix, TwoU1> {
         if (std::abs(coeffx) > 1.0E-10) {
           opVector = {
               OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
-              OperatorType::CreateBeta, OperatorType::DestroyBeta};
+              OperatorType::CreateBeta, OperatorType::DestroyBeta
+          };
           this->terms_.push_back(
               jw.getTerm(posVectorLeftTC_1, opVector, tag_handler, true, coeffx)
           );
@@ -268,7 +277,8 @@ class FermiHubbardRealTwoU1 : public model_impl<Matrix, TwoU1> {
           nonHermitianNorm += std::norm(coeffx);
           opVector = {
               OperatorType::CreateBeta, OperatorType::DestroyBeta,
-              OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
+              OperatorType::CreateAlpha, OperatorType::DestroyAlpha
+          };
           this->terms_.push_back(
               jw.getTerm(posVectorLeftTC_1, opVector, tag_handler, true, coeffx)
           );
@@ -283,7 +293,8 @@ class FermiHubbardRealTwoU1 : public model_impl<Matrix, TwoU1> {
         if (std::abs(coeffy) > 1.0E-10) {
           opVector = {
               OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
-              OperatorType::CreateBeta, OperatorType::DestroyBeta};
+              OperatorType::CreateBeta, OperatorType::DestroyBeta
+          };
           this->terms_.push_back(
               jw.getTerm(posVectorDownTC_1, opVector, tag_handler, true, coeffy)
           );
@@ -296,7 +307,8 @@ class FermiHubbardRealTwoU1 : public model_impl<Matrix, TwoU1> {
           nonHermitianNorm += std::norm(coeffy);
           opVector = {
               OperatorType::CreateBeta, OperatorType::DestroyBeta,
-              OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
+              OperatorType::CreateAlpha, OperatorType::DestroyAlpha
+          };
           this->terms_.push_back(
               jw.getTerm(posVectorDownTC_1, opVector, tag_handler, true, coeffy)
           );
@@ -314,7 +326,8 @@ class FermiHubbardRealTwoU1 : public model_impl<Matrix, TwoU1> {
         if (std::abs(coeffx) > 1.0E-10) {
           opVector = {
               OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
-              OperatorType::CreateBeta, OperatorType::DestroyBeta};
+              OperatorType::CreateBeta, OperatorType::DestroyBeta
+          };
           this->terms_.push_back(
               jw.getTerm(posVectorLeftTC_2, opVector, tag_handler, true, coeffx)
           );
@@ -327,7 +340,8 @@ class FermiHubbardRealTwoU1 : public model_impl<Matrix, TwoU1> {
           nonHermitianNorm += std::norm(coeffx);
           opVector = {
               OperatorType::CreateBeta, OperatorType::DestroyBeta,
-              OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
+              OperatorType::CreateAlpha, OperatorType::DestroyAlpha
+          };
           this->terms_.push_back(
               jw.getTerm(posVectorLeftTC_2, opVector, tag_handler, true, coeffx)
           );
@@ -342,7 +356,8 @@ class FermiHubbardRealTwoU1 : public model_impl<Matrix, TwoU1> {
         if (std::abs(coeffy) > 1.0E-10) {
           opVector = {
               OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
-              OperatorType::CreateBeta, OperatorType::DestroyBeta};
+              OperatorType::CreateBeta, OperatorType::DestroyBeta
+          };
           this->terms_.push_back(
               jw.getTerm(posVectorDownTC_2, opVector, tag_handler, true, coeffy)
           );
@@ -355,7 +370,8 @@ class FermiHubbardRealTwoU1 : public model_impl<Matrix, TwoU1> {
           nonHermitianNorm += std::norm(coeffy);
           opVector = {
               OperatorType::CreateBeta, OperatorType::DestroyBeta,
-              OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
+              OperatorType::CreateAlpha, OperatorType::DestroyAlpha
+          };
           this->terms_.push_back(
               jw.getTerm(posVectorDownTC_2, opVector, tag_handler, true, coeffy)
           );

@@ -146,19 +146,19 @@ class FermiHubbardMomentumTwoU1 : public model_impl<Matrix, TwoU1> {
         tag_handler->get_product_tag(destroy_down, create_up);
     std::pair<tag_type, value_type> ducd =
         tag_handler->get_product_tag(destroy_up, create_down);
-    //#define HERMITIAN(op1, op2) tag_handler->hermitian_pair(op1, op2);
-    //        HERMITIAN(create_up, destroy_up)
-    //        HERMITIAN(create_down, destroy_down)
-    //        HERMITIAN(e2d, d2e);
-    //        HERMITIAN(cutf.first, ftdu.first)
-    //        HERMITIAN(cdtf.first, ftdd.first)
-    //        HERMITIAN(cund.first, dund.first)
-    //        HERMITIAN(cdnu.first, ddnu.first)
-    //        HERMITIAN(cundtf.first, ftdund.first)
-    //        HERMITIAN(cdnutf.first, ftddnu.first)
-    //        HERMITIAN(ddcu.first, ducd.first)
-    //#undef HERMITIAN
-    // General variables
+    // #define HERMITIAN(op1, op2) tag_handler->hermitian_pair(op1, op2);
+    //         HERMITIAN(create_up, destroy_up)
+    //         HERMITIAN(create_down, destroy_down)
+    //         HERMITIAN(e2d, d2e);
+    //         HERMITIAN(cutf.first, ftdu.first)
+    //         HERMITIAN(cdtf.first, ftdd.first)
+    //         HERMITIAN(cund.first, dund.first)
+    //         HERMITIAN(cdnu.first, ddnu.first)
+    //         HERMITIAN(cundtf.first, ftdund.first)
+    //         HERMITIAN(cdnutf.first, ftddnu.first)
+    //         HERMITIAN(ddcu.first, ducd.first)
+    // #undef HERMITIAN
+    //  General variables
     value_type U = parms["U_FermiHubbard"];
     value_type t = parms["t_FermiHubbard"];
     int width = parms["width_FermiHubbard"];
@@ -196,7 +196,8 @@ class FermiHubbardMomentumTwoU1 : public model_impl<Matrix, TwoU1> {
       auto kVector = getK(iSite, width, height);
       std::vector<pos_t> posVector = {reverseOrder[iSite], reverseOrder[iSite]};
       std::vector<OperatorType> opVector = {
-          OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
+          OperatorType::CreateAlpha, OperatorType::DestroyAlpha
+      };
       value_type coeff = -t * getEnergy(kVector, width, height, t);
       term_descriptor term =
           jw.getTerm(posVector, opVector, tag_handler, true, coeff);
@@ -235,13 +236,16 @@ class FermiHubbardMomentumTwoU1 : public model_impl<Matrix, TwoU1> {
           auto pair2 = getK(index2, width, height);
           std::vector<OperatorType> opVector1 = {
               OperatorType::CreateAlpha, OperatorType::CreateBeta,
-              OperatorType::DestroyBeta, OperatorType::DestroyAlpha};
+              OperatorType::DestroyBeta, OperatorType::DestroyAlpha
+          };
           std::vector<OperatorType> opVector2 = {
               OperatorType::CreateBeta, OperatorType::CreateAlpha,
-              OperatorType::DestroyAlpha, OperatorType::DestroyBeta};
+              OperatorType::DestroyAlpha, OperatorType::DestroyBeta
+          };
           std::vector<pos_t> positions = {
               reverseOrder[index1], reverseOrder[index2], reverseOrder[jSite],
-              reverseOrder[iSite]};
+              reverseOrder[iSite]
+          };
           value_type coeff =
               (!isTranscorrelated)
                   ? U / static_cast<value_type>(2 * height * width)
@@ -322,15 +326,18 @@ class FermiHubbardMomentumTwoU1 : public model_impl<Matrix, TwoU1> {
                 std::vector<pos_t> positions = {
                     reverseOrder[index1], reverseOrder[index2],
                     reverseOrder[index3], reverseOrder[kSite],
-                    reverseOrder[jSite],  reverseOrder[iSite]};
+                    reverseOrder[jSite],  reverseOrder[iSite]
+                };
                 std::vector<OperatorType> opVector1 = {
                     OperatorType::CreateAlpha, OperatorType::CreateBeta,
                     OperatorType::CreateBeta,  OperatorType::DestroyBeta,
-                    OperatorType::DestroyBeta, OperatorType::DestroyAlpha};
+                    OperatorType::DestroyBeta, OperatorType::DestroyAlpha
+                };
                 std::vector<OperatorType> opVector2 = {
                     OperatorType::CreateBeta,   OperatorType::CreateAlpha,
                     OperatorType::CreateAlpha,  OperatorType::DestroyAlpha,
-                    OperatorType::DestroyAlpha, OperatorType::DestroyBeta};
+                    OperatorType::DestroyAlpha, OperatorType::DestroyBeta
+                };
 
                 value_type coeff =
                     2. * t * (std::cosh(J) - 1.) *

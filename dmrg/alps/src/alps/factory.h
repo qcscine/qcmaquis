@@ -99,7 +99,7 @@ class factory {
   /// a new derived type is registered by passing the type as template parameter
   /// and the key as argument.
   //// A second call with the same key will override the registration done by
-  ///the previous call.
+  /// the previous call.
   /// \param k the key associated with the type
   /// \returns \c true if a type was already associated with the key
   template <class T>

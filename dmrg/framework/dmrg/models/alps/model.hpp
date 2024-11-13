@@ -483,7 +483,8 @@ class ALPSModel : public model_impl<Matrix, SymmGroup> {
           bool is_ferm = safe_is_fermionic(b, op);
           if (kind == uknown)
             kind = is_ferm ? fermionic : bosonic;
-          else if ((is_ferm && kind == bosonic) || (!is_ferm && kind == fermionic))
+          else if ((is_ferm && kind == bosonic) ||
+                   (!is_ferm && kind == fermionic))
             throw std::runtime_error(
                 "Model is inconsitent. On some site the operator " + *it2 +
                 "fermionic, on others is bosonic."

@@ -35,7 +35,7 @@ class SweepMPSContainer<Matrix, SymmGroup, SweepOptimizationType::SingleSite> {
   using MPSTensorType = MPSTensor<Matrix, SymmGroup>;
 
   /** @brief Class constructor */
-  explicit SweepMPSContainer(const MPSType& mps) : mps_(mps){};
+  explicit SweepMPSContainer(const MPSType& mps) : mps_(mps) {};
 
   /** @brief Const getter for the MPSTensor of a given site */
   const MPSTensorType& getMPSTensor(int siteLeft) const {
@@ -60,7 +60,7 @@ class SweepMPSContainer<Matrix, SymmGroup, SweepOptimizationType::TwoSite> {
   using MPSTensorType = MPSTensor<Matrix, SymmGroup>;
 
   /** @brief Class constructor */
-  explicit SweepMPSContainer(const MPSType& mps) : mps_(mps){};
+  explicit SweepMPSContainer(const MPSType& mps) : mps_(mps) {};
 
   /** @brief Const getter for the MPSTensor */
   const MPSTensorType& getMPSTensor(int siteLeft) const {

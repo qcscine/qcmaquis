@@ -332,7 +332,7 @@ class GenericSweepSimulation {
    */
   virtual void performBackPropagation(
       GrowBoundaryModality boundaryGrowthModality
-  ){};
+  ) {};
 
   /** @brief Boundary propagation method */
   void propagateBoundaries() {
@@ -370,14 +370,15 @@ class GenericSweepSimulation {
       trunc = parms_.template get<double>("truncation_final");
     } else if (sweep < ngs) {
       trunc = log_interpolate(
-                     parms_.template get<double>("truncation_initial"),
-                     parms_.template get<double>("truncation_main"),
-                     parms_.template get<int>("ngrowsweeps"), sweep);
+          parms_.template get<double>("truncation_initial"),
+          parms_.template get<double>("truncation_main"),
+          parms_.template get<int>("ngrowsweeps"), sweep
+      );
     } else {
       trunc = log_interpolate(
-                     parms_.template get<double>("truncation_main"),
-                     parms_.template get<double>("truncation_final"),
-                     nms, sweep - ngs);
+          parms_.template get<double>("truncation_main"),
+          parms_.template get<double>("truncation_final"), nms, sweep - ngs
+      );
     }
     return trunc;
   }

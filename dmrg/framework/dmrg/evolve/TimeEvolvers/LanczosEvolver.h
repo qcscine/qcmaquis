@@ -23,8 +23,8 @@
 #ifdef DMRG_TD
 
 #include <vector>
-//#include <Eigen/Core>
-//#include <unsupported/Eigen/MatrixFunctions>
+// #include <Eigen/Core>
+// #include <unsupported/Eigen/MatrixFunctions>
 #include "TimeEvolutionAlgorithm.h"
 
 enum class TimeStepDistributor {
@@ -66,7 +66,8 @@ struct TimeStepTraits<TimeStepDistributor::FourthOrderMagnus> {
       InternalValueType(
           {std::make_pair((3. + 2. * sqrtof3) / 12., 0.5 + sqrtof3 / 6.),
            std::make_pair((3. - 2. * sqrtof3) / 12., 0.5 - sqrtof3 / 6.)}
-      )};
+      )
+  };
 };
 
 template <>

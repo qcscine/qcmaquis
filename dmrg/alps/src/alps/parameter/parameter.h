@@ -90,7 +90,7 @@ class ALPS_DECL Parameter {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int) {
     std::string v = static_cast<std::string>(value_);
-    ar& key_& v;
+    ar & key_ & v;
     value_ = v;
   }
 

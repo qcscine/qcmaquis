@@ -250,32 +250,21 @@ struct EntropyData {
   data.path1 = load_matrix_pair<Matrix>(ar, rpath + #path1, rpath + #path2, L);
 
 // Loading of matrices is written in macros for both versions
-#define LOAD_ALL()                                                      \
-  {                                                                     \
-    /* load quantities needed for s1 */                                 \
-    LOADVEC(Nup)                                                        \
-    LOADVEC(Ndown)                                                      \
-    LOADVEC(Nupdown)                                                    \
-    /* load quantities needed for s2 */                                 \
-    LOAD(dm_up)                                                         \
-    LOAD(dm_down)                                                       \
-    LOAD(nupnup)                                                        \
-    LOAD(nupndown)                                                      \
-    LOAD(ndownnup)                                                      \
-    LOAD(ndownndown)                                                    \
-    LOAD(doccdocc)                                                      \
-    LOAD(transfer_up_while_down)                                        \
-    LOAD(transfer_down_while_up)                                        \
-    LOAD(transfer_pair)                                                 \
-    LOAD(spinflip)                                                      \
-    LOAD_PAIR(transfer_up_while_down_at_2, transfer_up_while_down_at_1) \
-    LOAD_PAIR(transfer_up_while_down_at_1, transfer_up_while_down_at_2) \
-    LOAD_PAIR(transfer_down_while_up_at_2, transfer_down_while_up_at_1) \
-    LOAD_PAIR(transfer_down_while_up_at_1, transfer_down_while_up_at_2) \
-    LOAD_PAIR(nupdocc, doccnup)                                         \
-    LOAD_PAIR(doccnup, nupdocc)                                         \
-    LOAD_PAIR(ndowndocc, doccndown)                                     \
-    LOAD_PAIR(doccndown, ndowndocc)                                     \
+#define LOAD_ALL()                                                             \
+  {/* load quantities needed for s1 */                                         \
+   LOADVEC(Nup) LOADVEC(Ndown)                                                 \
+       LOADVEC(Nupdown) /* load quantities needed for s2 */                    \
+   LOAD(dm_up) LOAD(dm_down) LOAD(nupnup) LOAD(nupndown) LOAD(ndownnup         \
+   ) LOAD(ndownndown) LOAD(doccdocc) LOAD(transfer_up_while_down               \
+   ) LOAD(transfer_down_while_up) LOAD(transfer_pair) LOAD(spinflip            \
+   ) LOAD_PAIR(transfer_up_while_down_at_2, transfer_up_while_down_at_1)       \
+       LOAD_PAIR(                                                              \
+           transfer_up_while_down_at_1, transfer_up_while_down_at_2            \
+       ) LOAD_PAIR(transfer_down_while_up_at_2, transfer_down_while_up_at_1)   \
+           LOAD_PAIR(transfer_down_while_up_at_1, transfer_down_while_up_at_2) \
+               LOAD_PAIR(nupdocc, doccnup) LOAD_PAIR(doccnup, nupdocc)         \
+                   LOAD_PAIR(ndowndocc, doccndown)                             \
+                       LOAD_PAIR(doccndown, ndowndocc)                         \
   }
 
 template <class Matrix>

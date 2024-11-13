@@ -59,7 +59,8 @@ bool is_vectorizable_generic(T const &value) {
       "numpy.float32",
       "numpy.float64",
       "numpy.complex64",
-      "numpy.complex128"};
+      "numpy.complex128"
+  };
   using alps::hdf5::get_extent;
   using boost::python::len;
   boost::python::ssize_t size = len(value);
@@ -85,9 +86,9 @@ bool is_vectorizable_generic(T const &value) {
       first_extent =
           get_extent(boost::python::extract<boost::python::tuple>(value[0])());
     } else if (first_dtype == "numpy.ndarray")
-      first_extent =
-          get_extent(boost::python::extract<alps::python::numpy::array>(value[0]
-          )());
+      first_extent = get_extent(
+          boost::python::extract<alps::python::numpy::array>(value[0])()
+      );
     for (boost::python::ssize_t i = 0; i < size; ++i) {
       std::string dtype =
           boost::python::object(value[i]).ptr()->ob_type->tp_name;
@@ -125,7 +126,9 @@ bool is_vectorizable_generic(T const &value) {
                 first_extent.begin(), first_extent.end(), extent.begin()
             ))
           return false;
-      } else if (first_dtype != dtype || find(scalar_types, scalar_types + 19, dtype) == scalar_types + 19)
+      } else if (first_dtype != dtype ||
+                 find(scalar_types, scalar_types + 19, dtype) ==
+                     scalar_types + 19)
         return false;
     }
     return true;
@@ -163,9 +166,9 @@ std::vector<std::size_t> get_extent_generic(T const &value) {
     );
     copy(first_extent.begin(), first_extent.end(), back_inserter(extent));
   } else if (first_dtype == "numpy.ndarray") {
-    std::vector<std::size_t> first_extent =
-        get_extent(boost::python::extract<alps::python::numpy::array>(value[0]
-        )());
+    std::vector<std::size_t> first_extent = get_extent(
+        boost::python::extract<alps::python::numpy::array>(value[0])()
+    );
     copy(first_extent.begin(), first_extent.end(), back_inserter(extent));
   }
   return extent;
@@ -333,13 +336,15 @@ void save(
   std::fill_n(std::back_inserter(offset), extent.size(), 0);
   if (false)
     ;
-#define NGS_PYTHON_HDF5_CHECK_NUMPY(T)                                                                              \
-  else if (PyArray_DESCR(ptr)->type_num == ::alps::detail::get_numpy_type(alps::detail::type_wrapper<T>::type())) { \
-    save(                                                                                                           \
-        ar, path, *static_cast<T const *>(PyArray_DATA(ptr)), size, chunk,                                          \
-        offset                                                                                                      \
-    );                                                                                                              \
-    if (has_complex_elements<T>::value) ar.set_complex(path);                                                       \
+#define NGS_PYTHON_HDF5_CHECK_NUMPY(T)                                         \
+  else if (PyArray_DESCR(ptr)->type_num ==                                     \
+           ::alps::detail::get_numpy_type(alps::detail::type_wrapper<T>::type( \
+           ))) {                                                               \
+    save(                                                                      \
+        ar, path, *static_cast<T const *>(PyArray_DATA(ptr)), size, chunk,     \
+        offset                                                                 \
+    );                                                                         \
+    if (has_complex_elements<T>::value) ar.set_complex(path);                  \
   }
   ALPS_NGS_FOREACH_NATIVE_NUMPY_TYPE(NGS_PYTHON_HDF5_CHECK_NUMPY)
 #undef NGS_PYTHON_HDF5_CHECK_NUMPY
@@ -354,12 +359,13 @@ void load(
   import_numpy();
   if (false)
     ;
-#define NGS_PYTHON_HDF5_LOAD_NUMPY(T)                                                                           \
-  else if (ar.is_datatype<scalar_type<T>::type>(path) && ar.is_complex(path) == has_complex_elements<T>::value) \
-      detail::load_python_numeric<T>(                                                                           \
-          ar, path, value, chunk, offset,                                                                       \
-          ::alps::detail::get_numpy_type(alps::detail::type_wrapper<T>::type()                                  \
-          )                                                                                                     \
+#define NGS_PYTHON_HDF5_LOAD_NUMPY(T)                                          \
+  else if (ar.is_datatype<scalar_type<T>::type>(path) &&                       \
+           ar.is_complex(path) == has_complex_elements<T>::value)              \
+      detail::load_python_numeric<T>(                                          \
+          ar, path, value, chunk, offset,                                      \
+          ::alps::detail::get_numpy_type(alps::detail::type_wrapper<T>::type() \
+          )                                                                    \
       );
   ALPS_NGS_FOREACH_NATIVE_NUMPY_TYPE(NGS_PYTHON_HDF5_LOAD_NUMPY)
 #undef NGS_PYTHON_HDF5_LOAD_NUMPY
@@ -421,7 +427,8 @@ bool is_vectorizable<boost::python::object>::apply(
       "numpy.float32",
       "numpy.float64",
       "numpy.complex64",
-      "numpy.complex128"};
+      "numpy.complex128"
+  };
   std::string dtype = value.ptr()->ob_type->tp_name;
   if (dtype == "list")
     return is_vectorizable<boost::python::list>::apply(
@@ -444,8 +451,8 @@ std::vector<std::size_t> get_extent<boost::python::object>::apply(
   if (dtype == "list")
     return get_extent(boost::python::extract<boost::python::list>(value)());
   else if (dtype == "numpy.ndarray")
-    return get_extent(boost::python::extract<alps::python::numpy::array>(value
-    )());
+    return get_extent(boost::python::extract<alps::python::numpy::array>(value)(
+    ));
   else
     return std::vector<std::size_t>();
 }
@@ -498,7 +505,10 @@ void save(
         ar, path, boost::python::extract<alps::python::numpy::array>(value)(),
         size, chunk, offset
     );
-  else if (PyObject_HasAttrString(value.ptr(), "save") && std::string(PyObject_GetAttrString(value.ptr(), "save")->ob_type->tp_name) == "instancemethod") {
+  else if (PyObject_HasAttrString(value.ptr(), "save") &&
+           std::string(
+               PyObject_GetAttrString(value.ptr(), "save")->ob_type->tp_name
+           ) == "instancemethod") {
     std::string context = ar.get_context();
     ar.set_context(ar.complete_path(path));
     boost::python::call_method<void>(
@@ -544,17 +554,20 @@ void load(
       value = boost::python::dict();
       load(ar, path, static_cast<boost::python::dict &>(value), chunk, offset);
     }
-  } else if (ar.is_scalar(path) || (ar.is_datatype<double>(path) && ar.is_complex(path) && ar.extent(path).size() == 1 && ar.extent(path)[0] == 2)) {
+  } else if (ar.is_scalar(path) ||
+             (ar.is_datatype<double>(path) && ar.is_complex(path) &&
+              ar.extent(path).size() == 1 && ar.extent(path)[0] == 2)) {
     if (ar.is_datatype<std::string>(path)) {
       std::string data;
       load(ar, path, data, chunk, offset);
       value = boost::python::str(data);
-#define NGS_PYTHON_HDF5_LOAD_SCALAR_NUMPY(T)                                                                      \
-  }                                                                                                               \
-  else if (ar.is_datatype<scalar_type<T>::type>(path) && ar.is_complex(path) == has_complex_elements<T>::value) { \
-    detail::load_python_object<T>(                                                                                \
-        ar, path, value, chunk, offset,                                                                           \
-        ::alps::detail::get_numpy_type(alps::detail::type_wrapper<T>::type())                                     \
+#define NGS_PYTHON_HDF5_LOAD_SCALAR_NUMPY(T)                                  \
+  }                                                                           \
+  else if (ar.is_datatype<scalar_type<T>::type>(path) &&                      \
+           ar.is_complex(path) == has_complex_elements<T>::value) {           \
+    detail::load_python_object<T>(                                            \
+        ar, path, value, chunk, offset,                                       \
+        ::alps::detail::get_numpy_type(alps::detail::type_wrapper<T>::type()) \
     );
       ALPS_NGS_FOREACH_NATIVE_NUMPY_TYPE(NGS_PYTHON_HDF5_LOAD_SCALAR_NUMPY)
 #undef NGS_PYTHON_HDF5_LOAD_SCALAR_NUMPY

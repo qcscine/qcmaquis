@@ -52,7 +52,7 @@ double mem_index(Index<SymmGroup> const& li, Index<SymmGroup> const& ri) {
     foot_print += lefts[s] * rights[s];
     maquis::cout  //<< ((lefts[s] > 10000) ?
                   //(boost::lexical_cast<std::string>(lefts[s]/1000) +
-                  //std::string("K"))
+                  // std::string("K"))
                   //   : boost::lexical_cast<std::string>(lefts[s]))
         << lefts[s]
         << "x"

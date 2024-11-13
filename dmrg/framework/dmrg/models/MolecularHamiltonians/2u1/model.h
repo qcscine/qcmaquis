@@ -345,7 +345,18 @@ class qc_model : public model_impl<Matrix, SymmGroup> {
               name, lat, tag_handler, ident, fill, synchronous_meas_operators,
               half_only, positions, bra_ckp
           ));
-        } else if (std::regex_match(lhs, what, expression_transition_twoptdm_uuuu) || std::regex_match(lhs, what, expression_transition_twoptdm_uddu) || std::regex_match(lhs, what, expression_transition_twoptdm_duud) || std::regex_match(lhs, what, expression_transition_twoptdm_dddd)) {
+        } else if (std::regex_match(
+                       lhs, what, expression_transition_twoptdm_uuuu
+                   ) ||
+                   std::regex_match(
+                       lhs, what, expression_transition_twoptdm_uddu
+                   ) ||
+                   std::regex_match(
+                       lhs, what, expression_transition_twoptdm_duud
+                   ) ||
+                   std::regex_match(
+                       lhs, what, expression_transition_twoptdm_dddd
+                   )) {
           std::string bra_ckp{};
           bra_ckp = it.second;
           std::vector<scaled_bond_element> synchronous_meas_operators;
@@ -401,7 +412,8 @@ class qc_model : public model_impl<Matrix, SymmGroup> {
           ));
         }
 
-        else if (std::regex_match(lhs, what, expression_threeptdm) || std::regex_match(lhs, what, expression_transition_threeptdm)) {
+        else if (std::regex_match(lhs, what, expression_threeptdm) ||
+                 std::regex_match(lhs, what, expression_transition_threeptdm)) {
           std::string bra_ckp{};
           if (lhs == "MEASURE[trans3rdm]") {
             name = "transition_threeptdm";
@@ -841,7 +853,10 @@ class qc_model : public model_impl<Matrix, SymmGroup> {
           ));
         }
 
-        else if (std::regex_match(lhs, what, expression_oneptdm_uu) || std::regex_match(lhs, what, expression_transition_oneptdm_uu)) {
+        else if (std::regex_match(lhs, what, expression_oneptdm_uu) ||
+                 std::regex_match(
+                     lhs, what, expression_transition_oneptdm_uu
+                 )) {
           std::string bra_ckp{};
           if (lhs == "MEASURE[trans1rdm_aa]") {
             name = "transition_oneptdm_aa";
@@ -868,7 +883,10 @@ class qc_model : public model_impl<Matrix, SymmGroup> {
           ));
         }
 
-        else if (std::regex_match(lhs, what, expression_oneptdm_dd) || std::regex_match(lhs, what, expression_transition_oneptdm_dd)) {
+        else if (std::regex_match(lhs, what, expression_oneptdm_dd) ||
+                 std::regex_match(
+                     lhs, what, expression_transition_oneptdm_dd
+                 )) {
           std::string bra_ckp{};
           if (lhs == "MEASURE[trans1rdm_bb]") {
             name = "transition_oneptdm_bb";
@@ -895,7 +913,10 @@ class qc_model : public model_impl<Matrix, SymmGroup> {
           ));
         }
 
-        else if (std::regex_match(lhs, what, expression_oneptdm_ud) || std::regex_match(lhs, what, expression_transition_oneptdm_ud)) {
+        else if (std::regex_match(lhs, what, expression_oneptdm_ud) ||
+                 std::regex_match(
+                     lhs, what, expression_transition_oneptdm_ud
+                 )) {
           std::string bra_ckp{};
           if (lhs == "MEASURE[trans1rdm_ab]") {
             name = "transition_oneptdm_ab";
@@ -922,7 +943,10 @@ class qc_model : public model_impl<Matrix, SymmGroup> {
           ));
         }
 
-        else if (std::regex_match(lhs, what, expression_oneptdm_du) || std::regex_match(lhs, what, expression_transition_oneptdm_du)) {
+        else if (std::regex_match(lhs, what, expression_oneptdm_du) ||
+                 std::regex_match(
+                     lhs, what, expression_transition_oneptdm_du
+                 )) {
           std::string bra_ckp{};
           if (lhs == "MEASURE[trans1rdm_ba]") {
             name = "transition_oneptdm_ba";
@@ -950,7 +974,9 @@ class qc_model : public model_impl<Matrix, SymmGroup> {
         }
 
         // 1-RDM and transition-1RDM
-        else if (std::regex_match(lhs, what, expression_oneptdm) || std::regex_match(lhs, what, expression_transition_oneptdm) || std::regex_match(lhs, what, expression_oneptspdm)) {
+        else if (std::regex_match(lhs, what, expression_oneptdm) ||
+                 std::regex_match(lhs, what, expression_transition_oneptdm) ||
+                 std::regex_match(lhs, what, expression_oneptspdm)) {
           std::string bra_ckp("");
           if (lhs == "MEASURE[trans1rdm]") {
             name = "transition_oneptdm";
@@ -1163,8 +1189,8 @@ class qc_model : public model_impl<Matrix, SymmGroup> {
 
     return ret;
   }
-    void create_terms_not_normal_ordered();
-    void create_terms_normal_ordered();
+  void create_terms_not_normal_ordered();
+  void create_terms_normal_ordered();
 };
 
 #include "dmrg/models/MolecularHamiltonians/2u1/model.hpp"

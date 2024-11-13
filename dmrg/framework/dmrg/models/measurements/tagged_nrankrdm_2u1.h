@@ -167,8 +167,9 @@ class TaggedNRankRDM : public measurement<Matrix, SymmGroup> {
           term_descriptor term = generate_mpo::arrange_operators(
               positions, operators, tag_handler_local
           );
-          if (measurements_details::checkpg<SymmGroup>(
-              )(term, tag_handler_local, lattice)) {
+          if (measurements_details::checkpg<SymmGroup>()(
+                  term, tag_handler_local, lattice
+              )) {
             MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(
                 term, identities, fillings, tag_handler_local, lattice
             );
@@ -284,8 +285,9 @@ class TaggedNRankRDM : public measurement<Matrix, SymmGroup> {
       term_descriptor term = generate_mpo::arrange_operators(
           positions, operators, tag_handler_local
       );
-      if (!measurements_details::checkpg<SymmGroup>(
-          )(term, tag_handler_local, lattice))
+      if (!measurements_details::checkpg<SymmGroup>()(
+              term, tag_handler_local, lattice
+          ))
         return 0.;
       MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(
           term, identities, fillings, tag_handler_local, lattice

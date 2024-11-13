@@ -141,7 +141,8 @@ struct TermMaker {
         {ret[4], ret[5], ret[2], ret[3], ret[1], ret[0]},
         {ret[5], ret[4], ret[2], ret[3], ret[1], ret[0]},
         {ret[4], ret[5], ret[3], ret[2], ret[1], ret[0]},
-        {ret[5], ret[4], ret[3], ret[2], ret[1], ret[0]}};
+        {ret[5], ret[4], ret[3], ret[2], ret[1], ret[0]}
+    };
     std::set<std::array<int, 6> > tmp;
     for (const auto& iTerm : terms) tmp.insert(iTerm);
     return std::vector<RetType>(tmp.begin(), tmp.end());

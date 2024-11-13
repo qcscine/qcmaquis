@@ -274,7 +274,8 @@ class ContractionGrid {
 
             if (num_rows(src) > num_rows(dst) && num_cols(src) > num_cols(dst))
               resize(dst, num_rows(src), num_cols(src));
-            else if (num_rows(src) != num_rows(dst) || num_cols(src) != num_cols(dst)) {
+            else if (num_rows(src) != num_rows(dst) ||
+                     num_cols(src) != num_cols(dst)) {
               size_t maxrows = std::max(num_rows(src), num_rows(dst));
               size_t maxcols = std::max(num_cols(src), num_cols(dst));
               resize(dst, maxrows, maxcols);

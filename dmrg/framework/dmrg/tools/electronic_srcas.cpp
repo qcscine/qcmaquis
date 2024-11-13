@@ -3,31 +3,39 @@
 namespace maquis {
 namespace srcas {
 
-template<typename ScalarType>
-int ElectronicSRCAS<ScalarType>::getRandomOccSpinOrb_(const Determinant& det, Spin spin) const {
+template <typename ScalarType>
+int ElectronicSRCAS<ScalarType>::getRandomOccSpinOrb_(
+    const Determinant& det, Spin spin
+) const {
   // TODO: make index choice dependent on s1 entropies if available
   // Weight entropies based on max entropy, with min entropy
   auto occupied_orbs = det.occupied(spin);
-  int whichIndex = int(floor(this->uniformRandomNumber_() * occupied_orbs.size()));
+  int whichIndex =
+      int(floor(this->uniformRandomNumber_() * occupied_orbs.size()));
   return occupied_orbs[whichIndex];
 }
 
-template<typename ScalarType>
-int ElectronicSRCAS<ScalarType>::getRandomUnoccSpinOrb_(const Determinant& det, Spin spin) const {
+template <typename ScalarType>
+int ElectronicSRCAS<ScalarType>::getRandomUnoccSpinOrb_(
+    const Determinant& det, Spin spin
+) const {
   // TODO: make index choice dependent on s1 entropies if available
   auto unoccupied_orbs = det.unoccupied(spin);
-  int whichIndex = int(floor(this->uniformRandomNumber_() * unoccupied_orbs.size()));
+  int whichIndex =
+      int(floor(this->uniformRandomNumber_() * unoccupied_orbs.size()));
   return unoccupied_orbs[whichIndex];
 }
 
-template<typename ScalarType>
-Determinant ElectronicSRCAS<ScalarType>::generateSymmetricDeterminant_(const Determinant& onv) const {
+template <typename ScalarType>
+Determinant ElectronicSRCAS<ScalarType>::generateSymmetricDeterminant_(
+    const Determinant& onv
+) const {
   auto tmpDet = onv;
   tmpDet.flipSpin();
   return tmpDet;
 }
 
-template<typename ScalarType>
+template <typename ScalarType>
 Determinant ElectronicSRCAS<ScalarType>::generateNewONV_() {
   // Start from queen
   auto tmpDet = this->queen_;
@@ -45,8 +53,9 @@ Determinant ElectronicSRCAS<ScalarType>::generateNewONV_() {
   return tmpDet;
 }
 
-template<typename ScalarType>
-void ElectronicSRCAS<ScalarType>::setQueenFromString_(const std::string& queen) {
+template <typename ScalarType>
+void ElectronicSRCAS<ScalarType>::setQueenFromString_(const std::string& queen
+) {
   std::vector<int> queenVec;
   for (const char& i : queen) {
     if (i != ',') {
@@ -57,18 +66,21 @@ void ElectronicSRCAS<ScalarType>::setQueenFromString_(const std::string& queen) 
   this->queen_ = Determinant(queenVec);
 }
 
-template<typename ScalarType>
-ElectronicSRCAS<ScalarType>::ElectronicSRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceType> interface)
-  : BaseSRCAS<ScalarType, Determinant>(parameters, interface) {
+template <typename ScalarType>
+ElectronicSRCAS<ScalarType>::
+    ElectronicSRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceType> interface)
+    : BaseSRCAS<ScalarType, Determinant>(parameters, interface) {
   int alpha = int(this->parms_["u1_total_charge1"]);
   int beta = int(this->parms_["u1_total_charge2"]);
-  fractional_beta_orbs_ = static_cast<double>(beta) / static_cast<double>(alpha + beta);
+  fractional_beta_orbs_ =
+      static_cast<double>(beta) / static_cast<double>(alpha + beta);
 
   if (this->parms_.is_set("init_basis_state")) {
-    this->queen_ = Determinant(this->parms_["init_basis_state"].template as<std::vector<int>>());
+    this->queen_ = Determinant(
+        this->parms_["init_basis_state"].template as<std::vector<int>>()
+    );
     // TODO: check if det is valid
-  }
-  else {
+  } else {
     std::vector<int> tmpVec(this->parms_["L"], 1);
     for (int i = 0; i < alpha; i++) {
       tmpVec[i] += 2;
@@ -81,7 +93,7 @@ ElectronicSRCAS<ScalarType>::ElectronicSRCAS(DmrgParameters& parameters, std::sh
 }
 
 // TODO: Write this function
-template<typename ScalarType>
+template <typename ScalarType>
 bool ElectronicSRCAS<ScalarType>::validONV_(const Determinant& det) const {
   return true;
 }
@@ -97,5 +109,5 @@ bool ElectronicSRCAS<ScalarType>::validONV_(const Determinant& det) const {
 template class ElectronicSRCAS<double>;
 template class ElectronicSRCAS<std::complex<double>>;
 
-} // namespace srcas
-} // namespace maquis
+}  // namespace srcas
+}  // namespace maquis

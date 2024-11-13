@@ -40,7 +40,7 @@ class TimeEvolutionAlgorithm {
       : time_step_(time_step),
         has_td_part_(has_td_part),
         is_imag_(is_imag),
-        verbose_(verbose){};
+        verbose_(verbose) {};
 
   /** Virtual destructor */
   virtual ~TimeEvolutionAlgorithm() = default;

@@ -569,7 +569,7 @@ template <class Archive>
 void MPSTensor<Matrix, SymmGroup>::serialize(
     Archive& ar, const unsigned int version
 ) {
-  ar& phys_i& left_i& right_i& cur_storage& cur_normalization& data_;
+  ar & phys_i & left_i & right_i & cur_storage & cur_normalization & data_;
 }
 
 template <class Matrix, class SymmGroup>
