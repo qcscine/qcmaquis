@@ -29,7 +29,7 @@ class RKEvolver : public TimeEvolutionAlgorithm<Matrix, SymmGroup> {
 
   /** @brief Class constructor */
   RKEvolver(TimeType time_step, bool has_td_part, bool is_imag)
-      : base(time_step, has_td_part, is_imag){};
+      : base(time_step, has_td_part, is_imag) {};
 
   /** @brief Evolution of a MPSTensor */
   void evolve(

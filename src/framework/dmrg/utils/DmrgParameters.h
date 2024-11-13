@@ -223,7 +223,9 @@ class DmrgParameters : public BaseParameters {
     add_option("beta_mode", "", value(0));
 
     // Jacobi-Davidson-related options
-    add_option("eigensolver", "Eigensolver to solve site problem", value("IETL_JCD"));
+    add_option(
+        "eigensolver", "Eigensolver to solve site problem", value("IETL_JCD")
+    );
     add_option(
         "ietl_jcd_tol", "Convergence threshold for JCD at each site",
         value(1e-8)

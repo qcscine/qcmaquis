@@ -44,7 +44,8 @@ BOOST_AUTO_TEST_CASE(Test_Wigner) {
       {{2, 1, 1, 3, 1, 2, 1, 2, 3}, -0.02777777778},
       {{1, 2, 1, 1, 3, 2, 2, 1, 3}, -0.02777777778},
       {{2, 1, 1, 3, 2, 1, 1, 3, 2}, -0.02777777778},
-      {{7, 2, 7, 2, 1, 1, 5, 1, 6}, 0.03571428571}};
+      {{7, 2, 7, 2, 1, 1, 5, 1, 6}, 0.03571428571}
+  };
 
   WignerWrapper::UseCache = true;
   WignerWrapper::fill_cache(7);  // maximum value in the tests

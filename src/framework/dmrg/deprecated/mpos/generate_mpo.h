@@ -45,7 +45,7 @@ class Hamiltonian {
   typedef block_matrix<Matrix, SymmGroup> op_t;
   typedef std::pair<op_t, op_t> op_pair;
 
-  virtual ~Hamiltonian(){};
+  virtual ~Hamiltonian() {};
 
   virtual op_t get_identity() = 0;
   virtual op_t get_free() = 0;

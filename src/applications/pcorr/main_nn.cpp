@@ -288,7 +288,8 @@ int main(int argc, char** argv) {
               bool is_ferm = tag_handler->is_fermionic(tag);
               if (kind == uknown)
                 kind = is_ferm ? fermionic : bosonic;
-              else if ((is_ferm && kind == bosonic) || (!is_ferm && kind == fermionic))
+              else if ((is_ferm && kind == bosonic) ||
+                       (!is_ferm && kind == fermionic))
                 throw std::runtime_error(
                     "Model is inconsitent. On some site the operator " + *it2 +
                     "fermionic, on others is bosonic."

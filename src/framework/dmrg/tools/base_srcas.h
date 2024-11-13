@@ -12,7 +12,7 @@ namespace maquis {
 namespace srcas {
 
 /** @brief Virtual SRCAS class */
-template<typename ScalarType, class T>
+template <typename ScalarType, class T>
 class BaseSRCAS {
   using InterfaceType = maquis::DMRGInterface<ScalarType>;
 
@@ -76,9 +76,12 @@ class BaseSRCAS {
   /** @brief boost geometric distribution **/
   boost::geometric_distribution<double> geomDist_;
   /** @brief boost uniform distribution generator **/
-  mutable boost::variate_generator<boost::mt19937&, boost::uniform_real<double>> uniformRandomNumber_;
+  mutable boost::variate_generator<boost::mt19937&, boost::uniform_real<double>>
+      uniformRandomNumber_;
   /** @brief boost geometric distribution generator **/
-  mutable boost::variate_generator<boost::mt19937&, boost::geometric_distribution<double>> geometricRandomNumber_;
+  mutable boost::variate_generator<
+      boost::mt19937&, boost::geometric_distribution<double>>
+      geometricRandomNumber_;
   /** @brief all DMRG parameters **/
   DmrgParameters& parms_;
   /** @brief DMRG interface **/
@@ -98,7 +101,7 @@ class BaseSRCAS {
   std::string endString_ = "----- End SRCAS -----";
 };
 
-} // namespace srcas
-} // namespace maquis
+}  // namespace srcas
+}  // namespace maquis
 
 #endif

@@ -272,11 +272,14 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::
   auto &matrix_elements = term_assistant.getMatrixElements();
   // Tmp objects.
   std::vector<OperatorType> oneBodyVec1 = {
-      OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
+      OperatorType::CreateAlpha, OperatorType::DestroyAlpha
+  };
   std::vector<OperatorType> oneBodyVec2 = {
-      OperatorType::CreateBeta, OperatorType::DestroyBeta};
+      OperatorType::CreateBeta, OperatorType::DestroyBeta
+  };
   std::vector<std::vector<OperatorType>> oneBodyElementaryOperators = {
-      oneBodyVec1, oneBodyVec2};
+      oneBodyVec1, oneBodyVec2
+  };
 
   bool normal_ordered_integral =
       (parms["normal_ordered_integral_file"] == 1) && isTranscorrelated_;
@@ -352,32 +355,41 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::
       if (isQuantumComputingFormat) {
         opVector1 = {
             OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
-            OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
+            OperatorType::CreateAlpha, OperatorType::DestroyAlpha
+        };
         opVector2 = {
             OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
-            OperatorType::CreateBeta, OperatorType::DestroyBeta};
+            OperatorType::CreateBeta, OperatorType::DestroyBeta
+        };
         opVector3 = {
             OperatorType::CreateBeta, OperatorType::DestroyBeta,
-            OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
+            OperatorType::CreateAlpha, OperatorType::DestroyAlpha
+        };
         opVector4 = {
             OperatorType::CreateBeta, OperatorType::DestroyBeta,
-            OperatorType::CreateBeta, OperatorType::DestroyBeta};
+            OperatorType::CreateBeta, OperatorType::DestroyBeta
+        };
       } else {
         opVector1 = {
             OperatorType::CreateAlpha, OperatorType::CreateBeta,
-            OperatorType::DestroyBeta, OperatorType::DestroyAlpha};
+            OperatorType::DestroyBeta, OperatorType::DestroyAlpha
+        };
         opVector2 = {
             OperatorType::CreateBeta, OperatorType::CreateAlpha,
-            OperatorType::DestroyAlpha, OperatorType::DestroyBeta};
+            OperatorType::DestroyAlpha, OperatorType::DestroyBeta
+        };
         opVector3 = {
             OperatorType::CreateAlpha, OperatorType::CreateAlpha,
-            OperatorType::DestroyAlpha, OperatorType::DestroyAlpha};
+            OperatorType::DestroyAlpha, OperatorType::DestroyAlpha
+        };
         opVector4 = {
             OperatorType::CreateBeta, OperatorType::CreateBeta,
-            OperatorType::DestroyBeta, OperatorType::DestroyBeta};
+            OperatorType::DestroyBeta, OperatorType::DestroyBeta
+        };
       }
       std::vector<std::vector<OperatorType>> twoBodyElementaryOperators = {
-          opVector1, opVector2, opVector3, opVector4};
+          opVector1, opVector2, opVector3, opVector4
+      };
       std::vector<std::array<int, 4>> tmp;
       if (isTranscorrelated_) {
         tmp = TermMaker<Matrix, SymmGroup>::generateTwofoldSymmetricIndex(
@@ -440,32 +452,38 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::
               opVector1 = {
                   OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
                   OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
-                  OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
+                  OperatorType::CreateAlpha, OperatorType::DestroyAlpha
+              };
               // aab
               opVector2 = {
                   OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
                   OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
-                  OperatorType::CreateBeta,  OperatorType::DestroyBeta};
+                  OperatorType::CreateBeta,  OperatorType::DestroyBeta
+              };
               // abb
               opVector3 = {
                   OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
                   OperatorType::CreateBeta,  OperatorType::DestroyBeta,
-                  OperatorType::CreateBeta,  OperatorType::DestroyBeta};
+                  OperatorType::CreateBeta,  OperatorType::DestroyBeta
+              };
               // aba
               opVector4 = {
                   OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
                   OperatorType::CreateBeta,  OperatorType::DestroyBeta,
-                  OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
+                  OperatorType::CreateAlpha, OperatorType::DestroyAlpha
+              };
               // baa
               opVector5 = {
                   OperatorType::CreateBeta,  OperatorType::DestroyBeta,
                   OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
-                  OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
+                  OperatorType::CreateAlpha, OperatorType::DestroyAlpha
+              };
               // bab
               opVector6 = {
                   OperatorType::CreateBeta,  OperatorType::DestroyBeta,
                   OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
-                  OperatorType::CreateBeta,  OperatorType::DestroyBeta};
+                  OperatorType::CreateBeta,  OperatorType::DestroyBeta
+              };
               // bbb
               opVector7 = {OperatorType::CreateBeta, OperatorType::DestroyBeta,
                            OperatorType::CreateBeta, OperatorType::DestroyBeta,
@@ -474,40 +492,49 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::
               opVector8 = {
                   OperatorType::CreateBeta,  OperatorType::DestroyBeta,
                   OperatorType::CreateBeta,  OperatorType::DestroyBeta,
-                  OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
+                  OperatorType::CreateAlpha, OperatorType::DestroyAlpha
+              };
             } else {
               opVector1 = {
                   OperatorType::CreateAlpha,  OperatorType::CreateAlpha,
                   OperatorType::CreateAlpha,  OperatorType::DestroyAlpha,
-                  OperatorType::DestroyAlpha, OperatorType::DestroyAlpha};
+                  OperatorType::DestroyAlpha, OperatorType::DestroyAlpha
+              };
               opVector2 = {
                   OperatorType::CreateAlpha,  OperatorType::CreateAlpha,
                   OperatorType::CreateBeta,   OperatorType::DestroyBeta,
-                  OperatorType::DestroyAlpha, OperatorType::DestroyAlpha};
+                  OperatorType::DestroyAlpha, OperatorType::DestroyAlpha
+              };
               opVector3 = {
                   OperatorType::CreateAlpha, OperatorType::CreateBeta,
                   OperatorType::CreateBeta,  OperatorType::DestroyBeta,
-                  OperatorType::DestroyBeta, OperatorType::DestroyAlpha};
+                  OperatorType::DestroyBeta, OperatorType::DestroyAlpha
+              };
               opVector4 = {
                   OperatorType::CreateAlpha, OperatorType::CreateBeta,
                   OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
-                  OperatorType::DestroyBeta, OperatorType::DestroyAlpha};
+                  OperatorType::DestroyBeta, OperatorType::DestroyAlpha
+              };
               opVector5 = {
                   OperatorType::CreateBeta,   OperatorType::CreateAlpha,
                   OperatorType::CreateAlpha,  OperatorType::DestroyAlpha,
-                  OperatorType::DestroyAlpha, OperatorType::DestroyBeta};
+                  OperatorType::DestroyAlpha, OperatorType::DestroyBeta
+              };
               opVector6 = {
                   OperatorType::CreateBeta,   OperatorType::CreateAlpha,
                   OperatorType::CreateBeta,   OperatorType::DestroyBeta,
-                  OperatorType::DestroyAlpha, OperatorType::DestroyBeta};
+                  OperatorType::DestroyAlpha, OperatorType::DestroyBeta
+              };
               opVector7 = {
                   OperatorType::CreateBeta,  OperatorType::CreateBeta,
                   OperatorType::CreateBeta,  OperatorType::DestroyBeta,
-                  OperatorType::DestroyBeta, OperatorType::DestroyBeta};
+                  OperatorType::DestroyBeta, OperatorType::DestroyBeta
+              };
               opVector8 = {
                   OperatorType::CreateBeta,  OperatorType::CreateBeta,
                   OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
-                  OperatorType::DestroyBeta, OperatorType::DestroyBeta};
+                  OperatorType::DestroyBeta, OperatorType::DestroyBeta
+              };
             }
             std::vector<std::vector<OperatorType>>
                 threeBodyElementaryOperators = {opVector1, opVector2, opVector3,
@@ -601,62 +628,79 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::
   auto &matrix_elements = term_assistant.getMatrixElements();
   // Tmp objects.
   std::vector<OperatorType> oneBodyVec1 = {
-      OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
+      OperatorType::CreateAlpha, OperatorType::DestroyAlpha
+  };
   std::vector<OperatorType> oneBodyVec2 = {
-      OperatorType::CreateBeta, OperatorType::DestroyBeta};
+      OperatorType::CreateBeta, OperatorType::DestroyBeta
+  };
   std::vector<std::vector<OperatorType>> oneBodyElementaryOperators = {
-      oneBodyVec1, oneBodyVec2};
+      oneBodyVec1, oneBodyVec2
+  };
 
   std::vector<OperatorType> twoBodyVec1 = {
       OperatorType::CreateAlpha, OperatorType::CreateBeta,
-      OperatorType::DestroyBeta, OperatorType::DestroyAlpha};
+      OperatorType::DestroyBeta, OperatorType::DestroyAlpha
+  };
   std::vector<OperatorType> twoBodyVec2 = {
       OperatorType::CreateBeta, OperatorType::CreateAlpha,
-      OperatorType::DestroyAlpha, OperatorType::DestroyBeta};
+      OperatorType::DestroyAlpha, OperatorType::DestroyBeta
+  };
   std::vector<OperatorType> twoBodyVec3 = {
       OperatorType::CreateAlpha, OperatorType::CreateAlpha,
-      OperatorType::DestroyAlpha, OperatorType::DestroyAlpha};
+      OperatorType::DestroyAlpha, OperatorType::DestroyAlpha
+  };
   std::vector<OperatorType> twoBodyVec4 = {
       OperatorType::CreateBeta, OperatorType::CreateBeta,
-      OperatorType::DestroyBeta, OperatorType::DestroyBeta};
+      OperatorType::DestroyBeta, OperatorType::DestroyBeta
+  };
   std::vector<std::vector<OperatorType>> twoBodyElementaryOperators = {
-      twoBodyVec1, twoBodyVec2, twoBodyVec3, twoBodyVec4};
+      twoBodyVec1, twoBodyVec2, twoBodyVec3, twoBodyVec4
+  };
 
   std::vector<OperatorType> threeBodyVec1 = {
       OperatorType::CreateAlpha,  OperatorType::CreateAlpha,
       OperatorType::CreateAlpha,  OperatorType::DestroyAlpha,
-      OperatorType::DestroyAlpha, OperatorType::DestroyAlpha};
+      OperatorType::DestroyAlpha, OperatorType::DestroyAlpha
+  };
   std::vector<OperatorType> threeBodyVec2 = {
       OperatorType::CreateAlpha,  OperatorType::CreateAlpha,
       OperatorType::CreateBeta,   OperatorType::DestroyBeta,
-      OperatorType::DestroyAlpha, OperatorType::DestroyAlpha};
+      OperatorType::DestroyAlpha, OperatorType::DestroyAlpha
+  };
   std::vector<OperatorType> threeBodyVec3 = {
       OperatorType::CreateAlpha, OperatorType::CreateBeta,
       OperatorType::CreateBeta,  OperatorType::DestroyBeta,
-      OperatorType::DestroyBeta, OperatorType::DestroyAlpha};
+      OperatorType::DestroyBeta, OperatorType::DestroyAlpha
+  };
   std::vector<OperatorType> threeBodyVec4 = {
       OperatorType::CreateAlpha, OperatorType::CreateBeta,
       OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
-      OperatorType::DestroyBeta, OperatorType::DestroyAlpha};
+      OperatorType::DestroyBeta, OperatorType::DestroyAlpha
+  };
   std::vector<OperatorType> threeBodyVec5 = {
       OperatorType::CreateBeta,   OperatorType::CreateAlpha,
       OperatorType::CreateAlpha,  OperatorType::DestroyAlpha,
-      OperatorType::DestroyAlpha, OperatorType::DestroyBeta};
+      OperatorType::DestroyAlpha, OperatorType::DestroyBeta
+  };
   std::vector<OperatorType> threeBodyVec6 = {
       OperatorType::CreateBeta,   OperatorType::CreateAlpha,
       OperatorType::CreateBeta,   OperatorType::DestroyBeta,
-      OperatorType::DestroyAlpha, OperatorType::DestroyBeta};
+      OperatorType::DestroyAlpha, OperatorType::DestroyBeta
+  };
   std::vector<OperatorType> threeBodyVec7 = {
       OperatorType::CreateBeta,  OperatorType::CreateBeta,
       OperatorType::CreateBeta,  OperatorType::DestroyBeta,
-      OperatorType::DestroyBeta, OperatorType::DestroyBeta};
+      OperatorType::DestroyBeta, OperatorType::DestroyBeta
+  };
   std::vector<OperatorType> threeBodyVec8 = {
       OperatorType::CreateBeta,  OperatorType::CreateBeta,
       OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
-      OperatorType::DestroyBeta, OperatorType::DestroyBeta};
+      OperatorType::DestroyBeta, OperatorType::DestroyBeta
+  };
   std::vector<std::vector<OperatorType>> threeBodyElementaryOperators = {
       threeBodyVec1, threeBodyVec2, threeBodyVec3, threeBodyVec4,
-      threeBodyVec5, threeBodyVec6, threeBodyVec7, threeBodyVec8};
+      threeBodyVec5, threeBodyVec6, threeBodyVec7, threeBodyVec8
+  };
   bool added_0b = false;
 
   // Find hole states for normal ordering
@@ -749,7 +793,8 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::
       for (auto &iOp : twoBodyElementaryOperators) {
         for (auto &iTerm : tmp) {
           std::vector<pos_t> posVector = {
-              iTerm[0], iTerm[2], iTerm[3], iTerm[1]};
+              iTerm[0], iTerm[2], iTerm[3], iTerm[1]
+          };
           if (!(posVector[0] == posVector[1] && iOp[0] == iOp[1]) &&
               !(posVector[2] == posVector[3] && iOp[2] == iOp[3])) {
             auto noOp(iOp);
@@ -803,7 +848,8 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::
     for (auto p : twoBodyIndices) {
       std::vector<int> posVector = {
           std::get<0>(p.first), std::get<1>(p.first), std::get<2>(p.first),
-          std::get<3>(p.first)};
+          std::get<3>(p.first)
+      };
 
       if (!(posVector[0] == posVector[1] && iOp[0] == iOp[1]) &&
           !(posVector[2] == posVector[3] && iOp[2] == iOp[3])) {

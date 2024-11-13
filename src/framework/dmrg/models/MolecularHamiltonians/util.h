@@ -130,8 +130,9 @@ inline std::string infer_site_types(MPS<Matrix, SymmGroup> const& mps) {
   for (Lattice::pos_t p = 0; p < mps.size(); ++p)
     for (std::size_t i = 0; i < mps[p].site_dim().size(); ++i) {
       if (SymmGroup::particleNumber(mps[p].site_dim()[i].first) % 2 != 0) {
-        site_types += boost::lexical_cast<std::string>(getPG<SymmGroup>(
-                      )(mps[p].site_dim()[i].first)) +
+        site_types += boost::lexical_cast<std::string>(
+                          getPG<SymmGroup>()(mps[p].site_dim()[i].first)
+                      ) +
                       ",";
         break;
       }

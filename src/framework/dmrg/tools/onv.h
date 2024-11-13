@@ -13,8 +13,7 @@ class ONV {
   /** @brief do not use this class */
   ONV() = default;
   /** @brief do not use this class */
-  ONV(const std::vector<int>& onvVec) : nIndices_(onvVec.size()) {
-  }
+  ONV(const std::vector<int>& onvVec) : nIndices_(onvVec.size()) {}
   /** @brief do not use this class*/
   virtual ~ONV() = default;
   /** @brief return the qcmaquis compatible vector repr. of the ONV. */
@@ -31,7 +30,7 @@ class ONV {
   size_t nIndices_;
 };
 
-} // namespace srcas
-} // namespace maquis
+}  // namespace srcas
+}  // namespace maquis
 
 #endif

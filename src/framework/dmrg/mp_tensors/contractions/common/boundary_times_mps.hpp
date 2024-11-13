@@ -209,17 +209,20 @@ class BoundaryMPSProduct {
           std::vector<value_type> scales = conjugate_phases(
               left[mpo.herm_info.left_conj(k)], mpo, k, true, false
           );
-          typename Gemm::gemm_trim_left(
-          )(conjugate(left[mpo.herm_info.left_conj(k)]), bm, storage,
-            ref_left_basis, scales);
+          typename Gemm::gemm_trim_left()(
+              conjugate(left[mpo.herm_info.left_conj(k)]), bm, storage,
+              ref_left_basis, scales
+          );
         } else {
-          typename Gemm::gemm_trim_left(
-          )(conjugate(left[mpo.herm_info.left_conj(k)]), bm, storage,
-            ref_left_basis);
+          typename Gemm::gemm_trim_left()(
+              conjugate(left[mpo.herm_info.left_conj(k)]), bm, storage,
+              ref_left_basis
+          );
         }
       } else {
-        typename Gemm::gemm_trim_left(
-        )(transpose(left[k]), bm, storage, ref_left_basis);
+        typename Gemm::gemm_trim_left()(
+            transpose(left[k]), bm, storage, ref_left_basis
+        );
       }
       return storage;
     } else {
@@ -249,17 +252,20 @@ class BoundaryMPSProduct {
           std::vector<value_type> scales = conjugate_phases(
               left[mpo.herm_info.left_conj(b1)], mpo, b1, true, false
           );
-          typename Gemm::gemm_trim_left(
-          )(conjugate(left[mpo.herm_info.left_conj(b1)]), bm, data_[b1],
-            ref_left_basis, scales);
+          typename Gemm::gemm_trim_left()(
+              conjugate(left[mpo.herm_info.left_conj(b1)]), bm, data_[b1],
+              ref_left_basis, scales
+          );
         } else {
-          typename Gemm::gemm_trim_left(
-          )(conjugate(left[mpo.herm_info.left_conj(b1)]), bm, data_[b1],
-            ref_left_basis);
+          typename Gemm::gemm_trim_left()(
+              conjugate(left[mpo.herm_info.left_conj(b1)]), bm, data_[b1],
+              ref_left_basis
+          );
         }
       } else {
-        typename Gemm::gemm_trim_left(
-        )(transpose(left[b1]), bm, data_[b1], ref_left_basis);
+        typename Gemm::gemm_trim_left()(
+            transpose(left[b1]), bm, data_[b1], ref_left_basis
+        );
       }
     });
   }
@@ -370,14 +376,16 @@ class MPSBoundaryProduct {
         if (correctConjugate) {
           std::vector<value_type> scales =
               conjugate_phases(trv, mpo, b2, false, true);
-          typename Gemm::gemm_trim_right(
-          )(bm, trv, data_[b2], ref_right_basis, scales);
+          typename Gemm::gemm_trim_right()(
+              bm, trv, data_[b2], ref_right_basis, scales
+          );
         } else {
           typename Gemm::gemm_trim_right()(bm, trv, data_[b2], ref_right_basis);
         }
       } else {
-        typename Gemm::gemm_trim_right(
-        )(bm, right[b2], data_[b2], ref_right_basis);
+        typename Gemm::gemm_trim_right()(
+            bm, right[b2], data_[b2], ref_right_basis
+        );
       }
     });
   }
@@ -437,16 +445,19 @@ class MPSBoundaryProduct {
                 conjugate_phases(trv, mpo, k, false, true);
             // typename Gemm::gemm_trim_right()(mps.data(), trv, storage,
             // scales);
-            typename Gemm::gemm_trim_right(
-            )(bm, trv, data_[k], ref_right_basis, scales);
+            typename Gemm::gemm_trim_right()(
+                bm, trv, data_[k], ref_right_basis, scales
+            );
           } else {
-            typename Gemm::gemm_trim_right(
-            )(bm, trv, data_[k], ref_right_basis);
+            typename Gemm::gemm_trim_right()(
+                bm, trv, data_[k], ref_right_basis
+            );
           }
         } else {
           // typename Gemm::gemm_trim_right()(mps.data(), right[k], storage);
-          typename Gemm::gemm_trim_right(
-          )(bm, right[k], data_[k], ref_right_basis);
+          typename Gemm::gemm_trim_right()(
+              bm, right[k], data_[k], ref_right_basis
+          );
         }
         pop_[k] = 1;
       }

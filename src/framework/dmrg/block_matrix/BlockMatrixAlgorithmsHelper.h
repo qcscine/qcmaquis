@@ -17,7 +17,7 @@ class BlockMatrixAlgorithmsHelperClass {
   /**
    * @brief Adjusts the phase of the
    */
-  static void adjustPhase(Matrix& eigenVectors){};
+  static void adjustPhase(Matrix& eigenVectors) {};
 };
 
 /** @brief Specialization for complex-values matrices */

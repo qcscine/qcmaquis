@@ -228,7 +228,7 @@ void bandlanczos<MATRIX, VS>::calculate_eigenvectors(
         j--;
         continue;
       }  // END OF (if (pc==0)
-    }    // END OF if (norm<dtol)
+    }  // END OF if (norm<dtol)
 
     // normalize v_j = v_j / t_{j,j-p_c}
     v[index.cnv(j)] /= rnorm;
@@ -323,7 +323,7 @@ void bandlanczos<MATRIX, VS>::calculate_eigenvalues(
         --iter;
         continue;
       }  // END OF (if (pc==0)
-    }    // END OF if (norm<dtol)
+    }  // END OF if (norm<dtol)
 
     // set t_{j, j-p_c} = |v_j|_2 and normalize v_j = v_j / t_{j, j-p_c}
     if (j - pc >= 0) tmat(j, j - pc) = rnorm;

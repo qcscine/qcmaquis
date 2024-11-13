@@ -51,20 +51,20 @@ class matrix_archetype {
                   //(num_rows, num_cols) of the matrix
   typedef std::ptrdiff_t
       difference_type;  //< A signed integral type used to represent the
-                        //distance between two of the container's iterators
+                        // distance between two of the container's iterators
 
   typedef mutable_random_access_iterator_archetype<T>
       row_element_iterator;  //< An iterator that iterates over the elements of
-                             //a row
+                             // a row
   typedef random_access_iterator_archetype<T>
       const_row_element_iterator;  //< A constant version of the
-                                   //row_element_iteratior
+                                   // row_element_iteratior
   typedef mutable_random_access_iterator_archetype<T>
       col_element_iterator;  //< An iterator that iterates over the elements of
-                             //a column
+                             // a column
   typedef random_access_iterator_archetype<T>
       const_col_element_iterator;  //< A constant version of the
-                                   //col_element_iterator
+                                   // col_element_iterator
   // TODO more typedefs
 
   /**

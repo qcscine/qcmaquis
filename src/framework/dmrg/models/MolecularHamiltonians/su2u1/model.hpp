@@ -307,7 +307,8 @@ void qc_su2<Matrix, SymmGroup>::create_terms() {
 
     // 4-fold degenerate (+spin) V_ijil = V_ijli = V_jiil = V_jili  <--- coded
     //                           V_ilij = V_ilji = V_liij = V_liji
-    else if (((i == k && j != l) || j == k || (j == l && i != k)) && (i != j && k != l)) {
+    else if (((i == k && j != l) || j == k || (j == l && i != k)) &&
+             (i != j && k != l)) {
       typedef SpinSumSU2<Matrix, SymmGroup> SSUM;
       typedef std::vector<term_descriptor> term_vec;
 

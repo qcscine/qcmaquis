@@ -18,7 +18,7 @@ namespace srcas {
  *
  * @tparam ScalarType double or complex
  */
-template<typename ScalarType>
+template <typename ScalarType>
 class ElectronicSRCAS : public virtual BaseSRCAS<ScalarType, Determinant> {
   using InterfaceType = maquis::DMRGInterface<ScalarType>;
 
@@ -31,7 +31,8 @@ class ElectronicSRCAS : public virtual BaseSRCAS<ScalarType, Determinant> {
 
   void setQueenFromString_(const std::string& queen) override;
   /** @brief generate a new determinant form current queen */
-  Determinant generateSymmetricDeterminant_(const Determinant& onv) const override;
+  Determinant generateSymmetricDeterminant_(const Determinant& onv
+  ) const override;
   /** @brief get a random occupied orbital for det
    *
    * @param det vector representation of a Determinant
@@ -53,7 +54,7 @@ class ElectronicSRCAS : public virtual BaseSRCAS<ScalarType, Determinant> {
   double fractional_beta_orbs_;
 };
 
-} // namespace srcas
-} // namespace maquis
+}  // namespace srcas
+}  // namespace maquis
 
 #endif

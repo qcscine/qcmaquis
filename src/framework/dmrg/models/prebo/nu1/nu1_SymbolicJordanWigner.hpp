@@ -129,7 +129,7 @@ class SymbolicJordanWigner {
 
  public:
   /** @brief Default class constructor */
-  SymbolicJordanWigner(){};
+  SymbolicJordanWigner() {};
 
   /**
    * @brief Constructor from a vector of symbolic operators

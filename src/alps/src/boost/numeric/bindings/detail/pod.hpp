@@ -61,9 +61,9 @@ struct adaptor<T[M][N], Id, typename boost::enable_if<is_numeric<T> >::type> {
       mpl::pair<tag::stride_type<2>, tag::contiguous> >
       property_map;
 
-  static value_type* begin_value(Id & t) { return &t[0][0]; }
+  static value_type* begin_value(Id& t) { return &t[0][0]; }
 
-  static value_type* end_value(Id & t) { return &t[M][N]; }
+  static value_type* end_value(Id& t) { return &t[M][N]; }
 };
 
 }  // namespace detail

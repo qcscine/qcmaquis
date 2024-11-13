@@ -75,7 +75,7 @@ class buffered_uniform_01 : public buffered_generator<RealType> {
 /// @ref alps::buffered_generator  base class.
 /// If the @c Engine is a reference type,
 //// a reference to the random number engine passed to the constructor is used.
-///Otherwise a copy of the enigine is used.
+/// Otherwise a copy of the enigine is used.
 
 template <class Engine, class RealType = double>
 class basic_buffered_uniform_01 : public buffered_uniform_01<RealType> {

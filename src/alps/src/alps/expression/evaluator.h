@@ -262,12 +262,14 @@ Expression<T> Evaluator<T>::partial_evaluate_function(
     double arg2 = evaluate_helper<T>::real(evaluated[1].value());
     if (name == "atan2")
       return Expression<T>(static_cast<T>(std::atan2(arg1, arg2)));
-    else if (evaluate_random_ && (name == "gaussian_random" || name == "normal_random"))
+    else if (evaluate_random_ &&
+             (name == "gaussian_random" || name == "normal_random"))
       return Expression<T>(arg1 + arg2 * Disorder::gaussian_random());
   } else if (evaluated.size() == 0) {
     if (evaluate_random_ && name == "random")
       return Expression<T>(Disorder::random());
-    else if (evaluate_random_ && (name == "gaussian_random" || name == "normal_random"))
+    else if (evaluate_random_ &&
+             (name == "gaussian_random" || name == "normal_random"))
       return Expression<T>(Disorder::gaussian_random());
   }
   return Expression<T>(Function<T>(name, evaluated));

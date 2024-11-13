@@ -13,7 +13,8 @@ class VibONV : public virtual ONV {
   /** @brief do not use this class */
   VibONV() = default;
   /** @brief do not use this class */
-  VibONV(const std::vector<int>& onvVec); // , const std::vector<int>& onvSpace); //  : nIndices_(onvVec.size()) {
+  VibONV(const std::vector<int>& onvVec
+  );  // , const std::vector<int>& onvSpace); //  : nIndices_(onvVec.size()) {
   /** @brief return the qcmaquis compatible vector repr. of the ONV. */
   std::vector<int> vector() const override;
   /** @brief compare two onvs */
@@ -24,7 +25,7 @@ class VibONV : public virtual ONV {
   // std::vector<int> onvSpace_;
 };
 
-} // namespace srcas
-} // namespace maquis
+}  // namespace srcas
+}  // namespace maquis
 
 #endif

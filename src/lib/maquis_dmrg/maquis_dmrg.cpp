@@ -39,7 +39,7 @@ struct DMRGInterface<ScalarType, HamiltonianType>::Impl {
   using sim_ptr = typename simulation_traits<ScalarType>::shared_ptr;
   sim_ptr sim;
 
-  Impl(sim_ptr sim_) : sim(std::move(sim_)){};
+  Impl(sim_ptr sim_) : sim(std::move(sim_)) {};
   ~Impl() = default;
 };
 

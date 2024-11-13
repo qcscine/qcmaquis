@@ -91,7 +91,8 @@ block_matrix<Matrix, SymmGroup> zerosite_hamil_lbtm_kernel(
       // ::contraction::common::conjugate_phases(adjoint(right[mpo_left.herm_info.right_conj(b2)]),
       // mpo_left, b2, false, true);
       //::SU2::gemm_trim(t.at(b2, local),
-      //:adjoint(right[mpo_left.herm_info.right_conj(b2)]), tmp, phases, false);
+      //: adjoint(right[mpo_left.herm_info.right_conj(b2)]), tmp, phases,
+      //: false);
       ::SU2::gemm_trim(
           t.at(b2, local), adjoint(right[mpo_left.herm_info.right_conj(b2)]),
           tmp,

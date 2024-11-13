@@ -35,7 +35,7 @@ class Determinant : public virtual ONV {
    * @param rhs other determinants
    * @return true if both determiants have same alpha and beta occupation
    */
-  bool operator==(const Determinant& rhs) const; //  override;
+  bool operator==(const Determinant& rhs) const;  //  override;
   /**
    * @brief excite electron from one orbital to another
    *
@@ -74,7 +74,7 @@ class Determinant : public virtual ONV {
   std::vector<int> beta_unoccupied_;
 };
 
-} // namespace srcas
-} // namespace maquis
+}  // namespace srcas
+}  // namespace maquis
 
 #endif

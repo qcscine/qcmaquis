@@ -100,9 +100,10 @@ MPS<matrix, SymmGroup> state_mps(
                 state[i].second * curr_i[0].second + curr;
     size_t out = (i == state.size() - 1) ? 0 : state[i].second;
     mps[i].make_left_paired();
-    mps[i].data()(
-        SymmGroup::fuse(curr_i[0].first, state[i].first), new_i[0].first
-    )(in, out) = 1.;
+    mps[i]
+        .data()(SymmGroup::fuse(curr_i[0].first, state[i].first), new_i[0].first)(
+            in, out
+        ) = 1.;
     curr_i = new_i;
     curr = state[i].second;
   }

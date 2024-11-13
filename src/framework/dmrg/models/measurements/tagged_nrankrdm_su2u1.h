@@ -137,8 +137,9 @@ class TaggedNRankRDM<
         }
 
         // check if term is allowed by symmetry
-        if (not measurements_details::checkpg<SymmGroup>(
-            )(terms[0], tag_handler_local, lattice))
+        if (not measurements_details::checkpg<SymmGroup>()(
+                terms[0], tag_handler_local, lattice
+            ))
           continue;
 
         generate_mpo::TaggedMPOMaker<Matrix, SymmGroup> mpo_m(
@@ -219,8 +220,9 @@ class TaggedNRankRDM<
       this->labels_num[i] = num_labels;
 
       // check if term is allowed by symmetry
-      if (not measurements_details::checkpg<SymmGroup>(
-          )(terms[0], tag_handler_local, lattice)) {
+      if (not measurements_details::checkpg<SymmGroup>()(
+              terms[0], tag_handler_local, lattice
+          )) {
         this->vector_results[i] = 0.;
         continue;
       }

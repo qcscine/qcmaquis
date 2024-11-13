@@ -177,8 +177,9 @@ class Determinant : public std::vector<int> {
   ) const {
     std::vector<std::vector<charge>> c_det;
     for (size_t j = 0; j < (*this).size(); ++j)
-      c_det.push_back(deas_detail::charge_from_int<SymmGroup>(
-      )((*this)[j], j, phys_dims, site_types));
+      c_det.push_back(deas_detail::charge_from_int<SymmGroup>()(
+          (*this)[j], j, phys_dims, site_types
+      ));
 
     return c_det;
   }

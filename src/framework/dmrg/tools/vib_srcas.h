@@ -18,7 +18,7 @@ namespace srcas {
  *
  * @tparam ScalarType double or complex
  */
-template<typename ScalarType>
+template <typename ScalarType>
 class VibSRCAS : public virtual BaseSRCAS<ScalarType, VibONV> {
   using InterfaceType = maquis::DMRGInterface<ScalarType>;
 
@@ -40,7 +40,7 @@ class VibSRCAS : public virtual BaseSRCAS<ScalarType, VibONV> {
   std::vector<int> onvSpace_;
 };
 
-} // namespace srcas
-} // namespace maquis
+}  // namespace srcas
+}  // namespace maquis
 
 #endif

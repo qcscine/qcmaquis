@@ -18,8 +18,8 @@ class Timer {
   Timer(std::string name_) : name(std::move(name_)) {}
 
   ~Timer() {
-    maquis::cout << name << " took " << std::setprecision(2) << std::defaultfloat
-                 << val << " [s]\n";
+    maquis::cout << name << " took " << std::setprecision(2)
+                 << std::defaultfloat << val << " [s]\n";
   }
 
   Timer& operator+=(double t) {

@@ -49,7 +49,9 @@ struct NModeFixture {
     parametersFADOneBodyPaired.set("symmetry", "none");
     parametersFADOneBodyPaired.set("LATTICE", "watson lattice");
     parametersFADOneBodyPaired.set("MODEL", "nmodecompactpaired");
-    parametersFADOneBodyPaired.set("integral_file", "integral_file_test_OneBodyFAD");
+    parametersFADOneBodyPaired.set(
+        "integral_file", "integral_file_test_OneBodyFAD"
+    );
     //
     parametersFADTwoBody.set("L", 22);
     parametersFADTwoBody.set("nmode_num_modes", 2);
@@ -67,7 +69,9 @@ struct NModeFixture {
     parametersFADTwoBodyPaired.set("symmetry", "none");
     parametersFADTwoBodyPaired.set("LATTICE", "watson lattice");
     parametersFADTwoBodyPaired.set("MODEL", "nmodecompactpaired");
-    parametersFADTwoBodyPaired.set("integral_file", "integral_file_test_TwoBodyFAD");
+    parametersFADTwoBodyPaired.set(
+        "integral_file", "integral_file_test_TwoBodyFAD"
+    );
     //
     parametersWater.set("nsweeps", 50);
     parametersWater.set("ngrowsweeps", 10);
@@ -207,8 +211,8 @@ struct NModeFixture {
         {{1, 35, 1, 35, -1, -1, -1, -1, -1, -1, -1, -1}, 2.651668901080508e+03},
         {{1, 36, 1, 36, -1, -1, -1, -1, -1, -1, -1, -1}, 2.861283145084534e+03},
         {{1, 37, 1, 37, -1, -1, -1, -1, -1, -1, -1, -1}, 2.946541753544523e+03},
-        {{1, 38, 1, 38, -1, -1, -1, -1, -1, -1, -1, -1},
-         3.133897924626650e+03}};
+        {{1, 38, 1, 38, -1, -1, -1, -1, -1, -1, -1, -1}, 3.133897924626650e+03}
+    };
     // For the two-body FCIDUMP, we kept only the constants > 1 cm-1 for
     // convenience
     integralFileTwoBodyFAD.open("integral_file_test_TwoBodyFAD");
@@ -15220,8 +15224,9 @@ struct NModeFixture {
   }
 
   // Class members
-  DmrgParameters parametersTwoMode, parametersFourMode, parametersFADOneBody, parametersFADOneBodyPaired,
-      parametersFADTwoBody, parametersFADTwoBodyPaired, parametersFADOneBodyBinary,
+  DmrgParameters parametersTwoMode, parametersFourMode, parametersFADOneBody,
+      parametersFADOneBodyPaired, parametersFADTwoBody,
+      parametersFADTwoBodyPaired, parametersFADOneBodyBinary,
       parametersFADTwoBodyFingerPrint, parametersWater;
   std::ofstream integralFileOneBodyFAD, integralFileTwoBodyFADFingerPrint,
       integralFileTwoBodyFAD, integralFileOneBodyWater;

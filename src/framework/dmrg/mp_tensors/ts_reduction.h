@@ -167,9 +167,9 @@ Index<SymmGroup> reduce_right(
           }
 
         }  // S2
-      }    // S1
-    }      // phys2
-  }        // m1 block
+      }  // S1
+    }  // phys2
+  }  // m1 block
 
   return phys2_i;
 }
@@ -285,9 +285,9 @@ Index<SymmGroup> unreduce_left(
           }
 
         }  // S2
-      }    // S1
-    }      // phys2
-  }        // m1 block
+      }  // S1
+    }  // phys2
+  }  // m1 block
 
   return phys2_i;
 }

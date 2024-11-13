@@ -52,9 +52,9 @@
 #endif
 
 // "g77" or "gfortran" or mkl_intel_lp64
-//#undef BIND_FORTRAN_INTEGER_8
+// #undef BIND_FORTRAN_INTEGER_8
 // clapack or "gfortran -fdefault-integer-8" or mkl_intel_ilp64
-//#define BIND_FORTRAN_INTEGER_8
+// #define BIND_FORTRAN_INTEGER_8
 
 // Most fortran compilers use fortran_int_t := int by default, so we follow
 // this default, even so f2c (=clapack) uses "typedef long int integer;"

@@ -200,9 +200,9 @@ parse_integrals(
     );
   }
   // The order starts with 1, so we remove 1 for coherence with C++ standards
-  std::transform(
-      order.begin(), order.end(), order.begin(), [](pos_t p) { return p - 1; }
-  );
+  std::transform(order.begin(), order.end(), order.begin(), [](pos_t p) {
+    return p - 1;
+  });
   inv_order.resize(order.size());
   for (int p = 0; p < order.size(); ++p) {
     inv_order[p] =

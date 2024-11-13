@@ -193,8 +193,8 @@ class NormalOrderingHelper {
   /**
    * @brief Function that returns a map, corresponding to a chain a_p^\dag a_q
    * of one creation and one annihilation operator, where p and q are stored in
-   * the pair, and gives the coefficient of the NO 2-body contribution to this chain
-   * of operators.
+   * the pair, and gives the coefficient of the NO 2-body contribution to this
+   * chain of operators.
    */
   std::unordered_map<std::tuple<int, int, int, int>, double, intTupleHash>
   getNoTwoBodyCoefficients(
@@ -216,7 +216,8 @@ class NormalOrderingHelper {
               std::vector<std::string> matrixElementStrings = {
                   getIdentifier(i, i, p, s, q, r),
                   getIdentifier(i, s, p, i, q, r),
-                  getIdentifier(i, r, p, s, q, i)};
+                  getIdentifier(i, r, p, s, q, i)
+              };
 
               for (int n = 0; n < matrixElementStrings.size(); ++n) {
                 if (!idxToMatrixElement.count(matrixElementStrings[n]))
@@ -246,8 +247,8 @@ class NormalOrderingHelper {
   /**
    * @brief Function that returns a map, corresponding to a chain a_p^\dag a_q
    * of one creation and one annihilation operator, where p and q are stored in
-   * the pair, and gives the coefficient of the NO 1-body contribution to this chain
-   * of operators.
+   * the pair, and gives the coefficient of the NO 1-body contribution to this
+   * chain of operators.
    */
   std::unordered_map<std::pair<int, int>, double, intPairHash>
   getNoOneBodyCoefficients(
@@ -268,7 +269,8 @@ class NormalOrderingHelper {
         for (auto i : hole_states) {
           // 2B contribution
           std::vector<std::string> matrixElementStrings_2B = {
-              getIdentifier(i, i, p, q), getIdentifier(i, q, p, i)};
+              getIdentifier(i, i, p, q), getIdentifier(i, q, p, i)
+          };
           for (int n = 0; n < matrixElementStrings_2B.size(); ++n) {
             if (!idxToMatrixElement.count(matrixElementStrings_2B[n])) continue;
 
@@ -282,8 +284,8 @@ class NormalOrderingHelper {
             std::vector<std::string> matrixElementStrings_3B = {
                 getIdentifier(i, j, j, p, q, i),
                 getIdentifier(i, j, j, i, p, q),
-                getIdentifier(i, i, p, j, j, q),
-                getIdentifier(i, i, j, j, p, q)};
+                getIdentifier(i, i, p, j, j, q), getIdentifier(i, i, j, j, p, q)
+            };
 
             for (int n = 0; n < matrixElementStrings_3B.size(); ++n) {
               if (!idxToMatrixElement.count(matrixElementStrings_3B[n]))
@@ -339,7 +341,8 @@ class NormalOrderingHelper {
       for (auto j : hole_states) {
         // 2B contribution
         std::vector<std::string> matrixElementStrings_2B = {
-            getIdentifier(i, i, j, j), getIdentifier(i, j, j, i)};
+            getIdentifier(i, i, j, j), getIdentifier(i, j, j, i)
+        };
 
         for (int n = 0; n < matrixElementStrings_2B.size(); ++n) {
           if (!idxToMatrixElement.count(matrixElementStrings_2B[n])) continue;
@@ -353,7 +356,8 @@ class NormalOrderingHelper {
         for (auto k : hole_states) {
           std::vector<std::string> matrixElementStrings_3B = {
               getIdentifier(i, i, j, k, k, j), getIdentifier(i, k, j, i, k, j),
-              getIdentifier(i, i, j, j, k, k)};
+              getIdentifier(i, i, j, j, k, k)
+          };
 
           for (int n = 0; n < matrixElementStrings_3B.size(); ++n) {
             if (!idxToMatrixElement.count(matrixElementStrings_3B[n])) continue;

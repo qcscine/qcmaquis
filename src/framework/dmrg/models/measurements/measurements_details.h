@@ -433,7 +433,7 @@ class nrdm_iterator {
  public:
   using vec_type = std::vector<I>;
   using return_type = std::vector<std::vector<I>>;
-  nrdm_iterator() : indexes_(){};
+  nrdm_iterator() : indexes_() {};
   return_type get() { return indexes_; }
   void operator()(const vec_type& vec) { indexes_.push_back(vec); }
 
@@ -447,8 +447,9 @@ I get_nrdm_permutations(
     I L, bool bra_neq_ket = false,
     const std::vector<I>& positions_first = std::vector<I>()
 ) {
-  return iterate_rdm_indices<nrdm_counter<I>, N>(
-  )(nrdm_counter<I>(), L, bra_neq_ket, positions_first);
+  return iterate_rdm_indices<nrdm_counter<I>, N>()(
+      nrdm_counter<I>(), L, bra_neq_ket, positions_first
+  );
 }
 
 template <int N, class I = Lattice::pos_t>
@@ -456,8 +457,9 @@ typename nrdm_iterator<I>::return_type iterate_nrdm(
     I L, bool bra_neq_ket = false,
     const std::vector<I>& positions_first = std::vector<I>()
 ) {
-  return iterate_rdm_indices<nrdm_iterator<I>, N>(
-  )(nrdm_iterator<I>(), L, bra_neq_ket, positions_first);
+  return iterate_rdm_indices<nrdm_iterator<I>, N>()(
+      nrdm_iterator<I>(), L, bra_neq_ket, positions_first
+  );
 }
 
 }  // namespace measurements_details

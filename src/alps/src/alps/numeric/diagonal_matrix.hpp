@@ -189,7 +189,7 @@ class diagonal_matrix {
 
   template <class Archive>
   void serialize(Archive& ar, unsigned int version) {
-    ar& data_;
+    ar & data_;
   }
 
   friend void swap(diagonal_matrix& x, diagonal_matrix& y) {
@@ -381,7 +381,7 @@ class transpose_view<diagonal_matrix<T> > {
   // -size()
   // -typedefs iterator, const_iterator
 
-  explicit transpose_view(diagonal_matrix<T> const& m) : m_(m){};
+  explicit transpose_view(diagonal_matrix<T> const& m) : m_(m) {};
 
   operator diagonal_matrix<T>() const { return m_; }
 

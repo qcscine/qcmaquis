@@ -247,10 +247,10 @@ typename maquis::traits::real_type<T>::type gather_real_pred(T const& val) {
 }
 
 template <class T>
-bool customCompare(const T a, const T b){
-    // Check if the difference is within the tolerance
-    double tolerance = 1e-40;
-    return a - b > tolerance;
+bool customCompare(const T a, const T b) {
+  // Check if the difference is within the tolerance
+  double tolerance = 1e-40;
+  return a - b > tolerance;
 }
 
 template <class DiagMatrix, class SymmGroup>

@@ -229,7 +229,9 @@ BOOST_FIXTURE_TEST_CASE(
     BOOST_CHECK_SMALL(std::imag(eigenValues[iElement]), 1.0E-8);
     if (iElement != 0) {
       auto realEnergy = std::real(eigenValues[iElement]);
-      if (realEnergy < minimumEnergy) { minimumEnergy = realEnergy; }
+      if (realEnergy < minimumEnergy) {
+        minimumEnergy = realEnergy;
+      }
     }
   }
   BOOST_CHECK_CLOSE(minimumEnergy, energyDMRG, 1.0E-8);

@@ -17,8 +17,10 @@
 #include <string>
 
 namespace detail {
-template<class T>
-void runSRCAS(T& srcas, const std::vector<std::string>& onvs, bool restart = false) {
+template <class T>
+void runSRCAS(
+    T& srcas, const std::vector<std::string>& onvs, bool restart = false
+) {
   srcas.printSettings();
   if (restart) {
     srcas.restart();
@@ -27,7 +29,7 @@ void runSRCAS(T& srcas, const std::vector<std::string>& onvs, bool restart = fal
   srcas.printResults();
 }
 
-template<class T>
+template <class T>
 void runSRCAS(T& srcas, bool restart = false) {
   srcas.printSettings();
   if (restart) {
@@ -66,9 +68,9 @@ std::vector<std::string> readONVsFromFile(const std::string& filename) {
 
     if (std::regex_match(line, det_match, det_reg)) {
       onvs.push_back(line);
-    }
-    else {
-      maquis::cout << "Found invalid ONV in line " << line_num << ": " << line << std::endl;
+    } else {
+      maquis::cout << "Found invalid ONV in line " << line_num << ": " << line
+                   << std::endl;
     }
   }
 
@@ -82,7 +84,7 @@ std::vector<std::string> readONVsFromFile(const std::string& filename) {
   return onvs;
 }
 
-} // namespace detail
+}  // namespace detail
 
 /**
  * @brief Application that extracts the CI coefficients associated with a given
@@ -104,8 +106,10 @@ int main(int argc, char** argv) {
     maquis::cout << "DMRG options are not valid";
     exit(1);
   }
-  if (!(opt.parms["MODEL"] == "nmode") && !(opt.parms["MODEL"] == "watson") && !(opt.parms["MODEL"] == "quantum_chemistry")) {
-    maquis::cout << "SRCAS is not implemented for model: " << opt.parms["MODEL"];
+  if (!(opt.parms["MODEL"] == "nmode") && !(opt.parms["MODEL"] == "watson") &&
+      !(opt.parms["MODEL"] == "quantum_chemistry")) {
+    maquis::cout << "SRCAS is not implemented for model: "
+                 << opt.parms["MODEL"];
     exit(1);
   }
 
@@ -125,16 +129,17 @@ int main(int argc, char** argv) {
   if (opt.parms["COMPLEX"]) {
     using ScalarType = std::complex<double>;
     using InterfaceType = maquis::DMRGInterface<ScalarType>;
-    std::shared_ptr<InterfaceType> interface = std::make_shared<InterfaceType>(opt.parms);
+    std::shared_ptr<InterfaceType> interface =
+        std::make_shared<InterfaceType>(opt.parms);
 
     if ((opt.parms["MODEL"] == "quantum_chemistry")) {
       maquis::srcas::ElectronicSRCAS<ScalarType> srcas(opt.parms, interface);
       if (opt.parms.is_set("srcas_detfile")) {
-        maquis::cout << "Reading determinants from file " << opt.parms["srcas_detfile"] << std::endl;
+        maquis::cout << "Reading determinants from file "
+                     << opt.parms["srcas_detfile"] << std::endl;
         auto onvs = detail::readONVsFromFile(opt.parms["srcas_detfile"]);
         detail::runSRCAS(srcas, onvs, restart);
-      }
-      else {
+      } else {
         detail::runSRCAS(srcas, restart);
       }
     }
@@ -149,15 +154,15 @@ int main(int argc, char** argv) {
 
   using ScalarType = double;
   using InterfaceType = maquis::DMRGInterface<ScalarType>;
-  std::shared_ptr<InterfaceType> interface = std::make_shared<InterfaceType>(opt.parms);
+  std::shared_ptr<InterfaceType> interface =
+      std::make_shared<InterfaceType>(opt.parms);
 
   if ((opt.parms["MODEL"] == "quantum_chemistry")) {
     maquis::srcas::ElectronicSRCAS<ScalarType> srcas(opt.parms, interface);
     if (opt.parms.is_set("srcas_detfile")) {
       auto onvs = detail::readONVsFromFile(opt.parms["srcas_detfile"]);
       detail::runSRCAS(srcas, onvs, restart);
-    }
-    else {
+    } else {
       detail::runSRCAS(srcas, restart);
     }
   }

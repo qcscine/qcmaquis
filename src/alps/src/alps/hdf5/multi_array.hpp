@@ -173,10 +173,9 @@ struct get_pointer<alps::multi_array<T, N, A> >
 
 template <typename T, std::size_t N, typename A>
 struct get_pointer<boost::multi_array<T, N, A> const> {
-  static
-      typename alps::hdf5::scalar_type<boost::multi_array<T, N, A> >::type const
-          *
-          apply(boost::multi_array<T, N, A> const &value) {
+  static typename alps::hdf5::scalar_type<
+      boost::multi_array<T, N, A> >::type const *
+  apply(boost::multi_array<T, N, A> const &value) {
     using alps::hdf5::get_pointer;
     return get_pointer(*value.data());
   }

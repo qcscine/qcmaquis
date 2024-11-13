@@ -568,8 +568,9 @@ parms["nsweeps"]) checkpoint_simulation(mps, sweep, -1); if (stopped) break;
       BaseParameters parms_meas;
       parms_meas = parms.twou1_measurements();
       if (!parms_meas.empty()) {
-        measure_transform<Matrix, SymmGroup>(
-        )(rfile(), "/spectrum/results", base::lat, mps, parms_meas);
+        measure_transform<Matrix, SymmGroup>()(
+            rfile(), "/spectrum/results", base::lat, mps, parms_meas
+        );
       }
     }
 #endif
@@ -837,8 +838,7 @@ parms["nsweeps"]) checkpoint_simulation(mps, sweep, -1); if (stopped) break;
     if (parms.is_set("L")) {
       parms.set("max_bond_dimension", parms["L"] * 10);
     } else {
-      throw std::runtime_error(
-          "L not defined for a starting guess calculation!"
+      throw std::runtime_error("L not defined for a starting guess calculation!"
       );
     }
 

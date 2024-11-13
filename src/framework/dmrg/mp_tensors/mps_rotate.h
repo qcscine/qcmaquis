@@ -269,7 +269,8 @@ void rotate_mps(
   // we don't use the Hamiltonian of the models so we don't care for these
   // integrals, but the Model constructor will fail if no integrals are defined
   const chem::integral_map<typename Matrix::value_type> fake_integrals = {
-      {{1, 1, 1, 1}, 0.0}};
+      {{1, 1, 1, 1}, 0.0}
+  };
 
   BaseParameters parms = chem::detail::set_2u1_parameters(L, Nup, Ndown);
   parms.set("integrals_binary", chem::serialize(fake_integrals));

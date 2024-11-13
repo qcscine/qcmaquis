@@ -20,29 +20,28 @@
 
 #include <alps/random/parallel/keyword.hpp>
 
-#define ALPS_RANDOM_PARALLEL_CONSTRUCTOR(z, n, P)                            \
-  BOOST_PP_IF(n, template <, BOOST_PP_EMPTY())                               \
-  BOOST_PP_ENUM_PARAMS(n, class T)                                           \
-  BOOST_PP_IF(n, >, BOOST_PP_EMPTY())                                        \
-      BOOST_PP_ARRAY_ELEM(0, P)(BOOST_PP_ENUM_BINARY_PARAMS(n, T, const& x)) \
-          BOOST_PP_ARRAY_ELEM(1, P) {                                        \
-    seed(BOOST_PP_ENUM_PARAMS(n, x));                                        \
-  }                                                                          \
-                                                                             \
-  template <class It BOOST_PP_COMMA_IF(n) BOOST_PP_ENUM_PARAMS(n, class T)>  \
-  BOOST_PP_ARRAY_ELEM(0, P)                                                  \
-  (It & f, It const& l BOOST_PP_COMMA_IF(n)                                  \
-               BOOST_PP_ENUM_BINARY_PARAMS(n, T, const& x))                  \
-      BOOST_PP_ARRAY_ELEM(1, P) {                                            \
-    seed(f, l BOOST_PP_COMMA_IF(n) BOOST_PP_ENUM_PARAMS(n, x));              \
-  }                                                                          \
-                                                                             \
-  BOOST_PP_IF(n, template <, BOOST_PP_EMPTY())                               \
-  BOOST_PP_ENUM_PARAMS(n, class T)                                           \
-  BOOST_PP_IF(n, >, BOOST_PP_EMPTY()) void seed(                             \
-      BOOST_PP_ENUM_BINARY_PARAMS(n, T, const& x)                            \
-  ) {                                                                        \
-    seed_named(BOOST_PP_ENUM_PARAMS(n, x));                                  \
+#define ALPS_RANDOM_PARALLEL_CONSTRUCTOR(z, n, P)                           \
+  BOOST_PP_IF(n, template <, BOOST_PP_EMPTY())                              \
+  BOOST_PP_ENUM_PARAMS(n, class T)                                          \
+  BOOST_PP_IF(n, >, BOOST_PP_EMPTY())                                       \
+  BOOST_PP_ARRAY_ELEM(0, P)                                                 \
+  (BOOST_PP_ENUM_BINARY_PARAMS(n, T, const& x)) BOOST_PP_ARRAY_ELEM(1, P) { \
+    seed(BOOST_PP_ENUM_PARAMS(n, x));                                       \
+  }                                                                         \
+                                                                            \
+  template <class It BOOST_PP_COMMA_IF(n) BOOST_PP_ENUM_PARAMS(n, class T)> \
+  BOOST_PP_ARRAY_ELEM(0, P)                                                 \
+  (It & f, It const& l BOOST_PP_COMMA_IF(n)                                 \
+               BOOST_PP_ENUM_BINARY_PARAMS(n, T, const& x))                 \
+      BOOST_PP_ARRAY_ELEM(1, P) {                                           \
+    seed(f, l BOOST_PP_COMMA_IF(n) BOOST_PP_ENUM_PARAMS(n, x));             \
+  }                                                                         \
+                                                                            \
+  BOOST_PP_IF(n, template <, BOOST_PP_EMPTY())                              \
+  BOOST_PP_ENUM_PARAMS(n, class T)                                          \
+  BOOST_PP_IF(n, >, BOOST_PP_EMPTY())                                       \
+  void seed(BOOST_PP_ENUM_BINARY_PARAMS(n, T, const& x)) {                  \
+    seed_named(BOOST_PP_ENUM_PARAMS(n, x));                                 \
   }
 
 #define ALPS_RANDOM_PARALLEL_ITERATOR_SEED_DEFAULT_IMPL(z, n, unused)       \

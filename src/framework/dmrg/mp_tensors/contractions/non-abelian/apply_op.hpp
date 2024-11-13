@@ -121,9 +121,9 @@ void lbtm_kernel(
               r_size, w_block, couplings
           );
         }  // wblock
-      }    // lblock
-    }      // op_index
-  }        // b1
+      }  // lblock
+    }  // op_index
+  }  // b1
 }
 
 template <class Matrix, class SymmGroup>
@@ -261,9 +261,9 @@ void rbtm_tasks(
               r_size, out_right_offset + right_offset_remain
           );
         }  // wblock
-      }    // ket block
-    }      // op_index
-  }        // b2
+      }  // ket block
+    }  // op_index
+  }  // b2
 }
 
 template <class Matrix, class OtherMatrix, class SymmGroup>

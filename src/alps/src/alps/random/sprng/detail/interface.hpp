@@ -19,10 +19,12 @@ extern "C" {
 int ALPS_SPRNG_CALL(get_rn_int)(int *igenptr);
 float ALPS_SPRNG_CALL(get_rn_flt)(int *igenptr);
 double ALPS_SPRNG_CALL(get_rn_dbl)(int *igenptr);
-int *ALPS_SPRNG_CALL(init_rng
-)(int rng_type, int gennum, int total_gen, int seed, int mult);
-int ALPS_SPRNG_CALL(spawn_rng
-)(int *igenptr, int nspawned, int ***newgens, int checkid);
+int *ALPS_SPRNG_CALL(init_rng)(
+    int rng_type, int gennum, int total_gen, int seed, int mult
+);
+int ALPS_SPRNG_CALL(spawn_rng)(
+    int *igenptr, int nspawned, int ***newgens, int checkid
+);
 int ALPS_SPRNG_CALL(get_seed_rng)(int *genptr);
 int ALPS_SPRNG_CALL(free_rng)(int *genptr);
 int ALPS_SPRNG_CALL(pack_rng)(int *genptr, char **buffer);

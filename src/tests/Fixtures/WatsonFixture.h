@@ -4855,589 +4855,1755 @@ struct WatsonFixture {
     integralFileH2CONoCoriolis.close();
     // Integral file for H2CO in internal coordinates
     integralFileH2COInternal.open("integral_file_test_Watson_H2CO_Internal");
-    integralFileH2COInternal << "   3.00639793E+02     1     1     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.00680351E+02    -1    -1     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.68585810E-06     2     1     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -0.00000000E+00    -2    -1     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.17700569E+02     2     2     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.17701180E+02    -2    -2     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -8.18698258E-07     3     1     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -0.00000000E+00    -3    -1     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.18154772E-09     3     2     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   7.80836059E-11    -3    -2     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.86147399E+02     3     3     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.86147313E+02    -3    -3     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -9.12948998E-07     4     1     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -0.00000000E+00    -4    -1     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.21722238E-09     4     2     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.29633749E-11    -4    -2     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.11551434E-02     4     3     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.02842723E-13    -4    -3     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   4.38943983E+02     4     4     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.38943498E+02    -4    -4     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   4.63481898E-08     5     1     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -0.00000000E+00    -5    -1     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.38822804E-10     5     2     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -9.87609019E-12    -5    -2     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.08551070E-02     5     3     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.40935461E-12    -5    -3     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.37457083E-02     5     4     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   6.81926108E-13    -5    -4     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   7.43752338E+02     5     5     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -7.43752825E+02    -5    -5     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -6.34344018E-07     6     1     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -0.00000000E+00    -6    -1     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   4.03863624E-03     6     2     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   4.64533973E-13    -6    -2     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -7.33724339E-10     6     3     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.00033961E-11    -6    -3     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -8.30772227E-10     6     4     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -7.29103718E-12    -6    -4     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.97058620E-11     6     5     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.09046771E-13    -6    -5     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   7.62706592E+02     6     6     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -7.62707160E+02    -6    -6     0     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.43308640E+00     1     1     1     1     0     0 " << std::endl;
-    integralFileH2COInternal << "   4.06569910E-01     2     2     2     2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.05277052E-08     2     2     1     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.24567553E+01     2     1     1     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   4.55162429E+00     2     2     1     1     0     0 " << std::endl;
-    integralFileH2COInternal << "   5.46018928E-05     2     1     1     1     0     0 " << std::endl;
-    integralFileH2COInternal << "   9.15166756E-05     2     2     2     1     0     0 " << std::endl;
-    integralFileH2COInternal << "   9.48264468E-01     3     3     3     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.92755083E-01     3     3     3     3     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.25829815E-06     3     3     1     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.47600723E+01     3     1     1     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.60091056E-01     3     3     1     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.99205608E-05     3     1     1     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -5.07946604E-05     3     3     3     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.54642904E+01     3     2     2     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.87708143E-01     3     3     2     2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.58190994E-08     3     3     3     2     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.61550823E-07     3     2     1     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -5.94038823E+00     3     2     1     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.29149350E-04     3     2     2     1     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.76288354E-04     3     3     2     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.33839077E+01     4     4     4     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.63244706E+00     4     4     4     4     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.90962812E-07     4     4     1     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.70218412E+01     4     1     1     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.85667732E-02     4     4     1     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.13773633E-06     4     1     1     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -6.69731724E-05     4     4     4     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -6.11234742E+00     4     2     2     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.89085362E-01     4     4     2     2     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.96656063E-08     4     4     4     2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -5.37386480E-08     4     2     1     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   5.49447716E+00     4     2     1     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.79338390E-04     4     2     2     1     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.43032446E-04     4     4     2     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.95189275E+01     4     4     3     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.84232869E+01     4     3     3     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.65131138E+00     4     4     3     3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.74610850E-02     4     3     3     3     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.88284258E+00     4     4     4     3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.26096808E-08     4     3     1     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   4.75546383E-01     4     3     1     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.28180437E-04     4     3     3     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.34136209E-04     4     4     3     1     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.37469802E+00     4     3     2     2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.61133297E-08     4     3     3     2     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.62070556E-08     4     4     3     2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -7.87867598E+01     5     5     5     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   5.47596373E+00     5     5     5     5     0     0 " << std::endl;
-    integralFileH2COInternal << "   6.07821557E-08     5     5     1     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -6.67888779E+00     5     1     1     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.31463130E-01     5     5     1     1     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.24553012E-04     5     1     1     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -7.19454947E-06     5     5     5     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.80201349E+00     5     2     2     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.99154990E-01     5     5     2     2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.70727909E-06     5     2     1     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   6.26102512E-01     5     2     1     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -6.72821261E-04     5     2     2     1     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.06614942E-04     5     5     2     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -6.10533909E+00     5     5     3     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -8.99383711E+00     5     3     3     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -8.18306002E-02     5     5     3     3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.89241786E-02     5     3     3     3     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.09250228E+00     5     5     5     3     0     0 " << std::endl;
-    integralFileH2COInternal << "   6.21629122E-08     5     3     1     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -7.74795269E-01     5     3     1     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.15846837E-05     5     3     3     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -7.91439155E-05     5     5     3     1     0     0 " << std::endl;
-    integralFileH2COInternal << "   6.67302527E-01     5     3     2     2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.21185951E-08     5     3     3     2     0     0 " << std::endl;
-    integralFileH2COInternal << "   6.81369028E+00     5     5     4     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.40829961E+00     5     4     4     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.69994462E-01     5     5     4     4     0     0 " << std::endl;
-    integralFileH2COInternal << "  -5.77217956E-01     5     4     4     4     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.05190494E+00     5     5     5     4     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.26044717E-07     5     4     1     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.07027125E+00     5     4     1     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.65236900E-05     5     4     4     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.18533976E-04     5     5     4     1     0     0 " << std::endl;
-    integralFileH2COInternal << "   7.19538456E-01     5     4     2     2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.61268985E-08     5     4     4     2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.59146891E-08     5     5     4     2     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.12811211E+01     5     4     3     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.80717861E-01     5     4     3     3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -5.81643736E-01     5     4     4     3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.28471152E-01     5     5     4     3     0     0 " << std::endl;
-    integralFileH2COInternal << "   6.31667221E+00     6     6     6     6     0     0 " << std::endl;
-    integralFileH2COInternal << "   8.94114458E-07     6     6     1     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.61839274E+00     6     1     1     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -6.39946481E-01     6     6     1     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.40999301E-05     6     1     1     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.24356520E-06     6     6     6     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.75043154E-01     6     6     2     2     0     0 " << std::endl;
-    integralFileH2COInternal << "   6.13697478E-02     6     2     2     2     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.89630211E-01     6     6     6     2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -9.82382183E-08     6     2     1     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.02467671E-01     6     2     1     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.05384932E-05     6     2     2     1     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.14437016E-04     6     6     2     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.86891879E+01     6     6     3     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.30537262E+00     6     6     3     3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.06337842E-07     6     3     1     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   6.61937463E-01     6     3     1     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -5.43568573E-04     6     3     3     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.78968009E-04     6     6     3     1     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.56938261E+00     6     3     2     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   4.05881601E-01     6     3     3     2     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.00974696E+01     6     6     4     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -8.04269888E-01     6     6     4     4     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.04177930E-08     6     4     1     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -6.12350594E-01     6     4     1     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.78183231E-04     6     4     4     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.16448295E-04     6     6     4     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -8.63830392E+00     6     4     2     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   9.19892276E-01     6     4     4     2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.00746266E-08     6     4     3     3     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.43505169E+00     6     6     4     3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.48420062E+02     6     6     5     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.52626438E+01     6     6     5     5     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.32451495E-06     6     5     1     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -7.13410029E-02     6     5     1     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.44640551E-04     6     5     5     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.81336863E-04     6     6     5     1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.74838044E+00     6     5     2     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.41920190E-08     6     5     2     2     0     0 " << std::endl;
-    integralFileH2COInternal << "   7.68754000E-01     6     5     5     2     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.69847356E-08     6     6     5     2     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.01106962E-08     6     5     5     3     0     0 " << std::endl;
-    integralFileH2COInternal << "   4.09020380E+00     6     6     5     3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.56088272E+00     6     6     5     4     0     0 " << std::endl;
-    integralFileH2COInternal << "   6.68560454E+00    -1     1     1    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "   9.80363407E-02    -2     2     2    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.24512297E+01    -1     2    -1     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.71441096E+01    -2     1    -1     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.71441096E+01    -1     1    -2     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.47669618E+00    -2     1     1    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.45776600E+00    -1     2     2    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.17015293E+00    -2     2     1    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.17015293E+00    -1     2     1    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -7.73501451E-07    -2     1     1    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -7.73501451E-07    -1     1     1    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "   8.08861051E-01    -3     3    -3     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -9.54903045E-02    -3     3     3    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.19215357E+01    -1     3    -1     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.10821176E+00    -3     1    -1     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.10821176E+00    -1     1    -3     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.53972434E+00    -3     1     1    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -7.00198071E+00    -1     3     3    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.95278015E+00    -3     3     1    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.95278015E+00    -1     3     1    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.55828829E-07    -3     1     1    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.55828829E-07    -1     1     1    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.01206913E-08    -1     1     3    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.92832340E+00    -2     3    -2     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.38103490E+00    -3     2    -2     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.38103490E+00    -2     2    -3     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.12584970E-01    -3     2     2    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.87095476E-02    -2     3     3    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.06096584E-01    -3     3     2    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.06096584E-01    -2     3     2    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.05476420E-08    -3     1     1    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.05476420E-08    -2     1     1    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -9.02777452E-01    -1     3     2    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.06778571E+00    -3     2     1    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.06778571E+00    -1     2     1    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.45495774E+00    -2     3     1    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.45495774E+00    -1     3     1    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.86409852E+00    -4     4    -4     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.13401493E-02    -4     4     4    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.68604568E+01    -1     4    -1     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.26875025E+01    -4     1    -1     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.26875025E+01    -1     1    -4     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   8.54511264E-01    -4     1     1    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.55888066E+00    -1     4     4    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.62536515E+00    -4     4     1    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.62536515E+00    -1     4     1    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.27298222E-07    -4     1     1    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.27298222E-07    -1     1     1    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "   6.27076794E+00    -2     4    -2     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.12875412E+00    -4     2    -2     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.12875412E+00    -2     2    -4     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.71963439E-01    -4     2     2    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.40706646E-01    -2     4     4    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.64944166E-01    -4     4     2    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.64944166E-01    -2     4     2    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "   7.57576160E-01    -1     4     2    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.69885301E+00    -4     2     1    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.69885301E+00    -1     2     1    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.71091872E+00    -2     4     1    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.71091872E+00    -1     4     1    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "   4.75940477E+00    -4     3    -4     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.37695139E+00    -4     4    -3     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.37695139E+00    -3     4    -4     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -6.60448394E-01    -3     4    -3     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.85338556E+00    -4     3    -3     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.85338556E+00    -3     3    -4     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   6.27655839E-02    -4     3     3    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.47593542E-02    -3     4     4    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.57664597E-01    -4     4     3    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.57664597E-01    -3     4     3    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.34684159E-01    -4     3     3    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.34684159E-01    -3     3     3    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.15106221E-01    -3     3     4    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.60973093E-02    -3     4     4    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.60973093E-02    -4     4     4    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -7.32329630E-02    -4     4     3    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.98322971E+00    -4     1     1    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.98322971E+00    -3     1     1    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "   8.30749560E+00    -1     4     3    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.79737852E+00    -4     3     1    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.79737852E+00    -1     3     1    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.08743205E+00    -3     4     1    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.08743205E+00    -1     4     1    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.27298225E-08    -4     3     1    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.27298225E-08    -3     3     1    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.96373471E-01    -4     2     2    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.96373471E-01    -3     2     2    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.50335701E-02    -2     4     3    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.95327716E-01    -4     3     2    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.95327716E-01    -2     3     2    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.73338225E-01    -3     4     2    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.73338225E-01    -2     4     2    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.12178958E-01    -5     5    -5     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.07892093E-04    -5     5     5    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.69415731E+01    -1     5    -1     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.81641489E+00    -5     1    -1     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.81641489E+00    -1     1    -5     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.60526477E-01    -5     1     1    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.98105138E+00    -1     5     5    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "   8.92540163E-02    -5     5     1    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "   8.92540163E-02    -1     5     1    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -5.91746951E-08    -5     1     1    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -5.91746951E-08    -1     1     1    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -9.12522622E-08    -1     1     5    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.40840617E+01    -2     5    -2     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.63952961E+00    -5     2    -2     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.63952961E+00    -2     2    -5     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.30296713E-03    -5     2     2    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.77546093E+00    -2     5     5    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.13562484E-02    -5     5     2    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.13562484E-02    -2     5     2    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.59388905E-08    -5     1     1    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.59388905E-08    -2     1     1    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.81328995E+00    -1     5     2    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.60141198E-01    -5     2     1    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.60141198E-01    -1     2     1    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.25942795E+00    -2     5     1    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.25942795E+00    -1     5     1    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "   7.47624832E-08    -2     5     2    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "   7.47624832E-08    -1     5     2    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.33619085E-08    -2     5     5    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.33619085E-08    -1     5     5    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.40595965E-08    -5     2     1    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -6.05687883E+00    -5     3    -5     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.52206868E-01    -5     5    -3     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.52206868E-01    -3     5    -5     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.14880464E+01    -3     5    -3     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.08397118E+00    -5     3    -3     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.08397118E+00    -3     3    -5     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.26707138E-01    -5     3     3    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.45404180E+00    -3     5     5    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.34819268E-01    -5     5     3    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.34819268E-01    -3     5     3    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.73178988E-01    -5     3     3    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.73178988E-01    -3     3     3    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.35387916E-01    -3     3     5    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "   7.21466268E-02    -3     5     5    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "   7.21466268E-02    -5     5     5    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.41355065E-02    -5     5     3    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.99460788E-01    -5     1     1    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.99460788E-01    -3     1     1    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.52498554E+00    -1     5     3    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.63767768E-01    -5     3     1    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.63767768E-01    -1     3     1    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.38322524E-01    -3     5     1    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.38322524E-01    -1     5     1    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.95873486E-08    -5     3     1    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.95873486E-08    -3     3     1    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.72091679E-01    -5     2     2    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.72091679E-01    -3     2     2    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.58945183E-01    -2     5     3    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.54489207E-01    -5     3     2    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.54489207E-01    -2     3     2    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.88811789E-01    -3     5     2    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.88811789E-01    -2     5     2    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.91767139E-08    -2     5     3    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.91767139E-08    -1     5     3    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -6.24472452E-08    -3     5     2    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -6.24472452E-08    -1     5     2    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.59067089E+00    -5     4    -5     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   5.91420207E-01    -5     5    -4     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   5.91420207E-01    -4     5    -5     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   7.57424045E+00    -4     5    -4     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.86938740E+00    -5     4    -4     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.86938740E+00    -4     4    -5     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -7.97037561E-02    -5     4     4    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.83527833E-01    -4     5     5    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "   4.18291823E-02    -5     5     4    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "   4.18291823E-02    -4     5     4    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -8.76897343E-02    -5     4     4    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "  -8.76897343E-02    -4     4     4    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.25089018E-01    -4     4     5    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.09611531E-02    -4     5     5    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.09611531E-02    -5     5     5    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.43011748E-02    -5     5     4    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -8.14170411E-01    -5     1     1    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "  -8.14170411E-01    -4     1     1    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.07183719E+00    -1     5     4    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.17909427E-01    -5     4     1    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.17909427E-01    -1     4     1    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "   7.20527501E-01    -4     5     1    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "   7.20527501E-01    -1     5     1    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.86558637E-01    -5     2     2    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.86558637E-01    -4     2     2    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -8.76781937E-02    -2     5     4    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.42535682E-01    -5     4     2    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.42535682E-01    -2     4     2    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.61763204E-01    -4     5     2    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.61763204E-01    -2     5     2    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.65448204E-08    -2     5     4    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.65448204E-08    -1     5     4    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.71701110E-08    -4     5     2    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.71701110E-08    -1     5     2    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "   8.21091881E+00    -5     3    -4     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   8.21091881E+00    -4     3    -5     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.23356041E+00    -5     4    -3     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.23356041E+00    -3     4    -5     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.62298798E+01    -4     5    -3     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.62298798E+01    -3     5    -4     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.48999490E-01    -5     3     3    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.48999490E-01    -4     3     3    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.26982593E-01    -3     5     4    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.06039123E-01    -5     4     3    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.06039123E-01    -3     4     3    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.42603110E-01    -4     5     3    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.42603110E-01    -3     5     3    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "   6.12851040E-02    -5     4     4    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "   6.12851040E-02    -3     4     4    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.01692270E-01    -4     5     3    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.95529437E-01    -5     4     3    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.95529437E-01    -4     4     3    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.15898767E-01    -4     5     4    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.15898767E-01    -3     5     4    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.11848593E+00    -4     5     5    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.11848593E+00    -3     5     5    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.68844977E-01    -5     4     3    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -8.07273908E-02    -5     5     4    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -8.07273908E-02    -3     5     4    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -6.97872525E-02    -5     5     3    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "  -6.97872525E-02    -4     5     3    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.15452431E-08    -5     3     1    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.15452431E-08    -4     3     1    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.61933039E-03    -6     6     6    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.61807231E+00    -1     6    -1     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   4.58880967E+00    -6     1    -1     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   4.58880967E+00    -1     1    -6     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.30927508E-01    -6     1     1    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.25297382E+00    -1     6     6    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -7.29373171E-02    -6     6     1    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -7.29373171E-02    -1     6     1    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "   5.87193538E-03    -6     2     2    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.94183254E+00    -2     6     6    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "   4.28299663E-02    -6     6     2    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "   4.28299663E-02    -2     6     2    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.95494746E-01    -6     2     2    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.95494746E-01    -2     2     2    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.78168802E-01    -2     2     6    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.01515286E-01    -2     6     6    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.01515286E-01    -6     6     6    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.32990339E-03    -6     6     2    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "  -8.63905575E-01    -6     1     1    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -8.63905575E-01    -2     1     1    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.35450609E+00    -1     6     2    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "   4.09692498E-01    -6     2     1    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "   4.09692498E-01    -1     2     1    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.86180377E+00    -2     6     1    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.86180377E+00    -1     6     1    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.07679157E-08    -6     2     1    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "   6.11204166E+00    -6     3    -6     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.96795705E+00    -6     6    -3     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.96795705E+00    -3     6    -6     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.91513899E-01    -6     3     3    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.54168291E+00    -3     6     6    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -7.16468406E-02    -6     6     3    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -7.16468406E-02    -3     6     3    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "  -5.26327765E-09    -6     1     1    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -5.26327765E-09    -3     1     1    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.00623511E-01    -1     6     3    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "   5.79887446E-01    -6     3     1    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "   5.79887446E-01    -1     3     1    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.90106380E+00    -3     6     1    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.90106380E+00    -1     6     1    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "   6.62668487E+00    -6     2    -3     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   6.62668487E+00    -3     2    -6     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.61307175E-02    -6     3    -2     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.61307175E-02    -2     3    -6     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.91309820E+01    -3     6    -2     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.91309820E+01    -2     6    -3     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.60807618E-01    -6     3     3    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.60807618E-01    -2     3     3    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.02572321E-01    -3     6     2    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.43254740E-01    -6     3     2    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.43254740E-01    -3     3     2    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.86981454E-02    -3     6     3    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.86981454E-02    -2     6     3    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -7.36508948E-09    -6     3     1    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -7.36508948E-09    -2     3     1    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.56858517E+00    -6     4    -6     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.94061119E-01    -6     6    -4     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.94061119E-01    -4     6    -6     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   6.71808734E-02    -6     4     4    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.73861407E-01    -4     6     6    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.52097216E-02    -6     6     4    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.52097216E-02    -4     6     4    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "  -8.44448554E-02    -1     6     4    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.43094055E-01    -6     4     1    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.43094055E-01    -1     4     1    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "  -9.70238804E-01    -4     6     1    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -9.70238804E-01    -1     6     1    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.11577533E+01    -6     2    -4     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.11577533E+01    -4     2    -6     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.85681697E+00    -6     4    -2     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.85681697E+00    -2     4    -6     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.41376090E+01    -4     6    -2     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.41376090E+01    -2     6    -4     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -8.62823346E-02    -6     4     4    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -8.62823346E-02    -2     4     4    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.23456955E-01    -4     6     2    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.39109230E-01    -6     4     2    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.39109230E-01    -4     4     2    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.51871985E-01    -4     6     4    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.51871985E-01    -2     6     4    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "  -7.31900284E-09    -4     6     2    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -7.31900284E-09    -1     6     2    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "  -6.07784509E-09    -6     4     2    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -6.07784509E-09    -1     4     2    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.11868162E+00    -4     6     6    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.11868162E+00    -3     6     6    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.30106391E-01    -6     4     3    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "   4.18491296E-02    -6     6     4    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "   4.18491296E-02    -3     6     4    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "   7.67309479E-02    -6     6     3    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "   7.67309479E-02    -4     6     3    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.02651080E-01    -6     3     2    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.02651080E-01    -4     3     2    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "  -9.20882600E-03    -3     6     4    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -9.20882600E-03    -2     6     4    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.42507312E-01    -6     4     2    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.42507312E-01    -3     4     2    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.65781237E-01    -4     6     3    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.65781237E-01    -2     6     3    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "   4.10811188E-01    -6     4     3    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "   4.10811188E-01    -2     4     3    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.91702592E-01    -4     6     2    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.91702592E-01    -3     6     2    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.76567519E-01    -6     5    -6     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.03236507E-01    -6     6    -5     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.03236507E-01    -5     6    -6     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.41922261E-03    -6     5     5    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "   8.70122787E-04    -5     6     6    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.25729579E-02    -6     6     5    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.25729579E-02    -5     6     5    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.25929809E-08    -6     1     1    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.25929809E-08    -5     1     1    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.13698852E-01    -1     6     5    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -7.52750732E-02    -6     5     1    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -7.52750732E-02    -1     5     1    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "   8.16869908E-03    -5     6     1    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "   8.16869908E-03    -1     6     1    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.07870305E-08    -5     6     5    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.07870305E-08    -1     6     5    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.01179308E-08    -6     6     5    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.01179308E-08    -1     6     5    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "  -8.28881623E-09    -6     6     1    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -8.28881623E-09    -5     6     1    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.05380866E-01    -6     2    -5     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.05380866E-01    -5     2    -6     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.62335627E+00    -6     5    -2     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.62335627E+00    -2     5    -6     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -7.89165565E-02    -5     6    -2     0     0     0 " << std::endl;
-    integralFileH2COInternal << "  -7.89165565E-02    -2     6    -5     0     0     0 " << std::endl;
-    integralFileH2COInternal << "   9.64787019E-02    -6     5     5    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "   9.64787019E-02    -2     5     5    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "   5.96193461E-04    -5     6     2    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.11501203E-04    -6     5     2    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.11501203E-04    -5     5     2    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.30348185E-01    -5     6     5    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.30348185E-01    -2     6     5    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -8.06871676E-08    -2     6     5    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -8.06871676E-08    -1     6     5    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.76711436E-08    -6     5     2    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.76711436E-08    -1     5     2    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "   9.54185969E-09    -5     6     1    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "   9.54185969E-09    -2     6     1    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "   6.75506141E-02    -5     6     6    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "   6.75506141E-02    -3     6     6    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.11046098E-02    -6     5     3    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.39962546E-01    -6     6     5    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.39962546E-01    -3     6     5    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "   4.46877407E-03    -6     6     3    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "   4.46877407E-03    -5     6     3    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.27772797E-08    -3     6     5    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "   2.27772797E-08    -1     6     5    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.29292894E-08    -6     5     3    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -3.29292894E-08    -1     5     3    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.56430316E-03    -6     3     2    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.56430316E-03    -5     3     2    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.30699539E+00    -3     6     5    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.30699539E+00    -2     6     5    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -5.51742656E-03    -6     5     2    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "  -5.51742656E-03    -3     5     2    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.21557223E-01    -5     6     3    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.21557223E-01    -2     6     3    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.04254164E-01    -6     5     3    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.04254164E-01    -2     5     3    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.31335919E-02    -5     6     2    -3     0     0 " << std::endl;
-    integralFileH2COInternal << "   3.31335919E-02    -3     6     2    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.20310226E-02    -5     6     6    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "  -4.20310226E-02    -4     6     6    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -6.23125472E-03    -6     5     4    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "  -8.93744692E-02    -6     6     5    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "  -8.93744692E-02    -4     6     5    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.45700238E-03    -6     6     4    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.45700238E-03    -5     6     4    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "  -5.52568196E-08    -4     6     5    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "  -5.52568196E-08    -1     6     5    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.92285248E-08    -6     5     4    -1     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.92285248E-08    -1     5     4    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.30895991E-03    -6     4     2    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "  -2.30895991E-03    -5     4     2    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.91784019E+00    -4     6     5    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "   1.91784019E+00    -2     6     5    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.23059548E-02    -6     5     2    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "  -1.23059548E-02    -4     5     2    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "  -8.06547043E-02    -5     6     4    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "  -8.06547043E-02    -2     6     4    -5     0     0 " << std::endl;
-    integralFileH2COInternal << "   5.01255708E-02    -6     5     4    -2     0     0 " << std::endl;
-    integralFileH2COInternal << "   5.01255708E-02    -2     5     4    -6     0     0 " << std::endl;
-    integralFileH2COInternal << "   4.75029281E-02    -5     6     2    -4     0     0 " << std::endl;
-    integralFileH2COInternal << "   4.75029281E-02    -4     6     2    -5     0     0 " << std::endl;
+    integralFileH2COInternal
+        << "   3.00639793E+02     1     1     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.00680351E+02    -1    -1     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.68585810E-06     2     1     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -0.00000000E+00    -2    -1     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.17700569E+02     2     2     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.17701180E+02    -2    -2     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -8.18698258E-07     3     1     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -0.00000000E+00    -3    -1     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.18154772E-09     3     2     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   7.80836059E-11    -3    -2     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.86147399E+02     3     3     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.86147313E+02    -3    -3     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -9.12948998E-07     4     1     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -0.00000000E+00    -4    -1     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.21722238E-09     4     2     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.29633749E-11    -4    -2     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.11551434E-02     4     3     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.02842723E-13    -4    -3     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   4.38943983E+02     4     4     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.38943498E+02    -4    -4     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   4.63481898E-08     5     1     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -0.00000000E+00    -5    -1     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.38822804E-10     5     2     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -9.87609019E-12    -5    -2     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.08551070E-02     5     3     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.40935461E-12    -5    -3     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.37457083E-02     5     4     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   6.81926108E-13    -5    -4     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   7.43752338E+02     5     5     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -7.43752825E+02    -5    -5     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -6.34344018E-07     6     1     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -0.00000000E+00    -6    -1     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   4.03863624E-03     6     2     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   4.64533973E-13    -6    -2     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -7.33724339E-10     6     3     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.00033961E-11    -6    -3     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -8.30772227E-10     6     4     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -7.29103718E-12    -6    -4     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.97058620E-11     6     5     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.09046771E-13    -6    -5     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   7.62706592E+02     6     6     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -7.62707160E+02    -6    -6     0     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.43308640E+00     1     1     1     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   4.06569910E-01     2     2     2     2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.05277052E-08     2     2     1     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.24567553E+01     2     1     1     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   4.55162429E+00     2     2     1     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   5.46018928E-05     2     1     1     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   9.15166756E-05     2     2     2     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   9.48264468E-01     3     3     3     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.92755083E-01     3     3     3     3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.25829815E-06     3     3     1     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.47600723E+01     3     1     1     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.60091056E-01     3     3     1     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.99205608E-05     3     1     1     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -5.07946604E-05     3     3     3     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.54642904E+01     3     2     2     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.87708143E-01     3     3     2     2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.58190994E-08     3     3     3     2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.61550823E-07     3     2     1     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -5.94038823E+00     3     2     1     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.29149350E-04     3     2     2     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.76288354E-04     3     3     2     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.33839077E+01     4     4     4     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.63244706E+00     4     4     4     4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.90962812E-07     4     4     1     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.70218412E+01     4     1     1     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.85667732E-02     4     4     1     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.13773633E-06     4     1     1     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -6.69731724E-05     4     4     4     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -6.11234742E+00     4     2     2     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.89085362E-01     4     4     2     2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.96656063E-08     4     4     4     2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -5.37386480E-08     4     2     1     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   5.49447716E+00     4     2     1     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.79338390E-04     4     2     2     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.43032446E-04     4     4     2     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.95189275E+01     4     4     3     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.84232869E+01     4     3     3     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.65131138E+00     4     4     3     3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.74610850E-02     4     3     3     3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.88284258E+00     4     4     4     3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.26096808E-08     4     3     1     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   4.75546383E-01     4     3     1     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.28180437E-04     4     3     3     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.34136209E-04     4     4     3     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.37469802E+00     4     3     2     2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.61133297E-08     4     3     3     2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.62070556E-08     4     4     3     2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -7.87867598E+01     5     5     5     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   5.47596373E+00     5     5     5     5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   6.07821557E-08     5     5     1     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -6.67888779E+00     5     1     1     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.31463130E-01     5     5     1     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.24553012E-04     5     1     1     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -7.19454947E-06     5     5     5     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.80201349E+00     5     2     2     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.99154990E-01     5     5     2     2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.70727909E-06     5     2     1     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   6.26102512E-01     5     2     1     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -6.72821261E-04     5     2     2     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.06614942E-04     5     5     2     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -6.10533909E+00     5     5     3     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -8.99383711E+00     5     3     3     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -8.18306002E-02     5     5     3     3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.89241786E-02     5     3     3     3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.09250228E+00     5     5     5     3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   6.21629122E-08     5     3     1     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -7.74795269E-01     5     3     1     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.15846837E-05     5     3     3     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -7.91439155E-05     5     5     3     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   6.67302527E-01     5     3     2     2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.21185951E-08     5     3     3     2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   6.81369028E+00     5     5     4     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.40829961E+00     5     4     4     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.69994462E-01     5     5     4     4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -5.77217956E-01     5     4     4     4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.05190494E+00     5     5     5     4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.26044717E-07     5     4     1     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.07027125E+00     5     4     1     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.65236900E-05     5     4     4     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.18533976E-04     5     5     4     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   7.19538456E-01     5     4     2     2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.61268985E-08     5     4     4     2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.59146891E-08     5     5     4     2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.12811211E+01     5     4     3     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.80717861E-01     5     4     3     3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -5.81643736E-01     5     4     4     3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.28471152E-01     5     5     4     3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   6.31667221E+00     6     6     6     6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   8.94114458E-07     6     6     1     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.61839274E+00     6     1     1     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -6.39946481E-01     6     6     1     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.40999301E-05     6     1     1     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.24356520E-06     6     6     6     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.75043154E-01     6     6     2     2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   6.13697478E-02     6     2     2     2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.89630211E-01     6     6     6     2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -9.82382183E-08     6     2     1     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.02467671E-01     6     2     1     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.05384932E-05     6     2     2     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.14437016E-04     6     6     2     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.86891879E+01     6     6     3     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.30537262E+00     6     6     3     3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.06337842E-07     6     3     1     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   6.61937463E-01     6     3     1     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -5.43568573E-04     6     3     3     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.78968009E-04     6     6     3     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.56938261E+00     6     3     2     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   4.05881601E-01     6     3     3     2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.00974696E+01     6     6     4     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -8.04269888E-01     6     6     4     4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.04177930E-08     6     4     1     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -6.12350594E-01     6     4     1     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.78183231E-04     6     4     4     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.16448295E-04     6     6     4     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -8.63830392E+00     6     4     2     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   9.19892276E-01     6     4     4     2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.00746266E-08     6     4     3     3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.43505169E+00     6     6     4     3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.48420062E+02     6     6     5     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.52626438E+01     6     6     5     5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.32451495E-06     6     5     1     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -7.13410029E-02     6     5     1     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.44640551E-04     6     5     5     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.81336863E-04     6     6     5     1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.74838044E+00     6     5     2     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.41920190E-08     6     5     2     2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   7.68754000E-01     6     5     5     2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.69847356E-08     6     6     5     2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.01106962E-08     6     5     5     3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   4.09020380E+00     6     6     5     3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.56088272E+00     6     6     5     4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   6.68560454E+00    -1     1     1    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   9.80363407E-02    -2     2     2    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.24512297E+01    -1     2    -1     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.71441096E+01    -2     1    -1     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.71441096E+01    -1     1    -2     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.47669618E+00    -2     1     1    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.45776600E+00    -1     2     2    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.17015293E+00    -2     2     1    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.17015293E+00    -1     2     1    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -7.73501451E-07    -2     1     1    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -7.73501451E-07    -1     1     1    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   8.08861051E-01    -3     3    -3     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -9.54903045E-02    -3     3     3    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.19215357E+01    -1     3    -1     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.10821176E+00    -3     1    -1     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.10821176E+00    -1     1    -3     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.53972434E+00    -3     1     1    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -7.00198071E+00    -1     3     3    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.95278015E+00    -3     3     1    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.95278015E+00    -1     3     1    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.55828829E-07    -3     1     1    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.55828829E-07    -1     1     1    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.01206913E-08    -1     1     3    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.92832340E+00    -2     3    -2     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.38103490E+00    -3     2    -2     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.38103490E+00    -2     2    -3     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.12584970E-01    -3     2     2    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.87095476E-02    -2     3     3    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.06096584E-01    -3     3     2    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.06096584E-01    -2     3     2    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.05476420E-08    -3     1     1    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.05476420E-08    -2     1     1    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -9.02777452E-01    -1     3     2    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.06778571E+00    -3     2     1    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.06778571E+00    -1     2     1    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.45495774E+00    -2     3     1    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.45495774E+00    -1     3     1    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.86409852E+00    -4     4    -4     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.13401493E-02    -4     4     4    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.68604568E+01    -1     4    -1     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.26875025E+01    -4     1    -1     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.26875025E+01    -1     1    -4     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   8.54511264E-01    -4     1     1    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.55888066E+00    -1     4     4    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.62536515E+00    -4     4     1    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.62536515E+00    -1     4     1    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.27298222E-07    -4     1     1    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.27298222E-07    -1     1     1    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   6.27076794E+00    -2     4    -2     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.12875412E+00    -4     2    -2     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.12875412E+00    -2     2    -4     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.71963439E-01    -4     2     2    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.40706646E-01    -2     4     4    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.64944166E-01    -4     4     2    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.64944166E-01    -2     4     2    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   7.57576160E-01    -1     4     2    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.69885301E+00    -4     2     1    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.69885301E+00    -1     2     1    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.71091872E+00    -2     4     1    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.71091872E+00    -1     4     1    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   4.75940477E+00    -4     3    -4     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.37695139E+00    -4     4    -3     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.37695139E+00    -3     4    -4     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -6.60448394E-01    -3     4    -3     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.85338556E+00    -4     3    -3     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.85338556E+00    -3     3    -4     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   6.27655839E-02    -4     3     3    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.47593542E-02    -3     4     4    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.57664597E-01    -4     4     3    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.57664597E-01    -3     4     3    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.34684159E-01    -4     3     3    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.34684159E-01    -3     3     3    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.15106221E-01    -3     3     4    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.60973093E-02    -3     4     4    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.60973093E-02    -4     4     4    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -7.32329630E-02    -4     4     3    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.98322971E+00    -4     1     1    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.98322971E+00    -3     1     1    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   8.30749560E+00    -1     4     3    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.79737852E+00    -4     3     1    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.79737852E+00    -1     3     1    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.08743205E+00    -3     4     1    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.08743205E+00    -1     4     1    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.27298225E-08    -4     3     1    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.27298225E-08    -3     3     1    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.96373471E-01    -4     2     2    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.96373471E-01    -3     2     2    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.50335701E-02    -2     4     3    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.95327716E-01    -4     3     2    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.95327716E-01    -2     3     2    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.73338225E-01    -3     4     2    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.73338225E-01    -2     4     2    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.12178958E-01    -5     5    -5     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.07892093E-04    -5     5     5    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.69415731E+01    -1     5    -1     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.81641489E+00    -5     1    -1     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.81641489E+00    -1     1    -5     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.60526477E-01    -5     1     1    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.98105138E+00    -1     5     5    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   8.92540163E-02    -5     5     1    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   8.92540163E-02    -1     5     1    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -5.91746951E-08    -5     1     1    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -5.91746951E-08    -1     1     1    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -9.12522622E-08    -1     1     5    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.40840617E+01    -2     5    -2     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.63952961E+00    -5     2    -2     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.63952961E+00    -2     2    -5     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.30296713E-03    -5     2     2    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.77546093E+00    -2     5     5    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.13562484E-02    -5     5     2    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.13562484E-02    -2     5     2    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.59388905E-08    -5     1     1    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.59388905E-08    -2     1     1    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.81328995E+00    -1     5     2    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.60141198E-01    -5     2     1    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.60141198E-01    -1     2     1    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.25942795E+00    -2     5     1    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.25942795E+00    -1     5     1    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   7.47624832E-08    -2     5     2    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   7.47624832E-08    -1     5     2    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.33619085E-08    -2     5     5    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.33619085E-08    -1     5     5    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.40595965E-08    -5     2     1    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -6.05687883E+00    -5     3    -5     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.52206868E-01    -5     5    -3     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.52206868E-01    -3     5    -5     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.14880464E+01    -3     5    -3     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.08397118E+00    -5     3    -3     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.08397118E+00    -3     3    -5     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.26707138E-01    -5     3     3    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.45404180E+00    -3     5     5    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.34819268E-01    -5     5     3    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.34819268E-01    -3     5     3    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.73178988E-01    -5     3     3    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.73178988E-01    -3     3     3    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.35387916E-01    -3     3     5    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   7.21466268E-02    -3     5     5    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   7.21466268E-02    -5     5     5    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.41355065E-02    -5     5     3    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.99460788E-01    -5     1     1    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.99460788E-01    -3     1     1    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.52498554E+00    -1     5     3    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.63767768E-01    -5     3     1    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.63767768E-01    -1     3     1    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.38322524E-01    -3     5     1    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.38322524E-01    -1     5     1    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.95873486E-08    -5     3     1    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.95873486E-08    -3     3     1    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.72091679E-01    -5     2     2    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.72091679E-01    -3     2     2    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.58945183E-01    -2     5     3    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.54489207E-01    -5     3     2    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.54489207E-01    -2     3     2    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.88811789E-01    -3     5     2    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.88811789E-01    -2     5     2    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.91767139E-08    -2     5     3    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.91767139E-08    -1     5     3    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -6.24472452E-08    -3     5     2    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -6.24472452E-08    -1     5     2    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.59067089E+00    -5     4    -5     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   5.91420207E-01    -5     5    -4     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   5.91420207E-01    -4     5    -5     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   7.57424045E+00    -4     5    -4     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.86938740E+00    -5     4    -4     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.86938740E+00    -4     4    -5     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -7.97037561E-02    -5     4     4    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.83527833E-01    -4     5     5    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   4.18291823E-02    -5     5     4    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   4.18291823E-02    -4     5     4    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -8.76897343E-02    -5     4     4    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -8.76897343E-02    -4     4     4    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.25089018E-01    -4     4     5    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.09611531E-02    -4     5     5    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.09611531E-02    -5     5     5    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.43011748E-02    -5     5     4    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -8.14170411E-01    -5     1     1    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -8.14170411E-01    -4     1     1    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.07183719E+00    -1     5     4    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.17909427E-01    -5     4     1    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.17909427E-01    -1     4     1    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   7.20527501E-01    -4     5     1    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   7.20527501E-01    -1     5     1    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.86558637E-01    -5     2     2    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.86558637E-01    -4     2     2    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -8.76781937E-02    -2     5     4    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.42535682E-01    -5     4     2    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.42535682E-01    -2     4     2    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.61763204E-01    -4     5     2    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.61763204E-01    -2     5     2    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.65448204E-08    -2     5     4    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.65448204E-08    -1     5     4    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.71701110E-08    -4     5     2    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.71701110E-08    -1     5     2    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   8.21091881E+00    -5     3    -4     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   8.21091881E+00    -4     3    -5     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.23356041E+00    -5     4    -3     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.23356041E+00    -3     4    -5     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.62298798E+01    -4     5    -3     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.62298798E+01    -3     5    -4     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.48999490E-01    -5     3     3    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.48999490E-01    -4     3     3    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.26982593E-01    -3     5     4    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.06039123E-01    -5     4     3    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.06039123E-01    -3     4     3    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.42603110E-01    -4     5     3    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.42603110E-01    -3     5     3    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   6.12851040E-02    -5     4     4    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   6.12851040E-02    -3     4     4    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.01692270E-01    -4     5     3    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.95529437E-01    -5     4     3    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.95529437E-01    -4     4     3    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.15898767E-01    -4     5     4    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.15898767E-01    -3     5     4    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.11848593E+00    -4     5     5    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.11848593E+00    -3     5     5    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.68844977E-01    -5     4     3    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -8.07273908E-02    -5     5     4    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -8.07273908E-02    -3     5     4    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -6.97872525E-02    -5     5     3    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -6.97872525E-02    -4     5     3    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.15452431E-08    -5     3     1    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.15452431E-08    -4     3     1    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.61933039E-03    -6     6     6    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.61807231E+00    -1     6    -1     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   4.58880967E+00    -6     1    -1     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   4.58880967E+00    -1     1    -6     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.30927508E-01    -6     1     1    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.25297382E+00    -1     6     6    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -7.29373171E-02    -6     6     1    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -7.29373171E-02    -1     6     1    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   5.87193538E-03    -6     2     2    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.94183254E+00    -2     6     6    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   4.28299663E-02    -6     6     2    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   4.28299663E-02    -2     6     2    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.95494746E-01    -6     2     2    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.95494746E-01    -2     2     2    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.78168802E-01    -2     2     6    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.01515286E-01    -2     6     6    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.01515286E-01    -6     6     6    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.32990339E-03    -6     6     2    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -8.63905575E-01    -6     1     1    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -8.63905575E-01    -2     1     1    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.35450609E+00    -1     6     2    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   4.09692498E-01    -6     2     1    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   4.09692498E-01    -1     2     1    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.86180377E+00    -2     6     1    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.86180377E+00    -1     6     1    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.07679157E-08    -6     2     1    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   6.11204166E+00    -6     3    -6     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.96795705E+00    -6     6    -3     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.96795705E+00    -3     6    -6     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.91513899E-01    -6     3     3    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.54168291E+00    -3     6     6    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -7.16468406E-02    -6     6     3    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -7.16468406E-02    -3     6     3    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -5.26327765E-09    -6     1     1    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -5.26327765E-09    -3     1     1    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.00623511E-01    -1     6     3    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   5.79887446E-01    -6     3     1    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   5.79887446E-01    -1     3     1    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.90106380E+00    -3     6     1    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.90106380E+00    -1     6     1    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   6.62668487E+00    -6     2    -3     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   6.62668487E+00    -3     2    -6     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.61307175E-02    -6     3    -2     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.61307175E-02    -2     3    -6     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.91309820E+01    -3     6    -2     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.91309820E+01    -2     6    -3     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.60807618E-01    -6     3     3    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.60807618E-01    -2     3     3    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.02572321E-01    -3     6     2    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.43254740E-01    -6     3     2    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.43254740E-01    -3     3     2    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.86981454E-02    -3     6     3    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.86981454E-02    -2     6     3    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -7.36508948E-09    -6     3     1    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -7.36508948E-09    -2     3     1    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.56858517E+00    -6     4    -6     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.94061119E-01    -6     6    -4     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.94061119E-01    -4     6    -6     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   6.71808734E-02    -6     4     4    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.73861407E-01    -4     6     6    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.52097216E-02    -6     6     4    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.52097216E-02    -4     6     4    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -8.44448554E-02    -1     6     4    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.43094055E-01    -6     4     1    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.43094055E-01    -1     4     1    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -9.70238804E-01    -4     6     1    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -9.70238804E-01    -1     6     1    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.11577533E+01    -6     2    -4     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.11577533E+01    -4     2    -6     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.85681697E+00    -6     4    -2     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.85681697E+00    -2     4    -6     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.41376090E+01    -4     6    -2     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.41376090E+01    -2     6    -4     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -8.62823346E-02    -6     4     4    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -8.62823346E-02    -2     4     4    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.23456955E-01    -4     6     2    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.39109230E-01    -6     4     2    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.39109230E-01    -4     4     2    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.51871985E-01    -4     6     4    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.51871985E-01    -2     6     4    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -7.31900284E-09    -4     6     2    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -7.31900284E-09    -1     6     2    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -6.07784509E-09    -6     4     2    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -6.07784509E-09    -1     4     2    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.11868162E+00    -4     6     6    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.11868162E+00    -3     6     6    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.30106391E-01    -6     4     3    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   4.18491296E-02    -6     6     4    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   4.18491296E-02    -3     6     4    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   7.67309479E-02    -6     6     3    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   7.67309479E-02    -4     6     3    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.02651080E-01    -6     3     2    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.02651080E-01    -4     3     2    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -9.20882600E-03    -3     6     4    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -9.20882600E-03    -2     6     4    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.42507312E-01    -6     4     2    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.42507312E-01    -3     4     2    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.65781237E-01    -4     6     3    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.65781237E-01    -2     6     3    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   4.10811188E-01    -6     4     3    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   4.10811188E-01    -2     4     3    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.91702592E-01    -4     6     2    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.91702592E-01    -3     6     2    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.76567519E-01    -6     5    -6     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.03236507E-01    -6     6    -5     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.03236507E-01    -5     6    -6     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.41922261E-03    -6     5     5    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   8.70122787E-04    -5     6     6    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.25729579E-02    -6     6     5    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.25729579E-02    -5     6     5    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.25929809E-08    -6     1     1    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.25929809E-08    -5     1     1    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.13698852E-01    -1     6     5    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -7.52750732E-02    -6     5     1    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -7.52750732E-02    -1     5     1    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   8.16869908E-03    -5     6     1    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   8.16869908E-03    -1     6     1    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.07870305E-08    -5     6     5    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.07870305E-08    -1     6     5    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.01179308E-08    -6     6     5    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.01179308E-08    -1     6     5    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -8.28881623E-09    -6     6     1    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -8.28881623E-09    -5     6     1    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.05380866E-01    -6     2    -5     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.05380866E-01    -5     2    -6     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.62335627E+00    -6     5    -2     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.62335627E+00    -2     5    -6     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -7.89165565E-02    -5     6    -2     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -7.89165565E-02    -2     6    -5     0     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   9.64787019E-02    -6     5     5    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   9.64787019E-02    -2     5     5    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   5.96193461E-04    -5     6     2    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.11501203E-04    -6     5     2    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.11501203E-04    -5     5     2    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.30348185E-01    -5     6     5    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.30348185E-01    -2     6     5    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -8.06871676E-08    -2     6     5    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -8.06871676E-08    -1     6     5    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.76711436E-08    -6     5     2    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.76711436E-08    -1     5     2    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   9.54185969E-09    -5     6     1    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   9.54185969E-09    -2     6     1    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   6.75506141E-02    -5     6     6    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   6.75506141E-02    -3     6     6    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.11046098E-02    -6     5     3    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.39962546E-01    -6     6     5    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.39962546E-01    -3     6     5    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   4.46877407E-03    -6     6     3    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   4.46877407E-03    -5     6     3    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.27772797E-08    -3     6     5    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   2.27772797E-08    -1     6     5    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.29292894E-08    -6     5     3    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -3.29292894E-08    -1     5     3    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.56430316E-03    -6     3     2    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.56430316E-03    -5     3     2    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.30699539E+00    -3     6     5    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.30699539E+00    -2     6     5    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -5.51742656E-03    -6     5     2    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -5.51742656E-03    -3     5     2    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.21557223E-01    -5     6     3    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.21557223E-01    -2     6     3    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.04254164E-01    -6     5     3    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.04254164E-01    -2     5     3    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.31335919E-02    -5     6     2    -3     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   3.31335919E-02    -3     6     2    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.20310226E-02    -5     6     6    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -4.20310226E-02    -4     6     6    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -6.23125472E-03    -6     5     4    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -8.93744692E-02    -6     6     5    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -8.93744692E-02    -4     6     5    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.45700238E-03    -6     6     4    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.45700238E-03    -5     6     4    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -5.52568196E-08    -4     6     5    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -5.52568196E-08    -1     6     5    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.92285248E-08    -6     5     4    -1     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.92285248E-08    -1     5     4    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.30895991E-03    -6     4     2    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -2.30895991E-03    -5     4     2    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.91784019E+00    -4     6     5    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   1.91784019E+00    -2     6     5    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.23059548E-02    -6     5     2    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -1.23059548E-02    -4     5     2    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -8.06547043E-02    -5     6     4    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "  -8.06547043E-02    -2     6     4    -5     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   5.01255708E-02    -6     5     4    -2     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   5.01255708E-02    -2     5     4    -6     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   4.75029281E-02    -5     6     2    -4     0     0 "
+        << std::endl;
+    integralFileH2COInternal
+        << "   4.75029281E-02    -4     6     2    -5     0     0 "
+        << std::endl;
     integralFileH2COInternal.close();
     // Note that the 4. factor arises from a 1/2 term coming from the Harmonic
     // hamiltonian and a 1/2 term coming from the two sqrt(2) factors
@@ -5468,7 +6634,8 @@ struct WatsonFixture {
         {{3, 6, 0, 0, 0, 0}, 0.1 / 2.},
         {{4, 5, 0, 0, 0, 0}, 0.1 / 2.},
         {{4, 6, 0, 0, 0, 0}, 0.1 / 2.},
-        {{5, 6, 0, 0, 0, 0}, 0.1 / 2.}};
+        {{5, 6, 0, 0, 0, 0}, 0.1 / 2.}
+    };
     //
     parametersEthyleneWatsonHarmonic.set("L", 12);
     parametersEthyleneWatsonHarmonic.set("symmetry", "none");

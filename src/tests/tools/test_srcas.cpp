@@ -348,4 +348,3 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(
 // }
 //
 // #endif
-

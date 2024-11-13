@@ -110,9 +110,11 @@ class pseudo_des {
   static uint32_t hash(uint32_t w0, uint32_t w1) {
     const int num_iter = 4;
     const uint32_t g0[num_iter] = {
-        0xbaa96887L, 0x1e17d32cL, 0x03bcdc3cL, 0x0f33d1b2L};
+        0xbaa96887L, 0x1e17d32cL, 0x03bcdc3cL, 0x0f33d1b2L
+    };
     const uint32_t g1[num_iter] = {
-        0x4b0f3b58L, 0xe874f0c3L, 0x6955c5a6L, 0x55a7ca46L};
+        0x4b0f3b58L, 0xe874f0c3L, 0x6955c5a6L, 0x55a7ca46L
+    };
     for (int i = 0; i < num_iter; ++i) {
       std::swap(w0, w1);
       uint32_t mask = w0 ^ g0[i];

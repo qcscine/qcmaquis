@@ -100,14 +100,16 @@ BOOST_PP_SEQ_FOR_EACH_PRODUCT(MLOOP, (MSIZE_P)(MSIZE_Q)(MSIZE_R))
   case BOOST_PP_SEQ_ELEM(nq, MSIZE_Q):                                    \
     switch (size2_) {                                                     \
       BOOST_PP_REPEAT(BOOST_PP_SEQ_SIZE(MSIZE_R), CASE_MACRO_R, (np)(nq)) \
-      default : use_blas = true;                                          \
+      default:                                                            \
+        use_blas = true;                                                  \
     }                                                                     \
     break;
 #define CASE_MACRO_P(ignored, np, ignored2)                         \
   case BOOST_PP_SEQ_ELEM(np, MSIZE_P):                              \
     switch (Mres.size2_) {                                          \
       BOOST_PP_REPEAT(BOOST_PP_SEQ_SIZE(MSIZE_Q), CASE_MACRO_Q, np) \
-      default : use_blas = true;                                    \
+      default:                                                      \
+        use_blas = true;                                            \
     }                                                               \
     break;
 #endif
@@ -565,8 +567,8 @@ inline std::ostream &operator<<(
 }
 
 template <>
-inline general_matrix<std::complex<double> >
-    &general_matrix<std::complex<double> >::invert() {
+inline general_matrix<std::complex<double> > &
+general_matrix<std::complex<double> >::invert() {
   general_matrix<std::complex<double> > B(size1_, size1_);
   fortran_int_t *ipiv = new fortran_int_t[size1_];
   fortran_int_t info;

@@ -132,4 +132,3 @@ class SRCAS {
 }  // namespace maquis
 
 #endif
-

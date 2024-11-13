@@ -227,7 +227,8 @@ class rel_qc_model : public model_impl<cmatrix, SymmGroup> {
           ));
         }
 
-        else if (std::regex_match(lhs, what, expression_twoptdm) || std::regex_match(lhs, what, expression_transition_twoptdm)) {
+        else if (std::regex_match(lhs, what, expression_twoptdm) ||
+                 std::regex_match(lhs, what, expression_transition_twoptdm)) {
           using tag_vec = std::vector<tag_type>;
           using bond_tag_element = std::vector<tag_vec>;
           using scaled_bond_element =

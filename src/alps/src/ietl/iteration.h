@@ -41,7 +41,12 @@ template <class T>
 class basic_iteration {
  public:
   basic_iteration(unsigned int max_iter, T reltol = 0., T abstol = 0.)
-      : error(0), i(0), max_iter_(max_iter), rtol_(reltol), atol_(abstol), is_converged(false) {}
+      : error(0),
+        i(0),
+        max_iter_(max_iter),
+        rtol_(reltol),
+        atol_(abstol),
+        is_converged(false) {}
   bool finished(T r, T lambda) {
     if (converged(r, lambda)) {
       is_converged = true;
@@ -282,12 +287,10 @@ class bandlanczos_iteration_nlowest {
         dep_tol_(dep_tol),
         ghost_tol_(ghost_tol),
         ghost_discarding_(ghost_discarding),
-        evs_(evs){
+        evs_(evs) {
 
         };
-  bool finished() const {
-    return i >= max_iter_;
-  }
+  bool finished() const { return i >= max_iter_; }
   inline void operator++() { ++i; };
   inline void operator--() { --i; };
   inline bool first() { return i == 0; };
@@ -317,17 +320,16 @@ class bandlanczos_iteration_nhighest {
       unsigned int max_iter, T def_tol, T dep_tol, T ghost_tol,
       bool ghost_discarding, unsigned int evs
   )
-      : i(0), max_iter_(max_iter),
+      : i(0),
+        max_iter_(max_iter),
         def_tol_(def_tol),
         dep_tol_(dep_tol),
         ghost_tol_(ghost_tol),
         ghost_discarding_(ghost_discarding),
         evs_(evs) {
-    
-  };
-  bool finished() const {
-    return i >= max_iter_;
-  }
+
+        };
+  bool finished() const { return i >= max_iter_; }
   inline void operator++() { ++i; };
   inline void operator--() { --i; };
   inline bool first() { return i == 0; };

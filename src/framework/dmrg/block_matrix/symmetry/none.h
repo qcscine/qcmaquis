@@ -77,7 +77,7 @@ template <class Archive>
 inline void serialize(
     Archive &ar, TrivialGroup::charge &c, const unsigned int version
 ) {
-  ar &c;
+  ar & c;
 }
 
 inline TrivialGroup::charge operator-(TrivialGroup::charge a) { return a; }

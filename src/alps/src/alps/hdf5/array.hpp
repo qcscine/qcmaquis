@@ -83,7 +83,8 @@ struct set_extent<std::array<T, N> > {
         set_extent(
             *it, std::vector<std::size_t>(extent.begin() + 1, extent.end())
         );
-    else if (extent.size() == 0 && !boost::is_same<typename scalar_type<T>::type, T>::value)
+    else if (extent.size() == 0 &&
+             !boost::is_same<typename scalar_type<T>::type, T>::value)
       throw archive_error("dimensions do not match" + ALPS_STACKTRACE);
   }
 };

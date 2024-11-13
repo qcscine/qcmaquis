@@ -81,8 +81,9 @@ BOOST_FIXTURE_TEST_CASE(Test_Integral_Parser_Threshold_Paired, NModeFixture) {
 /** Tests the [create_terms] method */
 BOOST_FIXTURE_TEST_CASE(Test_Model_Create_Terms_Paired, NModeFixture) {
   auto lattice = Lattice(parametersFADOneBodyPaired);
-  auto nModeModel =
-      NModeModelPaired<tmatrix<double>>(lattice, parametersFADOneBodyPaired, false);
+  auto nModeModel = NModeModelPaired<tmatrix<double>>(
+      lattice, parametersFADOneBodyPaired, false
+  );
   auto sizeBefore = nModeModel.hamiltonian_terms().size();
   BOOST_CHECK_EQUAL(sizeBefore, 0);
   nModeModel.create_terms();
@@ -93,17 +94,21 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_Create_Terms_Paired, NModeFixture) {
 /** Checks consistency for the physical dimensions for a 1-mode system */
 BOOST_FIXTURE_TEST_CASE(Test_Model_PhysDim_OneMode_Paired, NModeFixture) {
   auto lattice = Lattice(parametersFADOneBodyPaired);
-  auto nModeModel =
-      NModeModelPaired<tmatrix<double>>(lattice, parametersFADOneBodyPaired, false);
+  auto nModeModel = NModeModelPaired<tmatrix<double>>(
+      lattice, parametersFADOneBodyPaired, false
+  );
   const auto& physicalDimensions0 = nModeModel.phys_dim(0);
   BOOST_CHECK_EQUAL(physicalDimensions0.sum_of_sizes(), 39);
 }
 
 /** Simple check on tags */
-BOOST_FIXTURE_TEST_CASE(Test_Model_Tag_SimpleCheck_OneMode_Paired, NModeFixture) {
+BOOST_FIXTURE_TEST_CASE(
+    Test_Model_Tag_SimpleCheck_OneMode_Paired, NModeFixture
+) {
   auto lattice = Lattice(parametersFADOneBodyPaired);
-  auto nModeModel =
-      NModeModelPaired<tmatrix<double>>(lattice, parametersFADOneBodyPaired, false);
+  auto nModeModel = NModeModelPaired<tmatrix<double>>(
+      lattice, parametersFADOneBodyPaired, false
+  );
   auto identityTag = nModeModel.identity_matrix_tag(0);
   auto fillingTag = nModeModel.filling_matrix_tag(0);
   // The nMode Hamiltonian is bosonic, so the tag should be the same
@@ -111,30 +116,39 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_Tag_SimpleCheck_OneMode_Paired, NModeFixture)
 }
 
 /** Simple check on tags for the two-mode Hamiltonian */
-BOOST_FIXTURE_TEST_CASE(Test_Model_Tag_SimpleCheck_TwoMode_Paired, NModeFixture) {
+BOOST_FIXTURE_TEST_CASE(
+    Test_Model_Tag_SimpleCheck_TwoMode_Paired, NModeFixture
+) {
   auto lattice = Lattice(parametersFADTwoBodyPaired);
-  auto nModeModel =
-      NModeModelPaired<tmatrix<double>>(lattice, parametersFADTwoBodyPaired, false);
+  auto nModeModel = NModeModelPaired<tmatrix<double>>(
+      lattice, parametersFADTwoBodyPaired, false
+  );
   auto identityTag = nModeModel.filling_matrix_tag(0);
   auto fillingTag = nModeModel.filling_matrix_tag(1);
   BOOST_CHECK(identityTag == fillingTag);
 }
 
 /** Check on symbolic operator getter */
-BOOST_FIXTURE_TEST_CASE(Test_Model_Symbolic_Operator_OneMode_Paired, NModeFixture) {
+BOOST_FIXTURE_TEST_CASE(
+    Test_Model_Symbolic_Operator_OneMode_Paired, NModeFixture
+) {
   auto lattice = Lattice(parametersFADOneBodyPaired);
-  auto nModeModel =
-      NModeModelPaired<tmatrix<double>>(lattice, parametersFADOneBodyPaired, false);
+  auto nModeModel = NModeModelPaired<tmatrix<double>>(
+      lattice, parametersFADOneBodyPaired, false
+  );
   BOOST_CHECK(
       nModeModel.filling_matrix_tag(0) == nModeModel.get_operator_tag("fill", 0)
   );
 }
 
 /** Check on symbolic operator getter for a two-mode Hamiltonian */
-BOOST_FIXTURE_TEST_CASE(Test_Model_Symbolic_Operator_TwoMode_Paired, NModeFixture) {
+BOOST_FIXTURE_TEST_CASE(
+    Test_Model_Symbolic_Operator_TwoMode_Paired, NModeFixture
+) {
   auto lattice = Lattice(parametersFADOneBodyPaired);
-  auto nModeModel =
-      NModeModelPaired<tmatrix<double>>(lattice, parametersFADOneBodyPaired, false);
+  auto nModeModel = NModeModelPaired<tmatrix<double>>(
+      lattice, parametersFADOneBodyPaired, false
+  );
   BOOST_CHECK(
       nModeModel.filling_matrix_tag(0) == nModeModel.get_operator_tag("fill", 0)
   );
@@ -142,6 +156,5 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_Symbolic_Operator_TwoMode_Paired, NModeFixtur
       nModeModel.identity_matrix_tag(1) == nModeModel.get_operator_tag("id", 1)
   );
 }
-
 
 #endif  // HAVE_TrivialGroup

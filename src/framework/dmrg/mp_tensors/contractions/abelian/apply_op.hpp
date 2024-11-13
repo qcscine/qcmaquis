@@ -85,7 +85,7 @@ void lbtm_kernel_allocate(
         }
       }
     }  // oi
-  }    // b1
+  }  // b1
   contr_grid.index_sizes(b2);
 }
 
@@ -166,8 +166,8 @@ void lbtm_kernel_execute(
           );
         }
       }  // right index block
-    }    // oi
-  }      // b1
+    }  // oi
+  }  // b1
 }
 
 template <class Matrix, class OtherMatrix, class SymmGroup>
@@ -231,7 +231,7 @@ void rbtm_kernel_allocate(
         }
       }
     }  // oi
-  }    // b2
+  }  // b2
   ret.index_sizes();
 }
 
@@ -306,7 +306,7 @@ void rbtm_kernel_execute(
         }
       }
     }  // oi
-  }    // b2
+  }  // b2
   right_mult_mps.free(b1);
 }
 

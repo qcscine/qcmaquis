@@ -30,14 +30,14 @@
 
 #include <alps/numeric/vector_functions.hpp>
 
-//#include <boost/numeric/ublas/matrix.hpp>
-//#include <boost/numeric/ublas/io.hpp>
-//#include <boost/numeric/bindings/traits/ublas_matrix.hpp>
-//#include <boost/numeric/bindings/traits/ublas_symmetric.hpp>
-//#include <boost/numeric/bindings/traits/ublas_hermitian.hpp>
-//#include <boost/numeric/bindings/traits/ublas_vector2.hpp>
-//#include <boost/numeric/bindings/lapack/sysv.hpp>
-//#include <boost/numeric/bindings/lapack/hesv.hpp>
+// #include <boost/numeric/ublas/matrix.hpp>
+// #include <boost/numeric/ublas/io.hpp>
+// #include <boost/numeric/bindings/traits/ublas_matrix.hpp>
+// #include <boost/numeric/bindings/traits/ublas_symmetric.hpp>
+// #include <boost/numeric/bindings/traits/ublas_hermitian.hpp>
+// #include <boost/numeric/bindings/traits/ublas_vector2.hpp>
+// #include <boost/numeric/bindings/lapack/sysv.hpp>
+// #include <boost/numeric/bindings/lapack/hesv.hpp>
 #include <complex>
 #include <exception>
 #include <utility>

@@ -73,7 +73,8 @@ class LinSolver {
       if (verbose_)
         maquis::cout << " - Solving the linear system with ALPS-based MINRES"
                      << std::endl;
-    } else if ((parms_["linsystem_solver"] == "GMRES_EIGEN") || (parms_["linsystem_solver"] == "BiCGSTAB_EIGEN")) {
+    } else if ((parms_["linsystem_solver"] == "GMRES_EIGEN") ||
+               (parms_["linsystem_solver"] == "BiCGSTAB_EIGEN")) {
       if (parms_["linsystem_solver"] == "GMRES_EIGEN") {
         if (verbose_)
           maquis::cout << " - Solving the linear system with Eigen-based GMRES"

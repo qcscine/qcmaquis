@@ -5,9 +5,9 @@
  * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
- #define BOOST_TEST_MODULE MODEL_EXCITONIC_NMODE
+#define BOOST_TEST_MODULE MODEL_EXCITONIC_NMODE
 
- #include <boost/test/included/unit_test.hpp>
+#include <boost/test/included/unit_test.hpp>
 #include <boost/mpl/assert.hpp>
 #include "dmrg/models/lattice/lattice.h"
 #include "dmrg/models/vibrational/u1/ExcitonicModel.hpp"
@@ -42,6 +42,8 @@ BOOST_FIXTURE_TEST_CASE(Test_Thiophene_Energy_ExcitonicNmode, VibronicFixture) {
   );
   interface_single.optimize();
   double interface_single_optimizedEnergy = interface_single.energy().real();
-  BOOST_CHECK_CLOSE(interface_single_optimizedEnergy, 0.58483639508900598, 1.0E-10);
+  BOOST_CHECK_CLOSE(
+      interface_single_optimizedEnergy, 0.58483639508900598, 1.0E-10
+  );
 #endif  // HAVE_U1
 }

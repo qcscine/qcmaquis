@@ -47,7 +47,8 @@ BOOST_AUTO_TEST_CASE(PreBO_SymbolicJW_FermionicTwoBodyExcitationSameSite) {
   auto destroyOpF2 = SymbolicOperator(0, OpType::Annihilate, 0, Spin::Down);
   auto destroyOpF1 = SymbolicOperator(0, OpType::Annihilate, 0, Spin::Up);
   auto vectorOfOperators = std::vector<SymbolicOperator>{
-      createOpF1, createOpF2, destroyOpF2, destroyOpF1};
+      createOpF1, createOpF2, destroyOpF2, destroyOpF1
+  };
   auto jwSingleExcitationFermion = SymbolicJordanWigner(vectorOfOperators);
   auto operatorVector = jwSingleExcitationFermion.getSymOpStr();
   // Preliminary check
@@ -69,7 +70,8 @@ BOOST_AUTO_TEST_CASE(PreBO_SymbolicJW_FermionicTwoBodyExcitationSemidiagonal) {
   auto createBoson = SymbolicOperator(2, OpType::Create, 1, Spin::Down);
   auto destroyBoson = SymbolicOperator(3, OpType::Annihilate, 1, Spin::Down);
   auto vectorOfOperators = std::vector<SymbolicOperator>{
-      createFermion, destroyFermion, createBoson, destroyBoson};
+      createFermion, destroyFermion, createBoson, destroyBoson
+  };
   auto jwSingleExcitationFermion = SymbolicJordanWigner(vectorOfOperators);
   auto operatorVector = jwSingleExcitationFermion.getSymOpStr();
   BOOST_CHECK_EQUAL(operatorVector.size(), 6);

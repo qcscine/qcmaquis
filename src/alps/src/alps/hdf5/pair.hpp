@@ -253,8 +253,7 @@ void save(
       }
       save(ar, path + location, value.first[pos]);
       if (offset[last] + 1 == value.second[last] && last) {
-        for (pos = last; ++offset[pos] == value.second[pos] && pos; --pos)
-          ;
+        for (pos = last; ++offset[pos] == value.second[pos] && pos; --pos);
         for (++pos; pos <= last; ++pos) offset[pos] = 0;
       } else
         ++offset[last];
@@ -285,8 +284,7 @@ void load(
       }
       load(ar, path + location, value.first[pos]);
       if (offset[last] + 1 == value.second[last] && last) {
-        for (pos = last; ++offset[pos] == value.second[pos] && pos; --pos)
-          ;
+        for (pos = last; ++offset[pos] == value.second[pos] && pos; --pos);
         for (++pos; pos <= last; ++pos) offset[pos] = 0;
       } else
         ++offset[last];
