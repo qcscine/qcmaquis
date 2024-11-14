@@ -1,5 +1,6 @@
 import os
 import shutil
+
 # import sys
 # from functools import reduce
 from typing import Any, List, Optional, Tuple, Union
@@ -44,7 +45,13 @@ class QcMaquis:
     """
 
     # pylint: disable=W0613
-    def __init__(self, mol: Any, verbose: Optional[int] = None, fiedler: bool=False, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        mol: Any,
+        verbose: Optional[int] = None,
+        fiedler: bool = False,
+        **kwargs: Any,
+    ) -> None:
         """Initialize interface.
 
         Parameters
@@ -117,6 +124,7 @@ class QcMaquis:
 
         # Do I need this?
         # self._keys = set(self.__dict__.keys())
+
     # pylint: enable =W0613
 
     def dump_flags(self, verbose: Optional[int] = None):
@@ -128,19 +136,21 @@ class QcMaquis:
             pyscf verbosity
         """
         self.log = pyscf.lib.logger.new_logger(self, verbose)
-        self.log.info('************** QcMaquis flags **************')
-        self.log.info('method           = %s', str(self.method))
-        self.log.info('fiedler ordering = %s', str(self.fiedler))
+        self.log.info("************** QcMaquis flags **************")
+        self.log.info("method           = %s", str(self.method))
+        self.log.info("fiedler ordering = %s", str(self.fiedler))
         if self.file_path:
-            self.log.info('checkpoint path  = %s', str(self.file_path))
-            self.log.info('checkpoint name  = %s', str(self.parameters._checkpoint_path))
-            self.log.info('results name     = %s', str(self.parameters._results_path))
-            self.log.info('storage dir      = %s', str(self.parameters._storage_dir))
+            self.log.info("checkpoint path  = %s", str(self.file_path))
+            self.log.info(
+                "checkpoint name  = %s", str(self.parameters._checkpoint_path)
+            )
+            self.log.info("results name     = %s", str(self.parameters._results_path))
+            self.log.info("storage dir      = %s", str(self.parameters._storage_dir))
         else:
-            self.log.info('skipping checkpoints')
+            self.log.info("skipping checkpoints")
 
         if self.n_states:
-            self.log.info('Number of state  = %s', str(self.n_states))
+            self.log.info("Number of state  = %s", str(self.n_states))
 
     def _get_rdm2(self, norb: int) -> np.ndarray:
         """Getter for 2 rdm.
@@ -162,11 +172,11 @@ class QcMaquis:
             if self.dmrg is not None:
                 if self.verbose > 4:
                     # 1rdm, 2rdm
-                    _, maquis_rdm2 = self.dmrg.get_reduced_density_matrices()
+                    _, maquis_rdm2 = self.dmrg.get_1_and_2rdms()
                 else:
                     with pyscf.lib.capture_stdout() as stdout:
                         # 1rdm, 2rdm
-                        _, maquis_rdm2 = self.dmrg.get_reduced_density_matrices()
+                        _, maquis_rdm2 = self.dmrg.get_1_and_2rdms()
             else:
                 maquis_rdm2 = ([[0, 0, 0, 0]], [0])
 
@@ -182,6 +192,61 @@ class QcMaquis:
             rdm2[vec[3], vec[2], vec[1], vec[0]] = maquis_rdm2[1][i]
         rdm2 = rdm2.transpose(0, 3, 1, 2)
         return rdm2
+
+    def _get_rdm3(self, norb: int) -> np.ndarray:
+        """Getter for 3 rdm.
+
+        Transforms qcmaquis 3 particle dm into pyscf compatible format.
+
+        QCMaquis format: dm[p,r,...,s,q] = < p^+ r^+ ... s q >
+        PySCF format:    dm[p,q,r,s,...] = < p^+ r^+ ... s q >
+
+        Parameters
+        ----------
+        norb : int
+            number of orbitals
+
+        Returns
+        -------
+        rdm3 : np.ndarray
+            3-particle reduced density matrix
+        """
+        # in case of feast there is no rdm
+        try:
+            if self.dmrg is not None:
+                if self.verbose > 4:
+                    # 3rdm
+                    maquis_rdm3 = self.dmrg.get_three_rdm()
+                else:
+                    with pyscf.lib.capture_stdout() as stdout:
+                        # 3rdm
+                        maquis_rdm3 = self.dmrg.get_three_rdm()
+            else:
+                maquis_rdm3 = ([[0, 0, 0, 0]], [0])
+
+        except RuntimeError:
+            maquis_rdm3 = ([[0, 0, 0, 0]], [0])
+
+        # convert 3 rdm from qcmaquis to pyscf format
+        rdm3 = np.zeros((norb,) * 6)
+        for index, vec in enumerate(maquis_rdm3[0]):
+            rdm3[vec[0], vec[1], vec[2], vec[3], vec[4], vec[5]] = maquis_rdm3[1][index]
+            rdm3[vec[0], vec[2], vec[1], vec[3], vec[5], vec[4]] = maquis_rdm3[1][index]
+            rdm3[vec[1], vec[0], vec[2], vec[4], vec[3], vec[5]] = maquis_rdm3[1][index]
+            rdm3[vec[1], vec[2], vec[0], vec[4], vec[5], vec[3]] = maquis_rdm3[1][index]
+            rdm3[vec[2], vec[0], vec[1], vec[5], vec[3], vec[4]] = maquis_rdm3[1][index]
+            rdm3[vec[2], vec[1], vec[0], vec[5], vec[4], vec[3]] = maquis_rdm3[1][index]
+
+            # conjugate transpose
+            rdm3[vec[3], vec[4], vec[5], vec[0], vec[1], vec[2]] = maquis_rdm3[1][index]
+            rdm3[vec[3], vec[5], vec[4], vec[0], vec[2], vec[1]] = maquis_rdm3[1][index]
+            rdm3[vec[4], vec[3], vec[5], vec[1], vec[0], vec[2]] = maquis_rdm3[1][index]
+            rdm3[vec[4], vec[5], vec[3], vec[1], vec[2], vec[0]] = maquis_rdm3[1][index]
+            rdm3[vec[5], vec[3], vec[4], vec[2], vec[0], vec[1]] = maquis_rdm3[1][index]
+            rdm3[vec[5], vec[4], vec[3], vec[2], vec[1], vec[0]] = maquis_rdm3[1][index]
+
+        rdm3 = rdm3.transpose(0, 5, 1, 4, 2, 3)
+        return rdm3
 
     # TODO: enable excited states
     def _set_excited_state_options(self):
@@ -273,10 +338,14 @@ class QcMaquis:
             self.parameters.erase("chkpfile", verbose=False)
             self.parameters.erase("resultfile", verbose=False)
             if self.verbose > 4:
-                self.dmrg.run(norb, nelec, spin2, n_states=self.n_states, fiedler=self.fiedler)
+                self.dmrg.run(
+                    norb, nelec, spin2, n_states=self.n_states, fiedler=self.fiedler
+                )
             else:
                 with pyscf.lib.capture_stdout() as stdout:
-                    self.dmrg.run(norb, nelec, spin2, n_states=self.n_states, fiedler=self.fiedler)
+                    self.dmrg.run(
+                        norb, nelec, spin2, n_states=self.n_states, fiedler=self.fiedler
+                    )
 
         else:
             self._check_file_path()
@@ -286,22 +355,36 @@ class QcMaquis:
             if self._dmrgscf:
                 self.dmrg.replace_parameters(self.parameters)
                 if self.verbose > 4:
-                    self.dmrg.run(norb, nelec, spin2, n_states=self.n_states, fiedler=self.fiedler)
+                    self.dmrg.run(
+                        norb, nelec, spin2, n_states=self.n_states, fiedler=self.fiedler
+                    )
                 else:
                     with pyscf.lib.capture_stdout() as stdout:
-                        self.dmrg.run(norb, nelec, spin2, n_states=self.n_states, fiedler=self.fiedler)
+                        self.dmrg.run(
+                            norb,
+                            nelec,
+                            spin2,
+                            n_states=self.n_states,
+                            fiedler=self.fiedler,
+                        )
 
             # load from checkpoint (but only DMRGCI)
             elif cases == "DMRGCI":
                 self.parameters.erase("integrals")
                 self.dmrg.replace_parameters(self.parameters)
-                print(f"""No DMRG calculation required. MPS is loaded from: {self.parameters.get_checkpoint_path()}""")
+                print(
+                    f"""No DMRG calculation required. MPS is loaded from: {self.parameters.get_checkpoint_path()}"""
+                )
                 if self.verbose > 4:
-                    self.dmrg.init_dmrg(self.parameters.get_checkpoint_path(), norb, nelec, spin2)
+                    self.dmrg.init_dmrg(
+                        self.parameters.get_checkpoint_path(), norb, nelec, spin2
+                    )
 
                 else:
                     with pyscf.lib.capture_stdout() as stdout:
-                        self.dmrg.init_dmrg(self.parameters.get_checkpoint_path(), norb, nelec, spin2)
+                        self.dmrg.init_dmrg(
+                            self.parameters.get_checkpoint_path(), norb, nelec, spin2
+                        )
 
             # cannot load DMRGSCF from checkpoint yet, so we just run dmrgscf from scratch
             elif cases == "DMRGSCF":
@@ -310,10 +393,18 @@ class QcMaquis:
                 cases = self.check_checkpoint_and_results_file()
                 self.dmrg.replace_parameters(self.parameters)
                 if self.verbose > 4:
-                    self.dmrg.run(norb, nelec, spin2, n_states=self.n_states, fiedler=self.fiedler)
+                    self.dmrg.run(
+                        norb, nelec, spin2, n_states=self.n_states, fiedler=self.fiedler
+                    )
                 else:
                     with pyscf.lib.capture_stdout() as stdout:
-                        self.dmrg.run(norb, nelec, spin2, n_states=self.n_states, fiedler=self.fiedler)
+                        self.dmrg.run(
+                            norb,
+                            nelec,
+                            spin2,
+                            n_states=self.n_states,
+                            fiedler=self.fiedler,
+                        )
             else:
                 raise RuntimeError("How did we get here")
 
@@ -322,7 +413,9 @@ class QcMaquis:
 
         return energy, fakewfn_by_rdm2
 
-    def make_rdm12(self, fakewfn_by_rdm2: np.ndarray, ncas: int, nelec: int, **kwargs: Any) -> Tuple[np.ndarray, np.ndarray]:
+    def make_rdm12(
+        self, fakewfn_by_rdm2: np.ndarray, ncas: int, nelec: int, **kwargs: Any
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """Make 1rdm and 2rdm.
 
         TODO
@@ -332,10 +425,12 @@ class QcMaquis:
         if not isinstance(nelec, (int, np.integer)):
             nelec = sum(nelec)
         rdm2 = fakewfn_by_rdm2
-        rdm1 = np.einsum('ijkk->ij', rdm2) / (nelec - 1)
+        rdm1 = np.einsum("ijkk->ij", rdm2) / (nelec - 1)
         return rdm1, rdm2
 
-    def make_rdm1(self, fcivec: Any, norb: int, nelec: int, link_index: Any = None, **kwargs: Any) -> np.ndarray:
+    def make_rdm1(
+        self, fcivec: Any, norb: int, nelec: int, link_index: Any = None, **kwargs: Any
+    ) -> np.ndarray:
         """Make 1rdm.
 
         TODO
@@ -360,10 +455,14 @@ class QcMaquis:
             if not self.file_path.endswith("/"):
                 self.file_path += "/"
             if not self.parameters.get_checkpoint_path().startswith(self.file_path):
-                self.parameters.set_checkpoint_path(self.file_path + self.parameters.get_checkpoint_path())
+                self.parameters.set_checkpoint_path(
+                    self.file_path + self.parameters.get_checkpoint_path()
+                )
 
             if not self.parameters.get_result_path().startswith(self.file_path):
-                self.parameters.set_result_path(self.file_path + self.parameters.get_result_path())
+                self.parameters.set_result_path(
+                    self.file_path + self.parameters.get_result_path()
+                )
 
     def check_checkpoint_and_results_file(self):
         """Check if checkpoint and results file exist.
@@ -399,7 +498,9 @@ class QcMaquis:
         # check checkpoint path first dmrgscf iteration this is false
         if os.path.exists(self.parameters.get_checkpoint_path()):
             # erase dmrgscf checkpoint files for new dmrgscf iteration
-            if self.parameters.get_checkpoint_path().endswith(self._dmrgscf_checkpoint_name):
+            if self.parameters.get_checkpoint_path().endswith(
+                self._dmrgscf_checkpoint_name
+            ):
                 shutil.rmtree(self.parameters.get_checkpoint_path())
             # replace dmrgci checkpioint name with dmrgscf checkpoint
             else:

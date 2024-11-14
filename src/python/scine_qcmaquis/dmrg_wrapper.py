@@ -190,3 +190,8 @@ class DmrgWrapper:
         """Get 2rdm."""
         self.measure()
         return self._dmrg.twordm()
+
+    def threerdm(self) -> Any:
+        """Get 2rdm."""
+        self.measure()
+        return self._dmrg.threerdm()

@@ -181,7 +181,7 @@ class MaquisDmrg:
             self._entropy_builder.mutual_information
         )
 
-    def get_reduced_density_matrices(self) -> Tuple[np.ndarray, np.ndarray]:
+    def get_1_and_2rdms(self) -> Tuple[np.ndarray, np.ndarray]:
         """Get 1 and 2 RDM.
 
         Run measurements after a succesful DMRG calculation.
@@ -198,6 +198,21 @@ class MaquisDmrg:
         onerdm = self._dmrg.onerdm()
         twordm = self._dmrg.twordm()
         return onerdm, twordm
+
+    def get_three_rdm(self) -> np.ndarray:
+        """Get 3 rdm
+
+        Run measurements after a succesful DMRG calculation.
+        This is required for NEVPT2
+
+        Return
+        ------
+        threerdm : np.ndarray
+            the three particle reduced density matrix
+        """
+        self._dmrg.measure()
+        threerdm = self._dmrg.threerdm()
+        return threerdm
 
     def get_energy(self) -> Union[float, List[float]]:
         """Get energy.
