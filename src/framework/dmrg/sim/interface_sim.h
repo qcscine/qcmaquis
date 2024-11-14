@@ -9,7 +9,6 @@
 #define INTERFACE_SIM_H
 
 #include <sys/stat.h>
-
 #include <cmath>
 #include <exception>
 #include <iomanip>
@@ -338,6 +337,11 @@ class interface_sim : public sim<Matrix, SymmGroup>,
                 this->results_archive_path(sweep) + "/results/",
                 always_measurements
             );
+            // stop simulation if an energy threshold has been specified
+            int prev_sweep = sweep - meas_each;
+            if (prev_sweep >= 0) {
+              converged = checkEnergyConvergence(energyThreshold);
+            }
           }
         }
         // Do not check convergence for propagation, since energy should be
@@ -683,7 +687,15 @@ parms["nsweeps"]) checkpoint_simulation(mps, sweep, -1); if (stopped) break;
     return overlap(mpsOverlap, mps) / std::sqrt(norm(mpsOverlap) * norm(mps));
   }
 
-  /** @brief Updates the integral and regenerates the data that depends on it */
+  /**
+   * @brief Updates the integral and regenerates the data that depends on it.
+   *
+   * @Note This function erases existing entries of
+   * 'integral_file' and 'integrals' from parameters
+   * and sets 'integrals_binary' as source of integrals.
+   *
+   * @param integrals Integral map providing new integrals.
+   */
   void update_integrals(
       const chem::integral_map<typename Matrix::value_type>& integrals
   ) override {
@@ -708,20 +720,14 @@ parms["nsweeps"]) checkpoint_simulation(mps, sweep, -1); if (stopped) break;
     all_measurements = model.measurements();
     all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
   }
-  /**
-   * @brief Update integrals with new integral map.
-   *
-   * @Note This function erases existing entries of
-   * 'integral_file' and 'integrals' from parameters
-   * and sets 'integrals_binary' as source of integrals.
-   *
-   * @param integrals Integral map providing new integrals.
-   **/
   void update_tc_integrals(
       const chem::TranscorrMap<typename Matrix::value_type>& integrals
   ) {
     // integrals are set later anyways
     // deleting old ones should be okay
+    if (parms.is_set("integral_file")) {
+      parms.erase("integral_file");
+    }
     if (parms.is_set("integrals")) {
       parms.erase("integrals");
     }
@@ -986,6 +992,200 @@ parms["nsweeps"]) checkpoint_simulation(mps, sweep, -1); if (stopped) break;
     return overlap(aux_mps, this->mps);
   }
 
+  /**
+   * @brief Generate Fiedler ordering
+   *
+   * @param n_states int number of states
+   * @param hf_occupations vector of vectors of ints the occupation for each
+   * state
+   * @return order a string with the orbital order based on fiedler ordering
+   */
+
+  // template<typename std::enable_if<std::is_same<ScalarType, double>::value,
+  // int>::type = 0> template<typename = typename std::enable_if
+  // <std::is_same<ScalarType, double>::value>::type>
+  std::string get_fiedler_order(
+      int n_states, const std::vector<std::vector<int>>& hf_occupations,
+      std::string checkpoint_name
+  ) {
+    maquis::cout
+        << "-----------------------------------------------------------------"
+        << std::endl;
+    maquis::cout << "Start Fiedeler Ordering" << std::endl;
+    maquis::cout
+        << "-----------------------------------------------------------------"
+        << std::endl;
+
+    using ScalarType = typename Matrix::value_type;
+    using meas_with_results_type =
+        std::pair<std::vector<std::vector<int>>, std::vector<ScalarType>>;
+    using results_map_type = std::map<std::string, meas_with_results_type>;
+    // start new measurements
+    parms.erase_measurements();
+
+    if (!hf_occupations.empty()) {
+      assert(hf_occupations.size() == n_states);
+    }
+
+    if (parms.is_set("orbital_order")) {
+      // reset to default orbital order if some order is present
+      // if this isn't done, there're strange side-effects
+      int L = parms["L"];
+      std::vector<int> v(L);
+      std::iota(v.begin(), v.end(), 1);
+      parms.set("orbital_order", detail::vector_tostring(v));
+    }
+
+    // we need mutual information for the Fiedler ordering
+    parms.set("MEASURE[ChemEntropy]", 1);
+
+    std::vector<results_map_type> measurements;
+    measurements.reserve(n_states);
+
+    // set sweeps and m, same values as in the old python interface
+    parms.set("nsweeps", 4);
+    // if (parms.is_set("init_bond_dimension")) {
+    //   int init_bond_dimension = parms["init_bond_dimension"];
+    //   parms.set("max_bond_dimension", init_bond_dimension);
+    // } else {
+    if (parms.is_set("L")) {
+      parms.set("max_bond_dimension", parms["L"] > 24 ? 256 : 128);
+    } else {
+      throw std::runtime_error("L not defined for a starting guess calculation!"
+      );
+    }
+    // }
+
+    // if(parms.is_set("feast_num_states")) {
+    //     measurements.reserve(parms["feast_num_states"]);
+    //     this->run("feast");
+    //     // auto feast_mps = this->getFEASTEigenstates();
+    //     for (int iState = 0; iState < feastMPSs_->size(); ++iState) {
+    //       auto& mps = (*feastMPSs_)[iState];
+    //       results_map_type ret;
+    //       for (auto&& meas: all_measurements){
+    //         ret[meas.name()] = measure_and_save<Matrix,SymmGroup>(rfile(),
+    //         "/spectrum/results", mps).meas_out(meas);
+    //         measurements.emplace_back(std::move(this->measure_out()));
+    //       }
+    //     }
+
+    //} else {
+    // Do it for each state
+    for (int i = 0; i < n_states; i++) {
+      // set correct checkpoints and result file names
+      std::string chkpfile = detail::checkpoint_name(checkpoint_name, i);
+      parms.set("chkpfile", chkpfile);
+
+      // set HF occupation
+      if (!hf_occupations.empty()) {
+        parms.set("hf_occ", detail::vector_tostring(hf_occupations[i]));
+      }
+
+      // if excited state
+      if (i > 0) {
+        maquis::cout << "excited states" << std::endl;
+        parms.set("n_ortho_states", i - 1);
+        std::string all_ortho_states;
+        for (int j = 0; j < i; j++) {
+          maquis::cout << "add state: " << j << std::endl;
+          all_ortho_states += detail::checkpoint_name(checkpoint_name, j) +
+                              ((j < i - 1) ? " " : "");
+        }
+        std::cout << all_ortho_states << std::endl;
+        parms.set("ortho_states", all_ortho_states);
+      }
+
+      // do dmrg calculation
+      maquis::cout << "Optimize for Fiedler" << std::endl;
+      this->run("optimize");
+      measurements.emplace_back(std::move(this->measure_out()));
+    }
+    // }
+
+    // Get state-average single-orbital entropies and mutual information
+    // Collect mutual information from all the states
+    std::vector<Matrix> mutI;
+
+    // Calculate S1 only if CI-DEAS is requested and mutual information only if
+    // Fiedler ordering is requested
+    std::vector<Matrix> s1_;
+    s1_.reserve(n_states);
+    mutI.reserve(n_states);
+
+    for (int i = 0; i < n_states; i++) {
+      // get the entropy data
+      EntanglementData<Matrix> em(measurements[i]);
+
+      s1_.emplace_back(std::move(em.s1()));
+      mutI.emplace_back(std::move(em.I()));
+    }
+
+    // Calculate average mutual information
+    Matrix SAmutI(mutI[0].num_rows(), mutI[0].num_cols(), 0.0);
+    for (auto& n : mutI) {
+      SAmutI += n;
+    }
+
+    // Divide mutual information by the number of states: irrelevant for Fiedler
+    // ordering but let's still do it for the consistency
+    // SAmutI /= n_states;
+    Matrix SA_mutI_ = SAmutI;
+
+    // TODO: implement also Block fiedler ordering per symmetry
+
+    // get Laplacian of the average mutual information
+    Matrix L = detail::get_laplacian(SA_mutI_);
+
+    if (L.num_rows() < 2) {
+      throw std::runtime_error(
+          "Fiedler vector orbital ordering doesn't work for only one orbital!"
+      );
+    }
+
+    // get eigenvectors and eigenvalues of the Laplacian
+    Matrix evecs(L.num_rows(), L.num_cols());
+    std::vector<double> evals(L.num_rows());
+    alps::numeric::syev(L, evecs, evals);
+
+    // get the Fiedler vector, i.e. the eigenvector corresponding to the second
+    // lowest eigenvalue of the Laplacian The eigenvalues in evecs are assumed
+    // to be sorted starting from the highest eigenvalue i.e. the second lowest
+    // eigenvalue has an index L-2
+    auto fv_col = evecs.col(L.num_rows() - 2);
+    std::vector<ScalarType> fiedler_vector(fv_col.first, fv_col.second);
+
+    // old
+    /*
+      // prepare ordering. first create a vector with indices 0..L-1 in
+      ascending order std::vector<int> order(fiedler_vector.size());
+      std::iota(order.begin(), order.end(), 0);
+
+      // Sort the order vector according to the Fiedler vector
+      std::sort(order.begin(), order.end(),
+          [&fiedler_vector](size_t i1, size_t i2) {
+            return fiedler_vector[i1] < fiedler_vector[i2];
+          }
+      );
+    */
+    std::vector<int> order = detail::sort_vector(fiedler_vector);
+
+    // add 1 to each element because in the parameters our counting starts with
+    // 1 This is not used right? for (auto&& n: order) n++;
+    // std::transform(order.begin(), order.end(), order.begin(), [](int i){
+    // return i+1; });
+
+    // convert the ordering into a string
+    maquis::cout
+        << "-----------------------------------------------------------------"
+        << std::endl;
+    maquis::cout << "End Fiedeler Ordering" << std::endl;
+    maquis::cout
+        << "-----------------------------------------------------------------"
+        << std::endl;
+    return detail::vector_tostring(order);
+  }
+
   /** @brief Getter for the number of sweeps that have been run */
   int get_last_sweep() override { return last_sweep_; }
 
@@ -1007,6 +1207,8 @@ parms["nsweeps"]) checkpoint_simulation(mps, sweep, -1); if (stopped) break;
 
   /** @brief Dumps the energy to the result file */
   void dumpEnergy(int iSweep) {
+    auto energy = this->get_energy();
+    energies_.push_back(energy);
     if (!rfile().empty()) {
       auto energy = this->get_energy();
       storage::archive ar(rfile(), "w");

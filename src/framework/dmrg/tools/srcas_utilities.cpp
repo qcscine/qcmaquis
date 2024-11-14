@@ -133,26 +133,58 @@ std::vector<int> SRCAS<ScalarType>::generateNewDet_() {
         }
       } while (!(detTmp_[i] < detSpace_[i]));  // Only accept valid occupations
     }
-
-  } else if (parms_["MODEL"] == "quantum_chemistry") {
-    do {
-      detTmp_ = detQueen_;
-      // Get the number of excited electrons
-      int nele_excited = geometricRandomNumber_();
-      for (int i = 0; i < nele_excited; i++) {
-        int annihilate = this->getARandomOccSpinOrb_(detTmp_);
-        int create = this->getARandomUnoccSpinOrb_(detTmp_);
-        detTmp_[abs(annihilate) - 1] -= (annihilate < 0) ? 1 : 2;
-        detTmp_[abs(create) - 1] += (create < 0) ? 1 : 2;
+    if (detSpace_.size() != numParticles_) {
+      for (int i = 1; i < numParticles_; i++) {
+        maxDetStr_ += ",";
+        maxDetStr_ += parms_["Nmax"].str();
       }
-    } while (!symmetriesFulfilled_(detTmp_));  // Only accept valid occupations
+      std::vector<int> tmpVec(numParticles_, std::stoi(parms_["Nmax"].str()));
+      detSpace_ = std::move(tmpVec);
+    }
+
+    // TODO: better default for sampling speed
+  } else if (parms_["MODEL"] == "quantum_chemistry") {
+    if (parms_["symmetry"] == "su2u1" || parms_["symmetry"] == "su2u1pg") {
+      throw std::runtime_error("SRCAS is does not support SU2 symmetry");
+      // numParticles_ = parms_["nelec"];
+    } else {
+      numParticles_ =
+          int(parms_["u1_total_charge1"]) + int(parms_["u1_total_charge2"]);
+    }
+    maxDetStr_ = "4";
+    for (int i = 1; i < parms_["L"]; i++) {
+      maxDetStr_ += ",4";
+    }
+    std::vector<int> tmpVec(parms_["L"], 4);
+    detSpace_ = std::move(tmpVec);
+
   } else {
-    maquis::cout << "SRCAS determinant generation NYI for calculations other "
-                    "than vibrational or electronic! Abort!"
-                 << std::endl;
-    exit(1);
+    throw std::runtime_error(
+        "The SRCAS class supports only vibrational and electronic Hamiltonians "
+        "so far"
+    );
   }
-  return detTmp_;
+}
+else if (parms_["MODEL"] == "quantum_chemistry") {
+  do {
+    detTmp_ = detQueen_;
+    // Get the number of excited electrons
+    int nele_excited = geometricRandomNumber_();
+    for (int i = 0; i < nele_excited; i++) {
+      int annihilate = this->getARandomOccSpinOrb_(detTmp_);
+      int create = this->getARandomUnoccSpinOrb_(detTmp_);
+      detTmp_[abs(annihilate) - 1] -= (annihilate < 0) ? 1 : 2;
+      detTmp_[abs(create) - 1] += (create < 0) ? 1 : 2;
+    }
+  } while (!symmetriesFulfilled_(detTmp_));  // Only accept valid occupations
+}
+else {
+  maquis::cout << "SRCAS determinant generation NYI for calculations other "
+                  "than vibrational or electronic! Abort!"
+               << std::endl;
+  exit(1);
+}
+return detTmp_;
 }
 
 template <typename ScalarType>
@@ -269,7 +301,7 @@ SRCAS<ScalarType>::
   this->setupInitState_();
 }
 
-template <typename ScalarType>  // real or complex, nmode or canonical (watson)
+template <typename ScalarType>
 void SRCAS<ScalarType>::printSRCASSettings() {
   maquis::cout << std::endl << "----- SRCAS SETTINGS -----" << std::endl;
   maquis::cout << "MPS taken from:                             "

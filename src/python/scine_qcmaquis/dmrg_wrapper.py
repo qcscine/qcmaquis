@@ -103,7 +103,6 @@ class DmrgWrapper:
         print(f"{fiedler_string}")
 
         fiedler_string = fiedler_string[:-1]
-
         self._dmrg = None
         return fiedler_string
 
@@ -143,8 +142,6 @@ class DmrgWrapper:
 
         self._run_flag = True
 
-    # TODO: Make this for feast
-    # def get_energy(self) -> Union[List[float], float]:
     def get_energy(self) -> float:
         """Get the energy from last calculation.
 
@@ -156,15 +153,8 @@ class DmrgWrapper:
         if self._run_flag is False:
             raise ValueError("Run DMRG before asking for energies")
         # Feast gives you all energies at once
-        # if self._run_option == RunOptions.FEAST:
-        #     energies = []
-        #     for i in range(self._feast_states):
-        #         try:
-        #             energies.append(self._dmrg.energyFEAST(i))
-        #         # there are more states requested by feast than valid
-        #         except RuntimeError:
-        #             pass
-        #     return energies
+        if self._run_option == RunOptions.FEAST:
+            raise NotImplementedError
         return self._dmrg.energy()
 
     def measure(self) -> Any:

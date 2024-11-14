@@ -8,21 +8,24 @@
 #ifndef QC_HAMILTONIANS_H
 #define QC_HAMILTONIANS_H
 
-#include <cmath>
-#include <sstream>
-#include <fstream>
 #include <iterator>
 #include <boost/tokenizer.hpp>
 #include <regex>
 #include <unordered_set>
 
 #include "dmrg/models/model.h"
-#include "dmrg/models/measurements.h"
 #include "dmrg/utils/BaseParameters.h"
 
 #include "dmrg/models/MolecularHamiltonians/util.h"
-#include "dmrg/models/MolecularHamiltonians/parse_integrals.h"
 #include "dmrg/models/MolecularHamiltonians/pg_util.h"
+
+// These are unused
+// #include <cmath>
+// #include <sstream>
+// #include <fstream>
+// #include <unordered_set>
+#include "dmrg/models/measurements.h"
+#include "dmrg/models/MolecularHamiltonians/parse_integrals.h"
 #include "dmrg/models/MolecularHamiltonians/2u1/term_maker.h"
 #include "dmrg/models/MolecularHamiltonians/2u1/chem_helper.h"
 #include "dmrg/utils/checks.h"
@@ -972,7 +975,7 @@ class qc_model : public model_impl<Matrix, SymmGroup> {
         else if (std::regex_match(lhs, what, expression_oneptdm) ||
                  std::regex_match(lhs, what, expression_transition_oneptdm) ||
                  std::regex_match(lhs, what, expression_oneptspdm)) {
-          std::string bra_ckp;
+          std::string bra_ckp("");
           if (lhs == "MEASURE[trans1rdm]") {
             name = "transition_oneptdm";
             bra_ckp = it.second;
@@ -1029,7 +1032,6 @@ class qc_model : public model_impl<Matrix, SymmGroup> {
                 std::make_pair(meas_operators, factor)
             );
           }
-
           std::vector<pos_t> positions;
           meas.push_back(new measurements::TaggedNRankRDM<Matrix, SymmGroup>(
               name, lat, tag_handler, ident, fill, synchronous_meas_operators,

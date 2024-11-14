@@ -434,15 +434,16 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::
           int maxDegree = parms["transcorrelated_3body_max_coupling"];
           if (couplingDegree <= maxDegree) {
             std::vector<std::array<int, 6>> tmp;
-            if (isQuantumComputingFormat)
+            if (isQuantumComputingFormat) {
               tmp = std::vector<std::array<int, 6>>(
                   {std::array<int, 6>({i, j, k, l, m, n})}
               );
-            else
+            } else {
               tmp =
                   TermMaker<Matrix, SymmGroup>::generateThreeBodySymmetricIndex(
                       i, j, k, l, m, n
                   );
+            }
             std::vector<OperatorType> opVector1, opVector2, opVector3,
                 opVector4, opVector5, opVector6, opVector7, opVector8;
             value_type scalingFactor =
@@ -597,7 +598,7 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::
   tag_handler->checked_register(adjoint(tag_handler->get_op(iTag)), fermType);
       if (resPairCC.first >= originalSize)
           std::cout << "Registered new Hermitian Conjugate operator" <<
-  std::endl; if (iTag < resPairCC.first) { if (std::abs(resPairCC.second-1.)
+  std::endl; 202 if (iTag < resPairCC.first) { if (std::abs(resPairCC.second-1.)
   < 1.0E-16) { tag_handler->hermitian_pair(iTag, resPairCC.first);
           }
           else {

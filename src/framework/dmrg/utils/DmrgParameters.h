@@ -530,6 +530,20 @@ class DmrgParameters : public BaseParameters {
         value("no")
     );
 
+    // TODO: Is this used somewhere, then comment it in
+    add_option(
+        "transcorrelated_3body_normal_ordered",
+        "Use normal-ordered version of the threebody operator", value("no")
+    );
+    add_option(
+        "normal_ordered_integral_file",
+        "Integral file given is normal ordered.", value("no")
+    );
+    add_option(
+        "normal_ordered_hole_states",
+        "Hole states of the normal ordering, if integral file given in normal "
+        "ordering"
+    );
     // Tools
     add_option(
         "determinant_file",

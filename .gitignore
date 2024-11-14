@@ -1,8 +1,11 @@
+.clang-tidy
+.clang-format
+
 *.svn*
 *.pyc*
 *.swp*
 .vscode/
-build*/
+*build*/
 my*
 *.vscode
 *.idea
@@ -16,7 +19,11 @@ dmrg/doc/qcmaquis_manual.log
 dmrg/doc/qcmaquis_manual.out
 dmrg/doc/qcmaquis_manual.pdf
 dmrg/doc/qcmaquis_manual.toc
-.cache
+
+
+*TODO*
+.coverage
+*pytest*
 ip64test
 compile_commands.json
 *.egg-info
