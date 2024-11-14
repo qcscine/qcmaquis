@@ -111,11 +111,12 @@ BOOST_AUTO_TEST_CASE(Test1) {
 
     value = 0.0;
 
-    for (int i = 0; i < meas2.first.size(); i++)
+    for (int i = 0; i < meas2.first.size(); i++) {
       if (meas2.first[i] == std::vector<int>{0, 0, 0, 0}) {
         value = meas2.second[i];
         break;
       }
+    }
 
     BOOST_CHECK_CLOSE(value, 1.1796482258, 1e-7);
   }
