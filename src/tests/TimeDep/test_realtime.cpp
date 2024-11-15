@@ -270,4 +270,42 @@ BOOST_FIXTURE_TEST_CASE(TestRealTimeExcitonic, VibronicFixture) {
 #endif  // HAVE_U1
 }
 
+/**
+ * @brief Tests that the energy is conserved for vibronic model
+ */
+BOOST_FIXTURE_TEST_CASE(TestRealTimeVibronic, VibronicFixture) {
+#ifdef HAVE_U1
+  parametersVibronicPyrazineRedDimFull.set("init_type", "basis_state_generic");
+  parametersVibronicPyrazineRedDimFull.set("init_basis_state", "1,0,0,0,0,0");
+  parametersVibronicPyrazineRedDimFull.set("nsweeps", 40);
+  parametersVibronicPyrazineRedDimFull.set("max_bond_dimension", 20);
+  parametersVibronicPyrazineRedDimFull.set("time_step", 1);
+  parametersVibronicPyrazineRedDimFull.set("time_units", "fs");
+  parametersVibronicPyrazineRedDimFull.set("propagator_maxiter", 40);
+  parametersVibronicPyrazineRedDimFull.set("TD_backpropagation", "yes");
+  parametersVibronicPyrazineRedDimFull.set("imaginary_time", "no");
+  parametersVibronicPyrazineRedDimFull.set("optimization", "singlesite");
+  maquis::DMRGInterface<std::complex<double>> interfaceSS(
+      parametersVibronicPyrazineRedDimFull
+  );
+  maquis::cout << "Running SS real-time evolution on Vibronic model"
+               << std::endl;
+  auto initialEnergy = std::real(interfaceSS.energy());
+  interfaceSS.evolve();
+  auto finalEnergy = std::real(interfaceSS.energy());
+  BOOST_CHECK_CLOSE(initialEnergy, finalEnergy, 1.0E-10);
+  // Two-site evolutions
+  maquis::cout << "Running TS real-time evolution test for Vibronic model"
+               << std::endl;
+  parametersVibronicPyrazineRedDimFull.set("optimization", "twosite");
+  maquis::DMRGInterface<std::complex<double>> interfaceTS(
+      parametersVibronicPyrazineRedDimFull
+  );
+  initialEnergy = std::real(interfaceTS.energy());
+  interfaceTS.evolve();
+  finalEnergy = std::real(interfaceTS.energy());
+  BOOST_CHECK_CLOSE(initialEnergy, finalEnergy, 1.0E-10);
+#endif
+}
+
 #endif  // DMRG_VIBRONIC
