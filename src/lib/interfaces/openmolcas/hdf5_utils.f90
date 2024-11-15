@@ -5,7 +5,7 @@
 !! Fortran-C interoperability inspired by http://fortranwiki.org/fortran/show/Generating+C+Interfaces
 !! and Steven Vancoillie's hdf5_util in OpenMOLCAS
 !! (C) 2017 Leon Freitag and Stefan Knecht
-!!          Department of Chemistry and Applied Biosciences, ETH Zurich
+!!          Laboratory for Physical Chemistry, ETH Zurich
 !!
 !!  hdf5_qcm is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU Lesser General Public License as published by

@@ -3,7 +3,7 @@
 !!  Copyright 2013-2018 Leon Freitag, Erik Hedegaard, Sebastian Keller,
 !!                      Stefan Knecht, Yingjin Ma, Christopher Stein
 !!                      and Markus Reiher
-!!                      Department of Chemistry and Applied Biosciences, ETH Zurich
+!!                      Laboratory for Physical Chemistry, ETH Zurich
 !!  dmrg-interface-utils is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU Lesser General Public License as published by
 !!  the Free Software Foundation, either version 3 of the License, or
@@ -125,6 +125,7 @@ module qcmaquis_interface_cfg
        real*8 , allocatable :: dmrg_state_specific(:)
        real*8 , allocatable :: max_truncW(:)
        integer*8, allocatable :: num_sweeps(:)
+       integer*8 , allocatable :: bond_dim(:)
   end type type_energy
   type (type_energy), save :: dmrg_energy
 
