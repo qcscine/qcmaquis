@@ -91,19 +91,26 @@ int main(int argc, char** argv) {
       );
       sim_timer.begin();
 
-      if (opt.parms["COMPLEX"] || opt.parms["simulation_type"] == "evolve") {
+      bool use_complex =
+          opt.parms["COMPLEX"] || (opt.parms["simulation_type"] == "evolve" &&
+                                   opt.parms["imaginary_time"] == "no");
+      if (use_complex) {
         maquis::DMRGInterface<std::complex<double>> interface(opt.parms);
-        if (opt.parms["fiedler"]) {
-          opt.parms["orbital_order"] =
-              interface.fiedler_order(1, std::vector<std::vector<int>>{}, "");
-        }
+        // TODO: not sure if reordering works
+        // if (opt.parms["fiedler"]) {
+        //   opt.parms["orbital_order"] =
+        //       interface.fiedler_order(1, std::vector<std::vector<int>>{},
+        //       "");
+        // }
         interface.run(sim_type);
       } else {
         maquis::DMRGInterface<double> interface(opt.parms);
-        if (opt.parms["fiedler"]) {
-          opt.parms["orbital_order"] =
-              interface.fiedler_order(1, std::vector<std::vector<int>>{}, "");
-        }
+        // TODO: not sure if reordering works
+        // if (opt.parms["fiedler"]) {
+        //   opt.parms["orbital_order"] =
+        //       interface.fiedler_order(1, std::vector<std::vector<int>>{},
+        //       "");
+        // }
         interface.run(sim_type);
       }
 
