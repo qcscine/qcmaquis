@@ -14,6 +14,11 @@
 #include "dmrg/utils/stdout_redirector.hpp"
 #include "dmrg/models/measurements/measurements_details.h"  // for 4-RDM functions
 
+// For CASPT2
+#include "dmrg/models/generate_mpo.hpp"
+#include "dmrg/mp_tensors/mpo_times_mps.hpp"
+#include "maquis_dmrg_detail.h"
+
 std::unique_ptr<maquis::DMRGInterface<double> > interface_ptr;
 DmrgParameters parms;
 std::string pname;
