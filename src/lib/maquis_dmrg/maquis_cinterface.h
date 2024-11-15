@@ -147,6 +147,8 @@ enum HIRDM_Template { TEMPLATE_4RDM, TEMPLATE_TRANSITION_3RDM };
 void qcmaquis_interface_prepare_hirdm_template(
     const char* filename, int state, HIRDM_Template tpl, int state_j
 );
+// Contract fock with 4 rdm by computing a transition rdm between MPS and MPO *
+// MPS where the MPO is comprised of the Fock elements on the diagonal
 void qcmaquis_interface_get_fock_contracted_4rdm(
     const double* epsa, int nasht, int* indices, V* values, int size
 );
