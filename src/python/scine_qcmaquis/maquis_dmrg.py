@@ -199,6 +199,38 @@ class MaquisDmrg:
         twordm = self._dmrg.twordm()
         return onerdm, twordm
 
+    def get_one_rdm(self) -> np.ndarray:
+        """Get 1 rdm
+
+        Run measurements after a succesful DMRG calculation.
+        This is required for DMRGSCF calculations.
+
+        Return
+        This is required for DMRGSCF calculations.
+        ------
+        onerdm : np.ndarray
+            the three particle reduced density matrix
+        """
+        self._dmrg.measure()
+        onerdm = self._dmrg.onerdm()
+        return onerdm
+
+    def get_two_rdm(self) -> np.ndarray:
+        """Get 2 rdm
+
+        Run measurements after a succesful DMRG calculation.
+        This is required for DMRGSCF calculations.
+
+        Return
+        This is required for DMRGSCF calculations.
+        ------
+        twordm : np.ndarray
+            the three particle reduced density matrix
+        """
+        self._dmrg.measure()
+        twordm = self._dmrg.twordm()
+        return twordm
+
     def get_three_rdm(self) -> np.ndarray:
         """Get 3 rdm
 
@@ -213,6 +245,21 @@ class MaquisDmrg:
         self._dmrg.measure()
         threerdm = self._dmrg.threerdm()
         return threerdm
+
+    def get_four_rdm(self) -> np.ndarray:
+        """Get 4 rdm
+
+        Run measurements after a succesful DMRG calculation.
+        This is required for NEVPT2
+
+        Return
+        ------
+        fourrdm : np.ndarray
+            the three particle reduced density matrix
+        """
+        self._dmrg.measure()
+        fourrdm = self._dmrg.fourrdm()
+        return fourrdm
 
     def get_energy(self) -> Union[float, List[float]]:
         """Get energy.

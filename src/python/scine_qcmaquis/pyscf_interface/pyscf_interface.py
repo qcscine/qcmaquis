@@ -1,9 +1,8 @@
 import os
 import shutil
 
-# import sys
-# from functools import reduce
 from typing import Any, List, Optional, Tuple, Union
+from itertools import permutations
 
 import numpy as np
 import pyscf
@@ -152,10 +151,69 @@ class QcMaquis:
         if self.n_states:
             self.log.info("Number of state  = %s", str(self.n_states))
 
+    def _gen_rdm_permutations(self, n_particles: int, is_hermitian=True):
+        """Generate all equivalent elements for n_particle-RDMs"""
+        indices = []
+        creators_original = [i for i in range(n_particles)]
+        for creators in permutations(creators_original, n_particles):
+            annhilators = tuple(
+                [(i + n_particles) % (2 * n_particles) for i in creators]
+            )
+            indices.append(creators + annhilators)
+            if is_hermitian:
+                indices.append(annhilators + creators)
+
+        return indices
+
+    def _get_rdm1(self, norb: int) -> np.ndarray:
+        """Getter for 1 rdm.
+
+        Transforms qcmaquis 1 particle dm into pyscf compatible format.
+
+        QCMaquis format: dm[p,q] = < p^+ q >
+        PySCF format:    dm[p,q] = < q^+ p>
+
+        Parameters
+        ----------
+        norb : int
+            number of orbitals
+
+        Returns
+        -------
+        rdm1 : np.ndarray
+            1-particle reduced density matrix
+        """
+        # in case of feast there is no rdm
+        try:
+            if self.dmrg is not None:
+                if self.verbose > 4:
+                    # 2rdm
+                    maquis_rdm1 = self.dmrg.get_one_rdm()
+                else:
+                    with pyscf.lib.capture_stdout() as stdout:
+                        # 2rdm
+                        maquis_rdm1 = self.dmrg.get_one_rdm()
+            else:
+                maquis_rdm1 = ([[0 for _ in range(2)]], [0])
+
+        except RuntimeError:
+            maquis_rdm1 = ([[0 for _ in range(2)]], [0])
+
+        # convert 1 rdm from qcmaquis to pyscf format
+        rdm2 = np.zeros((norb,) * 2)
+        for i, vec in enumerate(maquis_rdm1[0]):
+            for permutation in self._gen_rdm_permutations(1, True):
+                rdm2[tuple(vec[i] for i in permutation)] = maquis_rdm1[1][i]
+        rdm2 = rdm2.T
+        return rdm2
+
     def _get_rdm2(self, norb: int) -> np.ndarray:
         """Getter for 2 rdm.
 
         Transforms qcmaquis 2 particle dm into pyscf compatible format.
+
+        QCMaquis format: dm[p,r,...,s,q] = < p^+ r^+ ... s q >
+        PySCF format:    dm[p,q,r,s,...] = < p^+ r^+ ... s q >
 
         Parameters
         ----------
@@ -171,25 +229,23 @@ class QcMaquis:
         try:
             if self.dmrg is not None:
                 if self.verbose > 4:
-                    # 1rdm, 2rdm
-                    _, maquis_rdm2 = self.dmrg.get_1_and_2rdms()
+                    # 2rdm
+                    maquis_rdm2 = self.dmrg.get_two_rdm()
                 else:
                     with pyscf.lib.capture_stdout() as stdout:
-                        # 1rdm, 2rdm
-                        _, maquis_rdm2 = self.dmrg.get_1_and_2rdms()
+                        # 2rdm
+                        maquis_rdm2 = self.dmrg.get_two_rdm()
             else:
-                maquis_rdm2 = ([[0, 0, 0, 0]], [0])
+                maquis_rdm2 = ([[0 for _ in range(4)]], [0])
 
         except RuntimeError:
-            maquis_rdm2 = ([[0, 0, 0, 0]], [0])
+            maquis_rdm2 = ([[0 for _ in range(4)]], [0])
 
         # convert 2 rdm from qcmaquis to pyscf format
         rdm2 = np.zeros((norb,) * 4)
         for i, vec in enumerate(maquis_rdm2[0]):
-            rdm2[vec[0], vec[1], vec[2], vec[3]] = maquis_rdm2[1][i]
-            rdm2[vec[2], vec[3], vec[0], vec[1]] = maquis_rdm2[1][i]
-            rdm2[vec[1], vec[0], vec[3], vec[2]] = maquis_rdm2[1][i]
-            rdm2[vec[3], vec[2], vec[1], vec[0]] = maquis_rdm2[1][i]
+            for permutation in self._gen_rdm_permutations(2, True):
+                rdm2[tuple(vec[i] for i in permutation)] = maquis_rdm2[1][i]
         rdm2 = rdm2.transpose(0, 3, 1, 2)
         return rdm2
 
@@ -222,31 +278,71 @@ class QcMaquis:
                         # 3rdm
                         maquis_rdm3 = self.dmrg.get_three_rdm()
             else:
-                maquis_rdm3 = ([[0, 0, 0, 0]], [0])
+                maquis_rdm3 = ([[0 for _ in range(6)]], [0])
 
         except RuntimeError:
-            maquis_rdm3 = ([[0, 0, 0, 0]], [0])
+            maquis_rdm3 = ([[0 for _ in range(6)]], [0])
 
         # convert 3 rdm from qcmaquis to pyscf format
         rdm3 = np.zeros((norb,) * 6)
-        for index, vec in enumerate(maquis_rdm3[0]):
-            rdm3[vec[0], vec[1], vec[2], vec[3], vec[4], vec[5]] = maquis_rdm3[1][index]
-            rdm3[vec[0], vec[2], vec[1], vec[3], vec[5], vec[4]] = maquis_rdm3[1][index]
-            rdm3[vec[1], vec[0], vec[2], vec[4], vec[3], vec[5]] = maquis_rdm3[1][index]
-            rdm3[vec[1], vec[2], vec[0], vec[4], vec[5], vec[3]] = maquis_rdm3[1][index]
-            rdm3[vec[2], vec[0], vec[1], vec[5], vec[3], vec[4]] = maquis_rdm3[1][index]
-            rdm3[vec[2], vec[1], vec[0], vec[5], vec[4], vec[3]] = maquis_rdm3[1][index]
-
-            # conjugate transpose
-            rdm3[vec[3], vec[4], vec[5], vec[0], vec[1], vec[2]] = maquis_rdm3[1][index]
-            rdm3[vec[3], vec[5], vec[4], vec[0], vec[2], vec[1]] = maquis_rdm3[1][index]
-            rdm3[vec[4], vec[3], vec[5], vec[1], vec[0], vec[2]] = maquis_rdm3[1][index]
-            rdm3[vec[4], vec[5], vec[3], vec[1], vec[2], vec[0]] = maquis_rdm3[1][index]
-            rdm3[vec[5], vec[3], vec[4], vec[2], vec[0], vec[1]] = maquis_rdm3[1][index]
-            rdm3[vec[5], vec[4], vec[3], vec[2], vec[1], vec[0]] = maquis_rdm3[1][index]
+        for i, vec in enumerate(maquis_rdm3[0]):
+            for permutation in self._gen_rdm_permutations(3, True):
+                rdm3[tuple(vec[i] for i in permutation)] = maquis_rdm3[1][i]
 
         rdm3 = rdm3.transpose(0, 5, 1, 4, 2, 3)
         return rdm3
+
+    def _get_rdm4(self, norb: int) -> np.ndarray:
+        """Getter for 4 rdm.
+
+        Transforms qcmaquis 4 particle dm into pyscf compatible format.
+
+        QCMaquis format: dm[p,r,...,s,q] = < p^+ r^+ ... s q >
+        PySCF format:    dm[p,q,r,s,...] = < p^+ r^+ ... s q >
+
+        Parameters
+        ----------
+        norb : int
+            number of orbitals
+
+        Returns
+        -------
+        rdm4 : np.ndarray
+            4-particle reduced density matrix
+        """
+        # in case of feast there is no rdm
+        try:
+            if self.dmrg is not None:
+                if self.verbose > 4:
+                    # 4rdm
+                    maquis_rdm4 = self.dmrg.get_four_rdm()
+                else:
+                    with pyscf.lib.capture_stdout() as stdout:
+                        # 4rdm
+                        maquis_rdm4 = self.dmrg.get_four_rdm()
+            else:
+                maquis_rdm4 = ([[0 for _ in range(8)]], [0])
+
+        except RuntimeError:
+            maquis_rdm4 = ([[0 for _ in range(8)]], [0])
+
+        # convert 4 rdm from qcmaquis to pyscf format
+        rdm4 = np.zeros((norb,) * 8)
+        for i, vec in enumerate(maquis_rdm4[0]):
+            for permutation in self._gen_rdm_permutations(4, True):
+                rdm4[tuple(vec[i] for i in permutation)] = maquis_rdm4[1][i]
+
+        rdm4 = rdm4.transpose(0, 7, 1, 6, 2, 5, 3, 4)
+        return rdm4
+
+    def _make_dm1234(
+        self, norb: int
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        dm1 = self._get_rdm1(norb)
+        dm2 = self._get_rdm2(norb)
+        dm3 = self._get_rdm3(norb)
+        dm4 = self._get_rdm4(norb)
+        return dm1, dm2, dm3, dm4
 
     # TODO: enable excited states
     def _set_excited_state_options(self):
