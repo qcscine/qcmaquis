@@ -253,8 +253,8 @@ class VibronicModel : public model_impl<Matrix, U1> {
         // Bonds element (the actual operator involved in the measurement)
         bond_element ops;
         op_vec local_op_vec;
-        local_op_vec.push_back(tag_handler->get_op(ident_vib));
         local_op_vec.push_back(tag_handler->get_op(count_ele));
+        local_op_vec.push_back(tag_handler->get_op(ident_vib));
         ops.push_back(std::make_pair(local_op_vec, false));
         meas.push_back(new measurements::local_at<Matrix, U1>(
             name, lat, pos_local, identities_local, fillings_local, ops
