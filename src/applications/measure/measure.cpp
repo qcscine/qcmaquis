@@ -35,6 +35,12 @@ int main(int argc, char** argv) {
     timeval now, then, snow, sthen;
     gettimeofday(&now, NULL);
 
+    if (!opt.parms.is_set("chkpfile")) {
+      std::cerr << "'chkpfile' parameter containing MPS checkpoint file must "
+                   "be set to perform measurements\n";
+      exit(1);
+    }
+
     if (!opt.parms["COMPLEX"]) {
       maquis::DMRGInterface<double> interface(opt.parms);
       interface.run_measure();
