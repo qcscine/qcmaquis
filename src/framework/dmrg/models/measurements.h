@@ -46,12 +46,14 @@ class measure_and_save {
     }
 #endif
 
-    maquis::cout << "Number of threads used: " << num_threads << std::endl;
+    // maquis::cout << "Number of threads used: " << num_threads << std::endl;
 
 #ifdef MAQUIS_OPENMP
 #pragma omp critical
 #endif
-    { maquis::cout << "Measuring " << meas.name() << std::endl; }
+    {
+      maquis::cout << "Measuring " << meas.name() << std::endl;
+    }
 
     meas.eigenstate_index() = eigenstate;
     meas.evaluate(mps, rmps);

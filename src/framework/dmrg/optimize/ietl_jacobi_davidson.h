@@ -111,7 +111,6 @@ solve_ietl_jcd(
                    << iter.iterations() << " iterations."
                    << " [" << duration_milisec.count() << " ms]\n";
     }
-    std::cout << " in " << iter.iterations() << " iters.\n";
   }
   return r0;
 }
