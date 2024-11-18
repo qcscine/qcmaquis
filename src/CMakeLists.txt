@@ -428,7 +428,6 @@ endif(TARGET Eigen3::Eigen)
 
 # OpenMolcas interface
 if(BUILD_OPENMOLCAS_INTERFACE)
-  project(MAQUIS_DMRG CXX C Fortran)
   add_subdirectory(lib/interfaces/openmolcas)
 endif()
 
