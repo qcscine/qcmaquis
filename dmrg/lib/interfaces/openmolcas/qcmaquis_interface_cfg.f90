@@ -35,7 +35,7 @@ module qcmaquis_interface_cfg
        !! OpenMOLCAS project name & current directory
        character*256 :: project_name = '' ! MOLCAS/QCMaquis project prefix
        character*512 :: currdir = '' ! MOLCAS current directory
-       character*512 :: scratchdir = '' ! MOLCAS current directory
+       character*512 :: workdir = '' ! MOLCAS workdir directory
 
       !! OpenMOLCAS wavefunction settings (possibly redundant)
       integer*8 :: nactel = 0  ! number of active electrons
