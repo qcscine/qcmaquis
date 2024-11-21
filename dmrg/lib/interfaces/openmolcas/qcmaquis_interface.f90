@@ -286,6 +286,8 @@ module qcmaquis_interface
 
         call GET_ENVIRONMENT_VARIABLE('Project', qcmaquis_param%project_name)
         call GET_ENVIRONMENT_VARIABLE('CurrDir', qcmaquis_param%currdir)
+        call GET_ENVIRONMENT_VARIABLE('WorkDir', qcmaquis_param%workdir)
+
 
         ! save wavefunction parameters
         qcmaquis_param%nactel = nel
