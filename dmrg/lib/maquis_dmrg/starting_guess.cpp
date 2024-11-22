@@ -94,7 +94,7 @@ namespace maquis
                 // set sweeps and m, same values as in the old python interface
                 parms_.set("nsweeps", 4);
                 if (parms_.is_set("L"))
-                    parms_.set("max_bond_dimension", parms_["L"] > 24 ? 256 : 128);
+                    parms_.set("max_bond_dimension", parms_["L"] * 10);
                 else
                     throw std::runtime_error("L not defined for a starting guess calculation!");
 
