@@ -86,7 +86,7 @@ class StartingGuess<V>::Impl {
       }
 
       if (i > 0) {
-        parms_.set("n_ortho_states", i - 1);
+        parms_.set("n_ortho_states", i);
         std::string all_ortho_states;
         for (int j = 0; j < i; j++) {
           all_ortho_states +=
