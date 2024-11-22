@@ -9,6 +9,7 @@
 #include <string>
 #include <array>
 #include <regex>
+#include "dmrg/models/chem/transform_symmetry.hpp"
 #include "maquis_dmrg.h"
 #include "starting_guess.h"
 #include "dmrg/utils/stdout_redirector.hpp"
@@ -18,6 +19,7 @@
 #include "dmrg/models/generate_mpo.hpp"
 #include "dmrg/mp_tensors/mpo_times_mps.hpp"
 #include "maquis_dmrg_detail.h"
+#include <filesystem>
 
 std::unique_ptr<maquis::DMRGInterface<double> > interface_ptr;
 DmrgParameters parms;
@@ -52,7 +54,7 @@ void qcmaquis_interface_preinit(
     for (int i = 0; i < nsweepm; i++)
       sweep_bond_dim +=
           std::to_string(sweep_m[i]) + ((i < nsweepm - 1) ? "," : "");
-    parms.set("sweep_bond_dimensions", sweep_bond_dim);
+    parms.set("sweep_bond_dimension", sweep_bond_dim);
   }
 
   pname = project_name;
@@ -69,8 +71,7 @@ void qcmaquis_interface_preinit(
     parms.set("site_types", site_types_str);
   } else {
     std::string site_types_str;
-    for (int i = 0; i < L; i++)
-      site_types_str += std::string("0") + ((i < L - 1) ? "," : "");
+    for (int i = 0; i < L; i++) site_types_str += "0" + (i < L - 1) ? "," : "";
     parms.set("site_types", site_types_str);
   }
 
@@ -91,7 +92,7 @@ void qcmaquis_interface_preinit_checkpoint(const char* checkpoint_name) {
 
   pname = m[1];
   std::string props_name = std::string(checkpoint_name) + "/props.h5";
-  if (!std::filesystem::exists(props_name))
+  if (!boost::filesystem::exists(props_name))
     throw std::runtime_error("Filename " + props_name + " cannot be found.");
 
   storage::archive props(props_name);
@@ -323,7 +324,7 @@ void qcmaquis_interface_measure_and_save_trans3rdm(int state, int bra_state) {
   std::string old_rfile;
   if (parms.is_set("resultfile")) old_rfile = parms["resultfile"].str();
 
-  if (!std::filesystem::exists(bra_chkp))
+  if (!boost::filesystem::exists(bra_chkp))
     throw std::runtime_error(
         "QCMaquis checkpoint " + bra_chkp +
         " does not exist. Did you optimise the wavefunction for this state?"
@@ -359,28 +360,30 @@ void qcmaquis_interface_get_iteration_results(
 
   if (!iter.empty()) {
     // iter contains results, one element per microiteration
-    const std::vector<std::any>& m_vec = iter["BondDimension"].get();
-    const std::vector<std::any>& ev_vec = iter["SmallestEV"].get();
+    const std::vector<boost::any>& m_vec = iter["BondDimension"].get();
+    const std::vector<boost::any>& ev_vec = iter["SmallestEV"].get();
 
     // if we do single-site optimization, we will not have TruncatedWeight or
     // TruncatedFraction, so check whether we have it
-    const std::vector<std::any>& tw_vec = (iter.has("TruncatedWeight"))
-                                              ? iter["TruncatedWeight"].get()
-                                              : std::vector<std::any>();
-    const std::vector<std::any>& tf_vec = (iter.has("TruncatedFraction"))
-                                              ? iter["TruncatedFraction"].get()
-                                              : std::vector<std::any>();
+    const std::vector<boost::any>& tw_vec = (iter.has("TruncatedWeight"))
+                                                ? iter["TruncatedWeight"].get()
+                                                : std::vector<boost::any>();
+    const std::vector<boost::any>& tf_vec =
+        (iter.has("TruncatedFraction")) ? iter["TruncatedFraction"].get()
+                                        : std::vector<boost::any>();
+
+    // return maximum bond dimension
+    *m = 0;
+    for (auto&& m_ : m_vec) *m = std::max(*m, boost::any_cast<std::size_t>(m_));
 
     // We return the sum of these values for the last sweep
     // this should be done with transform_reduce
-    *m = 0;
-    for (auto&& m_ : m_vec) *m += std::any_cast<std::size_t>(m_);
     *truncated_weight = 0;
-    for (auto&& tw_ : tw_vec) *truncated_weight += std::any_cast<V>(tw_);
+    for (auto&& tw_ : tw_vec) *truncated_weight += boost::any_cast<V>(tw_);
     *truncated_fraction = 0;
-    for (auto&& tf_ : tf_vec) *truncated_fraction += std::any_cast<V>(tf_);
+    for (auto&& tf_ : tf_vec) *truncated_fraction += boost::any_cast<V>(tf_);
     *smallest_ev = 0;
-    for (auto&& ev_ : ev_vec) *smallest_ev += std::any_cast<V>(ev_);
+    for (auto&& ev_ : ev_vec) *smallest_ev += boost::any_cast<V>(ev_);
 
     *nsweeps = interface_ptr->get_last_sweep() + 1;
   } else
@@ -450,10 +453,10 @@ void qcmaquis_interface_prepare_hirdm_template(
   );  // replace 'checkpoint' with 'results'
 
   // remove the absolute directory for checkpoint and result files
-  std::filesystem::path chkp_name(twou1_checkpoint_name);
+  boost::filesystem::path chkp_name(twou1_checkpoint_name);
   parms_rdm.set("chkpfile", chkp_name.filename().string());
 
-  std::filesystem::path res_name(twou1_result_name);
+  boost::filesystem::path res_name(twou1_result_name);
   parms_rdm.set("resultfile", res_name.filename().string());
 
   parms_rdm.set("u1_total_charge1", Nup);
@@ -462,7 +465,7 @@ void qcmaquis_interface_prepare_hirdm_template(
   if (tpl == TEMPLATE_4RDM)
     parms_rdm.set("MEASURE[4rdm]", "p4:p3:p1:p2@LLL,KKK,III,JJJ");
   else if (tpl == TEMPLATE_TRANSITION_3RDM) {
-    std::filesystem::path bra_name(
+    boost::filesystem::path bra_name(
         maquis::interface_detail::twou1_name(pname, state_j, nel, multiplicity)
     );
     parms_rdm.set(
