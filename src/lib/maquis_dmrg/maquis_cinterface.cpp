@@ -22,7 +22,7 @@
 #include "maquis_dmrg_detail.h"
 #include <filesystem>
 
-std::unique_ptr<maquis::DMRGInterface<double> > interface_ptr;
+std::unique_ptr<maquis::DMRGInterface<double>> interface_ptr;
 DmrgParameters parms;
 std::string pname;
 
@@ -30,7 +30,7 @@ std::string pname;
 maquis::StdoutRedirector stdout_redirect;
 
 extern "C" {
-typedef double V;
+using V = double;
 void qcmaquis_interface_preinit(
     int nel, int L, int spin, int irrep, const int* site_types, V conv_thresh,
     int m, int nsweeps, const int* sweep_m, int nsweepm,
@@ -47,14 +47,17 @@ void qcmaquis_interface_preinit(
   // for now, making things easier
   parms.set("MEASURE[1rdm]", 1);
 
-  if (meas_2rdm) parms.set("MEASURE[2rdm]", 1);
+  if (meas_2rdm) {
+    parms.set("MEASURE[2rdm]", 1);
+  }
 
   parms.set("max_bond_dimension", m);
-  if (sweep_m != NULL) {
+  if (sweep_m != nullptr) {
     std::string sweep_bond_dim;
-    for (int i = 0; i < nsweepm; i++)
+    for (int i = 0; i < nsweepm; i++) {
       sweep_bond_dim +=
           std::to_string(sweep_m[i]) + ((i < nsweepm - 1) ? "," : "");
+    }
     parms.set("sweep_bond_dimension", sweep_bond_dim);
   }
 
@@ -64,15 +67,18 @@ void qcmaquis_interface_preinit(
   parms.set("chkpfile", pname + ".checkpoint_state.0.h5");
   parms.set("resultfile", pname + ".results_state.0.h5");
 
-  if (site_types != NULL) {
+  if (site_types != nullptr) {
     std::string site_types_str;
-    for (int i = 0; i < L; i++)
+    for (int i = 0; i < L; i++) {
       site_types_str +=
           std::to_string(site_types[i]) + ((i < L - 1) ? "," : "");
+    }
     parms.set("site_types", site_types_str);
   } else {
     std::string site_types_str;
-    for (int i = 0; i < L; i++) site_types_str += "0" + (i < L - 1) ? "," : "";
+    for (int i = 0; i < L; i++) {
+      site_types_str += "0" + (i < L - 1) ? "," : "";
+    }
     parms.set("site_types", site_types_str);
   }
 
@@ -86,15 +92,17 @@ void qcmaquis_interface_preinit_checkpoint(const char* checkpoint_name) {
   std::string name_str(checkpoint_name);
   std::regex_search(name_str, m, r);
   // match found
-  if (m.size() <= 1)
+  if (m.size() <= 1) {
     throw std::runtime_error(
         "Cannot deduce project name from the checkpoint name"
     );
+  }
 
   pname = m[1];
   std::string props_name = std::string(checkpoint_name) + "/props.h5";
-  if (!std::filesystem::exists(props_name))
+  if (!std::filesystem::exists(props_name)) {
     throw std::runtime_error("Filename " + props_name + " cannot be found.");
+  }
 
   storage::archive props(props_name);
   props["/parameters"] >> parms;
@@ -103,11 +111,12 @@ void qcmaquis_interface_preinit_checkpoint(const char* checkpoint_name) {
 void qcmaquis_interface_update_integrals(
     const int* integral_indices, const V* integral_values, int integral_size
 ) {
-  if (parms.is_set("integral_file") || parms.is_set("integrals"))
+  if (parms.is_set("integral_file") || parms.is_set("integrals")) {
     throw std::runtime_error(
         "updating integrals in the interface not supported yet in the FCIDUMP "
         "format"
     );
+  }
   // set integrals
   maquis::integral_map<double> integrals;
 
@@ -120,11 +129,14 @@ void qcmaquis_interface_update_integrals(
     integrals[idx] = value;
   }
 
-  if (!parms.is_set("integrals_binary"))
+  if (!parms.is_set("integrals_binary")) {
     parms.set("integrals_binary", maquis::serialize(integrals));
+  }
 
   // Call an integral update only if the interface has been initialised
-  if (interface_ptr) interface_ptr->update_integrals(integrals);
+  if (interface_ptr) {
+    interface_ptr->update_integrals(integrals);
+  }
 }
 
 void qcmaquis_interface_run_starting_guess(
@@ -136,12 +148,14 @@ void qcmaquis_interface_run_starting_guess(
 
   // if neither do_fiedler nor do_cideas are set, return
 
-  if (!(do_fiedler || do_cideas)) return;
+  if (!(do_fiedler || do_cideas)) {
+    return;
+  }
 
   std::string project_name_(project_name);
 
   // copy HF occupations from hf_occupations array if present
-  std::vector<std::vector<int> > hf_occupations_vec;
+  std::vector<std::vector<int>> hf_occupations_vec;
   if (hf_occupations != nullptr) {
     hf_occupations_vec.reserve(nstates);
     int L = parms["L"];
@@ -166,7 +180,9 @@ void qcmaquis_interface_run_starting_guess(
     strncpy(fiedler_order_string, str.c_str(), len);
   }
 
-  if (do_cideas) starting_guess.cideas();
+  if (do_cideas) {
+    starting_guess.cideas();
+  }
 }
 
 void qcmaquis_interface_set_nsweeps(int nsweeps) {
@@ -181,7 +197,7 @@ void qcmaquis_interface_remove_param(const char* key) { parms.erase(key); }
 
 // Start a new simulation with stored parameters
 void qcmaquis_interface_reset() {
-  interface_ptr.reset(new maquis::DMRGInterface<double>(parms));
+  interface_ptr = std::make_unique<maquis::DMRGInterface<double>>(parms);
 }
 
 void qcmaquis_interface_optimize() { interface_ptr->optimize(); }
@@ -189,9 +205,10 @@ double qcmaquis_interface_get_energy() { return interface_ptr->energy(); }
 
 void qcmaquis_interface_set_state(int state) {
   std::string str;
-  for (int i = 0; i < state; i++)
+  for (int i = 0; i < state; i++) {
     str += pname + ".checkpoint_state." + std::to_string(i) + ".h5" +
            ((i < state - 1) ? " " : "");
+  }
 
   parms.set("ortho_states", str);
   parms.set("n_ortho_states", state);
@@ -323,13 +340,16 @@ void qcmaquis_interface_measure_and_save_trans3rdm(int state, int bra_state) {
   std::string rfile =
       maquis::interface_detail::trans3rdm_result_name(pname, state, bra_state);
   std::string old_rfile;
-  if (parms.is_set("resultfile")) old_rfile = parms["resultfile"].str();
+  if (parms.is_set("resultfile")) {
+    old_rfile = parms["resultfile"].str();
+  }
 
-  if (!std::filesystem::exists(bra_chkp))
+  if (!std::filesystem::exists(bra_chkp)) {
     throw std::runtime_error(
         "QCMaquis checkpoint " + bra_chkp +
         " does not exist. Did you optimise the wavefunction for this state?"
     );
+  }
   BaseParameters meas_parms = parms.measurements();
   parms.erase_measurements();
   parms.set("MEASURE[trans3rdm]", bra_chkp);
@@ -341,10 +361,11 @@ void qcmaquis_interface_measure_and_save_trans3rdm(int state, int bra_state) {
   parms << meas_parms;
 
   // restore old result file name
-  if (old_rfile.empty())
+  if (old_rfile.empty()) {
     parms.erase("resultfile");
-  else
+  } else {
     parms["resultfile"] = old_rfile;
+  }
 }
 
 void qcmaquis_interface_get_iteration_results(
@@ -375,21 +396,31 @@ void qcmaquis_interface_get_iteration_results(
 
     // return maximum bond dimension
     *m = 0;
-    for (auto&& m_ : m_vec) *m = std::max(*m, std::any_cast<std::size_t>(m_));
+    for (auto&& m_ : m_vec) {
+      *m = std::max(*m, std::any_cast<std::size_t>(m_));
+    }
 
     // We return the sum of these values for the last sweep
     // this should be done with transform_reduce
     *truncated_weight = 0;
-    for (auto&& tw_ : tw_vec) *truncated_weight += std::any_cast<V>(tw_);
+    for (auto&& tw_ : tw_vec) {
+      *truncated_weight += std::any_cast<V>(tw_);
+    }
     *truncated_fraction = 0;
-    for (auto&& tf_ : tf_vec) *truncated_fraction += std::any_cast<V>(tf_);
+    for (auto&& tf_ : tf_vec) {
+      *truncated_fraction += std::any_cast<V>(tf_);
+    }
     *smallest_ev = 0;
-    for (auto&& ev_ : ev_vec) *smallest_ev += std::any_cast<V>(ev_);
+    for (auto&& ev_ : ev_vec) {
+      *smallest_ev += std::any_cast<V>(ev_);
+    }
 
     *nsweeps = interface_ptr->get_last_sweep() + 1;
-  } else
-    *nsweeps = 0;  // If iter is empty, no iterations have been made and thus we
-                   // return all zeros
+  } else {
+    // If iter is empty, no iterations have been made and thus we return all
+    // zeros
+    *nsweeps = 0;
+  }
 }
 
 double qcmaquis_interface_get_overlap(const char* filename) {
@@ -436,7 +467,8 @@ void qcmaquis_interface_prepare_hirdm_template(
   int nel = parms_rdm["nelec"];
   int multiplicity = parms_rdm["spin"];
 
-  int Nup, Ndown;
+  int Nup;
+  int Ndown;
 
   std::tie(twou1_checkpoint_name, Nup, Ndown) =
       maquis::interface_detail::twou1_name_Nup_Ndown(
@@ -463,19 +495,20 @@ void qcmaquis_interface_prepare_hirdm_template(
   parms_rdm.set("u1_total_charge1", Nup);
   parms_rdm.set("u1_total_charge2", Ndown);
 
-  if (tpl == TEMPLATE_4RDM)
+  if (tpl == TEMPLATE_4RDM) {
     parms_rdm.set("MEASURE[4rdm]", "p4:p3:p1:p2@LLL,KKK,III,JJJ");
-  else if (tpl == TEMPLATE_TRANSITION_3RDM) {
+  } else if (tpl == TEMPLATE_TRANSITION_3RDM) {
     std::filesystem::path bra_name(
         maquis::interface_detail::twou1_name(pname, state_j, nel, multiplicity)
     );
     parms_rdm.set(
         "MEASURE[trans3rdm]", bra_name.filename().string() + ";p1:p2@III,JJJ"
     );
-  } else
+  } else {
     throw std::runtime_error(
         "Cannot prepare QCMaquis template for this measurement"
     );
+  }
 
   std::ofstream fs(filename);
   fs << parms_rdm;
