@@ -229,7 +229,7 @@ contains
                generated_name = ''
 
                if (len_trim(suffix) .ne. 0) then
-                  generated_name = trim(qcmaquis_param%currdir)//'/'//trim(qcmaquis_param%project_name)//'.'// &
+                  generated_name = trim(qcmaquis_param%workdir)//'/'//trim(qcmaquis_param%project_name)//'.'// &
                                    trim(prototype_name)//trim(str(iroot))//trim(suffix)
                else ! should no longer be in use
                   generated_name = trim(prototype_name)//trim(str(iroot))//"."//trim(str(iroot))
