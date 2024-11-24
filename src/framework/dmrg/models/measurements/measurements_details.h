@@ -167,15 +167,9 @@ struct iterate_rdm_indices<F, 4> {
               continue;
             }
 
-            // third index must be different if p1 == p2
-            if (p1 == p2 && p3 == p1) {
-              continue;
-            }
-
-            // fourth index must be different if p1 == p2 or p1 == p3 or p2 ==
-            // p3
-            if ((p1 == p2 && p4 == p1) || (p1 == p3 && p4 == p1) ||
-                (p2 == p3 && p4 == p2)) {
+            // N-rdm are zero for > 2 identical creation ops
+            if ((p1 == p2 && p1 == p3) || (p1 == p2 && p1 == p4) ||
+                (p1 == p3 && p1 == p4) || (p2 == p3 && p2 == p4)) {
               continue;
             }
 
@@ -313,6 +307,7 @@ struct iterate_rdm_indices<F, 4> {
 };
 
 // Same for 3-RDM indices
+// positions[p, q, r, s, t, u] = p_1+ q_2+ r_3+ s_1 t_2 u_3
 template <class F>
 struct iterate_rdm_indices<F, 3> {
   using pos_t = Lattice::pos_t;
@@ -356,22 +351,23 @@ struct iterate_rdm_indices<F, 3> {
           for (pos_t p4 = 0; p4 < p4_end; ++p4) {
             for (pos_t p5 = 0; p5 < p5_end; ++p5) {
               // index restrictions
-              if (p1 < p2) {
+              if ((p1 < p2) || (p3 < std::min(p1, p2))) {
                 continue;
               }
-              if ((p1 == p2 && p1 == p3) || (p3 < std::min(p1, p2))) {
+              // N-rdm are zero for > 2 identical creation ops
+              bool three_identical_creation_ops = (p1 == p2 && p1 == p3);
+              if (three_identical_creation_ops) {
                 continue;
               }
-              if (!bra_neq_ket && p4 < std::min(p1, p2)) {
-                continue;
-              }
-              if (!bra_neq_ket && p5 < std::min(p1, p2)) {
+              if ((!bra_neq_ket && p4 < std::min(p1, p2)) ||
+                  (!bra_neq_ket && p5 < std::min(p1, p2))) {
                 continue;
               }
 
               for (pos_t p6 = std::min(p4, p5); p6 < p6_end; ++p6) {
-                // sixth index must be different if p4 == p5
-                if (p4 == p5 && p4 == p6) {
+                // N-rdms are zero for > 2 identical annhilation ops
+                bool three_identical_annhilation_ops = p4 == p5 && p4 == p6;
+                if (three_identical_annhilation_ops) {
                   continue;
                 }
 
@@ -390,6 +386,7 @@ struct iterate_rdm_indices<F, 3> {
 };
 
 // 2-RDMs
+// positions[p,q,r,s] = p_1+ q_2+ r_2 s_1
 template <class F>
 struct iterate_rdm_indices<F, 2> {
   using pos_t = Lattice::pos_t;
@@ -397,18 +394,49 @@ struct iterate_rdm_indices<F, 2> {
       F fun, pos_t L, bool bra_neq_ket = false,
       const std::vector<pos_t>& positions_first = std::vector<pos_t>()
   ) {
-    for (pos_t p1 = 0; p1 < L; ++p1) {
-      for (pos_t p2 = 0; p2 < L; ++p2) {
-        // Permutation symmetry for bra == ket: pqrs == rspq == qpsr == srqp
-        // if bra != ket, pertmutation symmetry is only pqrs == qpsr
-        for (pos_t p3 = (bra_neq_ket) ? 0 : std::min(p1, p2); p3 < L; ++p3) {
-          for (pos_t p4 = p3; p4 < L; ++p4) {
-            std::vector<pos_t> positions{p1, p2, p3, p4};
-            fun(positions);
+    // Permutation symmetry for bra == ket: pqrs == qpsr == rspq == srqp
+    // if bra != ket, pertmutation symmetry is only pqrs == qpsr
+    if (bra_neq_ket) {
+      for (pos_t p1 = 0; p1 < L; ++p1) {
+        for (pos_t p2 = p1; p2 < L; ++p2) {
+          for (pos_t p3 = 0; p3 < L; ++p3) {
+            for (pos_t p4 = p3; p4 < L; ++p4) {
+              std::vector<pos_t> positions{p1, p2, p3, p4};
+              fun(positions);
+            }
+          }
+        }
+      }
+    } else {
+      for (pos_t p1 = 0; p1 < L; ++p1) {
+        for (pos_t p2 = p1; p2 < L; ++p2) {
+          for (pos_t p3 = p1; p3 < L; ++p3) {
+            for (pos_t p4 = p1; p4 < L; ++p4) {
+              // if two indices are the same the other two must be sorted
+              if (((p1 == p2) && (p3 > p4)) || ((p1 == p3) && (p2 > p4)) ||
+                  ((p1 == p4) && (p2 > p3))) {
+                continue;
+              }
+              std::vector<pos_t> positions{p1, p2, p3, p4};
+              fun(positions);
+            }
           }
         }
       }
     }
+    // original should verify that transition rdm matches reference
+    // for (pos_t p1 = 0; p1 < L; ++p1) {
+    //   for (pos_t p2 = 0; p2 < L; ++p2) {
+    //     // Permutation symmetry for bra == ket: pqrs == qpsr == rspq == srqp
+    //     // if bra != ket, pertmutation symmetry is only pqrs == qpsr
+    //     for (pos_t p3 = (bra_neq_ket) ? 0 : std::min(p1, p2); p3 < L; ++p3) {
+    //       for (pos_t p4 = p3; p4 < L; ++p4) {
+    //         std::vector<pos_t> positions{p1, p2, p3, p4};
+    //         fun(positions);
+    //       }
+    //     }
+    //   }
+    // }
     return fun.get();
   }
 };

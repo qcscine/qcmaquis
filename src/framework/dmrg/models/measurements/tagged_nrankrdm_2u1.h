@@ -8,21 +8,26 @@
 #ifndef MEASUREMENTS_TAGGED_NRANKRDM_TWOU1_H
 #define MEASUREMENTS_TAGGED_NRANKRDM_TWOU1_H
 
+#include "dmrg/models/measurement.h"
+#include "dmrg/models/model.h"
+#include "dmrg/utils/checks.h"
+#include "dmrg/models/measurements/measurements_details.h"
+
 namespace measurements {
 
 template <class Matrix, class SymmGroup, class = void>
 class TaggedNRankRDM : public measurement<Matrix, SymmGroup> {
   // Types declaration
-  typedef measurement<Matrix, SymmGroup> base;
-  typedef typename Model<Matrix, SymmGroup>::term_descriptor term_descriptor;
-  typedef Lattice::pos_t pos_t;
-  typedef std::vector<pos_t> positions_type;
-  typedef typename base::op_t op_t;
-  typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
-  typedef typename base::value_type value_type;
-  typedef std::vector<tag_type> tag_vec;
-  typedef std::vector<tag_vec> bond_term;
-  typedef std::pair<std::vector<tag_vec>, value_type> scaled_bond_term;
+  using base = measurement<Matrix, SymmGroup>;
+  using term_descriptor = typename Model<Matrix, SymmGroup>::term_descriptor;
+  using pos_t = Lattice::pos_t;
+  using positions_type = std::vector<pos_t>;
+  using op_t = typename base::op_t;
+  using tag_type = typename OPTable<Matrix, SymmGroup>::tag_type;
+  using value_type = typename base::value_type;
+  using tag_vec = std::vector<tag_type>;
+  using bond_term = std::vector<tag_vec>;
+  using scaled_bond_term = std::pair<std::vector<tag_vec>, value_type>;
 
  public:
   /** @brief Class constructor */
@@ -68,19 +73,20 @@ class TaggedNRankRDM : public measurement<Matrix, SymmGroup> {
         // check point group
         // or boost::is_same<HasPG<SymmGroup>, std::true_type>::value?
         if (maquis::checks::has_pg(bra_ckp) !=
-            symm_traits::HasPG<SymmGroup>::value)
+            symm_traits::HasPG<SymmGroup>::value) {
           throw std::runtime_error(
               "Bra checkpoint " + bra_ckp +
               "has the wrong point group symmetry."
           );
+        }
         // Check if the bra checkpoint has SU2 symmetry, if so, transform it
         std::regex su2_regex("^su2u1");
         std::string bra_sym = maquis::checks::detail::get_symmetry(bra_ckp);
         if (std::regex_search(bra_sym, su2_regex))
 #if (defined(HAVE_SU2U1) || defined(HAVE_SU2U1PG))
         {
-          typedef typename boost::mpl::if_<
-              symm_traits::HasPG<SymmGroup>, SU2U1PG, SU2U1>::type SU2Symm;
+          using SU2Symm = typename boost::mpl::if_<
+              symm_traits::HasPG<SymmGroup>, SU2U1PG, SU2U1>::type;
           MPS<Matrix, SU2Symm> su2_mps;
           load(bra_ckp, su2_mps);
           int N = SU2Symm::particleNumber(
@@ -104,27 +110,29 @@ class TaggedNRankRDM : public measurement<Matrix, SymmGroup> {
 #endif
         else
           load(bra_ckp, bra_mps);
-      } else
+      } else {
         throw std::runtime_error(
             "The bra checkpoint file " + bra_ckp + " was not found\n"
         );
+      }
     }
     maquis::cout << " measuring in 2u1 version of tagged_nrank " << std::endl;
     //
-    if (operator_terms[0].first.size() == 2)
+    if (operator_terms[0].first.size() == 2) {
       measure_correlation(bra_mps, ket_mps);
-    else if (operator_terms[0].first.size() == 4)
+    } else if (operator_terms[0].first.size() == 4) {
       measure_nrdm<2>(bra_mps, ket_mps);
-    else if (operator_terms[0].first.size() == 6)
+    } else if (operator_terms[0].first.size() == 6) {
       measure_nrdm<3>(bra_mps, ket_mps);
-    else if (operator_terms[0].first.size() == 8)
+    } else if (operator_terms[0].first.size() == 8) {
       measure_nrdm<4>(bra_mps, ket_mps);
-    else
+    } else {
       throw std::runtime_error(
           "correlation measurements at the moment supported with 2, 4, 6 and 8 "
           "operators, size is " +
           boost::lexical_cast<std::string>(operator_terms[0].first.size())
       );
+    }
   }
 
  protected:
@@ -147,6 +155,9 @@ class TaggedNRankRDM : public measurement<Matrix, SymmGroup> {
 #ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(dynamic) firstprivate(ket_mps_local, bra_mps)
 #endif
+    // Computes only upper right triangler. Note that if `orbital_order` is set
+    // than still only computes unique elements but values will be put in
+    // lower left triangle
     for (std::size_t i = 0; i < positions_first.size(); ++i) {
       pos_t p1 = positions_first[i];
       std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(
@@ -258,7 +269,7 @@ class TaggedNRankRDM : public measurement<Matrix, SymmGroup> {
   std::string bra_ckp;
 
   // Resize labels and results, used before the measurements
-  inline void resize_results(int size) {
+  void resize_results(int size) {
     this->labels_num.resize(size);
     this->labels.resize(size);
     this->vector_results.resize(size);
@@ -266,7 +277,7 @@ class TaggedNRankRDM : public measurement<Matrix, SymmGroup> {
 
   // Obtain an expectation value for <bra|op|ket> for given n-RDM order and
   // positions
-  inline value_type nrdm_expval(
+  value_type nrdm_expval(
       std::size_t n, const MPS<Matrix, SymmGroup>& bra_mps,
       const MPS<Matrix, SymmGroup>& ket_mps, const std::vector<int>& positions,
       const std::shared_ptr<TagHandler<Matrix, SymmGroup> >& tag_handler_local
@@ -278,17 +289,19 @@ class TaggedNRankRDM : public measurement<Matrix, SymmGroup> {
     // spin combo loop
     for (std::size_t synop = 0; synop < operator_terms.size(); ++synop) {
       tag_vec operators(opsize);
-      for (std::size_t op = 0; op < opsize; op++)
+      for (std::size_t op = 0; op < opsize; op++) {
         operators[op] = operator_terms[synop].first[op][lattice.get_prop<
             typename SymmGroup::subcharge>("type", positions[op])];
+      }
       // check if term is allowed by symmetry
       term_descriptor term = generate_mpo::arrange_operators(
           positions, operators, tag_handler_local
       );
       if (!measurements_details::checkpg<SymmGroup>()(
               term, tag_handler_local, lattice
-          ))
+          )) {
         return 0.;
+      }
       MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(
           term, identities, fillings, tag_handler_local, lattice
       );
