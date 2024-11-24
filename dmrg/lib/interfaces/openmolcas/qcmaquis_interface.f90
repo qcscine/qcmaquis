@@ -84,42 +84,48 @@ module qcmaquis_interface
       real(c_double) :: res
     end function
 
-    subroutine qcmaquis_interface_get_1rdm_C(indices, values, size) bind(C, name='qcmaquis_interface_get_1rdm')
+    subroutine qcmaquis_interface_get_1rdm_C(indices, values, size)
+      bind(C, name='qcmaquis_interface_get_1rdm')
       import c_int, c_double
       integer(c_int), dimension(*) :: indices
       real(c_double), dimension(*) :: values
       integer(c_int), value :: size
     end subroutine
 
-    subroutine qcmaquis_interface_get_spdm_C(indices, values, size) bind(C, name='qcmaquis_interface_get_spdm')
+    subroutine qcmaquis_interface_get_spdm_C(indices, values, size)
+      bind(C, name='qcmaquis_interface_get_spdm')
       import c_int, c_double
       integer(c_int), dimension(*) :: indices
       real(c_double), dimension(*) :: values
       integer(c_int), value :: size
     end subroutine
 
-    subroutine qcmaquis_interface_get_2rdm_C(indices, values, size) bind(C,  name='qcmaquis_interface_get_2rdm')
+    subroutine qcmaquis_interface_get_2rdm_C(indices, values, size)
+      bind(C,  name='qcmaquis_interface_get_2rdm')
       import c_int, c_double
       integer(c_int), dimension(*) :: indices
       real(c_double), dimension(*) :: values
       integer(c_int), value :: size
     end subroutine
 
-    subroutine qcmaquis_interface_get_3rdm_C(indices, values, size) bind(C,  name='qcmaquis_interface_get_3rdm')
+    subroutine qcmaquis_interface_get_3rdm_C(indices, values, size)
+      bind(C,  name='qcmaquis_interface_get_3rdm')
       import c_int, c_double
       integer(c_int), dimension(*) :: indices
       real(c_double), dimension(*) :: values
       integer(c_int), value :: size
     end subroutine
 
-    subroutine qcmaquis_interface_get_4rdm_C(indices, values, size) bind(C,  name='qcmaquis_interface_get_4rdm')
+    subroutine qcmaquis_interface_get_4rdm_C(indices, values, size)
+      bind(C,  name='qcmaquis_interface_get_4rdm')
       import c_int, c_double
       integer(c_int), dimension(*) :: indices
       real(c_double), dimension(*) :: values
       integer(c_int), value :: size
     end subroutine
 
-    subroutine qcmaquis_interface_get_fock_contracted_4rdm_C(epsa, nasht, indices, values, size) bind(C, name='qcmaquis_interface_get_fock_contracted_4rdm')
+    subroutine qcmaquis_interface_get_fock_contracted_4rdm_C(epsa, nasht, indices, values, size)
+      bind(C, name='qcmaquis_interface_get_fock_contracted_4rdm')
       import c_int, c_double
       real(c_double), dimension(*) :: epsa
       integer(c_int), intent(in), value :: nasht
