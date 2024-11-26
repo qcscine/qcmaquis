@@ -327,7 +327,7 @@ struct iterate_rdm_indices<F, 3> {
             for (pos_t p4 = 0; p4 < L; ++p4) {
               for (pos_t p5 = p4; p5 < L; ++p5) {
                 for (pos_t p6 = p5; p6 < L; ++p6) {
-                  bool three_identical_annhilation_ops = p4 == p5 && p4 == p6;
+                  bool three_identical_annhilation_ops = (p4 == p5 && p4 == p6);
                   if (three_identical_annhilation_ops) {
                     continue;
                   }
@@ -342,7 +342,7 @@ struct iterate_rdm_indices<F, 3> {
     }
 
     // generic version with slicing
-    // NOTE: not perfect contains redundant elements
+    // NOTE: not perfect, contains redundant elements
     pos_t p1_start = 0;
     pos_t p2_start = 0;
     pos_t p3_start = 0;
