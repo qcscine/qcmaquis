@@ -19,6 +19,7 @@
 #include "dmrg/models/generate_mpo.hpp"
 #include "dmrg/mp_tensors/mpo_times_mps.hpp"
 #include "maquis_dmrg_detail.h"
+#include "dmrg/mp_tensors/compression.h"
 #include <filesystem>
 
 std::unique_ptr<maquis::DMRGInterface<double> > interface_ptr;
@@ -478,7 +479,7 @@ extern "C"
 
 
     // Used for CASPT2
-    void qcmaquis_interface_get_fock_contracted_4rdm(const double* epsa, int nasht, int* indices, V* values, int size) {
+    void qcmaquis_interface_get_fock_contracted_4rdm(const double* epsa, int nasht, int* indices, V* values, int size, int compressMPS) {
       DmrgParameters parms_copy = parms;
       parms_copy.erase("MEASURE[1rdm]");
       parms_copy.erase("MEASURE[2rdm]");
@@ -502,6 +503,12 @@ extern "C"
 
       MPS<matrix, TwoU1PG> optimized_mps_2u1;
       load(twou1_chkp_name, optimized_mps_2u1);
+
+      if (compressMPS > 0) {
+        std::cout << "Compressing MPS to bond dimension: " << compressMPS << '\n';
+        optimized_mps_2u1.normalize_left();
+        optimized_mps_2u1 = compression::l2r_compress(mps, compressMPS, 0.0);
+      }
 
       parms_copy.set("u1_total_charge1", Nup);
       parms_copy.set("u1_total_charge2", Ndown);
