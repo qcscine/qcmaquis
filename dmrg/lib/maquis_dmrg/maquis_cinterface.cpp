@@ -507,7 +507,7 @@ extern "C"
       if (compressMPS > 0) {
         std::cout << "Compressing MPS to bond dimension: " << compressMPS << '\n';
         optimized_mps_2u1.normalize_left();
-        optimized_mps_2u1 = compression::l2r_compress(mps, compressMPS, 0.0);
+        optimized_mps_2u1 = compression::l2r_compress(optimized_mps_2u1, compressMPS, 0.0);
       }
 
       parms_copy.set("u1_total_charge1", Nup);
