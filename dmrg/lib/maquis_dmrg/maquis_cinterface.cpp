@@ -491,6 +491,11 @@ extern "C"
       // printf("Loading MPS in SU2 from %s\n", parms_copy["chkpfile"].c_str());
       MPS<matrix, SU2U1PG> optimized_mps_su2;
       load(parms_copy["chkpfile"], optimized_mps_su2);
+      if (compressMPS > 0) {
+        std::cout << "Compressing MPS to bond dimension: " << compressMPS << '\n';
+        optimized_mps_su2.normalize_left();
+        optimized_mps_su2 = compression::l2r_compress(optimized_mps_su2, compressMPS, 0.0);
+      }
 
       // Transform SU2 to 2U1 since MPOTimesMPS not implemented for SU2
       // printf("Transforming MPS\n");
@@ -504,11 +509,6 @@ extern "C"
       MPS<matrix, TwoU1PG> optimized_mps_2u1;
       load(twou1_chkp_name, optimized_mps_2u1);
 
-      if (compressMPS > 0) {
-        std::cout << "Compressing MPS to bond dimension: " << compressMPS << '\n';
-        optimized_mps_2u1.normalize_left();
-        optimized_mps_2u1 = compression::l2r_compress(optimized_mps_2u1, compressMPS, 0.0);
-      }
 
       parms_copy.set("u1_total_charge1", Nup);
       parms_copy.set("u1_total_charge2", Ndown);
