@@ -496,6 +496,7 @@ extern "C"
         optimized_mps_su2.normalize_left();
         optimized_mps_su2 = compression::l2r_compress(optimized_mps_su2, compressMPS, 0.0);
       }
+      save(parms_copy["chkpfile"], optimized_mps_su2);
 
       // Transform SU2 to 2U1 since MPOTimesMPS not implemented for SU2
       // printf("Transforming MPS\n");
