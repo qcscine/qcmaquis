@@ -150,7 +150,8 @@ void qcmaquis_interface_prepare_hirdm_template(
 // Contract fock with 4 rdm by computing a transition rdm between MPS and MPO *
 // MPS where the MPO is comprised of the Fock elements on the diagonal
 void qcmaquis_interface_get_fock_contracted_4rdm(
-    const double* epsa, int nasht, int* indices, V* values, int size
+    const double* epsa, int nasht, int* indices, V* values, int size,
+    int compressMPS = 0
 );
 }
 

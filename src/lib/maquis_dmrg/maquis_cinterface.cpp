@@ -516,7 +516,8 @@ void qcmaquis_interface_prepare_hirdm_template(
 
 // Used for CASPT2
 void qcmaquis_interface_get_fock_contracted_4rdm(
-    const double* epsa, int nasht, int* indices, V* values, int size
+    const double* epsa, int nasht, int* indices, V* values, int size,
+    int compressMPS
 ) {
   DmrgParameters parms_copy = parms;
   parms_copy.erase("MEASURE[1rdm]");
@@ -529,6 +530,13 @@ void qcmaquis_interface_get_fock_contracted_4rdm(
   // printf("Loading MPS in SU2 from %s\n", parms_copy["chkpfile"].c_str());
   MPS<matrix, SU2U1PG> optimized_mps_su2;
   load(parms_copy["chkpfile"], optimized_mps_su2);
+  if (compressMPS > 0) {
+    std::cout << "Compressing MPS to bond dimension: " << compressMPS << '\n';
+    optimized_mps_su2.normalize_left();
+    optimized_mps_su2 =
+        compression::l2r_compress(optimized_mps_su2, compressMPS, 0.0);
+  }
+  save(parms_copy["chkpfile"], optimized_mps_su2);
 
   // Transform SU2 to 2U1 since MPOTimesMPS not implemented for SU2
   // printf("Transforming MPS\n");
@@ -580,7 +588,7 @@ void qcmaquis_interface_get_fock_contracted_4rdm(
   save(MPStimesMPOstr, output_mps);
 
   // Measurement fails if props.h5 not present
-  std::filesystem::copy(
+  boost::filesystem::copy(
       twou1_chkp_name + "/props.h5", MPStimesMPOstr + "/props.h5"
   );
   storage::archive ar_out(MPStimesMPOstr + "/props.h5", "w");

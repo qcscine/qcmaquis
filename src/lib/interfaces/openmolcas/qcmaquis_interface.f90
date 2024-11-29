@@ -63,12 +63,14 @@ module qcmaquis_interface
          integer(c_int), value :: size
       end subroutine
 
-      subroutine qcmaquis_interface_set_state(state) bind(C)
+      subroutine qcmaquis_interface_set_state(state)
+         bind(C)
          import c_int
          integer(c_int), value :: state
       end subroutine
 
-      subroutine qcmaquis_interface_set_nsweeps(nsweeps) bind(C)
+      subroutine qcmaquis_interface_set_nsweeps(nsweeps)
+         bind(C)
          import c_int
          integer(c_int), value :: nsweeps
       end subroutine
@@ -84,48 +86,55 @@ module qcmaquis_interface
          real(c_double) :: res
       end function
 
-      subroutine qcmaquis_interface_get_1rdm_C(indices, values, size) bind(C, name='qcmaquis_interface_get_1rdm')
+      subroutine qcmaquis_interface_get_1rdm_C(indices, values, size)
+         bind(C, name='qcmaquis_interface_get_1rdm')
          import c_int, c_double
          integer(c_int), dimension(*) :: indices
          real(c_double), dimension(*) :: values
          integer(c_int), value :: size
       end subroutine
 
-      subroutine qcmaquis_interface_get_spdm_C(indices, values, size) bind(C, name='qcmaquis_interface_get_spdm')
+      subroutine qcmaquis_interface_get_spdm_C(indices, values, size)
+         bind(C, name='qcmaquis_interface_get_spdm')
          import c_int, c_double
          integer(c_int), dimension(*) :: indices
          real(c_double), dimension(*) :: values
          integer(c_int), value :: size
       end subroutine
 
-      subroutine qcmaquis_interface_get_2rdm_C(indices, values, size) bind(C, name='qcmaquis_interface_get_2rdm')
+      subroutine qcmaquis_interface_get_2rdm_C(indices, values, size)
+         bind(C, name='qcmaquis_interface_get_2rdm')
          import c_int, c_double
          integer(c_int), dimension(*) :: indices
          real(c_double), dimension(*) :: values
          integer(c_int), value :: size
       end subroutine
 
-      subroutine qcmaquis_interface_get_3rdm_C(indices, values, size) bind(C, name='qcmaquis_interface_get_3rdm')
+      subroutine qcmaquis_interface_get_3rdm_C(indices, values, size)
+         bind(C, name='qcmaquis_interface_get_3rdm')
          import c_int, c_double
          integer(c_int), dimension(*) :: indices
          real(c_double), dimension(*) :: values
          integer(c_int), value :: size
       end subroutine
 
-      subroutine qcmaquis_interface_get_4rdm_C(indices, values, size) bind(C, name='qcmaquis_interface_get_4rdm')
+      subroutine qcmaquis_interface_get_4rdm_C(indices, values, size)
+         bind(C, name='qcmaquis_interface_get_4rdm')
          import c_int, c_double
          integer(c_int), dimension(*) :: indices
          real(c_double), dimension(*) :: values
          integer(c_int), value :: size
       end subroutine
 
-    subroutine qcmaquis_interface_get_fock_contracted_4rdm_C(epsa, nasht, indices, values, size) bind(C, name='qcmaquis_interface_get_fock_contracted_4rdm')
+      subroutine qcmaquis_interface_get_fock_contracted_4rdm_C(epsa, nasht, indices, values, size, compressMPS) &
+         bind(C, name='qcmaquis_interface_get_fock_contracted_4rdm')
          import c_int, c_double
          real(c_double), dimension(*) :: epsa
          integer(c_int), intent(in), value :: nasht
          integer(c_int), dimension(*) :: indices
          real(c_double), dimension(*) :: values
          integer(c_int), value :: size
+         integer(c_int), intent(in), value :: compressMPS
       end subroutine
 
    end interface
@@ -985,11 +994,12 @@ contains
          k = indices(ii + 2) + 1
          l = indices(ii + 3) + 1
          j = indices(ii + 4) + 1
+         ! d2(i, j, k, l) = <| i_1+ k_2+ l_1 j_2 |>
          if ((i + j + k + l) .eq. 0) cycle ! skip empty indices
          d2(i, j, k, l) = values(vv + 1)
-         d2(j, i, l, k) = values(vv + 1)
-         ! hermitian conjugate
          d2(k, l, i, j) = values(vv + 1)
+         ! hermitian conjugate
+         d2(j, i, l, k) = values(vv + 1)
          d2(l, k, j, i) = values(vv + 1)
       end do
 
