@@ -47,7 +47,7 @@ def exciste_elec(from_orb: int, to_orb: int, hf_occ: List[int]) -> List[int]:
     return new_list
 
 
-def permute_alpha_beta_for_sign(qcmaquis_string: str) -> str:
+def permute_alpha_beta_for_sign(qcmaquis_string: str) -> int:
     """
     Permute alpha and beta orbitals for correct sign.
 
