@@ -1110,7 +1110,7 @@ contains
    end subroutine qcmaquis_interface_get_3rdm_full
 
    ! Get contracted Fock with 4-RDM and save it into an 6-dimensional array. (Used by CASPT2)
-   subroutine qcmaquis_interface_get_fock_contracted_4rdm_full(d3, epsa)
+   subroutine qcmaquis_interface_get_fock_contracted_4rdm_full(d3, epsa, CompressMPS)
       real*8, intent(inout) :: d3(:, :, :, :, :, :)
       integer(c_int) :: sz ! size
       real(c_double), dimension(:) :: epsa ! Fock elements
@@ -1121,6 +1121,13 @@ contains
       integer :: nact
       integer :: vv, ii ! counters for values and indices
       integer :: i, j, k, l, m, n
+      integer :: compMPS
+      integer, optional :: CompressMPS
+      if (present(CompressMPS)) then
+         compMPS = CompressMPS
+      else
+         compMPS = 0
+      end if
 
       nact = qcmaquis_param%L
       sz = qcmaquis_interface_get_3rdm_elements(.true.)
@@ -1131,7 +1138,7 @@ contains
       ! initialise indices to -1, see in 1RDM code why
       indices(:) = -1
       ! obtain the rdms from qcmaquis
-      call qcmaquis_interface_get_fock_contracted_4rdm_C(epsa, int(nact, c_int), indices, values, sz)
+      call qcmaquis_interface_get_fock_contracted_4rdm_C(epsa, int(nact, c_int), indices, values, sz, int(compMPS, c_int))
 
       d3(:, :, :, :, :, :) = 0.0d0
       ! copy the values into the matrix
