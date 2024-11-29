@@ -1,5 +1,7 @@
 import os
 import shutil
+from sys import prefix
+import tempfile
 
 from typing import Any, List, Optional, Tuple, Union
 from itertools import permutations
@@ -81,7 +83,8 @@ class QcMaquis:
         # QCMaquis related stuff
         self.dmrg: Optional[MaquisDmrg] = None
         """QCMaquis python interface, will be set automatically."""
-        self.file_path: str = os.getcwd()
+        self.file_path: str = tempfile.mkdtemp(prefix="QCM-", dir=os.getcwd())
+        print(f"Workdir for calculation is {self.file_path}")
         """Path for qcmaquis dumps."""
         self.parameters = ParametersWrapper()
         """QCMaquis parameter handler"""

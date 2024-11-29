@@ -5,11 +5,23 @@ import numpy as np
 # pylint: disable=import-error
 from .dmrg_wrapper import DmrgWrapper
 from .entropy_builder import EntropyBuilder
-from .integral_wrapper import ComplexTCIntegralMap, IntegralMap, IntegralMapWrapper, IntegralType, TCIntegralMap
+from .integral_wrapper import (
+    ComplexTCIntegralMap,
+    IntegralMap,
+    IntegralMapWrapper,
+    IntegralType,
+    TCIntegralMap,
+)
 from .parameters_wrapper import ExcitedStates, ParametersWrapper
 
-from .utils.ci_coeffs import (make_doubles_aa, make_doubles_ab, make_doubles_bb, make_ref, make_singles_aa,
-                              make_singles_bb)
+from .utils.ci_coeffs import (
+    make_doubles_aa,
+    make_doubles_ab,
+    make_doubles_bb,
+    make_ref,
+    make_singles_aa,
+    make_singles_bb,
+)
 
 # pylint: enable=import-error
 
@@ -34,6 +46,7 @@ class MaquisDmrg:
     _energy : Union[float, List[float]]
         the energy of one or more states
     """
+
     __slots__ = (
         "_dmrg",
         "_parameters",
@@ -110,7 +123,7 @@ class MaquisDmrg:
         self,
         n_excited_states: int,
         method: ExcitedStates = ExcitedStates.ORTHO,
-        feast_window: Optional[List[float]] = None
+        feast_window: Optional[List[float]] = None,
     ):
         """Enable Excited States.
 
@@ -173,12 +186,14 @@ class MaquisDmrg:
         """
         self._dmrg.measure()
         if self._entropy_builder is None:
-            raise AssertionError("Initialize entropy builder before extracting entropies")
+            raise AssertionError(
+                "Initialize entropy builder before extracting entropies"
+            )
         self._entropy_builder.make_diagnostics(self._dmrg.get_dmrg())
         return (
             self._entropy_builder.s1_entropy,
             self._entropy_builder.s2_entropy,
-            self._entropy_builder.mutual_information
+            self._entropy_builder.mutual_information,
         )
 
     def get_1_and_2rdms(self) -> Tuple[np.ndarray, np.ndarray]:
@@ -311,7 +326,7 @@ class MaquisDmrg:
         n_electrons: int,
         spin: int = 0,
         n_states: Optional[int] = None,
-        fiedler: bool = False
+        fiedler: bool = False,
     ):
         """Run Dmrg.
 
@@ -342,7 +357,10 @@ class MaquisDmrg:
 
         self._parameters.set_system(n_orbitals, n_electrons, spin)
 
-        if fiedler is True and "orbital_order" not in self._parameters.get_parameters_dict():
+        if (
+            fiedler is True
+            and "orbital_order" not in self._parameters.get_parameters_dict()
+        ):
             # don't dump anything for fiedler
             try:
                 tmp_chkpfile = self._parameters.get_parameters_dict()["chkpfile"]
@@ -402,7 +420,9 @@ class MaquisDmrg:
         else:
             self._energy = self._dmrg.get_energy()
 
-    def update_integrals(self, integral_map: Union[IntegralMap, TCIntegralMap, ComplexTCIntegralMap]):
+    def update_integrals(
+        self, integral_map: Union[IntegralMap, TCIntegralMap, ComplexTCIntegralMap]
+    ):
         """Update integrals.
 
         Parameters
@@ -414,7 +434,9 @@ class MaquisDmrg:
         """
         self._integral_map.set(integral_map)
 
-    def set_integrals(self, core_value: float, one_body: np.ndarray, two_body: np.ndarray, norb: int):
+    def set_integrals(
+        self, core_value: float, one_body: np.ndarray, two_body: np.ndarray, norb: int
+    ):
         """Set integrals from PySCF.
 
         Parameters
@@ -466,8 +488,13 @@ class MaquisDmrg:
         """
         return self._dmrg.get_ci_coefficient(determinant_string)
 
-    def get_singles_and_doubles(self, nocc: int, norb: int) -> Tuple[float, np.ndarray, np.ndarray]:
-        """Get all singles and doubles coefficients.
+    def get_singles_and_doubles(
+        self, nocc: int, norb: int
+    ) -> Tuple[float, np.ndarray, np.ndarray]:
+        """
+        Get all singles and doubles coefficients in spinorbital basis with
+        alpha and beta orbitals interleaved.
+        TODO: Signs are not used and thus phase factor don't match PySCF ones
 
         Parameters
         ----------
@@ -506,13 +533,21 @@ class MaquisDmrg:
                 for a in range(nvir):
                     for b in range(nvir):
                         if nocc > 1 and nvir > 1 and i != j and a != b:
-                            doubles_aa_string, sign_aa = make_doubles_aa(nocc, norb, i, j, a, b)
+                            doubles_aa_string, sign_aa = make_doubles_aa(
+                                nocc, norb, i, j, a, b
+                            )
                             coeff_aa = self._dmrg.get_ci_coefficient(doubles_aa_string)
-                            doubles_bb_string, sign_bb = make_doubles_bb(nocc, norb, i, j, a, b)
+                            doubles_bb_string, sign_bb = make_doubles_bb(
+                                nocc, norb, i, j, a, b
+                            )
                             coeff_bb = self._dmrg.get_ci_coefficient(doubles_bb_string)
                             doubles[i * 2, j * 2, a * 2, b * 2] = coeff_aa.real
-                            doubles[i * 2 + 1, j * 2 + 1, a * 2 + 1, b * 2 + 1] = coeff_bb.real
-                        doubles_ab_string, sign_ab = make_doubles_ab(nocc, norb, i, j, a, b)
+                            doubles[i * 2 + 1, j * 2 + 1, a * 2 + 1, b * 2 + 1] = (
+                                coeff_bb.real
+                            )
+                        doubles_ab_string, sign_ab = make_doubles_ab(
+                            nocc, norb, i, j, a, b
+                        )
                         coeff_ab = self._dmrg.get_ci_coefficient(doubles_ab_string)
                         doubles[i * 2, j * 2 + 1, a * 2, b * 2 + 1] = coeff_ab.real
                         doubles[i * 2 + 1, j * 2, a * 2 + 1, b * 2] = coeff_ab.real
