@@ -63,13 +63,13 @@ module qcmaquis_interface
          integer(c_int), value :: size
       end subroutine
 
-      subroutine qcmaquis_interface_set_state(state)
+      subroutine qcmaquis_interface_set_state(state) &
          bind(C)
          import c_int
          integer(c_int), value :: state
       end subroutine
 
-      subroutine qcmaquis_interface_set_nsweeps(nsweeps)
+      subroutine qcmaquis_interface_set_nsweeps(nsweeps) &
          bind(C)
          import c_int
          integer(c_int), value :: nsweeps
@@ -86,7 +86,7 @@ module qcmaquis_interface
          real(c_double) :: res
       end function
 
-      subroutine qcmaquis_interface_get_1rdm_C(indices, values, size)
+      subroutine qcmaquis_interface_get_1rdm_C(indices, values, size) &
          bind(C, name='qcmaquis_interface_get_1rdm')
          import c_int, c_double
          integer(c_int), dimension(*) :: indices
@@ -94,7 +94,7 @@ module qcmaquis_interface
          integer(c_int), value :: size
       end subroutine
 
-      subroutine qcmaquis_interface_get_spdm_C(indices, values, size)
+      subroutine qcmaquis_interface_get_spdm_C(indices, values, size) &
          bind(C, name='qcmaquis_interface_get_spdm')
          import c_int, c_double
          integer(c_int), dimension(*) :: indices
@@ -102,7 +102,7 @@ module qcmaquis_interface
          integer(c_int), value :: size
       end subroutine
 
-      subroutine qcmaquis_interface_get_2rdm_C(indices, values, size)
+      subroutine qcmaquis_interface_get_2rdm_C(indices, values, size) &
          bind(C, name='qcmaquis_interface_get_2rdm')
          import c_int, c_double
          integer(c_int), dimension(*) :: indices
@@ -110,7 +110,7 @@ module qcmaquis_interface
          integer(c_int), value :: size
       end subroutine
 
-      subroutine qcmaquis_interface_get_3rdm_C(indices, values, size)
+      subroutine qcmaquis_interface_get_3rdm_C(indices, values, size) &
          bind(C, name='qcmaquis_interface_get_3rdm')
          import c_int, c_double
          integer(c_int), dimension(*) :: indices
@@ -118,7 +118,7 @@ module qcmaquis_interface
          integer(c_int), value :: size
       end subroutine
 
-      subroutine qcmaquis_interface_get_4rdm_C(indices, values, size)
+      subroutine qcmaquis_interface_get_4rdm_C(indices, values, size) &
          bind(C, name='qcmaquis_interface_get_4rdm')
          import c_int, c_double
          integer(c_int), dimension(*) :: indices
