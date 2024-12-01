@@ -436,6 +436,7 @@ struct LiHFixture {
     integralFileLiH_STO3GBasis.close();
 
     // LiH parameters
+    // NOTE: Is this really LiH, nelec=2 looks suspicious
     parametersLiH.set("integrals_binary", maquis::serialize(integralsLiH));
     parametersLiH.set("site_types", "0,0,0,0");
     parametersLiH.set("L", 4);

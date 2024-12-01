@@ -31,16 +31,17 @@ void check_measurement_mat(
     );
     auto index_ref = std::distance(reference.first.begin(), it);
     // the phase can be 1 or -1, so set the phase in the first run
-    if (it == reference.first.begin() && allow_phase_difference)
+    if (it == reference.first.begin() && allow_phase_difference) {
       phase =
           std::copysign(1., meas.second[index] / reference.second[index_ref]);
+    }
     auto difference =
         std::abs(meas.second[index] - phase * reference.second[index_ref]);
-    if (difference > threshold)
+    if (difference > threshold) {
       BOOST_CHECK_SMALL(
-          std::abs(meas.second[index] - phase * reference.second[index_ref]),
-          5e-7
+          meas.second[index] - phase * reference.second[index_ref], 5e-7
       );
+    }
   }
 }
 
