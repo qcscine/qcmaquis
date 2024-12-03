@@ -317,30 +317,31 @@ struct iterate_rdm_indices<F, 3> {
   ) {
     // simple version for full transition RDM
     // BUG: Does not work for some reason
-    // if (positions_first.empty() && bra_neq_ket) {
-    //   for (pos_t p1 = 0; p1 < L; ++p1) {
-    //     for (pos_t p2 = p1; p2 < L; ++p2) {
-    //       for (pos_t p3 = p2; p3 < L; ++p3) {
-    //         bool three_identical_creation_ops = (p1 == p2 && p1 == p3);
-    //         if (three_identical_creation_ops) {
-    //           continue;
-    //         }
-    //         for (pos_t p4 = 0; p4 < L; ++p4) {
-    //           for (pos_t p5 = p4; p5 < L; ++p5) {
-    //             for (pos_t p6 = p5; p6 < L; ++p6) {
-    //               bool three_identical_annhilation_ops = (p4 == p5 && p4 ==
-    //               p6); if (three_identical_annhilation_ops) {
-    //                 continue;
-    //               }
-    //               std::vector<pos_t> positions{p1, p2, p3, p4, p5, p6};
-    //               fun(positions);
-    //             }
-    //           }
-    //         }
-    //       }
-    //     }
-    //   }
-    // }
+    if (positions_first.empty() && bra_neq_ket) {
+      for (pos_t p1 = 0; p1 < L; ++p1) {
+        for (pos_t p2 = p1; p2 < L; ++p2) {
+          for (pos_t p3 = p2; p3 < L; ++p3) {
+            bool three_identical_creation_ops = (p1 == p2 && p1 == p3);
+            if (three_identical_creation_ops) {
+              continue;
+            }
+            for (pos_t p4 = 0; p4 < L; ++p4) {
+              for (pos_t p5 = p4; p5 < L; ++p5) {
+                for (pos_t p6 = p5; p6 < L; ++p6) {
+                  bool three_identical_annhilation_ops = (p4 == p5 && p4 == p6);
+                  if (three_identical_annhilation_ops) {
+                    continue;
+                  }
+                  std::vector<pos_t> positions{p1, p2, p3, p4, p5, p6};
+                  fun(positions);
+                }
+              }
+            }
+          }
+        }
+      }
+      return fun.get();
+    }
 
     // generic version with slicing
     // NOTE: not perfect, contains redundant elements
@@ -444,10 +445,12 @@ struct iterate_rdm_indices<F, 2> {
     } else {
       for (pos_t p1 = 0; p1 < L; ++p1) {
         for (pos_t p2 = 0; p2 < L; ++p2) {
-          // Permutation symmetry for bra == ket: pqrs == qpsr == rspq == srqp
           // if bra != ket, pertmutation symmetry is only pqrs == qpsr
           for (pos_t p3 = 0; p3 < L; ++p3) {
             for (pos_t p4 = p3; p4 < L; ++p4) {
+              if ((p3 == p4) && (p1 < p2)) {
+                continue;
+              }
               std::vector<pos_t> positions{p1, p2, p3, p4};
               fun(positions);
             }
