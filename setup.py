@@ -53,6 +53,31 @@ class CMakeBuild(build_ext):
             "-DBUILD_TRANSCORRELATED_DMRG=ON",
             "-DENABLE_OMP=ON",
         ]
+
+        # Checks for user-defined "QD" flag via environment variable
+        if os.environ.get("QD") == "ON":
+            print ("Enabling Compilation of Time-Dependent Vibronic Models")
+            cmake_args = [arg for arg in cmake_args if not arg.startswith("-DBUILD_SYMMETRIES=")
+            ] # Remove existing -DBUILD_SYMMETRIES 
+            cmake_args.append("-DBUILD_SYMMETRIES=U1;NU1;NONE")
+            cmake_args.append("-DBUILD_VIBRATIONAL=ON")
+            cmake_args.append("-DBUILD_VIBRONIC=ON")
+        
+        # Vibratinoal build type 
+        if os.environ.get("VIB") == "ON":
+            print("Enabling Compilation of Vibratinoal Models")
+            cmake_args = [arg for arg in cmake_args if not arg.startswith("-DBUILD_SYMMETRIES=")
+            ] # Remove existing -DBUILD_SYMMETRIES
+            qn = os.environ.get("QN")
+            cmake_args.append("-DBUILD_SYMMETRIES=U1;NONE;NU1")
+            cmake_args.append("-DBUILD_VIBRATIONAL=ON")
+            cmake_args.append("-DCMAKE_CXX_STANDARD=17")
+            if qn:
+                print("with symmetry number ", qn)
+                cmake_args.append(f"-DDMRG_NUMSYMM={qn}")
+
+            
+
         # Allows to add custom flags using the CMAKE_ARGS environment variable
         if "CMAKE_ARGS" in os.environ:
             cmake_args += [item for item in os.environ["CMAKE_ARGS"].split(" ") if item]

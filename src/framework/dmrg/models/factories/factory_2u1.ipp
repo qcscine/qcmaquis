@@ -10,6 +10,7 @@
 #include "dmrg/models/factories/factory.h"
 #include "dmrg/models/FermiHubbardModels/2u1/RealSpaceFermiHubbardModel.h"
 #include "dmrg/models/FermiHubbardModels/2u1/MomentumSpaceFermiHubbardModel.h"
+#include "dmrg/models/vibrational/nu1/model.hpp"
 
 template<class Matrix>
 struct coded_model_factory<Matrix, TwoU1> 

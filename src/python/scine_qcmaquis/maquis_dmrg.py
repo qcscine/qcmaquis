@@ -1,9 +1,11 @@
 from typing import Any, List, Optional, Tuple, Union
 
 import numpy as np
+import h5py
 
 # pylint: disable=import-error
 from .dmrg_wrapper import DmrgWrapper
+from .dmrg_wrapper import RunOptions
 from .entropy_builder import EntropyBuilder
 from .integral_wrapper import (
     ComplexTCIntegralMap,
@@ -420,6 +422,25 @@ class QCMaquis:
         else:
             self._energy = self._dmrg.get_energy()
 
+    def evolve(self):
+        """Evolve.
+
+        Note
+        ----
+        This function is responsible for (real time) time evolution
+        """
+        results_file = self._parameters.get_parameters_dict()["resultfile"]
+        self._parameters.set_result_path(results_file)
+        self._dmrg._run_option = RunOptions.EVOLVE
+        self._dmrg.set_parameters_time_evolution(self._parameters)
+        for i in self._parameters.get_parameters_dict():
+            print(i, self._parameters.get_parameters_dict()[i])
+        self._dmrg.run()
+
+    def run_vibrational(self):
+        self._dmrg.set_parameters_vibrational(self._parameters)
+        self._dmrg.run()
+
     def update_integrals(
         self, integral_map: Union[IntegralMap, TCIntegralMap, ComplexTCIntegralMap]
     ):
@@ -552,3 +573,79 @@ class QCMaquis:
                         doubles[i * 2, j * 2 + 1, a * 2, b * 2 + 1] = coeff_ab.real
                         doubles[i * 2 + 1, j * 2, a * 2 + 1, b * 2] = coeff_ab.real
         return coeff_hf, singles, doubles
+    
+    def analyze(self, measurements):
+            """
+            Analyze autocorrelation and spectrum data based on the measurements specified.
+
+            Parameters:
+            -----------
+            measurements : list of type str
+                Specifies the type of data to analyze ('autocorrelation', 'spectrum', ...).
+
+            """
+            import matplotlib.pyplot as plt
+            resultsfile = self._parameters.get_result_path()
+            h5pyfile = h5py.File(resultsfile)
+            nsweeps = self._parameters.get("nsweeps")
+            time_units = self._parameters.get("time_units")
+            time_step = self._parameters.get("time_step")
+            
+            if "autocorrelation" in measurements:
+                autocorrelation = np.zeros((nsweeps, 2), dtype=float)
+                for idx in range(nsweeps):
+                    autocorrelation[idx] = h5pyfile['spectrum']['iteration'][str(idx)]['results']['Autocorrelation']['mean']['value'][0]
+                autocorrelation_complex = autocorrelation[:, 0] + 1j * autocorrelation[:, 1]
+
+                 # Plot autocorrelation
+                time_axis = np.linspace(0, nsweeps, nsweeps) * time_step
+                fig, ax = plt.subplots(figsize=(12, 6), dpi=200)
+                ax.plot(time_axis, autocorrelation[:,0], linewidth=2, label='Real part')
+                ax.plot(time_axis, autocorrelation[:,1], linewidth=2, label='Imaginary part')
+                ax.set_xlabel(f'Time / {time_units}', fontsize=20)
+                ax.set_ylabel('C(t)', fontsize=20)
+                ax.tick_params(axis='both', labelsize=15)
+                ax.set_ylim(-1, 1)
+                ax.legend(fontsize=15)
+                fig.savefig("autocorrelation.png", dpi=200)
+
+                if "spectrum" in measurements:
+                    data_pts = 10_000  # Points for FFT
+                    delta_t = time_step * (1.0E-15 if time_units == "fs" else 1.0E-18 if time_units == "as" else 1.0)
+                    # Compute spectrum
+                    spectrum = np.fft.hfft(autocorrelation_complex, n=data_pts)
+                    frequencies = np.fft.fftshift(np.fft.fftfreq(data_pts, d=time_step * delta_t)) / 3e10
+                    spectrum = np.fft.fftshift(spectrum)
+                    # Plot spectrum
+                    fig, ax = plt.subplots(figsize=(10, 6), dpi=200)
+                    ax.set_title("Absorption Spectrum", fontsize=15)
+                    ax.plot(frequencies, np.abs(spectrum) / np.max(np.abs(spectrum)))
+                    ax.set_xlabel(r'Energy / $\text{cm}^{-1}$', fontsize=20)
+                    ax.set_ylabel('Intensity / Arbitrary units', fontsize=20)
+                    ax.tick_params(axis='both', labelsize=15)
+                    fig.savefig("spectrum.png", dpi=200)
+            
+            if "population" in measurements:
+                if self._parameters.get("MODEL") == "excitonic":
+                    nstates = self._parameters.get("vibronic_num_molecules")
+                elif self._parameters.get("MODEL") == "vibronic":
+                    nstates = self._parameters.get("vibronic_num_elestates")
+                pop = np.zeros((nstates, nsweeps), dtype=float)
+                for sweep_idx in range(nsweeps):
+                    for ele_idx in range(nstates):
+                        a = h5pyfile['spectrum']['iteration'][str(sweep_idx)]['results']['PopulationState'+str(ele_idx)]['mean']['value'][0]
+                        pop[ele_idx, sweep_idx] = a[0,0]
+                fig, ax = plt.subplots(figsize=(10, 6), dpi=200)
+                ax.set_title("Population Dynamics")
+                for ele_idx in range(nstates):
+                    ax.plot(time_axis, pop[ele_idx,:], linewidth=2, label= f"{ele_idx}")
+                ax.set_xlabel(f'Time / {time_units}', fontsize=20)
+                ax.set_ylabel('Population', fontsize=20)
+                ax.tick_params(axis='both', labelsize=15)
+                ax.set_ylim(0, 1)
+                ax.tick_params(axis='both', labelsize=15)
+                ax.legend(title="Electronic State", title_fontsize=15,fontsize=15)
+                fig.savefig("populations.png")
+
+            else:
+                raise ValueError("Invalid Measurements List")

@@ -48,6 +48,7 @@ class ParametersWrapper:
         "_results_path",
         "_excited_state_name",
         "_storage_dir",
+        "_TimeEvolution",
     )
 
     def __init__(self, set_defaults: bool = True) -> None:
@@ -70,10 +71,14 @@ class ParametersWrapper:
         """name and path to store the results file."""
         self._excited_state_name: str = self._checkpoint_path[:-3] + "ex0"
         """name for excited states checkpoint files."""
+        self._TimeEvolution = False
+        """boolean for enabling time evolution"""
 
         # set default parameters
-        if set_defaults:
+        if not self._TimeEvolution:
             self._set_defaults()
+        else:
+            self.set_defaults_TimeEvolution()
 
     def set_storage_dir(self, path: str):
         """Set path and name of storagedir.
@@ -173,6 +178,33 @@ class ParametersWrapper:
         # Here we update the integrals later anyways with a new integral map
         self.set("integrals", "   0.00000000000              1     1     1     1")
 
+    def _set_defaults_time_evolution(self):
+        """Set default TD parameters"""
+
+        self.set("simulation_type", "evolve")
+        self.set("optimization", "twosite")
+        self.set("imaginary_time", "no")
+        self.set("TD_backpropagation", "yes")
+        self.set("TD_noise", "no")
+        self.set("measure_each", 1)
+        self.set("conv_thresh", -1)
+        self.set("COMPLEX", 1)
+
+    def _set_defaults_vibrational(self):
+        """Set default parameters for vibrational optimizations
+        Note
+
+        "conv_thresh is set lower, as the integral files for vibrational calculations
+        we use are most often in units of cm-1. Therefore, for vibrational structure 
+        calculations an accurace of 1e-3 cm-1 is satisfactory most of the time."
+        """
+
+        self.set("conv_thresh", "1e-3")
+        self.set("optimization", "twosite")
+        self.set("lattice_library", "coded")
+        self.set("model_library", "coded")
+
+        
     def _make_site_types(self, n_orbitals: int):
         """Generate the string for site types.
 

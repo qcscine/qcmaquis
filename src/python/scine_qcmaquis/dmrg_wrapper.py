@@ -72,6 +72,16 @@ class DmrgWrapper:
         else:
             self._dmrg = DmrgReal(parameters.get_parameters())
 
+    def set_parameters_time_evolution(self, parameters: ParametersWrapper):
+        parameters._set_defaults_time_evolution()
+        self._run_option = RunOptions.EVOLVE
+        self._dmrg = DmrgComplex(parameters.get_parameters())
+
+    def set_parameters_vibrational(self, parameters: ParametersWrapper):
+        parameters._set_defaults_vibrational()
+        self._run_option = RunOptions.OPTIMIZE
+        self._dmrg = DmrgReal(parameters.get_parameters())
+
     def get_fiedler(self, hf_occupations: Optional[List[List[int]]] = None, n_states: Optional[int] = None) -> str:
         """Evaluate Fiedler ordering.
 
