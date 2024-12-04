@@ -241,6 +241,33 @@ namespace measurements_details {
         }
     };
 
+    // Generate all unique elements based on fixed values in left and right
+    template <class pos_t>
+      std::vector<std::vector<pos_t>> gen_perms_3rdm(
+          const std::vector<pos_t>& left, std::vector<pos_t> right
+          ) {
+        assert(left.size() == 3 && right.size() == 3);
+        std::vector<std::vector<int>> perms;
+        // right needs to be sorted in order for next_permutation to generate all
+        // perms
+        std::sort(right.begin(), right.end());
+        do {
+          // RDM=0 if all 3 indices are equal so only need to check 2
+
+          std::vector<pos_t> joined(left);
+          if (((left[0] == left[1]) && (right[0] > right[1])) ||
+              ((left[0] == left[2]) && (right[0] > right[2])) ||
+              ((left[1] == left[2]) && (right[1] > right[2]))) {
+            continue;
+          }
+          std::copy(right.begin(), right.end(), std::back_inserter(joined));
+          perms.push_back(joined);
+
+        } while (std::next_permutation(right.begin(), right.end()));
+        return perms;
+      }
+
+
 
     // Same for 3-RDM indices
     template <class F>
@@ -250,64 +277,68 @@ namespace measurements_details {
         typename F::return_type operator()(F fun, pos_t L, bool bra_neq_ket = false, const std::vector<pos_t> & positions_first = std::vector<pos_t>())
         {
 
-          // simple version for full transition RDM
-          if (positions_first.empty() && bra_neq_ket) {
-            for (pos_t p1 = 0; p1 < L; ++p1) {
-              for (pos_t p2 = 0; p2 < L; ++p2) {
-                for (pos_t p3 = 0; p3 < L; ++p3) {
-                  bool three_identical_creation_ops = (p1 == p2 && p1 == p3);
-                  if (three_identical_creation_ops) {
-                    continue;
-                  }
-                  for (pos_t p4 = 0; p4 < L; ++p4) {
-                    for (pos_t p5 = p4; p5 < L; ++p5) {
-                      for (pos_t p6 = p5; p6 < L; ++p6) {
-                        bool three_identical_annhilation_ops = (p4 == p5 && p4 == p6);
-                        if (three_identical_annhilation_ops) {
-                          continue;
+        // simple version for without slicing
+          if (positions_first.empty()) {
+            // transition rdm
+            if (bra_neq_ket) {
+              for (pos_t p1 = 0; p1 < L; ++p1) {
+                for (pos_t p2 = 0; p2 < L; ++p2) {
+                  for (pos_t p3 = 0; p3 < L; ++p3) {
+                    bool three_identical_creation_ops = (p1 == p2 && p1 == p3);
+                    if (three_identical_creation_ops) {
+                      continue;
+                    }
+                    for (pos_t p4 = 0; p4 < L; ++p4) {
+                      for (pos_t p5 = p4; p5 < L; ++p5) {
+                        for (pos_t p6 = p5; p6 < L; ++p6) {
+                          bool three_identical_annhilation_ops =
+                            (p4 == p5 && p4 == p6);
+                          if (three_identical_annhilation_ops) {
+                            continue;
+                          }
+                          // If 2 creation ops indices are equal than corresponding
+                          // annhilation ops should be sorted
+                          if (((p4 == p5) && (p1 < p2)) ||
+                              ((p4 == p6) && (p1 < p3)) ||
+                              ((p5 == p6) && (p2 < p3))) {
+                            continue;
+                          }
+                          std::vector<pos_t> positions{p1, p2, p3, p4, p5, p6};
+                          fun(positions);
                         }
-                        // If 2 creation ops indices are equal than corresponding
-                        // annhilation ops should be sorted
-                        if (((p4 == p5) && (p1 < p2)) || ((p4 == p6) && (p1 < p3)) ||
-                            ((p5 == p6) && (p2 < p3))) {
-                          continue;
-                        }
-                        std::vector<pos_t> positions{p1, p2, p3, p4, p5, p6};
-                        fun(positions);
                       }
                     }
                   }
                 }
               }
-            }
-            return fun.get();
-          } else if (positions_first.empty() && !bra_neq_ket) {
-            for (pos_t p1 = 0; p1 < L; ++p1) {
-              for (pos_t p2 = p1; p2 < L; ++p2) {
-                for (pos_t p3 = p2; p3 < L; ++p3) {
-                  // N-rdm are zero for > 2 identical creation ops
-                  bool three_identical_creation_ops = (p1 == p2 && p1 == p3);
-                  if (three_identical_creation_ops) {
-                    continue;
-                  }
-                  for (pos_t p4 = 0; p4 < L; ++p4) {
-                    for (pos_t p5 = 0; p5 < L; ++p5) {
-                      for (pos_t p6 = 0; p6 < L; ++p6) {
-                        bool three_identical_annihilation_ops =
-                          (p4 == p5 && p4 == p6);
-                        if (three_identical_annihilation_ops) {
-                          continue;
-                        }
-                        std::vector<pos_t> positions{p1, p2, p3, p4, p5, p6};
-                        fun(positions);
-                      }
+            } else if (!bra_neq_ket) {
+              // normal rdm
+              std::vector<std::vector<int>> arr;
+              for (pos_t p1 = 0; p1 < L; ++p1) {
+                for (pos_t p2 = p1; p2 < L; ++p2) {
+                  for (pos_t p3 = p2; p3 < L; ++p3) {
+                    // N-rdm are zero for > 2 identical creation/annihilation ops
+                    if ((p1 == p2) && (p2 == p3)) {
+                      continue;
                     }
+                    arr.push_back({p1, p2, p3});
+                  }
+                }
+              }
+
+              for (size_t i = 0; i < arr.size(); ++i) {
+                for (size_t j = i; j < arr.size(); ++j) {
+                  std::vector<std::vector<int>> joined =
+                    gen_perms_3rdm(arr[i], arr[j]);
+                  for (const auto& e : joined) {
+                    fun(e);
                   }
                 }
               }
             }
             return fun.get();
           }
+
 
 
             pos_t p1_start = 0;
@@ -370,44 +401,44 @@ namespace measurements_details {
     template <class F>
     struct iterate_rdm_indices<F, 2>
     {
-        typedef Lattice::pos_t pos_t;
-        typename F::return_type operator()(F fun, pos_t L, bool bra_neq_ket = false, const std::vector<pos_t> & positions_first = std::vector<pos_t>())
-        {
-          if (!bra_neq_ket) {
-            // Permutation symmetry for bra == ket: pqrs == qpsr == rspq == srqp
-            for (pos_t p1 = 0; p1 < L; ++p1) {
-              for (pos_t p2 = p1; p2 < L; ++p2) {
-                for (pos_t p3 = p1; p3 < L; ++p3) {
-                  for (pos_t p4 = p1; p4 < L; ++p4) {
-                    // if two indices are the same the other two must be sorted
-                    if (((p1 == p2) && (p3 > p4)) || ((p1 == p3) && (p2 > p4)) ||
-                        ((p1 == p4) && (p2 > p3))) {
-                      continue;
-                    }
-                    std::vector<pos_t> positions{p1, p2, p3, p4};
-                    fun(positions);
+      typedef Lattice::pos_t pos_t;
+      typename F::return_type operator()(F fun, pos_t L, bool bra_neq_ket = false, const std::vector<pos_t> & positions_first = std::vector<pos_t>())
+      {
+        if (!bra_neq_ket) {
+          // Permutation symmetry for bra == ket: pqrs == qpsr == rspq == srqp
+          for (pos_t p1 = 0; p1 < L; ++p1) {
+            for (pos_t p2 = p1; p2 < L; ++p2) {
+              for (pos_t p3 = p1; p3 < L; ++p3) {
+                for (pos_t p4 = p1; p4 < L; ++p4) {
+                  // if two indices are the same the other two must be sorted
+                  if (((p1 == p2) && (p3 > p4)) || ((p1 == p3) && (p2 > p4)) ||
+                      ((p1 == p4) && (p2 > p3))) {
+                    continue;
                   }
-                }
-              }
-            }
-          } else {
-            // if bra != ket, pertmutation symmetry is only pqrs == qpsr
-            for (pos_t p1 = 0; p1 < L; ++p1) {
-              for (pos_t p2 = 0; p2 < L; ++p2) {
-                for (pos_t p3 = 0; p3 < L; ++p3) {
-                  for (pos_t p4 = p3; p4 < L; ++p4) {
-                    if ((p3 == p4) && (p1 < p2)) {
-                      continue;
-                    }
-                    std::vector<pos_t> positions{p1, p2, p3, p4};
-                    fun(positions);
-                  }
+                  std::vector<pos_t> positions{p1, p2, p3, p4};
+                  fun(positions);
                 }
               }
             }
           }
-          return fun.get();
+        } else {
+          // if bra != ket, pertmutation symmetry is only pqrs == qpsr
+          for (pos_t p1 = 0; p1 < L; ++p1) {
+            for (pos_t p2 = 0; p2 < L; ++p2) {
+              for (pos_t p3 = 0; p3 < L; ++p3) {
+                for (pos_t p4 = p3; p4 < L; ++p4) {
+                  if ((p3 == p4) && (p1 < p2)) {
+                    continue;
+                  }
+                  std::vector<pos_t> positions{p1, p2, p3, p4};
+                  fun(positions);
+                }
+              }
+            }
+          }
         }
+        return fun.get();
+      }
     };
 
     // Helper class for counting all n-RDM permutations using the handle_<n>rdm_indices function
