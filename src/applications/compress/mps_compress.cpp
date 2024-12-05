@@ -9,7 +9,7 @@
 #include "dmrg/sim/matrix_types.h"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/compression.h"
-#include "dmrg/models/MolecularHamiltonian/transform_symmetry.hpp"
+#include "dmrg/models/MolecularHamiltonians/transform_symmetry.hpp"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/replace.hpp>
