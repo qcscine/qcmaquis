@@ -5,7 +5,7 @@ import pytest
 from pyscf import gto, mcscf, scf, fci
 import numpy as np
 
-from scine_qcmaquis.pyscf_interface.pyscf_interface import QcMaquis
+from scine_qcmaquis.pyscf_interface.pyscf_interface import DMRGSolver
 
 
 def test_dmrgci():
@@ -21,7 +21,7 @@ def test_dmrgci():
     m.scf()
 
     mc = mcscf.CASCI(m, 4, 4)
-    mc.fcisolver = QcMaquis(mol)
+    mc.fcisolver = DMRGSolver(mol)
     mc.fcisolver.file_path = None
     mc.fcisolver.parameters.set_orbital_optimization()
     # mc.fcisolver.verbose = 1
@@ -59,7 +59,7 @@ def test_dmrgscf():
 
     mc = mcscf.CASSCF(m, 4, 4)
     mc.max_cycle_macro = 20
-    mc.fcisolver = QcMaquis(mol)
+    mc.fcisolver = DMRGSolver(mol)
     mc.fcisolver.file_path = None
     mc.fcisolver.parameters.set_orbital_optimization()
     emc_1 = mc.mc2step()[0]
@@ -97,7 +97,7 @@ def test_dmrgscf_with_checkpoint():
 
     mc = mcscf.CASSCF(m, 6, 6)
     mc.max_cycle_macro = 20
-    mc.fcisolver = QcMaquis(mol)
+    mc.fcisolver = DMRGSolver(mol)
     mc.fcisolver.verbose = 1
 
     mc.fcisolver.file_path = os.path.dirname(os.path.abspath(__file__))
@@ -138,7 +138,7 @@ def test_dmrgscf_with_existing_checkpoint():
 
     mc = mcscf.CASSCF(m, 6, 6)
     mc.max_cycle_macro = 20
-    mc.fcisolver = QcMaquis(mol)
+    mc.fcisolver = DMRGSolver(mol)
     mc.fcisolver.verbose = 1
 
     mc.fcisolver.file_path = os.path.dirname(os.path.abspath(__file__))
@@ -176,7 +176,7 @@ def test_rdms():
     dm1_ref, dm2_ref = mc.make_rdm12(fcivec, norb, nelec)
 
     mc = mcscf.CASCI(mf, norb, nelec)
-    mc.fcisolver = QcMaquis(mol)
+    mc.fcisolver = DMRGSolver(mol)
     mc.fcisolver.file_path = None
     emc_0 = mc.casci()[0]
 

@@ -9,11 +9,11 @@ from itertools import permutations
 import numpy as np
 import pyscf
 
-from scine_qcmaquis import MaquisDmrg
+from scine_qcmaquis import QCMaquis
 from scine_qcmaquis.dmrg_wrapper import ParametersWrapper
 
 
-class QcMaquis:
+class DMRGSolver:
     """QCMaquis interface for pyscf.
 
     This interface allows qcmaquis to act as a fcisolver in pyscf.mcscf methods.
@@ -33,7 +33,7 @@ class QcMaquis:
     n_states : Optional[int]
     fiedler : bool, default = False
     log : Any
-    dmrg : Optional[MaquisDmrg]
+    dmrg : Optional[QCMaquis]
     file_path : str
     measure_entropies : bool
     checkpoint_name : str
@@ -81,7 +81,7 @@ class QcMaquis:
         """Enable fiedler ordering"""
 
         # QCMaquis related stuff
-        self.dmrg: Optional[MaquisDmrg] = None
+        self.dmrg: Optional[QCMaquis] = None
         """QCMaquis python interface, will be set automatically."""
         self.file_path: str = tempfile.mkdtemp(prefix="QCM-", dir=os.getcwd())
         print(f"Workdir for calculation is {self.file_path}")
@@ -138,7 +138,7 @@ class QcMaquis:
             pyscf verbosity
         """
         self.log = pyscf.lib.logger.new_logger(self, verbose)
-        self.log.info("************** QcMaquis flags **************")
+        self.log.info("************** DMRGSolver flags **************")
         self.log.info("method           = %s", str(self.method))
         self.log.info("fiedler ordering = %s", str(self.fiedler))
         if self.file_path:
@@ -422,7 +422,7 @@ class QcMaquis:
         eri = pyscf.ao2mo.restore(1, eri, norb)
 
         # initialize qcmaquis
-        self.dmrg = MaquisDmrg()
+        self.dmrg = QCMaquis()
         # onerdm is required for pyscf
         self.parameters.set_orbital_optimization()
         self.dmrg.replace_parameters(self.parameters)
@@ -536,7 +536,7 @@ class QcMaquis:
         ----
         Check if this function is required for pyscf, but I think so.
         """
-        return QcMaquis.make_rdm12(self, fcivec, norb, nelec, **kwargs)[0]
+        return DMRGSolver.make_rdm12(self, fcivec, norb, nelec, **kwargs)[0]
 
     def get_entropies(self):
         """Getter for chementropies from qcmaquis.

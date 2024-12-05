@@ -26,7 +26,7 @@ from .utils.ci_coeffs import (
 # pylint: enable=import-error
 
 
-class MaquisDmrg:
+class QCMaquis:
     """Python Interface to QCMaquis.
 
     Attributes

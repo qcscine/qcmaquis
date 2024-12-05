@@ -2,7 +2,7 @@ from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
-from scine_qcmaquis import MaquisDmrg
+from scine_qcmaquis import QCMaquis
 
 
 class DeterminantQueen:
@@ -144,12 +144,12 @@ class Srcas:
 
         return new_det
 
-    def run(self, dmrg: MaquisDmrg, initial_det: str, additional_dets: Optional[List[str]] = None):
+    def run(self, dmrg: QCMaquis, initial_det: str, additional_dets: Optional[List[str]] = None):
         """Run SRCAS
 
         Parameters
         ----------
-        dmrg : MaquisDmrg
+        dmrg : QCMaquis
             dmrg object
         initial_det : str
             initial determinant (for example HF, e.g. 44444111)
@@ -172,7 +172,7 @@ class Srcas:
 
         self._loop(dmrg, initial_det)
 
-    def _loop(self, dmrg: MaquisDmrg, det: str):
+    def _loop(self, dmrg: QCMaquis, det: str):
 
         while self._n_samples < self.max_samples:
             det = self._generate_new_determinant()

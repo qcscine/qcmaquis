@@ -2,18 +2,18 @@ from typing import Any
 
 from _dmrg import SRCASReal
 
-from scine_qcmaquis import MaquisDmrg
+from scine_qcmaquis import QCMaquis
 
 
 class Srcas:
     """SRCAS wrapper"""
 
-    def __init__(self, interface: MaquisDmrg):
+    def __init__(self, interface: QCMaquis):
         """Create SRCAS wrapper
 
         Parameters
         ----------
-        interface : MaquisDmrg
+        interface : QCMaquis
             wrapper around the qcmaquis interface
         """
         self._srcas = SRCASReal(interface._parameters.get_parameters(), interface._dmrg.get_dmrg())

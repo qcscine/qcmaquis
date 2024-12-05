@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 from scine_qcmaquis.entropy_builder import EntropyBuilder
-from scine_qcmaquis.maquis_dmrg import MaquisDmrg
+from scine_qcmaquis.maquis_dmrg import QCMaquis
 
 
 def test_maquis_dmrg_sweep_from_fcidump():
@@ -83,7 +83,7 @@ def test_maquis_dmrg_sweep_from_fcidump():
         tmp_fcidump.write("  -6.71049529388        0  0  0  0")
         tmp_fcidump.close()
     _write_fcidump()
-    dmrg = MaquisDmrg()
+    dmrg = QCMaquis()
     dmrg.set_parameter("nsweeps", 2)
     dmrg.set_parameter("max_bond_dimension", 100)
     dmrg.set_parameter("n_ortho_states", 0)
@@ -106,7 +106,7 @@ def test_maquis_dmrg_sweep_from_fcidump():
 
     s1, s2, mut_inf = dmrg.get_entropies()
 
-    dmrg = MaquisDmrg()
+    dmrg = QCMaquis()
     dmrg.set_parameter("nsweeps", 2)
     dmrg.set_parameter("max_bond_dimension", 100)
     dmrg.set_parameter("n_ortho_states", 0)

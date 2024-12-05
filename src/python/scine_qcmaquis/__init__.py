@@ -1,3 +1,2 @@
-from .maquis_dmrg import MaquisDmrg
-
-# from .pyscf_interface.pyscf_interface import QcMaquis
+from .maquis_dmrg import QCMaquis
+from .pyscf_interface.pyscf_interface import DMRGSolver
