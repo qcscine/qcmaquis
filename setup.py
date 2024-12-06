@@ -54,8 +54,8 @@ class CMakeBuild(build_ext):
             "-DENABLE_OMP=ON",
         ]
 
-        # Checks for user-defined "QD" flag via environment variable
-        if os.environ.get("QD") == "ON":
+        # Checks for user-defined "TD" flag via environment variable
+        if os.environ.get("TD") == "ON":
             print ("Enabling Compilation of Time-Dependent Vibronic Models")
             cmake_args = [arg for arg in cmake_args if not arg.startswith("-DBUILD_SYMMETRIES=")
             ] # Remove existing -DBUILD_SYMMETRIES 

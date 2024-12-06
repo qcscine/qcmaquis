@@ -47,6 +47,10 @@ class QCMaquis:
         flag to enable excited state calculations
     _energy : Union[float, List[float]]
         the energy of one or more states
+    _elec_states : int
+        number of electronic states for vibronic DMRG
+    _vib_modes : int
+        number of vibrational modes for vibronic and vibrational DMRG
     """
 
     __slots__ = (
@@ -58,9 +62,12 @@ class QCMaquis:
         "_excited_states",
         "_energy",
         "_entropy_builder",
+        "_elec_states",
+        "_vib_modes",
+        "_num_basis",
     )
 
-    def __init__(self) -> None:
+    def __init__(self, model: str = "electronic", **kwargs) -> None:
         """Construct Wrapper.
 
         Note
@@ -69,21 +76,44 @@ class QCMaquis:
         """
         self._dmrg = DmrgWrapper()
         """Handler for calculations."""
-        self._parameters = ParametersWrapper()
-        """Handler for parameters."""
-        self._integral_map = IntegralMapWrapper()
-        """Handler for integrals."""
+        
+        if model == "electronic":
+            self._parameters = ParametersWrapper()
+            """Handler for parameters of an electronic calculation."""
+            self._integral_map = IntegralMapWrapper()
+            """Handler for integrals."""
+            self._transcorrelated = False
+            """Flag for transcorrelation."""
+            self._orbital_optimization = False
+            """Flag for orbital optimization."""
+            self._excited_states = False
+            """Flag for excited states."""
+            self._energy: Union[float, List[float]] = 0.0
+            """Final energy of the system."""
+            self._entropy_builder: Optional[EntropyBuilder] = None
+            """Assembly s1, s2 and mut inf from qcmaquis"""
 
-        self._transcorrelated = False
-        """Flag for transcorrelation."""
-        self._orbital_optimization = False
-        """Flag for orbital optimization."""
-        self._excited_states = False
-        """Flag for excited states."""
-        self._energy: Union[float, List[float]] = 0.0
-        """Final energy of the system."""
-        self._entropy_builder: Optional[EntropyBuilder] = None
-        """Assembly s1, s2 and mut inf from qcmaquis"""
+        elif model == "vibronic":
+            self._elec_states = kwargs.get('elec_states', None)
+            """Variable that stores number of electronic states for vibronic calculations."""
+            self._vib_modes = kwargs.get('vib_modes', None)
+            """Variable that stores number of vibrational states for vibronic calculations."""
+            self._parameters = ParametersWrapper(
+                model="vibronic",
+                elec_states=self._elec_states,
+                vib_modes=self._vib_modes
+            )
+            """Handler for parameters of a vibronic calculation."""
+            self._parameters._set_vibronic()
+            """Sets standard parameters needed for vibronic calculations."""
+
+        elif model == "vibrational":
+           self._vib_modes = kwargs.get('vib_modes', None)
+           """Variable that stores number of vibrational modes for vDMRG."""
+           self._num_basis = kwargs.get('num_basis', None)
+           """Variable that stores local basis size for each vibrational mode."""
+           self._parameters = ParametersWrapper(model = model, vib_modes = self._vib_modes, num_basis = self._num_basis)
+           """Sets standard parameters needed for vDMRG calulations."""
 
     def replace_parameters(self, parameters_wrapper: ParametersWrapper):
         """Replace existing parameters wrapper with new parameters.
@@ -422,24 +452,56 @@ class QCMaquis:
         else:
             self._energy = self._dmrg.get_energy()
 
-    def evolve(self):
+    def evolve(self, t_step = 1, n_steps = 25, t_units = "fs", bond_dimension=20):
         """Evolve.
 
         Note
         ----
         This function is responsible for (real time) time evolution
         """
+        self._dmrg._run_option = RunOptions.EVOLVE
+        self._parameters.set("max_bond_dimension", bond_dimension) #where to put this?
+        self._parameters.set("resultfile", "res.h5") #check this functionality also
         results_file = self._parameters.get_parameters_dict()["resultfile"]
         self._parameters.set_result_path(results_file)
-        self._dmrg._run_option = RunOptions.EVOLVE
-        self._dmrg.set_parameters_time_evolution(self._parameters)
+        self._dmrg.set_evolve(self._parameters, t_step, n_steps, t_units) #cant we set this here directly
         for i in self._parameters.get_parameters_dict():
             print(i, self._parameters.get_parameters_dict()[i])
         self._dmrg.run()
 
-    def run_vibrational(self):
+    def run_vibrational(self, bond_dimension=20, nsweeps=15):
+        self._parameters.set("max_bond_dimension", bond_dimension) #agian: is there a better place to put this?
+        self._parameters.set("nsweeps", nsweeps) #same here
         self._dmrg.set_parameters_vibrational(self._parameters)
         self._dmrg.run()
+
+    def init_mps(self, init_type, init_string = "", **kwargs):
+        """Set inital MPS.
+        Parameters
+        ----------
+        init_type : string
+            initial MPS type, eg. basis_state_generic, random, coherent,...
+        init_string : string
+            string defining the initial MPS. Needed for basis_state_generic, basis_state_generic_const and coherent.
+        kwargs: init_coeffs : string
+            commas separated list of MPS coefficient for a coherent superposition of MPSs. 
+        """ 
+        self._parameters.set("init_type", init_type)
+        self._parameters.set("init_basis_state", init_string)
+        if kwargs:
+            init_coeffs = kwargs.get("init_coeffs", None)
+            self._parameters.set("init_coeffs", init_coeffs)
+
+    def measure_population(self):
+        """Measure Populatioons
+        Note
+        ---- 
+        Enable measuring electronic state populations in TDDMRG
+        """
+        self._parameters.set("MEASURE[Population]", 1)
+        n_states = self._elec_states
+        measure_string = ",".join(f"PopulationState{i}" for i in range(n_states)) + ",Autocorrelation"
+        self._parameters.set("ALWAYS_MEASURE", measure_string)      
 
     def update_integrals(
         self, integral_map: Union[IntegralMap, TCIntegralMap, ComplexTCIntegralMap]
@@ -574,15 +636,11 @@ class QCMaquis:
                         doubles[i * 2 + 1, j * 2, a * 2 + 1, b * 2] = coeff_ab.real
         return coeff_hf, singles, doubles
     
-    def analyze(self, measurements):
-            """
+    def analyze_results(self, measurements):
+            """ Analyze Results
+            Note
+            ----
             Analyze autocorrelation and spectrum data based on the measurements specified.
-
-            Parameters:
-            -----------
-            measurements : list of type str
-                Specifies the type of data to analyze ('autocorrelation', 'spectrum', ...).
-
             """
             import matplotlib.pyplot as plt
             resultsfile = self._parameters.get_result_path()
@@ -591,13 +649,11 @@ class QCMaquis:
             time_units = self._parameters.get("time_units")
             time_step = self._parameters.get("time_step")
             
-            if "autocorrelation" in measurements:
+            if "Autocorrelation" in self._parameters.get("ALWAYS_MEASURE"):
                 autocorrelation = np.zeros((nsweeps, 2), dtype=float)
                 for idx in range(nsweeps):
                     autocorrelation[idx] = h5pyfile['spectrum']['iteration'][str(idx)]['results']['Autocorrelation']['mean']['value'][0]
                 autocorrelation_complex = autocorrelation[:, 0] + 1j * autocorrelation[:, 1]
-
-                 # Plot autocorrelation
                 time_axis = np.linspace(0, nsweeps, nsweeps) * time_step
                 fig, ax = plt.subplots(figsize=(12, 6), dpi=200)
                 ax.plot(time_axis, autocorrelation[:,0], linewidth=2, label='Real part')
@@ -608,24 +664,25 @@ class QCMaquis:
                 ax.set_ylim(-1, 1)
                 ax.legend(fontsize=15)
                 fig.savefig("autocorrelation.png", dpi=200)
-
-                if "spectrum" in measurements:
-                    data_pts = 10_000  # Points for FFT
-                    delta_t = time_step * (1.0E-15 if time_units == "fs" else 1.0E-18 if time_units == "as" else 1.0)
-                    # Compute spectrum
-                    spectrum = np.fft.hfft(autocorrelation_complex, n=data_pts)
-                    frequencies = np.fft.fftshift(np.fft.fftfreq(data_pts, d=time_step * delta_t)) / 3e10
-                    spectrum = np.fft.fftshift(spectrum)
-                    # Plot spectrum
-                    fig, ax = plt.subplots(figsize=(10, 6), dpi=200)
-                    ax.set_title("Absorption Spectrum", fontsize=15)
-                    ax.plot(frequencies, np.abs(spectrum) / np.max(np.abs(spectrum)))
-                    ax.set_xlabel(r'Energy / $\text{cm}^{-1}$', fontsize=20)
-                    ax.set_ylabel('Intensity / Arbitrary units', fontsize=20)
-                    ax.tick_params(axis='both', labelsize=15)
-                    fig.savefig("spectrum.png", dpi=200)
+                """
+                Calculate spectrum for autocorrelation function
+                """
+                data_pts = 10_000  # Points for FFT
+                delta_t = time_step * (1.0E-15 if time_units == "fs" else 1.0E-18 if time_units == "as" else 1.0)
+                # Compute spectrum
+                spectrum = np.fft.hfft(autocorrelation_complex, n=data_pts)
+                frequencies = np.fft.fftshift(np.fft.fftfreq(data_pts, d=time_step * delta_t)) / 3e10
+                spectrum = np.fft.fftshift(spectrum)
+                # Plot spectrum
+                fig, ax = plt.subplots(figsize=(10, 6), dpi=200)
+                ax.set_title("Absorption Spectrum", fontsize=15)
+                ax.plot(frequencies, np.abs(spectrum) / np.max(np.abs(spectrum)))
+                ax.set_xlabel(r'Energy / $\text{cm}^{-1}$', fontsize=20)
+                ax.set_ylabel('Intensity / Arbitrary units', fontsize=20)
+                ax.tick_params(axis='both', labelsize=15)
+                fig.savefig("spectrum.png", dpi=200)
             
-            if "population" in measurements:
+            if ("PopulationState" in self._parameters.get("ALWAYS_MEASURE")):
                 if self._parameters.get("MODEL") == "excitonic":
                     nstates = self._parameters.get("vibronic_num_molecules")
                 elif self._parameters.get("MODEL") == "vibronic":

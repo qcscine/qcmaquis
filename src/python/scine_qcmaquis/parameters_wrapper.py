@@ -39,6 +39,12 @@ class ParametersWrapper:
         name and path to store the results file.
     _excited_state_name : str
         name for excited states checkpoint files.
+    _elec_states : int
+        number of electronic states. Needed for vibronic calculations.
+    _vib_modes : int
+        number of vibrational modes. Needed for vibrational and vibronic calculations.
+    _num_basis : str
+        number of basis functions per vibrational mode. Needed for vibrational calculations.
     """
 
     __slots__ = (
@@ -49,9 +55,12 @@ class ParametersWrapper:
         "_excited_state_name",
         "_storage_dir",
         "_TimeEvolution",
+        "_elec_states",
+        "_vib_modes",
+        "_num_basis",
     )
 
-    def __init__(self, set_defaults: bool = True) -> None:
+    def __init__(self, set_defaults: bool = True, model: str = "elec", **kwargs) -> None:
         """Constructor.
 
         Parameters
@@ -74,11 +83,21 @@ class ParametersWrapper:
         self._TimeEvolution = False
         """boolean for enabling time evolution"""
 
-        # set default parameters
-        if not self._TimeEvolution:
-            self._set_defaults()
-        else:
-            self.set_defaults_TimeEvolution()
+        if model == "elec" and set_defaults:
+            """sets defaults for electronic DMRG."""
+            self._set_electronic()
+
+        if model == "vibronic" and set_defaults:
+            """sets parameters for vibronic calculations."""
+            self._elec_states = kwargs.get('elec_states', None)
+            self._vib_modes = kwargs.get('vib_modes', None)
+            self._set_vibronic()
+
+        if model == "vibrational" and set_defaults:
+            """sets parameters for vDMRG with the n-mode model."""
+            self._vib_modes = kwargs.get("vib_modes")
+            self._num_basis = kwargs.get("num_basis")
+            self._set_vibrational()
 
     def set_storage_dir(self, path: str):
         """Set path and name of storagedir.
@@ -138,7 +157,7 @@ class ParametersWrapper:
         self._checkpoint_path = path
         self.set("chkpfile", self._checkpoint_path, verbose=False)
 
-    def _set_defaults(self):
+    def _set_electronic(self):
         """Set default parameters.
 
         Note
@@ -178,10 +197,12 @@ class ParametersWrapper:
         # Here we update the integrals later anyways with a new integral map
         self.set("integrals", "   0.00000000000              1     1     1     1")
 
-    def _set_defaults_time_evolution(self):
+    def _set_evolve(self, t_tstep, n_steps, t_units):
         """Set default TD parameters"""
 
-        self.set("simulation_type", "evolve")
+        self.set("time_step", t_tstep)
+        self.set("nsweeps", n_steps)
+        self.set("time_units", t_units)
         self.set("optimization", "twosite")
         self.set("imaginary_time", "no")
         self.set("TD_backpropagation", "yes")
@@ -189,21 +210,71 @@ class ParametersWrapper:
         self.set("measure_each", 1)
         self.set("conv_thresh", -1)
         self.set("COMPLEX", 1)
+        self.set("propagator_maxiter", 40)
+        self.set("propagator_accuracy", 1.0e-10)
+        self.set("MEASURE[Autocorrelation]", 1)
+        if "ALWAYS_MEASURE" not in self.get_parameters_dict():
+            self.set("ALWAYS_MEASURE", "Autocorrelation")
+
+
 
     def _set_defaults_vibrational(self):
         """Set default parameters for vibrational optimizations
+        
         Note
-
-        "conv_thresh is set lower, as the integral files for vibrational calculations
+        ----
+        "conv_thresh" is set lower, as the integral files for vibrational calculations
         we use are most often in units of cm-1. Therefore, for vibrational structure 
-        calculations an accurace of 1e-3 cm-1 is satisfactory most of the time."
+        calculations an accurace of 1e-3 cm-1 is satisfactory most of the time.
         """
 
         self.set("conv_thresh", "1e-3")
         self.set("optimization", "twosite")
         self.set("lattice_library", "coded")
         self.set("model_library", "coded")
+        self.set("ngrowsweeps", 2)
+        self.set("nmainsweeps", 3)
+        self.set("alpha_initial", 1.0e-9)
+        self.set("alpha_main", 1.0e-10)
+        self.set("alpha_final", 0)
+        self.set("truncation_initial", 1.0e-8)
+        self.set("truncation_final", 1.0e-10)
+        self.set("eigensolver", "IETL_JCD")
+        self.set("integral_cutoff", 1.0e-8)
 
+    def _set_vibronic(self):
+        """Set parameters for vibronic calculations
+        
+        Note
+        ----
+        Sets parameters needed for vibronic DMRG calculations.
+        """
+        self.set("vibronic_num_elestates", self._elec_states)
+        self.set("vibronic_num_vibmodes", self._vib_modes)
+        self.set("L", self._elec_states+self._vib_modes)
+        self.set("Nmax", 6)
+        self.set("symmetry", "u1")
+        self.set("MODEL", "vibronic")
+        self.set("LATTICE", "vibronic lattice")
+        self.set("hamiltonian_units", "cm-1")
+        self.set_result_path("results_vibronic.h5")
+
+    def _set_vibrational(self):
+        """
+
+        Note
+        ----
+        Sets the parameters for a vDMRG calculation with the n-mode
+        vibrational model.
+        """
+        self.set("nmode_num_basis", self._num_basis)
+        self.set("nmode_num_modes", self._vib_modes)
+        self.set("L", sum(int(idx) for idx in self._num_basis.split(",")))
+        self.set("symmetry", "nu1")
+        self.set("MODEL", "nmode")
+        self.set("LATTICE", "nmode lattice")
+        self.set("hamiltonian_units", "cm-1")
+        self.set_result_path("results_vibrational.h5")
         
     def _make_site_types(self, n_orbitals: int):
         """Generate the string for site types.

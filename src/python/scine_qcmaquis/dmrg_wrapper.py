@@ -72,8 +72,8 @@ class DmrgWrapper:
         else:
             self._dmrg = DmrgReal(parameters.get_parameters())
 
-    def set_parameters_time_evolution(self, parameters: ParametersWrapper):
-        parameters._set_defaults_time_evolution()
+    def set_evolve(self, parameters: ParametersWrapper, t_step, n_steps, t_units):
+        parameters._set_evolve(t_step, n_steps, t_units)
         self._run_option = RunOptions.EVOLVE
         self._dmrg = DmrgComplex(parameters.get_parameters())
 
