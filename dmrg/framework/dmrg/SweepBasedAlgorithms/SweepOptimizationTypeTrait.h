@@ -111,8 +111,6 @@ public:
       throw std::runtime_error("TS optimizer not available for 1-site lattices");
     else
       numberOfMicroiterations = 2*(L-2);
-    std::cout << "number of micro iterations = " << numberOfMicroiterations << std::endl;
-    exit(1);
     return numberOfMicroiterations;
   }
 
