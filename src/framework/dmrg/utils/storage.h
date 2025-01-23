@@ -448,7 +448,11 @@ static void migrate(T& t) {
  * this reason, setup is called in the constructor of the simulation object.
  */
 inline static void setup(BaseParameters& parms) {
-  if (!parms["storagedir"].empty()) {
+  // environments only exist if optimized sites do not include all sites
+  bool has_environment =
+      (parms["optimization"] == "singlesite" && parms["L"] > 1) ||
+      (parms["optimization"] == "twosite" && parms["L"] > 2);
+  if (!parms["storagedir"].empty() && has_environment) {
     auto dp = boost::filesystem::unique_path(
         parms["storagedir"].as<std::string>() +
         std::string("/storage_temp_%%%%%%%%%%%%/")
