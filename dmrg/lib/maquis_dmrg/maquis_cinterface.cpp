@@ -477,6 +477,14 @@ extern "C"
 
     }
 
+    void delete_directory(const std::string& dir_path) {
+      boost::filesystem::path dir(dir_path);
+      if (boost::filesystem::exists(dir) && boost::filesystem::is_directory(dir)) {
+        boost::filesystem::remove_all(dir);
+      } else {
+        std::cerr << "Directory does not exist or is not a directory." << std::endl;
+      }
+    }
 
     // Used for CASPT2
     void qcmaquis_interface_get_fock_contracted_4rdm(const double* epsa, int nasht, int* indices, V* values, int size, int compressMPS) {
@@ -567,5 +575,6 @@ extern "C"
         indices[6*i+4] = trans3rdm_meas.first[i][4];
         indices[6*i+5] = trans3rdm_meas.first[i][5];
       }
+      delete_directory(MPStimesMPOstr);
     }
 }
