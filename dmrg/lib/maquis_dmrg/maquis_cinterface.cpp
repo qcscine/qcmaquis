@@ -478,6 +478,7 @@ extern "C"
     }
 
     void delete_directory(const std::string& dir_path) {
+      printf("Deleting directory: %s", dir_path.c_str());
       boost::filesystem::path dir(dir_path);
       if (boost::filesystem::exists(dir) && boost::filesystem::is_directory(dir)) {
         boost::filesystem::remove_all(dir);
