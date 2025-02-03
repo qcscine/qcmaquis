@@ -477,7 +477,7 @@ extern "C"
 
     }
 
-    void delete_directory(const std::string& dir_path) {
+    void delete_directory_if_exists(const std::string& dir_path) {
       printf("Deleting directory: %s", dir_path.c_str());
       boost::filesystem::path dir(dir_path);
       if (boost::filesystem::exists(dir) && boost::filesystem::is_directory(dir)) {
@@ -549,6 +549,7 @@ extern "C"
           bond_dim_factor * parms_caspt2["max_bond_dimension"]);
       auto output_mps = traitClass.applyMPO(mpo);
       std::string MPStimesMPOstr = maquis::interface_detail::pname2workdir(pname) + "MPStimesMPO.h5";
+      delete_directory_if_exists(MPStimesMPOstr);
       save(MPStimesMPOstr, output_mps);
 
       // Measurement fails if props.h5 not present
