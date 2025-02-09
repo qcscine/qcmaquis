@@ -267,6 +267,14 @@ if(LAPACK_64_BIT)
   add_definitions(-DBIND_FORTRAN_INTEGER_8)
 endif()
 
+# GSL
+# find GNU Scientific Library if using SU2 Groups
+if((DMRG_HAS_SU2U1) OR (DMRG_HAS_SU2U1PG))
+  find_package(GSL REQUIRED)
+  list(APPEND DMRG_LIBRARIES ${GSL_LIBRARIES})
+endif()
+
+
 # HDF5
 find_package(HDF5 REQUIRED)
 list(APPEND DMRG_LIBRARIES ${HDF5_LIBRARIES})
