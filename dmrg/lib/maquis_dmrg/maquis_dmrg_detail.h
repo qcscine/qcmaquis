@@ -65,7 +65,7 @@ namespace maquis {
 
         // Extacts state number from chkpfile string
         // Expects {system}.{state_num}.h5
-        int get_state_number(const std::string& chkpfile) {
+        inline int get_state_number(const std::string& chkpfile) {
             // Find positions of the last two periods
           size_t lastDot = chkpfile.find_last_of('.'); // Last '.'
           size_t secondLastDot = chkpfile.find_last_of('.', lastDot - 1); // Second last '.'
@@ -82,6 +82,7 @@ namespace maquis {
         }
         return state_num;
         }
+    }
 
     // Set parameters required for relativistic calculation
     void prepare_relativistic(BaseParameters& parms, bool magnetic = false);
