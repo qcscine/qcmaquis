@@ -74,8 +74,9 @@ namespace maquis {
 
         if (secondLastDot != std::string::npos && lastDot != std::string::npos) {
             std::string numberStr = chkpfile.substr(secondLastDot + 1, lastDot - secondLastDot - 1); // Extract substring
-            int stateNumber = std::stoi(numberStr); // Convert to integer
-            std::cout << "State number: " << stateNumber << std::endl;
+            state_num = std::stoi(numberStr); // Convert to integer
+            std::cout << "State number: " << state_num << std::endl;
+
             
         } else {
             std::cout << "State number could not be extracted, using 0" << std::endl;
