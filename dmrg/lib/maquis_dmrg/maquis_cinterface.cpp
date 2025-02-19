@@ -549,7 +549,7 @@ extern "C"
           optimized_mps_2u1, model, lattice, model.total_quantum_numbers(parms_caspt2),
           bond_dim_factor * parms_caspt2["max_bond_dimension"]);
       auto output_mps = traitClass.applyMPO(mpo);
-      std::string MPStimesMPOstr = maquis::interface_detail::pname2workdir(pname) + "MPStimesMPO.h5";
+      std::string MPStimesMPOstr = maquis::interface_detail::pname2workdir(pname) + "MPStimesMPO." + std::to_string(state_num) + ".h5";
       delete_directory_if_exists(MPStimesMPOstr);
       save(MPStimesMPOstr, output_mps);
 
