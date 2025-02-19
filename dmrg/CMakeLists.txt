@@ -261,7 +261,7 @@ find_package(MAQUISLapack)
 message(STATUS "Lapack include:  ${MAQUISLapack_INCLUDE_DIRS}")
 message(STATUS "Lapack lib dirs: ${MAQUISLapack_LIB_DIRS}")
 message(STATUS "Lapack libs:     ${MAQUISLapack_LIBRARIES}")
-list(APPEND DMRG_LIBRARIES ${MAQUISLapack_LIBRARIES})
+list(PREPEND DMRG_LIBRARIES ${MAQUISLapack_LIBRARIES})
 # ILP64 definition
 if(LAPACK_64_BIT)
   add_definitions(-DBIND_FORTRAN_INTEGER_8)
