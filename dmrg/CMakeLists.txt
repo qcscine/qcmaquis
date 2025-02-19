@@ -255,8 +255,6 @@ if((DMRG_HAS_SU2U1) OR (DMRG_HAS_SU2U1PG))
   find_package(GSL REQUIRED)
   list(APPEND DMRG_LIBRARIES ${GSL_LIBRARIES})
 endif()
-message(STATUS "1) DMRG_LIBRARIES: ${DMRG_LIBRARIES}")
-
 
 # BLAS/LAPACK selector
 find_package(MAQUISLapack)
@@ -268,8 +266,6 @@ list(PREPEND DMRG_LIBRARIES ${MAQUISLapack_LIBRARIES})
 if(LAPACK_64_BIT)
   add_definitions(-DBIND_FORTRAN_INTEGER_8)
 endif()
-message(STATUS "2) DMRG_LIBRARIES: ${DMRG_LIBRARIES}")
-
 
 
 # HDF5
