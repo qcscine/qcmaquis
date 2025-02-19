@@ -62,7 +62,26 @@ namespace maquis {
           // If no '/' is found, return the original string (or handle accordingly)
           return pname;
         }
-    }
+
+        // Extacts state number from chkpfile string
+        // Expects {system}.{state_num}.h5
+        int get_state_number(const std::string& chkpfile) {
+            // Find positions of the last two periods
+          size_t lastDot = chkpfile.find_last_of('.'); // Last '.'
+          size_t secondLastDot = chkpfile.find_last_of('.', lastDot - 1); // Second last '.'
+          
+          int state_num = 0;
+
+        if (secondLastDot != std::string::npos && lastDot != std::string::npos) {
+            std::string numberStr = chkpfile.substr(secondLastDot + 1, lastDot - secondLastDot - 1); // Extract substring
+            int stateNumber = std::stoi(numberStr); // Convert to integer
+            std::cout << "State number: " << stateNumber << std::endl;
+            
+        } else {
+            std::cout << "State number could not be extracted, using 0" << std::endl;
+        }
+        return state_num;
+        }
 
     // Set parameters required for relativistic calculation
     void prepare_relativistic(BaseParameters& parms, bool magnetic = false);

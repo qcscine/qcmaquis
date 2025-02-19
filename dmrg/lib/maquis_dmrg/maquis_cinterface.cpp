@@ -512,9 +512,10 @@ extern "C"
       std::string twou1_chkp_name;
       int Nup;
       int Ndown;
-      std::tie(twou1_chkp_name, Nup, Ndown) = maquis::interface_detail::twou1_name_Nup_Ndown(pname, 0, parms_copy["nelec"], parms_copy["spin"]);
+      int state_num = maquis::interface_detail::get_state_number(parms_copy["chkpfile"]);
+      std::tie(twou1_chkp_name, Nup, Ndown) = maquis::interface_detail::twou1_name_Nup_Ndown(pname, state_num, parms_copy["nelec"], parms_copy["spin"]);
       printf("twou1_chkp_name = %s\n", twou1_chkp_name.c_str());
-      maquis::transform(pname, 0);
+      maquis::transform(pname, state_num);
 
       MPS<matrix, TwoU1PG> optimized_mps_2u1;
       load(twou1_chkp_name, optimized_mps_2u1);
