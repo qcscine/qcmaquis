@@ -497,7 +497,7 @@ extern "C"
       parms_copy.erase("MEASURE[1spdm]");
       parms_copy.erase("MEASURE[ChemEntropy]");
 
-      // printf("Loading MPS in SU2 from %s\n", parms_copy["chkpfile"].c_str());
+      printf("Loading MPS in SU2 from %s\n", parms_copy["chkpfile"].c_str());
       MPS<matrix, SU2U1PG> optimized_mps_su2;
       load(parms_copy["chkpfile"], optimized_mps_su2);
       if (compressMPS > 0) {
@@ -508,12 +508,12 @@ extern "C"
       save(parms_copy["chkpfile"], optimized_mps_su2);
 
       // Transform SU2 to 2U1 since MPOTimesMPS not implemented for SU2
-      // printf("Transforming MPS\n");
+      printf("Transforming MPS\n");
       std::string twou1_chkp_name;
       int Nup;
       int Ndown;
       std::tie(twou1_chkp_name, Nup, Ndown) = maquis::interface_detail::twou1_name_Nup_Ndown(pname, 0, parms_copy["nelec"], parms_copy["spin"]);
-      // printf("twou1_chkp_name = %s\n", twou1_chkp_name.c_str());
+      printf("twou1_chkp_name = %s\n", twou1_chkp_name.c_str());
       maquis::transform(pname, 0);
 
       MPS<matrix, TwoU1PG> optimized_mps_2u1;
@@ -558,7 +558,7 @@ extern "C"
       ar_out["/parameters"] << parms_caspt2;
 
       // === Measure trans3RDM ===
-      // printf("Measuring 3RDM in file %s between\n  ket=%s\n  bra=%s\n", (pname2workdir(pname) + "results.h5").c_str(), twou1_chkp_name.c_str(), MPStimesMPOstr.c_str());
+      printf("Measuring 3RDM in file %s between\n  ket=%s\n  bra=%s\n", (maquis::interface_detail::pname2workdir(pname) + "results.h5").c_str(), twou1_chkp_name.c_str(), MPStimesMPOstr.c_str());
       parms_caspt2.set("MEASURE[trans3rdm]", twou1_chkp_name);
       parms_caspt2.set("chkpfile", MPStimesMPOstr);
       parms_caspt2.set("resultfile",maquis::interface_detail::pname2workdir(pname) + "results.h5");
