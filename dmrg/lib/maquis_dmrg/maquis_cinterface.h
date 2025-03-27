@@ -55,6 +55,9 @@ extern "C"
     // Set checkpoint names correctly for excited states
     void qcmaquis_interface_set_state(int state);
 
+    // Performs measurements
+    void qcmaquis_interface_measure();
+
     // Sets the number of sweeps
     void qcmaquis_interface_set_nsweeps(int nsweeps);
 

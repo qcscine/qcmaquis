@@ -215,6 +215,10 @@ extern "C"
         qcmaquis_interface_reset();
     }
 
+    void qcmaquis_interface_measure() {
+      interface_ptr->measure();
+    }
+
     // Generic function to request either 1-RDM or spin-DM
     // to avoid copy-paste between get_1rdm and get_spdm
     // meas == interface_ptr->onerdm(): 1-RDM

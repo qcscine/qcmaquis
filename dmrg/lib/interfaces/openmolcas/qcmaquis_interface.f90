@@ -68,6 +68,9 @@ module qcmaquis_interface
       integer(c_int), value :: state
     end subroutine
 
+    subroutine qcmaquis_interface_measure() bind(C)
+    end subroutine
+
     subroutine qcmaquis_interface_set_nsweeps(nsweeps) bind(C)
       import c_int
       integer(c_int), value :: nsweeps
