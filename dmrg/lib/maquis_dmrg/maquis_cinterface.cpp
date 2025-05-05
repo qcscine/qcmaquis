@@ -76,7 +76,7 @@ extern "C"
         {
             std::string site_types_str;
             for (int i = 0; i < L; i++)
-                site_types_str += "0" + (i < L - 1) ? "," : "" ;
+                site_types_str += std::string("0") + ((i < L - 1) ? "," : "");
             parms.set("site_types", site_types_str);
         }
 
@@ -307,6 +307,59 @@ extern "C"
             indices[8*i+5] = meas.first[i][5];
             indices[8*i+6] = meas.first[i][6];
             indices[8*i+7] = meas.first[i][7];
+
+        }
+    }
+
+    // hooray for copy-paste
+    void qcmaquis_interface_get_trans_1rdm(int* indices, V* values, int size)
+    {
+        const typename maquis::meas_with_results_type<V>& meas = interface_ptr->getMeasurement("transition_oneptdm");
+
+        assert(size >= meas.first.size());
+        assert(size >= meas.second.size());
+        for (int i = 0; i < meas.first.size(); i++)
+        {
+            values[i] = meas.second[i];
+            indices[2*i] = meas.first[i][0];
+            indices[2*i+1] = meas.first[i][1];
+
+        }
+    }
+
+    // hooray for copy-paste
+    void qcmaquis_interface_get_trans_2rdm(int* indices, V* values, int size)
+    {
+        const typename maquis::meas_with_results_type<V>& meas = interface_ptr->getMeasurement("transition_twoptdm");
+
+        assert(size >= meas.first.size());
+        assert(size >= meas.second.size());
+        for (int i = 0; i < meas.first.size(); i++)
+        {
+            values[i] = meas.second[i];
+            indices[4*i] = meas.first[i][0];
+            indices[4*i+1] = meas.first[i][1];
+            indices[4*i+2] = meas.first[i][2];
+            indices[4*i+3] = meas.first[i][3];
+
+        }
+    }
+
+    // hooray for copy-paste
+    void qcmaquis_interface_get_trans_3rdm(int* indices, V* values, int size)
+    {
+        const typename maquis::meas_with_results_type<V>& meas = interface_ptr->getMeasurement("transition_threeptdm");
+        assert(size >= meas.first.size());
+        assert(size >= meas.second.size());
+        for (int i = 0; i < meas.first.size(); i++)
+        {
+            values[i] = meas.second[i];
+            indices[6*i] = meas.first[i][0];
+            indices[6*i+1] = meas.first[i][1];
+            indices[6*i+2] = meas.first[i][2];
+            indices[6*i+3] = meas.first[i][3];
+            indices[6*i+4] = meas.first[i][4];
+            indices[6*i+5] = meas.first[i][5];
 
         }
     }

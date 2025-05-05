@@ -127,6 +127,30 @@ module qcmaquis_interface
       integer(c_int), value :: size
     end subroutine
 
+    subroutine qcmaquis_interface_get_trans_1rdm_C(indices, values, size) &
+      bind(C, name='qcmaquis_interface_get_trans_1rdm')
+      import c_int, c_double
+      integer(c_int), dimension(*) :: indices
+      real(c_double), dimension(*) :: values
+      integer(c_int), value :: size
+    end subroutine
+ 
+    subroutine qcmaquis_interface_get_trans_2rdm_C(indices, values, size) &
+      bind(C,  name='qcmaquis_interface_get_trans_2rdm')
+      import c_int, c_double
+      integer(c_int), dimension(*) :: indices
+      real(c_double), dimension(*) :: values
+      integer(c_int), value :: size
+    end subroutine
+ 
+    subroutine qcmaquis_interface_get_trans_3rdm_C(indices, values, size) &
+      bind(C,  name='qcmaquis_interface_get_trans_3rdm')
+      import c_int, c_double
+      integer(c_int), dimension(*) :: indices
+      real(c_double), dimension(*) :: values
+      integer(c_int), value :: size
+    end subroutine
+
     subroutine qcmaquis_interface_get_fock_contracted_4rdm_C(epsa, nasht, indices, values, size, compressMPS) &
       bind(C, name='qcmaquis_interface_get_fock_contracted_4rdm')
       import c_int, c_double
@@ -1186,6 +1210,167 @@ module qcmaquis_interface
     if (allocated(indices)) deallocate(indices)
   end subroutine qcmaquis_interface_get_fock_contracted_4rdm_full
 
+
+  ! Get trans 1-RDM and save it into a 2D array (Used by MS-CASPT2)
+  ! Copy-paste from 1_rdm full
+  subroutine qcmaquis_interface_get_trans_1rdm_full(d1)
+    real*8, intent(inout) :: d1(:,:)
+    integer(c_int) :: sz
+    integer(c_int), allocatable :: indices(:)
+    real*8, allocatable :: values(:)
+    integer :: v,i ! counters for values and indices
+    integer :: j, ij ! other counters
+    integer :: nact
+
+    nact = qcmaquis_param%L
+
+    sz = nact*(nact+1)/2 ! TODO: This is not correct for trans-1RDM
+    d1 = 0.0d0
+    allocate(values(sz))
+    values = 0.0d0
+    allocate(indices(2*sz))
+
+    ! Workaround for symmetry support
+    ! In case of symmetry, QCMaquis actually returns us less values
+    ! So instead of allocating the arrays with the correct size
+    ! (which should be the right solution)
+    ! we initialise the indices with -1 and skip them later
+    indices = -1
+
+    ! obtain the rdms from qcmaquis
+    call qcmaquis_interface_get_trans_1rdm_C(indices, values, sz)
+
+    ! copy the values into the matrix
+    do v=0,sz-1
+      i = 2*v
+      ! TODO: make sure we don't get out of bounds here, i.e. add some
+      ! checks for size(d1) eventually
+      if ((indices(i+1).ge.0).and.(indices(i+2).ge.0)) then
+        ! fill d1 symmetrically
+        d1(int(indices(i+1),8)+1, int(indices(i+2),8)+1) = values(v+1)
+        ! d1(int(indices(i+2),8)+1, int(indices(i+1),8)+1) = values(v+1)
+      end if
+    end do 
+
+    if (allocated(values)) deallocate(values)
+    if (allocated(indices)) deallocate(indices)
+  end subroutine qcmaquis_interface_get_trans_1rdm_full
+
+  ! Get trans 2-RDM and save it into an 4-dimensional array. (Used by MS-CASPT2)
+  subroutine qcmaquis_interface_get_trans_2rdm_full(d2)
+   real*8, intent(inout) :: d2(:,:,:,:)
+   integer(c_int) :: sz ! size
+
+   ! indices and values that are obtained from QCMaquis interface
+   integer(c_int), allocatable :: indices(:)
+   real*8, allocatable :: values(:)
+   integer :: nact
+   integer :: vv,ii ! counters for values and indices
+   integer :: i,j,k,l
+   nact = qcmaquis_param%L
+   ! calculate the size of 2-RDM in QCMaquis
+   ! TODO: this should be of the value n2*(n2+1)/2 with n2=nact*(nact+1)/2
+   ! TODO: This is not correct for TRANS-2RDM
+
+
+    sz=0
+    do i=1,nact
+      do j=1,nact
+        do k=min(i,j),nact
+          do l=k,nact
+            sz=sz+1
+          end do
+        end do
+      end do
+    end do
+
+    allocate(values(sz))
+    values(:) = 0.0d0
+    allocate(indices(4*sz))
+    ! initialise indices to -1, see in 1RDM code why
+    indices(:) = -1
+    ! obtain the rdms from qcmaquis
+    call qcmaquis_interface_get_trans_2rdm_C(indices, values, sz)
+
+    d2(:,:,:,:) = 0.0d0
+    ! copy the values into the matrix
+    do vv=0,sz-1
+      ii = 4*vv
+      ! TODO: make sure we don't get out of bounds here, i.e. add some
+      ! checks for size(d2) eventually
+      ! indices are reversed from i,k,l,j to i,j,k,l
+      i = indices(ii+1)+1
+      k = indices(ii+2)+1
+      l = indices(ii+3)+1
+      j = indices(ii+4)+1
+      if ((i+j+k+l).eq.0) cycle ! skip empty indices
+      d2(i,j,k,l) = values(vv+1)
+      d2(j,i,l,k) = values(vv+1)
+      ! hermitian conjugate
+      ! d2(k,l,i,j) = values(vv+1)
+      ! d2(l,k,j,i) = values(vv+1)
+    end do
+
+    if (allocated(values)) deallocate(values)
+    if (allocated(indices)) deallocate(indices)
+  end subroutine qcmaquis_interface_get_trans_2rdm_full
+
+   ! Get trans 3-RDM and save it into an 6-dimensional array. (Used by MS-CASPT2)
+   subroutine qcmaquis_interface_get_trans_3rdm_full(d3)
+     real*8, intent(inout) :: d3(:,:,:,:,:,:)
+     integer(c_int) :: sz ! size
+
+     ! indices and values that are obtained from QCMaquis interface
+     integer(c_int), allocatable :: indices(:)
+     real*8, allocatable :: values(:)
+     integer :: nact
+     integer :: vv,ii ! counters for values and indices
+     integer :: i,j,k,l,m,n
+
+     nact = qcmaquis_param%L
+     sz = qcmaquis_interface_get_3rdm_elements(.true.)
+
+     allocate(values(sz))
+     values(:) = 0.0d0
+     allocate(indices(6*sz))
+     ! initialise indices to -1, see in 1RDM code why
+     indices(:) = -1
+     ! obtain the rdms from qcmaquis
+     call qcmaquis_interface_get_trans_3rdm_C(indices, values, sz)
+
+     d3(:,:,:,:,:,:) = 0.0d0
+     ! copy the values into the matrix
+     ! the indices are i,k,m,j,l,n
+     do vv=0,sz-1
+       ii = 6*vv
+
+       i = indices(ii+1)+1
+       j = indices(ii+2)+1
+       k = indices(ii+3)+1
+       l = indices(ii+4)+1
+       m = indices(ii+5)+1
+       n = indices(ii+6)+1
+
+       d3(i,j,k,l,m,n) = -1.0d0*values(vv+1)
+       d3(i,k,j,l,n,m) = -1.0d0*values(vv+1)
+       d3(j,i,k,m,l,n) = -1.0d0*values(vv+1)
+       d3(j,k,i,m,n,l) = -1.0d0*values(vv+1)
+       d3(k,i,j,n,l,m) = -1.0d0*values(vv+1)
+       d3(k,j,i,n,m,l) = -1.0d0*values(vv+1)
+
+       ! conjugate transpose
+       ! d3(l,m,n,i,j,k) = -1.0d0*values(vv+1)
+       ! d3(l,n,m,i,k,j) = -1.0d0*values(vv+1)
+       ! d3(m,l,n,j,i,k) = -1.0d0*values(vv+1)
+       ! d3(m,n,l,j,k,i) = -1.0d0*values(vv+1)
+       ! d3(n,l,m,k,i,j) = -1.0d0*values(vv+1)
+       ! d3(n,m,l,k,j,i) = -1.0d0*values(vv+1)
+
+    end do
+
+    if (allocated(values)) deallocate(values)
+    if (allocated(indices)) deallocate(indices)
+  end subroutine qcmaquis_interface_get_trans_3rdm_full
 
   ! Get 4-RDM and save it into an 5-dimensional array. (Used by CASPT2)
   subroutine qcmaquis_interface_get_4rdm_full(d4)
