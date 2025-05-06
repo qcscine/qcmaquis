@@ -1302,9 +1302,9 @@ module qcmaquis_interface
       j = indices(ii+4)+1
       if ((i+j+k+l).eq.0) cycle ! skip empty indices
       d2(i,j,k,l) = values(vv+1)
-      d2(j,i,l,k) = values(vv+1)
+      ! d2(j,i,l,k) = values(vv+1)
       ! hermitian conjugate
-      ! d2(k,l,i,j) = values(vv+1)
+      d2(k,l,i,j) = values(vv+1)
       ! d2(l,k,j,i) = values(vv+1)
     end do
 
