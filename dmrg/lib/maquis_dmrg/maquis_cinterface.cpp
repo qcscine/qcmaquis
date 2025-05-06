@@ -312,9 +312,15 @@ extern "C"
     }
 
     // hooray for copy-paste
-    void qcmaquis_interface_get_trans_1rdm(int* indices, V* values, int size)
+    void qcmaquis_interface_get_trans_1rdm(int ket, int bra, int* indices, V* values, int size)
     {
+        std::string bra_chkp = maquis::interface_detail::su2u1_name(pname, bra);
+        BaseParameters meas_parms = parms.measurements();
+        parms.erase_measurements();
+        parms.set("MEASURE[trans1rdm]", bra_chkp);
+        qcmaquis_interface_set_state(ket);
         const typename maquis::meas_with_results_type<V>& meas = interface_ptr->getMeasurement("transition_oneptdm");
+        parms << meas_parms;
 
         assert(size >= meas.first.size());
         assert(size >= meas.second.size());
@@ -328,9 +334,15 @@ extern "C"
     }
 
     // hooray for copy-paste
-    void qcmaquis_interface_get_trans_2rdm(int* indices, V* values, int size)
+    void qcmaquis_interface_get_trans_2rdm(int ket, int bra, int* indices, V* values, int size)
     {
+        std::string bra_chkp = maquis::interface_detail::su2u1_name(pname, bra);
+        BaseParameters meas_parms = parms.measurements();
+        parms.erase_measurements();
+        parms.set("MEASURE[trans2rdm]", bra_chkp);
+        qcmaquis_interface_set_state(ket);
         const typename maquis::meas_with_results_type<V>& meas = interface_ptr->getMeasurement("transition_twoptdm");
+        parms << meas_parms;
 
         assert(size >= meas.first.size());
         assert(size >= meas.second.size());
@@ -346,9 +358,16 @@ extern "C"
     }
 
     // hooray for copy-paste
-    void qcmaquis_interface_get_trans_3rdm(int* indices, V* values, int size)
+    void qcmaquis_interface_get_trans_3rdm(int ket, int bra, int* indices, V* values, int size)
     {
+        std::string bra_chkp = maquis::interface_detail::su2u1_name(pname, bra);
+        BaseParameters meas_parms = parms.measurements();
+        parms.erase_measurements();
+        parms.set("MEASURE[trans3rdm]", bra_chkp);
+        qcmaquis_interface_set_state(ket);
         const typename maquis::meas_with_results_type<V>& meas = interface_ptr->getMeasurement("transition_threeptdm");
+        parms << meas_parms;
+
         assert(size >= meas.first.size());
         assert(size >= meas.second.size());
         for (int i = 0; i < meas.first.size(); i++)
