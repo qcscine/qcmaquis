@@ -335,28 +335,118 @@ extern "C"
           double val = meas1TRDM.second[i];
           oneTRDM[oneIdx(row, col)] = val;
         }
-        FILE *file = fopen(("trans1rdm_" + std::to_string(bra) + "_" + std::to_string(ket)).c_str(), "wb" );
+        FILE *file = fopen(("trans1rdm_" + std::to_string(bra) + "_" + std::to_string(ket)).c_str(), "wb");
         if (file == NULL) {
           std::cerr << "Error opening trans1rdm_" << bra << "_" << ket << '\n';
           exit(1);
         }
         fwrite(oneTRDM.data(), sizeof(V), nact*nact, file);
+        fclose(file);
 
         // 2-RDM
-        // const typename maquis::meas_with_results_type<V>& meas2TRDM = interface_ptr->getMeasurement("transition_oneptdm");
-        // std::vector<V> twoRDM(nact*nact*nact*nact);
-        // auto twoIdx = [nact](int t, int u, int v, int x) { return t + u * nact + v * nact * nact + x * nact * nact * nact; };
-        // for (int i = 0; i < meas2TRDM.first.size(); ++i) {
-        //   int t = meas2TRDM.first[i][0];
-        //   int u = meas2TRDM.first[i][1];
-        //   int v = meas2TRDM.first[i][2];
-        //   int x = meas2TRDM.first[i][3];
-        //   double val = meas2TRDM.second[i];
-        //   twoRDM[twoIdx(t, u, v, x)] = val;
-        // }
-        // FILE *file = fopen(("trans1rdm_" + std::to_string(bra) + "_" + std::to_string(ket)).c_str(), "wb" );
-        // fwrite(oneTRDM.data(), sizeof(V), nact*nact, file);
+        const typename maquis::meas_with_results_type<V>& meas2TRDM = interface_ptr->getMeasurement("transition_twoptdm");
+        std::vector<V> twoTRDM(nact*nact*nact*nact);
+        auto twoIdx = [nact](int t, int u, int v, int x) { return t + u * nact + v * nact * nact + x * nact * nact * nact; };
+        for (int i = 0; i < meas2TRDM.first.size(); ++i) {
+          int t = meas2TRDM.first[i][0];
+          int u = meas2TRDM.first[i][1];
+          int v = meas2TRDM.first[i][2];
+          int x = meas2TRDM.first[i][3];
+          double val = meas2TRDM.second[i];
+          twoTRDM[twoIdx(t, u, v, x)] = val;
+          twoTRDM[twoIdx(u, t, x, v)] = val;
+        }
+        file = fopen(("trans2rdm_" + std::to_string(bra) + "_" + std::to_string(ket)).c_str(), "wb" );
+        fwrite(twoTRDM.data(), sizeof(V), nact*nact*nact*nact, file);
+        fclose(file);
 
+        // 3-RDM
+        const typename maquis::meas_with_results_type<V>& meas3TRDM = interface_ptr->getMeasurement("transition_threeptdm");
+        std::vector<V> threeTRDM(nact*nact*nact*nact*nact*nact);
+        auto threeIdx = [nact](int t, int u, int v, int x, int y, int z) {
+          return t + u * nact + v * nact * nact + x * nact * nact * nact +
+                 y * nact * nact * nact * nact +
+                 z * nact * nact * nact * nact * nact;
+        };
+        for (int i = 0; i < meas3TRDM.first.size(); ++i) {
+          // Note indices! three RDM is stored p+1 q+2 r+3 s1 t2 u3
+          int t = meas3TRDM.first[i][0];
+          int u = meas3TRDM.first[i][1];
+          int v = meas3TRDM.first[i][2];
+          int x = meas3TRDM.first[i][5];
+          int y = meas3TRDM.first[i][4];
+          int z = meas3TRDM.first[i][3];
+          double val = meas3TRDM.second[i];
+          threeTRDM[threeIdx(t, u, v, x, y, z)] = val;
+          threeTRDM[threeIdx(t, v, u, y, x, z)] = val;
+          threeTRDM[threeIdx(u, t, v, z, x, y)] = val;
+          threeTRDM[threeIdx(v, t, u, y, x, z)] = val;
+          threeTRDM[threeIdx(u, v, t, x, z, y)] = val;
+          threeTRDM[threeIdx(v, u, t, x, y, z)] = val;
+        }
+        file = fopen(("trans3rdm_" + std::to_string(bra) + "_" + std::to_string(ket)).c_str(), "wb" );
+        fwrite(threeTRDM.data(), sizeof(V), nact*nact*nact*nact*nact*nact, file);
+        fclose(file);
+    }
+
+    /**
+     * @brief Rotates the (trans)RDMs to a new basis by the rotation matrix rotMat
+     * computes transition rdm if ket == bra
+     * if rdmRank = 0, transforms 1-, 2-, and 3-RDM otherwise only a subset
+     *
+     * @param ket ket index
+     * @param bra bra index
+     * @param rdmRank rank of rdm to rotate
+     * @param rotMat rotation matrix
+     */
+    void qcmaquis_interface_rotate_rdms(const int ket, const int bra, const int rdmRank, const V* rotMat) {
+      const int nact = parms.get<int>("L");
+
+      bool isTransRdm = bra != ket;
+      std::string fnamePrefix = isTransRdm ? "trans" : "";
+      std::string fnameSuffix = isTransRdm ? "_" + std::to_string(bra) + "_" + std::to_string(ket) : "";
+
+      if (rdmRank == 0) {
+        // 1-RDM
+        std::vector<V> oneRDM(nact * nact);
+        FILE *file = fopen((fnamePrefix + std::string("1rdm") + fnameSuffix).c_str(), "rb");
+        fread(oneRDM.data(), sizeof(V), nact * nact, file);
+        fclose(file);
+
+
+        // 2-RDM
+        std::vector<V> twoRDM(nact * nact * nact * nact);
+        file = fopen((fnamePrefix + std::string("2rdm") + fnameSuffix).c_str(), "rb");
+        fread(twoRDM.data(), sizeof(V), nact * nact * nact * nact, file);
+        fclose(file);
+
+        // 3-RDM
+        std::vector<V> threeRDM(nact * nact * nact * nact * nact * nact);
+        file = fopen((fnamePrefix + std::string("3rdm") + fnameSuffix).c_str(), "rb");
+        fread(threeRDM.data(), sizeof(V), nact * nact * nact * nact * nact * nact, file);
+        fclose(file);
+      } else if (rdmRank == 1) {
+        // 1-RDM
+        std::vector<V> oneRDM(nact * nact);
+        FILE *file = fopen((fnamePrefix + std::string("1rdm") + fnameSuffix).c_str(), "rb");
+        fread(oneRDM.data(), sizeof(V), nact * nact, file);
+        fclose(file);
+      } else if (rdmRank == 2) {
+        // 2-RDM
+        std::vector<V> twoRDM(nact * nact * nact * nact);
+        FILE *file = fopen((fnamePrefix + std::string("2rdm") + fnameSuffix).c_str(), "rb");
+        fread(twoRDM.data(), sizeof(V), nact * nact * nact * nact, file);
+        fclose(file);
+      } else if (rdmRank == 3) {
+        // 3-RDM
+        std::vector<V> threeRDM(nact * nact * nact * nact * nact * nact);
+        FILE *file = fopen((fnamePrefix + std::string("3rdm") + fnameSuffix).c_str(), "rb");
+        fread(threeRDM.data(), sizeof(V), nact * nact * nact * nact * nact * nact, file);
+        fclose(file);
+      } else {
+        std::cerr << "Only up to 3-RDM can be rotated. (Provided RDM rank"  << rdmRank << ")\n";
+        exit(1);
+      }
     }
 
     // hooray for copy-paste
