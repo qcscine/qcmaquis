@@ -232,9 +232,6 @@ extern "C"
 	// When we have point group symmetry, OpenMOLCAS will allocate an array larger than our number of measurements
 	// So as long as our measurements will fit into the allocated array, we're good
 	// I.e. the sizes of an array do not have to match exactly
-        printf("size = %d\n", size);
-        printf("meas.first.size() = %zu\n", meas.first.size());
-        printf("meas.second.size() = %zu\n", meas.second.size());
         assert(size >= meas.first.size());
         assert(size >= meas.second.size());
         for (int i = 0; i < meas.first.size(); i++)
