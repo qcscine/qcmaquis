@@ -311,6 +311,94 @@ extern "C"
 
         }
     }
+    void qcmaquis_interface_compute_and_store_123rdm_full(const int ket) {
+        BaseParameters meas_parms = parms.measurements();
+        parms.erase_measurements();
+        parms.set("MEASURE[1rdm]", 1);
+        parms.set("MEASURE[2rdm]", 1);
+        parms.set("MEASURE[3rdm]", 1);
+        const int nact = parms.get<int>("L");
+        qcmaquis_interface_set_state(ket);
+        const typename maquis::meas_with_results_type<V>& meas1RDM = interface_ptr->getMeasurement("oneptdm");
+        std::vector<V> oneRDM(nact*nact);
+        auto oneIdx = [nact](int row, int col) { return row + col * nact; };
+        for (int i = 0; i < meas1RDM.first.size(); ++i) {
+          int row = meas1RDM.first[i][0];
+          int col = meas1RDM.first[i][1];
+          double val = meas1RDM.second[i];
+          oneRDM[oneIdx(row, col)] = val;
+          oneRDM[oneIdx(col, row)] = val;
+        }
+        FILE *file = fopen(("qcm_1rdm_" + std::to_string(ket) + "_" + std::to_string(ket)).c_str(), "wb");
+        if (file == NULL) {
+          std::cerr << "Error opening qcm_1rdm_" << ket << '_' << ket << '\n';
+          exit(1);
+        }
+        fwrite(oneRDM.data(), sizeof(V), nact*nact, file);
+        fclose(file);
+
+        // 2-RDM
+        const typename maquis::meas_with_results_type<V>& meas2RDM = interface_ptr->getMeasurement("twoptdm");
+        std::vector<V> twoRDM(nact*nact*nact*nact);
+        auto twoIdx = [nact](int t, int u, int v, int x) { return t + u * nact + v * nact * nact + x * nact * nact * nact; };
+        for (int i = 0; i < meas2RDM.first.size(); ++i) {
+          int t = meas2RDM.first[i][0];
+          int u = meas2RDM.first[i][1];
+          int v = meas2RDM.first[i][2];
+          int x = meas2RDM.first[i][3];
+          double val = meas2RDM.second[i];
+          twoRDM[twoIdx(t, u, v, x)] = val;
+          twoRDM[twoIdx(u, t, x, v)] = val;
+          twoRDM[twoIdx(x, v, u, t)] = val;
+          twoRDM[twoIdx(v, x, t, u)] = val;
+        }
+        file = fopen(("qcm_2rdm_" +  std::to_string(ket) + "_" + std::to_string(ket)).c_str(), "wb" );
+        if (file == NULL) {
+          std::cerr << "Error opening qcm_2rdm_" << ket << '_' << ket << '\n';
+          exit(1);
+        }
+        fwrite(twoRDM.data(), sizeof(V), nact*nact*nact*nact, file);
+        fclose(file);
+
+        // 3-RDM
+        const typename maquis::meas_with_results_type<V>& meas3RDM = interface_ptr->getMeasurement("threeptdm");
+        std::vector<V> threeRDM(nact*nact*nact*nact*nact*nact);
+        auto threeIdx = [nact](int t, int u, int v, int x, int y, int z) {
+          return t + u * nact + v * nact * nact + x * nact * nact * nact +
+                 y * nact * nact * nact * nact +
+                 z * nact * nact * nact * nact * nact;
+        };
+        for (int i = 0; i < meas3RDM.first.size(); ++i) {
+          // Note indices! three RDM is stored p+1 q+2 r+3 s1 t2 u3
+          int t = meas3RDM.first[i][0];
+          int u = meas3RDM.first[i][1];
+          int v = meas3RDM.first[i][2];
+          int x = meas3RDM.first[i][5];
+          int y = meas3RDM.first[i][4];
+          int z = meas3RDM.first[i][3];
+          double val = meas3RDM.second[i];
+          threeRDM[threeIdx(t, u, v, x, y, z)] = val;
+          threeRDM[threeIdx(t, v, u, y, x, z)] = val;
+          threeRDM[threeIdx(u, t, v, z, x, y)] = val;
+          threeRDM[threeIdx(v, t, u, y, x, z)] = val;
+          threeRDM[threeIdx(u, v, t, x, z, y)] = val;
+          threeRDM[threeIdx(v, u, t, x, y, z)] = val;
+
+          threeRDM[threeIdx(z, y, x, v, u, t)] = val;
+          threeRDM[threeIdx(z, x, y, u, v, t)] = val;
+          threeRDM[threeIdx(x, z, y, u, t, v)] = val;
+          threeRDM[threeIdx(y, z, x, v, t, u)] = val;
+          threeRDM[threeIdx(x, y, z, t, u, v)] = val;
+          threeRDM[threeIdx(y, x, z, t, v, u)] = val;
+        }
+        file = fopen(("qcm_3rdm_" + std::to_string(ket) + "_" + std::to_string(ket)).c_str(), "wb" );
+        fwrite(threeRDM.data(), sizeof(V), nact*nact*nact*nact*nact*nact, file);
+        if (file == NULL) {
+          std::cerr << "Error opening qcm_3rdm_" << ket << '_' << ket << '\n';
+          exit(1);
+        }
+        fclose(file);
+    }
 
     void qcmaquis_interface_compute_and_store_trans_123rdm_full(const int ket, const int bra) {
         std::string bra_chkp = maquis::interface_detail::su2u1_name(pname, bra);
@@ -332,9 +420,9 @@ extern "C"
           double val = meas1TRDM.second[i];
           oneTRDM[oneIdx(row, col)] = val;
         }
-        FILE *file = fopen(("trans1rdm_" + std::to_string(bra) + "_" + std::to_string(ket)).c_str(), "wb");
+        FILE *file = fopen(("qcm_1rdm_" + std::to_string(bra) + "_" + std::to_string(ket)).c_str(), "wb");
         if (file == NULL) {
-          std::cerr << "Error opening trans1rdm_" << bra << "_" << ket << '\n';
+          std::cerr << "Error opening qcm_1rdm_" << bra << "_" << ket << '\n';
           exit(1);
         }
         fwrite(oneTRDM.data(), sizeof(V), nact*nact, file);
@@ -353,7 +441,11 @@ extern "C"
           twoTRDM[twoIdx(t, u, v, x)] = val;
           twoTRDM[twoIdx(u, t, x, v)] = val;
         }
-        file = fopen(("trans2rdm_" + std::to_string(bra) + "_" + std::to_string(ket)).c_str(), "wb" );
+        file = fopen(("qcm_2rdm_" + std::to_string(bra) + "_" + std::to_string(ket)).c_str(), "wb" );
+        if (file == NULL) {
+          std::cerr << "Error opening qcm_2rdm_" << bra << "_" << ket << '\n';
+          exit(1);
+        }
         fwrite(twoTRDM.data(), sizeof(V), nact*nact*nact*nact, file);
         fclose(file);
 
@@ -381,7 +473,11 @@ extern "C"
           threeTRDM[threeIdx(u, v, t, x, z, y)] = val;
           threeTRDM[threeIdx(v, u, t, x, y, z)] = val;
         }
-        file = fopen(("trans3rdm_" + std::to_string(bra) + "_" + std::to_string(ket)).c_str(), "wb" );
+        file = fopen(("3rdm_" + std::to_string(bra) + "_" + std::to_string(ket)).c_str(), "wb" );
+        if (file == NULL) {
+          std::cerr << "Error opening qcm_3rdm_" << bra << "_" << ket << '\n';
+          exit(1);
+        }
         fwrite(threeTRDM.data(), sizeof(V), nact*nact*nact*nact*nact*nact, file);
         fclose(file);
     }
@@ -403,10 +499,8 @@ extern "C"
       const double alpha = 1.0;
       const double beta = 0.0;
 
-      bool isTransRdm = bra != ket;
-      std::string fnamePrefix = isTransRdm ? "trans" : "";
-      std::string fnameSuffix = isTransRdm ? "_" + std::to_string(bra) + "_" + std::to_string(ket) : "";
-
+      std::string fnamePrefix = "qcm_";
+      std::string fnameSuffix =  "_" + std::to_string(bra) + "_" + std::to_string(ket);
 
       if (rdmRank == 0) {
         // 1-RDM
@@ -415,7 +509,7 @@ extern "C"
         fread(oneRDM.data(), sizeof(V), nact * nact, file);
         fclose(file);
 
-        std::cout << "Rotation matrix";
+        std::cout << "Rotation matrix\n";
         for (int col = 0; col < nact; ++col) {
           for (int row = 0; row < nact; ++row) {
             std::cout << rotMat[col * nact + row] << ' ';
@@ -436,7 +530,7 @@ extern "C"
                &lnact, &beta, tmp1RDM.data(), &lnact);
         dgemm_("N", "N", &lnact, &lnact, &lnact, &alpha, tmp1RDM.data(), &lnact, rotMat,
                &lnact, &beta, oneRDM.data(), &lnact);
-        std::cout << "Post rotation";
+        std::cout << "Post rotation\n";
         for (int col = 0; col < nact; ++col) {
           for (int row = 0; row < nact; ++row) {
             std::cout << oneRDM[col * nact + row] << ' ';
@@ -445,10 +539,15 @@ extern "C"
         }
 
         // 2-RDM
-        std::vector<V> twoRDM(nact * nact * nact * nact);
-        file = fopen((fnamePrefix + std::string("2rdm") + fnameSuffix).c_str(), "rb");
-        fread(twoRDM.data(), sizeof(V), nact * nact * nact * nact, file);
-        fclose(file);
+        // std::vector<V> twoRDM(nact * nact * nact * nact);
+        // file = fopen((fnamePrefix + std::string("2rdm") + fnameSuffix).c_str(), "rb");
+        // fread(twoRDM.data(), sizeof(V), nact * nact * nact * nact, file);
+        // fclose(file);
+        // std::vector<V> tmp2RDM(nact * nact * nact * nact);
+        // dgemm_("T", "N", &lnact, &lnact, &(lnact * lnact * lnact) , &alpha, rotMat, &lnact, twoRDM.data(),
+        //        &lnact, &beta, tmp2RDM.data(), &lnact);
+        // dgemm_("N", "N", &(lnact * lnact * lnact), &lnact, &lnact, &alpha, tmp2RDM.data(), &lnact, rotMat,
+        //        &lnact, &beta, twoRDM.data(), &lnact);
 
         // 3-RDM
         std::vector<V> threeRDM(nact * nact * nact * nact * nact * nact);
