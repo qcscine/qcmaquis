@@ -21,6 +21,7 @@
 #include "maquis_dmrg_detail.h"
 #include "dmrg/mp_tensors/compression.h"
 #include <filesystem>
+#include <stdio.h>
 
 std::unique_ptr<maquis::DMRGInterface<double> > interface_ptr;
 DmrgParameters parms;
@@ -314,6 +315,50 @@ extern "C"
         }
     }
 
+    void qcmaquis_interface_compute_and_store_trans_123rdm_full(const int ket, const int bra) {
+        std::string bra_chkp = maquis::interface_detail::su2u1_name(pname, bra);
+        BaseParameters meas_parms = parms.measurements();
+        parms.erase_measurements();
+        parms.set("MEASURE[trans1rdm]", bra_chkp);
+        parms.set("MEASURE[trans2rdm]", bra_chkp);
+        parms.set("MEASURE[trans3rdm]", bra_chkp);
+        const int nact = parms.get<int>("L");
+        qcmaquis_interface_set_state(ket);
+
+        // 1-TRDM
+        const typename maquis::meas_with_results_type<V>& meas1TRDM = interface_ptr->getMeasurement("transition_oneptdm");
+        std::vector<V> oneTRDM(nact*nact);
+        auto oneIdx = [nact](int row, int col) { return row + col * nact; };
+        for (int i = 0; i < meas1TRDM.first.size(); ++i) {
+          int row = meas1TRDM.first[i][0];
+          int col = meas1TRDM.first[i][1];
+          double val = meas1TRDM.second[i];
+          oneTRDM[oneIdx(row, col)] = val;
+        }
+        FILE *file = fopen(("trans1rdm_" + std::to_string(bra) + "_" + std::to_string(ket)).c_str(), "wb" );
+        if (file == NULL) {
+          std::cerr << "Error opening trans1rdm_" << bra << "_" << ket << '\n';
+          exit(1);
+        }
+        fwrite(oneTRDM.data(), sizeof(V), nact*nact, file);
+
+        // 2-RDM
+        // const typename maquis::meas_with_results_type<V>& meas2TRDM = interface_ptr->getMeasurement("transition_oneptdm");
+        // std::vector<V> twoRDM(nact*nact*nact*nact);
+        // auto twoIdx = [nact](int t, int u, int v, int x) { return t + u * nact + v * nact * nact + x * nact * nact * nact; };
+        // for (int i = 0; i < meas2TRDM.first.size(); ++i) {
+        //   int t = meas2TRDM.first[i][0];
+        //   int u = meas2TRDM.first[i][1];
+        //   int v = meas2TRDM.first[i][2];
+        //   int x = meas2TRDM.first[i][3];
+        //   double val = meas2TRDM.second[i];
+        //   twoRDM[twoIdx(t, u, v, x)] = val;
+        // }
+        // FILE *file = fopen(("trans1rdm_" + std::to_string(bra) + "_" + std::to_string(ket)).c_str(), "wb" );
+        // fwrite(oneTRDM.data(), sizeof(V), nact*nact, file);
+
+    }
+
     // hooray for copy-paste
     void qcmaquis_interface_get_trans_1rdm(int ket, int bra, int* indices, V* values, int size)
     {
@@ -323,7 +368,6 @@ extern "C"
         parms.set("MEASURE[trans1rdm]", bra_chkp);
         qcmaquis_interface_set_state(ket);
         const typename maquis::meas_with_results_type<V>& meas = interface_ptr->getMeasurement("transition_oneptdm");
-        parms << meas_parms;
 
         assert(size >= meas.first.size());
         assert(size >= meas.second.size());

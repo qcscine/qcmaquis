@@ -113,6 +113,7 @@ extern "C"
     void qcmaquis_interface_measure_and_save_4rdm(int state);
     void qcmaquis_interface_measure_and_save_trans3rdm(int state, int bra_state);
 
+    void qcmaquis_interface_compute_and_store_trans_123rdm_full(const int ket, const int bra);
     // Measure overlap
     double qcmaquis_interface_get_overlap(const char* filename);
 

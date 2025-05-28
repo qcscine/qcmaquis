@@ -127,6 +127,13 @@ module qcmaquis_interface
       integer(c_int), value :: size
     end subroutine
 
+    subroutine qcmaquis_interface_compute_and_store_trans_123rdm_full_C(ket, bra) &
+      bind(C, name='qcmaquis_interface_compute_and_store_trans_123rdm')
+      import c_int, c_double
+      integer(c_int), value :: ket
+      integer(c_int), value :: bra
+    end subroutine
+
     subroutine qcmaquis_interface_get_trans_1rdm_C(ket, bra, indices, values, size) &
       bind(C, name='qcmaquis_interface_get_trans_1rdm')
       import c_int, c_double
