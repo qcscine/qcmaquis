@@ -401,10 +401,15 @@ extern "C"
      */
     void qcmaquis_interface_rotate_rdms(const int ket, const int bra, const int rdmRank, const V* rotMat) {
       const int nact = parms.get<int>("L");
+      const long lnact = static_cast<long>(nact);
+
+      const double alpha = 1.0;
+      const double beta = 0.0;
 
       bool isTransRdm = bra != ket;
       std::string fnamePrefix = isTransRdm ? "trans" : "";
       std::string fnameSuffix = isTransRdm ? "_" + std::to_string(bra) + "_" + std::to_string(ket) : "";
+
 
       if (rdmRank == 0) {
         // 1-RDM
@@ -413,6 +418,34 @@ extern "C"
         fread(oneRDM.data(), sizeof(V), nact * nact, file);
         fclose(file);
 
+        std::cout << "Rotation matrix";
+        for (int col = 0; col < nact; ++col) {
+          for (int row = 0; row < nact; ++row) {
+            std::cout << rotMat[col * nact + row] << ' ';
+          }
+          std::cout << '\n';
+        }
+
+        std::cout << "Pre rotation\n";
+        for (int col = 0; col < nact; ++col) {
+          for (int row = 0; row < nact; ++row) {
+            std::cout << oneRDM[col * nact + row] << ' ';
+          }
+          std::cout << '\n';
+        }
+
+        std::vector<V> tmp1RDM(nact * nact);
+        dgemm_("T", "N", &lnact, &lnact, &lnact, &alpha, rotMat, &lnact, oneRDM.data(),
+               &lnact, &beta, tmp1RDM.data(), &lnact);
+        dgemm_("N", "N", &lnact, &lnact, &lnact, &alpha, tmp1RDM.data(), &lnact, rotMat,
+               &lnact, &beta, oneRDM.data(), &lnact);
+        std::cout << "Post rotation";
+        for (int col = 0; col < nact; ++col) {
+          for (int row = 0; row < nact; ++row) {
+            std::cout << oneRDM[col * nact + row] << ' ';
+          }
+          std::cout << '\n';
+        }
 
         // 2-RDM
         std::vector<V> twoRDM(nact * nact * nact * nact);
