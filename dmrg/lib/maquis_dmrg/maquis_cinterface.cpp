@@ -495,6 +495,9 @@ extern "C"
     void qcmaquis_interface_rotate_rdms(const int ket, const int bra, const int rdmRank, const V* rotMat) {
       const int nact = parms.get<int>("L");
       const long lnact = static_cast<long>(nact);
+      const long lnact2 = lnact * lnact;
+      const long lnact3 = lnact2 * lnact;
+      const long lnact4 = lnact3 * lnact;
 
       const double alpha = 1.0;
       const double beta = 0.0;
@@ -539,15 +542,27 @@ extern "C"
         }
 
         // 2-RDM
-        // std::vector<V> twoRDM(nact * nact * nact * nact);
-        // file = fopen((fnamePrefix + std::string("2rdm") + fnameSuffix).c_str(), "rb");
-        // fread(twoRDM.data(), sizeof(V), nact * nact * nact * nact, file);
-        // fclose(file);
-        // std::vector<V> tmp2RDM(nact * nact * nact * nact);
-        // dgemm_("T", "N", &lnact, &lnact, &(lnact * lnact * lnact) , &alpha, rotMat, &lnact, twoRDM.data(),
-        //        &lnact, &beta, tmp2RDM.data(), &lnact);
-        // dgemm_("N", "N", &(lnact * lnact * lnact), &lnact, &lnact, &alpha, tmp2RDM.data(), &lnact, rotMat,
-        //        &lnact, &beta, twoRDM.data(), &lnact);
+        std::vector<V> twoRDM(nact * nact * nact * nact);
+        file = fopen((fnamePrefix + std::string("2rdm") + fnameSuffix).c_str(), "rb");
+        fread(twoRDM.data(), sizeof(V), nact * nact * nact * nact, file);
+        fclose(file);
+        std::vector<V> tmp2RDM(nact * nact * nact * nact);
+        dgemm_("T", "N", &lnact, &lnact3, &lnact, &alpha, rotMat, &lnact,
+               twoRDM.data(), &lnact3, &beta, tmp2RDM.data(), &lnact);
+        for (int i = 0; i < lnact; ++i) {
+          int offset = i * lnact3;
+          dgemm_("T", "N", &lnact, &lnact2, &lnact, &alpha, rotMat, &lnact,
+                 &tmp2RDM[offset], &lnact, &beta, &twoRDM[offset], &lnact);
+        }
+        for (int i = 0; i < lnact; ++i) {
+          for (int j = 0; j < lnact; ++j) {
+            int offset = (i * lnact + j) * lnact2;
+            dgemm_("T", "N", &lnact, &lnact, &lnact, &alpha, rotMat, &lnact,
+                   &twoRDM[offset], &lnact, &beta, &tmp2RDM[offset], &lnact);
+          }
+        }
+        dgemm_("N", "N", &lnact3, &lnact, &lnact, &alpha, tmp2RDM.data(), &lnact3,
+               rotMat, &lnact, &beta, twoRDM.data(), &lnact3);
 
         // 3-RDM
         std::vector<V> threeRDM(nact * nact * nact * nact * nact * nact);
