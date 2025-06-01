@@ -358,10 +358,11 @@ extern "C"
         return t + u * nact + v * nact * nact + x * nact * nact * nact;
       };
       for (int i = 0; i < meas2RDM.first.size(); ++i) {
+        // NOTE: The order of the indices
         int t = meas2RDM.first[i][0];
-        int u = meas2RDM.first[i][2]; // NOTE: u and v indices
         int v = meas2RDM.first[i][1];
-        int x = meas2RDM.first[i][3];
+        int x = meas2RDM.first[i][2];
+        int u = meas2RDM.first[i][3];
         if (!colMajor) {
           std::swap(t, x);
           std::swap(u, v);
@@ -403,19 +404,20 @@ extern "C"
           std::swap(v, x);
         }
         double val = meas3RDM.second[i];
-        threeRDM[threeIdx(t, u, v, x, y, z)] = val;
-        threeRDM[threeIdx(t, v, u, y, x, z)] = val;
-        threeRDM[threeIdx(u, t, v, z, x, y)] = val;
-        threeRDM[threeIdx(v, t, u, y, x, z)] = val;
-        threeRDM[threeIdx(u, v, t, x, z, y)] = val;
-        threeRDM[threeIdx(v, u, t, x, y, z)] = val;
+        threeRDM[threeIdx(t, u, v, x, y, z)] = -val;
+        threeRDM[threeIdx(t, v, u, x, z, y)] = -val;
+        threeRDM[threeIdx(u, t, v, y, x, z)] = -val;
+        threeRDM[threeIdx(v, t, u, z, x, y)] = -val;
+        threeRDM[threeIdx(u, v, t, y, z, x)] = -val;
+        threeRDM[threeIdx(v, u, t, z, y, x)] = -val;
 
-        threeRDM[threeIdx(z, y, x, v, u, t)] = val;
-        threeRDM[threeIdx(z, x, y, u, v, t)] = val;
-        threeRDM[threeIdx(x, z, y, u, t, v)] = val;
-        threeRDM[threeIdx(y, z, x, v, t, u)] = val;
-        threeRDM[threeIdx(x, y, z, t, u, v)] = val;
-        threeRDM[threeIdx(y, x, z, t, v, u)] = val;
+        // Hermitian conjugate
+        threeRDM[threeIdx(x, y, z, t, u, v)] = -val;
+        threeRDM[threeIdx(x, z, y, t, v, u)] = -val;
+        threeRDM[threeIdx(y, x, z, u, t, v)] = -val;
+        threeRDM[threeIdx(z, x, y, v, t, u)] = -val;
+        threeRDM[threeIdx(y, z, x, u, v, t)] = -val;
+        threeRDM[threeIdx(z, y, x, v, u, t)] = -val;
       }
       file = fopen(fname3RDM.c_str(), "wb");
       fwrite(threeRDM.data(), sizeof(V),
@@ -474,10 +476,11 @@ extern "C"
         return t + u * nact + v * nact * nact + x * nact * nact * nact;
       };
       for (int i = 0; i < meas2TRDM.first.size(); ++i) {
+        // NOTE: The order of the indices
         int t = meas2TRDM.first[i][0];
-        int u = meas2TRDM.first[i][2]; // NOTE: u and v indices
         int v = meas2TRDM.first[i][1];
-        int x = meas2TRDM.first[i][3];
+        int x = meas2TRDM.first[i][2];
+        int u = meas2TRDM.first[i][3];
         if (!colMajor) {
           std::swap(t, x);
           std::swap(u, v);
@@ -517,12 +520,12 @@ extern "C"
           std::swap(v, x);
         }
         double val = meas3TRDM.second[i];
-        threeTRDM[threeIdx(t, u, v, x, y, z)] = val;
-        threeTRDM[threeIdx(t, v, u, y, x, z)] = val;
-        threeTRDM[threeIdx(u, t, v, z, x, y)] = val;
-        threeTRDM[threeIdx(v, t, u, y, x, z)] = val;
-        threeTRDM[threeIdx(u, v, t, x, z, y)] = val;
-        threeTRDM[threeIdx(v, u, t, x, y, z)] = val;
+        threeTRDM[threeIdx(t, u, v, x, y, z)] = -val;
+        threeTRDM[threeIdx(t, v, u, x, z, y)] = -val;
+        threeTRDM[threeIdx(u, t, v, y, x, z)] = -val;
+        threeTRDM[threeIdx(v, t, u, z, x, y)] = -val;
+        threeTRDM[threeIdx(u, v, t, y, z, x)] = -val;
+        threeTRDM[threeIdx(v, u, t, z, y, x)] = -val;
       }
       file = fopen((fname3RDM).c_str(), "wb");
       if (file == NULL) {
@@ -611,6 +614,7 @@ extern "C"
         std::cout << ss.str();
 
         file = fopen(fname1RDM.c_str(), "wb");
+        std::cout << "Writing rotated 1RDM to: " << fname1RDM << '\n'; 
         fwrite(oneRDM.data(), sizeof(V), lnact2, file);
         fclose(file);
       }
@@ -788,6 +792,7 @@ extern "C"
       const std::string fname = "qcm_" + std::to_string(rdmRank) + 
           "rdm_" + std::to_string(ket) + "_" + std::to_string(ket) + ".bin";
 
+      std::cout << "Reading 1RDM from: " << fname << '\n'; 
       FILE* file = fopen(fname.c_str(), "rb");
       if (file == NULL) {
         std::cerr << "Error opening " << fname<< '\n';
