@@ -151,6 +151,15 @@ module qcmaquis_interface
       real(c_double), dimension(*) :: rotMat
     end subroutine
 
+    subroutine qcmaquis_interface_read_rdm_full(ket, bra, rdmPtr, rdmRank) &
+      bind(C)
+      import c_int, c_double
+      integer(c_int), value :: ket
+      integer(c_int), value :: bra
+      real(c_double), dimension(*) :: rdmPtr
+      integer(c_int), value :: rdmRank
+    end subroutine
+
     subroutine qcmaquis_interface_get_trans_1rdm_C(ket, bra, indices, values, size) &
       bind(C, name='qcmaquis_interface_get_trans_1rdm')
       import c_int, c_double

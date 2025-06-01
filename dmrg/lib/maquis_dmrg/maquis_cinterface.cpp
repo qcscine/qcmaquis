@@ -561,7 +561,8 @@ extern "C"
       const double beta = 0.0;
 
       const std::string fnamePrefix = "qcm_";
-      const std::string fnameSuffix =  "rdm_" + std::to_string(bra) + "_" + std::to_string(ket) + ".bin";
+      const std::string fnameSuffix =
+          "rdm_" + std::to_string(bra) + "_" + std::to_string(ket) + ".bin";
       const std::string fname1RDM = fnamePrefix + "1" + fnameSuffix;
       const std::string fname2RDM = fnamePrefix + "2" + fnameSuffix;
       const std::string fname3RDM = fnamePrefix + "3" + fnameSuffix;
@@ -700,6 +701,26 @@ extern "C"
         fwrite(threeRDM.data(), sizeof(V), lnact6, file);
         fclose(file);
       }
+    }
+
+    void qcmaquis_interface_read_rdm_full(const int ket, const int bra,
+                                          V *rdmPtr, const int rdmRank) {
+      const int nact = parms.get<int>("L");
+      const int nelements = std::pow(nact * nact, rdmRank);
+
+      const double alpha = 1.0;
+      const double beta = 0.0;
+
+      const std::string fname = "qcm_" + std::to_string(rdmRank) + 
+          "rdm_" + std::to_string(ket) + "_" + std::to_string(ket) + ".bin";
+
+      FILE* file = fopen(fname.c_str(), "rb");
+      if (file == NULL) {
+        std::cerr << "Error opening " << fname<< '\n';
+        exit(1);
+      }
+      fread(rdmPtr, sizeof(V), nelements, file);
+      fclose(file);
     }
 
     // hooray for copy-paste
