@@ -117,7 +117,7 @@ struct pttrf_impl< Value, typename boost::enable_if< is_real< Value > >::type > 
     template< typename VectorD, typename VectorE >
     static std::ptrdiff_t invoke( VectorD& d, VectorE& e ) {
         namespace bindings = ::boost::numeric::bindings;
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< VectorD >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 VectorE >::type >::type >::value) );

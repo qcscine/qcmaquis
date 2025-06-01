@@ -146,11 +146,11 @@ struct upmtr_impl< Value, typename boost::enable_if< is_real< Value > >::type > 
         typedef tag::column_major order;
         typedef typename result_of::trans_tag< VectorAP, order >::type trans;
         BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixC >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< VectorAP >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 VectorTAU >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< VectorAP >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 MatrixC >::type >::type >::value) );
@@ -244,11 +244,11 @@ struct upmtr_impl< Value, typename boost::enable_if< is_complex< Value > >::type
         typedef tag::column_major order;
         typedef typename result_of::trans_tag< VectorAP, order >::type trans;
         BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixC >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< VectorAP >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 VectorTAU >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< VectorAP >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 MatrixC >::type >::type >::value) );

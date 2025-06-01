@@ -428,19 +428,19 @@ namespace alps {
     }
 
     template <typename T> typename boost::disable_if<typename boost::mpl::and_<
-          typename boost::is_same<typename alps::detail::remove_cvr<typename boost::remove_all_extents<T>::type>::type, char>::type
+          typename std::is_same<typename alps::detail::remove_cvr<typename boost::remove_all_extents<T>::type>::type, char>::type
         , typename boost::is_array<T>::type
     >::type, hdf5::detail::make_pvp_proxy<T &> >::type make_pvp(std::string const & path, T & value) {
         return hdf5::detail::make_pvp_proxy<T &>(path, value);
     }
     template <typename T> typename boost::disable_if<typename boost::mpl::and_<
-          typename boost::is_same<typename alps::detail::remove_cvr<typename boost::remove_all_extents<T>::type>::type, char>::type
+          typename std::is_same<typename alps::detail::remove_cvr<typename boost::remove_all_extents<T>::type>::type, char>::type
         , typename boost::is_array<T>::type
     >::type, hdf5::detail::make_pvp_proxy<T const &> >::type make_pvp(std::string const & path, T const & value) {
         return hdf5::detail::make_pvp_proxy<T const &>(path, value);
     }
     template <typename T> typename boost::enable_if<typename boost::mpl::and_<
-          typename boost::is_same<typename alps::detail::remove_cvr<typename boost::remove_all_extents<T>::type>::type, char>::type
+          typename std::is_same<typename alps::detail::remove_cvr<typename boost::remove_all_extents<T>::type>::type, char>::type
         , typename boost::is_array<T>::type
     >::type, hdf5::detail::make_pvp_proxy<std::string const> >::type make_pvp(std::string const & path, T const & value) {
         return hdf5::detail::make_pvp_proxy<std::string const>(path, value);

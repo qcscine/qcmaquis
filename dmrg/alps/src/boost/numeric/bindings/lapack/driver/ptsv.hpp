@@ -123,11 +123,11 @@ struct ptsv_impl< Value, typename boost::enable_if< is_real< Value > >::type > {
     static std::ptrdiff_t invoke( VectorD& d, VectorE& e, MatrixB& b ) {
         namespace bindings = ::boost::numeric::bindings;
         BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixB >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< VectorD >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 VectorE >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< VectorD >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 MatrixB >::type >::type >::value) );
@@ -167,7 +167,7 @@ struct ptsv_impl< Value, typename boost::enable_if< is_complex< Value > >::type 
     static std::ptrdiff_t invoke( VectorD& d, VectorE& e, MatrixB& b ) {
         namespace bindings = ::boost::numeric::bindings;
         BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixB >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< VectorE >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 MatrixB >::type >::type >::value) );

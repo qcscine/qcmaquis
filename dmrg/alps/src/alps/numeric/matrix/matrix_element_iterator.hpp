@@ -50,8 +50,8 @@ class matrix_element_iterator : public boost::iterator_facade<
             : m(m), i(row_p), j(col_p)
         {
             // The value_type of the iterator must be the value_type of the matrix or const Matrix::value_type
-            BOOST_STATIC_ASSERT( (boost::is_same<typename Matrix::value_type, T>::value
-                                 || boost::is_same<const typename Matrix::value_type,T>::value) );
+            BOOST_STATIC_ASSERT( (std::is_same<typename Matrix::value_type, T>::value
+                                 || std::is_same<const typename Matrix::value_type,T>::value) );
 #ifndef ALPS_DISABLE_MATRIX_ELEMENT_ITERATOR_WARNING
             std::cerr<<"WARNING: matrix_element_iterators are very slow!"<<std::endl;
             std::cerr<<"You should use strided_iterators (eg. row_iterator) instead, unless you really don't care."<<std::endl;
@@ -63,9 +63,9 @@ class matrix_element_iterator : public boost::iterator_facade<
         matrix_element_iterator(matrix_element_iterator<Matrix2,U> const& r)
             : m(r.m), i(r.i), j(r.j)
         {
-            BOOST_STATIC_ASSERT( (boost::is_same<
-                        typename boost::add_const<Matrix>::type,
-                        typename boost::add_const<Matrix2>::type
+            BOOST_STATIC_ASSERT( (std::is_same<
+                        typename std::add_const<Matrix>::type,
+                        typename std::add_const<Matrix2>::type
                         >::value ));
         }
 
@@ -79,9 +79,9 @@ class matrix_element_iterator : public boost::iterator_facade<
         template <typename Matrix2,typename U>
         bool equal(matrix_element_iterator<Matrix2,U> const& y) const
         {
-            BOOST_STATIC_ASSERT( (boost::is_same<
-                        typename boost::add_const<Matrix>::type,
-                        typename boost::add_const<Matrix2>::type
+            BOOST_STATIC_ASSERT( (std::is_same<
+                        typename std::add_const<Matrix>::type,
+                        typename std::add_const<Matrix2>::type
                         >::value ));
             if( i == y.i && j == y.j )
                 return true;

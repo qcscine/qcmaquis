@@ -124,11 +124,11 @@ struct largv_impl< Value, typename boost::enable_if< is_real< Value > >::type > 
     static std::ptrdiff_t invoke( const fortran_int_t n, VectorX& x,
             VectorY& y, VectorC& c ) {
         namespace bindings = ::boost::numeric::bindings;
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< VectorX >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 VectorY >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< VectorX >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 VectorC >::type >::type >::value) );
@@ -164,7 +164,7 @@ struct largv_impl< Value, typename boost::enable_if< is_complex< Value > >::type
     static std::ptrdiff_t invoke( const fortran_int_t n, VectorX& x,
             VectorY& y, VectorC& c ) {
         namespace bindings = ::boost::numeric::bindings;
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< VectorX >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 VectorY >::type >::type >::value) );

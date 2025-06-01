@@ -153,11 +153,11 @@ struct trevc_impl< Value, typename boost::enable_if< is_real< Value > >::type > 
         BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixT >::value) );
         BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixVL >::value) );
         BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixVR >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< MatrixT >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 MatrixVL >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< MatrixT >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 MatrixVR >::type >::type >::value) );
@@ -256,11 +256,11 @@ struct trevc_impl< Value, typename boost::enable_if< is_complex< Value > >::type
         BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixT >::value) );
         BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixVL >::value) );
         BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixVR >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< MatrixT >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 MatrixVL >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< MatrixT >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 MatrixVR >::type >::type >::value) );

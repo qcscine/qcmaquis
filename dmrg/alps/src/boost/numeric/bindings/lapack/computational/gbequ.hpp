@@ -135,11 +135,11 @@ struct gbequ_impl< Value, typename boost::enable_if< is_real< Value > >::type > 
             real_type& rowcnd, real_type& colcnd, real_type& amax ) {
         namespace bindings = ::boost::numeric::bindings;
         BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixAB >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< MatrixAB >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 VectorR >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< MatrixAB >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 VectorC >::type >::type >::value) );
@@ -182,7 +182,7 @@ struct gbequ_impl< Value, typename boost::enable_if< is_complex< Value > >::type
             real_type& rowcnd, real_type& colcnd, real_type& amax ) {
         namespace bindings = ::boost::numeric::bindings;
         BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixAB >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< VectorR >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 VectorC >::type >::type >::value) );

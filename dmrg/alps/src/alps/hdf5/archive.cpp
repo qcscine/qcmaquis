@@ -1105,7 +1105,7 @@ namespace alps {
                         if (data_id < 0) {                                                                                                                              \
                             detail::property_type prop_id(H5Pcreate(H5P_DATASET_CREATE));                                                                               \
                             detail::check_error(H5Pset_attr_creation_order(prop_id, (H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED)));                                  \
-                            if (boost::is_same< T , std::string>::value)                                                                                                \
+                            if (std::is_same< T , std::string>::value)                                                                                                \
                                 detail::check_error(data_id = H5Dcreate2(                                                                                               \
                                       context_->file_id_                                                                                                                \
                                     , path.c_str()                                                                                                                      \

@@ -75,7 +75,7 @@ namespace alps {
                     if (extent.size() > 1)
                         for(typename boost::array<T, N>::iterator it = value.begin(); it != value.end(); ++it)
                             set_extent(*it, std::vector<std::size_t>(extent.begin() + 1, extent.end()));
-                    else if (extent.size() == 0 && !boost::is_same<typename scalar_type<T>::type, T>::value)
+                    else if (extent.size() == 0 && !std::is_same<typename scalar_type<T>::type, T>::value)
                         throw archive_error("dimensions do not match" + ALPS_STACKTRACE);
                 }
             };

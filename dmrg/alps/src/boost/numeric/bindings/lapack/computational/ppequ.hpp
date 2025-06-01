@@ -131,7 +131,7 @@ struct ppequ_impl< Value, typename boost::enable_if< is_real< Value > >::type > 
             real_type& scond, real_type& amax ) {
         namespace bindings = ::boost::numeric::bindings;
         typedef typename result_of::uplo_tag< MatrixAP >::type uplo;
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< MatrixAP >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 VectorS >::type >::type >::value) );

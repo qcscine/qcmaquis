@@ -40,7 +40,7 @@ template <typename T>
 struct param_type : public boost::mpl::if_<
       typename is_scalar<typename boost::remove_cv<T>::type>::type
     , T
-    , typename boost::add_reference<typename boost::add_const<T>::type>::type
+    , typename boost::add_reference<typename std::add_const<T>::type>::type
 > {};
 
 } // end namespace alps
