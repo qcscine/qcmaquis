@@ -86,7 +86,7 @@ namespace alps {
                         for(typename std::vector<T, A>::iterator it = value.begin(); it != value.end(); ++it)
                             set_extent(*it, std::vector<std::size_t>(extent.begin() + 1, extent.end()));
                     else if (extent.size() == 1 && (
-                           (!boost::is_enum<T>::value && !boost::is_same<typename scalar_type<T>::type, T>::value)
+                           (!boost::is_enum<T>::value && !std::is_same<typename scalar_type<T>::type, T>::value)
                         || (boost::is_enum<T>::value && is_continuous<T>::value && sizeof(T) != sizeof(typename scalar_type<T>::type))
                     ))
                         throw archive_error("dimensions do not match" + ALPS_STACKTRACE);

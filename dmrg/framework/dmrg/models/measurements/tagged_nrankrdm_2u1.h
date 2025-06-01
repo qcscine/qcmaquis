@@ -56,7 +56,7 @@ public:
       {
         // Do symmetry check on the bra checkpoint and eventually transform
         // check point group
-        // or boost::is_same<HasPG<SymmGroup>, std::true_type>::value?
+        // or std::is_same<HasPG<SymmGroup>, std::true_type>::value?
         if (maquis::checks::has_pg(bra_ckp) != symm_traits::HasPG<SymmGroup>::value)
             throw std::runtime_error("Bra checkpoint " + bra_ckp + "has the wrong point group symmetry.");
         // Check if the bra checkpoint has SU2 symmetry, if so, transform it
