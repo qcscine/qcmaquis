@@ -127,17 +127,19 @@ module qcmaquis_interface
       integer(c_int), value :: size
     end subroutine
 
-    subroutine qcmaquis_interface_compute_and_store_123rdm_full(ket) &
+    subroutine qcmaquis_interface_compute_and_store_123rdm_full(ket, colMajor) &
       bind(C)
-      import c_int, c_double
+      import c_int, c_double, c_bool
       integer(c_int), value :: ket
+      logical(c_bool), value :: colMajor
     end subroutine
 
-    subroutine qcmaquis_interface_compute_and_store_trans_123rdm_full(ket, bra) &
+    subroutine qcmaquis_interface_compute_and_store_trans_123rdm_full(ket, bra, colMajor) &
       bind(C)
-      import c_int, c_double
+      import c_int, c_double, c_bool
       integer(c_int), value :: ket
       integer(c_int), value :: bra
+      logical(c_bool), value :: colMajor
     end subroutine
 
     subroutine qcmaquis_interface_rotate_rdms(ket, bra, rdmRank, rotMat) &
