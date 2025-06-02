@@ -805,25 +805,31 @@ extern "C"
       }
     }
 
+    /**
+     * @brief Reads the contents of a file, stored in binary, format to an array
+     *
+     * @param fname the file name
+     * @param tensor pointer to the data
+     * @param n number of elements
+     */
+    void qcmaquis_interface_read_tensor(const std::string& fname, V* tensor, const int n) {
+      FILE* file = fopen(fname.c_str(), "rb");
+      if (file == NULL) {
+        std::cerr << "Error opening " << fname << '\n';
+        exit(1);
+      }
+      fread(tensor, sizeof(V), n, file);
+      fclose(file);
+    }
+
     void qcmaquis_interface_read_rdm_full(const int ket, const int bra,
                                           V *rdmPtr, const int rdmRank) {
       const int nact = parms.get<int>("L");
       const int nelements = std::pow(nact * nact, rdmRank);
-
-      const double alpha = 1.0;
-      const double beta = 0.0;
-
       const std::string fname = "qcm_" + std::to_string(rdmRank) + 
           "rdm_" + std::to_string(ket) + "_" + std::to_string(ket) + ".bin";
-
-      std::cout << "Reading 1RDM from: " << fname << '\n'; 
-      FILE* file = fopen(fname.c_str(), "rb");
-      if (file == NULL) {
-        std::cerr << "Error opening " << fname<< '\n';
-        exit(1);
-      }
-      fread(rdmPtr, sizeof(V), nelements, file);
-      fclose(file);
+      std::cout << "Reading tensor from: " << fname << '\n'; 
+      qcmaquis_interface_read_tensor(fname, rdmPtr, nelements);
     }
 
     // hooray for copy-paste
@@ -1078,10 +1084,7 @@ extern "C"
     }
 
     // Used for CASPT2
-    void qcmaquis_interface_get_fock_contracted_4rdm(const double *epsa,
-                                                     int nasht, int *indices,
-                                                     V *values, int size,
-                                                     int compressMPS) {
+    void qcmaquis_interface_get_fock_contracted_4rdm(const double* epsa, int nasht, int* indices, V* values, int size, int compressMPS) {
       DmrgParameters parms_copy = parms;
       parms_copy.erase("MEASURE[1rdm]");
       parms_copy.erase("MEASURE[2rdm]");
@@ -1090,40 +1093,38 @@ extern "C"
       parms_copy.erase("MEASURE[1spdm]");
       parms_copy.erase("MEASURE[ChemEntropy]");
 
-      // printf("Loading MPS in SU2 from %s\n", parms_copy["chkpfile"].c_str());
+      printf("Loading MPS in SU2 from %s\n", parms_copy["chkpfile"].c_str());
       MPS<matrix, SU2U1PG> optimized_mps_su2;
       load(parms_copy["chkpfile"], optimized_mps_su2);
       if (compressMPS > 0) {
-        std::cout << "Compressing MPS to bond dimension: " << compressMPS
-                  << '\n';
+        std::cout << "Compressing MPS to bond dimension: " << compressMPS << '\n';
         optimized_mps_su2.normalize_left();
-        optimized_mps_su2 =
-            compression::l2r_compress(optimized_mps_su2, compressMPS, 0.0);
+        optimized_mps_su2 = compression::l2r_compress(optimized_mps_su2, compressMPS, 0.0);
       }
       save(parms_copy["chkpfile"], optimized_mps_su2);
 
       // Transform SU2 to 2U1 since MPOTimesMPS not implemented for SU2
-      // printf("Transforming MPS\n");
+      printf("Transforming MPS\n");
       std::string twou1_chkp_name;
       int Nup;
       int Ndown;
-      std::tie(twou1_chkp_name, Nup, Ndown) =
-          maquis::interface_detail::twou1_name_Nup_Ndown(
-              pname, 0, parms_copy["nelec"], parms_copy["spin"]);
-      // printf("twou1_chkp_name = %s\n", twou1_chkp_name.c_str());
-      maquis::transform(pname, 0);
+      int state_num = maquis::interface_detail::get_state_number(parms_copy["chkpfile"]);
+      std::tie(twou1_chkp_name, Nup, Ndown) = maquis::interface_detail::twou1_name_Nup_Ndown(pname, state_num, parms_copy["nelec"], parms_copy["spin"]);
+      printf("twou1_chkp_name = %s\n", twou1_chkp_name.c_str());
+      maquis::transform(pname, state_num);
 
       MPS<matrix, TwoU1PG> optimized_mps_2u1;
       load(twou1_chkp_name, optimized_mps_2u1);
 
+
       parms_copy.set("u1_total_charge1", Nup);
       parms_copy.set("u1_total_charge2", Ndown);
       parms_copy.set("symmetry", "2u1pg");
-
+      
       // Build integral map
       maquis::integral_map<double> int_map;
       for (int i = 0; i < nasht; ++i) {
-        int_map[{i + 1, i + 1, 0, 0}] = epsa[i];
+        int_map[{i+1, i+1, 0, 0}] = epsa[i];
       }
 
       // Compute MPO * |MPS>
@@ -1141,44 +1142,37 @@ extern "C"
       auto mpo = make_mpo(lattice, model);
       int bond_dim_factor = 2;
       auto traitClass = MPOTimesMPSTraitClass<tmatrix<double>, TwoU1PG>(
-          optimized_mps_2u1, model, lattice,
-          model.total_quantum_numbers(parms_caspt2),
+          optimized_mps_2u1, model, lattice, model.total_quantum_numbers(parms_caspt2),
           bond_dim_factor * parms_caspt2["max_bond_dimension"]);
       auto output_mps = traitClass.applyMPO(mpo);
-      std::string MPStimesMPOstr =
-          maquis::interface_detail::pname2workdir(pname) + "MPStimesMPO.h5";
+      std::string MPStimesMPOstr = maquis::interface_detail::pname2workdir(pname) + "MPStimesMPO." + std::to_string(state_num) + ".h5";
       delete_directory_if_exists(MPStimesMPOstr);
       save(MPStimesMPOstr, output_mps);
 
       // Measurement fails if props.h5 not present
-      boost::filesystem::copy(twou1_chkp_name + "/props.h5",
-                              MPStimesMPOstr + "/props.h5");
+      boost::filesystem::copy(twou1_chkp_name + "/props.h5", MPStimesMPOstr + "/props.h5");
       storage::archive ar_out(MPStimesMPOstr + "/props.h5", "w");
       ar_out["/parameters"] << parms_caspt2;
 
       // === Measure trans3RDM ===
-      // printf("Measuring 3RDM in file %s between\n  ket=%s\n  bra=%s\n",
-      // (pname2workdir(pname) + "results.h5").c_str(), twou1_chkp_name.c_str(),
-      // MPStimesMPOstr.c_str());
+      printf("Measuring 3RDM in file %s between\n  ket=%s\n  bra=%s\n", (maquis::interface_detail::pname2workdir(pname) + "results.h5").c_str(), twou1_chkp_name.c_str(), MPStimesMPOstr.c_str());
       parms_caspt2.set("MEASURE[trans3rdm]", twou1_chkp_name);
       parms_caspt2.set("chkpfile", MPStimesMPOstr);
-      parms_caspt2.set("resultfile",
-                       maquis::interface_detail::pname2workdir(pname) +
-                           "results.h5");
+      parms_caspt2.set("resultfile",maquis::interface_detail::pname2workdir(pname) + "results.h5");
       maquis::DMRGInterface<double> interface_measure(parms_caspt2);
       interface_measure.measure();
-      const typename maquis::meas_with_results_type<V> &trans3rdm_meas =
-          interface_measure.getMeasurement("transition_threeptdm");
+      const typename maquis::meas_with_results_type<V>& trans3rdm_meas = interface_measure.getMeasurement("transition_threeptdm");
       assert(size >= trans3rdm_meas.first.size());
       assert(size >= trans3rdm_meas.second.size());
-      for (int i = 0; i < trans3rdm_meas.first.size(); i++) {
+      for (int i = 0; i < trans3rdm_meas.first.size(); i++)
+      {
         values[i] = trans3rdm_meas.second[i];
-        indices[6 * i] = trans3rdm_meas.first[i][0];
-        indices[6 * i + 1] = trans3rdm_meas.first[i][1];
-        indices[6 * i + 2] = trans3rdm_meas.first[i][2];
-        indices[6 * i + 3] = trans3rdm_meas.first[i][3];
-        indices[6 * i + 4] = trans3rdm_meas.first[i][4];
-        indices[6 * i + 5] = trans3rdm_meas.first[i][5];
+        indices[6*i] = trans3rdm_meas.first[i][0];
+        indices[6*i+1] = trans3rdm_meas.first[i][1];
+        indices[6*i+2] = trans3rdm_meas.first[i][2];
+        indices[6*i+3] = trans3rdm_meas.first[i][3];
+        indices[6*i+4] = trans3rdm_meas.first[i][4];
+        indices[6*i+5] = trans3rdm_meas.first[i][5];
       }
     }
 }
