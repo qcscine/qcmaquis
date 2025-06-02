@@ -134,7 +134,7 @@ struct gbtrs_impl {
         namespace bindings = ::boost::numeric::bindings;
         typedef typename result_of::data_order< MatrixB >::type order;
         typedef typename result_of::trans_tag< MatrixAB, order >::type trans;
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< MatrixAB >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 MatrixB >::type >::type >::value) );

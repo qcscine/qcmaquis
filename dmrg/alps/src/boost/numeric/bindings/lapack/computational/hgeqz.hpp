@@ -159,27 +159,27 @@ struct hgeqz_impl< Value, typename boost::enable_if< is_real< Value > >::type > 
         BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixT >::value) );
         BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixQ >::value) );
         BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixZ >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< MatrixH >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 MatrixT >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< MatrixH >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 VectorALPHAR >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< MatrixH >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 VectorALPHAI >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< MatrixH >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 VectorBETA >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< MatrixH >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 MatrixQ >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< MatrixH >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 MatrixZ >::type >::type >::value) );
@@ -307,23 +307,23 @@ struct hgeqz_impl< Value, typename boost::enable_if< is_complex< Value > >::type
         BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixT >::value) );
         BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixQ >::value) );
         BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixZ >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< MatrixH >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 MatrixT >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< MatrixH >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 VectorALPHA >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< MatrixH >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 VectorBETA >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< MatrixH >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 MatrixQ >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< MatrixH >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 MatrixZ >::type >::type >::value) );

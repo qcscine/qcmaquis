@@ -63,8 +63,8 @@ void conj_inplace(Vector& t, tag::vector)
 template <typename T>
 typename boost::enable_if<
       boost::mpl::or_<
-            boost::is_same<typename get_entity<T>::type, tag::vector>
-          , boost::is_same<typename get_entity<T>::type, tag::matrix>
+            std::is_same<typename get_entity<T>::type, tag::vector>
+          , std::is_same<typename get_entity<T>::type, tag::matrix>
        >
     , T
 >::type conj(T const& t)

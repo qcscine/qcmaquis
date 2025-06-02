@@ -167,11 +167,11 @@ struct heevx_impl< Value, typename boost::enable_if< is_real< Value > >::type > 
         typedef typename result_of::uplo_tag< MatrixA >::type uplo;
         BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixA >::value) );
         BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixZ >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< MatrixA >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 VectorW >::type >::type >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< MatrixA >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 MatrixZ >::type >::type >::value) );
@@ -305,7 +305,7 @@ struct heevx_impl< Value, typename boost::enable_if< is_complex< Value > >::type
         typedef typename result_of::uplo_tag< MatrixA >::type uplo;
         BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixA >::value) );
         BOOST_STATIC_ASSERT( (bindings::is_column_major< MatrixZ >::value) );
-        BOOST_STATIC_ASSERT( (boost::is_same< typename remove_const<
+        BOOST_STATIC_ASSERT( (std::is_same< typename remove_const<
                 typename bindings::value_type< MatrixA >::type >::type,
                 typename remove_const< typename bindings::value_type<
                 MatrixZ >::type >::type >::value) );

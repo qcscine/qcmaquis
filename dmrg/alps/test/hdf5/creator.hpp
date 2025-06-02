@@ -129,16 +129,16 @@ template<
 template<
     typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9
 > void initialize(boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> & v) {
-    initialize_tuple_value<0, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T0, boost::tuples::null_type>::type());
-    initialize_tuple_value<1, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T1, boost::tuples::null_type>::type());
-    initialize_tuple_value<2, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T2, boost::tuples::null_type>::type());
-    initialize_tuple_value<3, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T3, boost::tuples::null_type>::type());
-    initialize_tuple_value<4, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T4, boost::tuples::null_type>::type());
-    initialize_tuple_value<5, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T5, boost::tuples::null_type>::type());
-    initialize_tuple_value<6, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T6, boost::tuples::null_type>::type());
-    initialize_tuple_value<7, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T7, boost::tuples::null_type>::type());
-    initialize_tuple_value<8, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T8, boost::tuples::null_type>::type());
-    initialize_tuple_value<9, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T9, boost::tuples::null_type>::type());
+    initialize_tuple_value<0, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename std::is_same<T0, boost::tuples::null_type>::type());
+    initialize_tuple_value<1, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename std::is_same<T1, boost::tuples::null_type>::type());
+    initialize_tuple_value<2, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename std::is_same<T2, boost::tuples::null_type>::type());
+    initialize_tuple_value<3, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename std::is_same<T3, boost::tuples::null_type>::type());
+    initialize_tuple_value<4, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename std::is_same<T4, boost::tuples::null_type>::type());
+    initialize_tuple_value<5, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename std::is_same<T5, boost::tuples::null_type>::type());
+    initialize_tuple_value<6, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename std::is_same<T6, boost::tuples::null_type>::type());
+    initialize_tuple_value<7, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename std::is_same<T7, boost::tuples::null_type>::type());
+    initialize_tuple_value<8, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename std::is_same<T8, boost::tuples::null_type>::type());
+    initialize_tuple_value<9, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename std::is_same<T9, boost::tuples::null_type>::type());
 }
 template<typename T, typename A> void initialize(boost::multi_array<T, 1, A> & v) {
     v.resize(boost::extents[VECTOR_SIZE]);
@@ -250,8 +250,8 @@ template<typename T, typename U> class cast_type : public cast_type_base<T, U> {
         }
         bool operator==(cast_type<T, U> const & v) const {
             return compare(v, typename boost::mpl::and_<
-                  typename boost::mpl::or_<typename boost::is_same<T, double>::type, typename boost::is_same<T, float>::type>::type
-                , typename boost::mpl::or_<typename boost::is_same<U, double>::type, typename boost::is_same<U, float>::type>::type
+                  typename boost::mpl::or_<typename std::is_same<T, double>::type, typename std::is_same<T, float>::type>::type
+                , typename boost::mpl::or_<typename std::is_same<U, double>::type, typename std::is_same<U, float>::type>::type
             >::type());
         }
     private:
