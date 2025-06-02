@@ -142,6 +142,14 @@ module qcmaquis_interface
       logical(c_bool), value :: colMajor
     end subroutine
 
+    subroutine qcmaquis_interface_rotate_rdm_inplace(rdm, rdmRank, rotMat) &
+      bind(C)
+      import c_int, c_double
+      real(c_double), dimension(*) :: rdm
+      integer(c_int), value :: rdmRank
+      real(c_double), dimension(*) :: rotMat
+    end subroutine
+
     subroutine qcmaquis_interface_rotate_rdms(ket, bra, rdmRank, rotMat) &
       bind(C)
       import c_int, c_double
@@ -190,15 +198,13 @@ module qcmaquis_interface
       integer(c_int), value :: size
     end subroutine
 
-    subroutine qcmaquis_interface_get_fock_contracted_4rdm_C(epsa, nasht, indices, values, size, compressMPS) &
+    subroutine qcmaquis_interface_get_fock_contracted_4rdm_C(epsa, nasht, d3, compressMPS) &
       bind(C, name='qcmaquis_interface_get_fock_contracted_4rdm')
       import c_int, c_double
       real(c_double), dimension(*) :: epsa
       integer(c_int), intent(in), value :: nasht
-      integer(c_int), dimension(*) :: indices
-      real(c_double), dimension(*) :: values
-      integer(c_int), value :: size
       integer(c_int), intent(in), value :: compressMPS
+      real(c_double), dimension(*) :: d3
     end subroutine
 
   end interface
@@ -1185,15 +1191,10 @@ module qcmaquis_interface
   ! Get contracted Fock with 4-RDM and save it into an 6-dimensional array. (Used by CASPT2)
   subroutine qcmaquis_interface_get_fock_contracted_4rdm_full(d3, epsa, CompressMPS)
     real*8, intent(inout) :: d3(:,:,:,:,:,:)
-    integer(c_int) :: sz ! size
     real(c_double), dimension(:) :: epsa ! Fock elements
 
     ! indices and values that are obtained from QCMaquis interface
-    integer(c_int), allocatable :: indices(:)
-    real*8, allocatable :: values(:)
     integer :: nact
-    integer :: vv,ii ! counters for values and indices
-    integer :: i,j,k,l,m,n
 
     integer :: compMPS
     integer,optional :: CompressMPS
@@ -1204,49 +1205,41 @@ module qcmaquis_interface
     endif
 
     nact = qcmaquis_param%L
-    sz = qcmaquis_interface_get_3rdm_elements(.true.)
 
-    allocate(values(sz))
-    values(:) = 0.0d0
-    allocate(indices(6*sz))
-    ! initialise indices to -1, see in 1RDM code why
-    indices(:) = -1
     ! obtain the rdms from qcmaquis
-    call qcmaquis_interface_get_fock_contracted_4rdm_C(epsa, int(nact, c_int), indices, values, sz, int(compMPS, c_int))
-
     d3(:,:,:,:,:,:) = 0.0d0
-    ! copy the values into the matrix
-    ! the indices are i,k,m,j,l,n
-    do vv=0,sz-1
-      ii = 6*vv
+    call qcmaquis_interface_get_fock_contracted_4rdm_C(epsa, int(nact, c_int), d3, int(compMPS, c_int))
 
-      i = indices(ii+1)+1
-      j = indices(ii+2)+1
-      k = indices(ii+3)+1
-      l = indices(ii+4)+1
-      m = indices(ii+5)+1
-      n = indices(ii+6)+1
+    ! ! copy the values into the matrix
+    ! ! the indices are i,k,m,j,l,n
+    ! do vv=0,sz-1
+    !   ii = 6*vv
+    !
+    !   i = indices(ii+1)+1
+    !   j = indices(ii+2)+1
+    !   k = indices(ii+3)+1
+    !   l = indices(ii+4)+1
+    !   m = indices(ii+5)+1
+    !   n = indices(ii+6)+1
+    !
+    !   d3(i,j,k,l,m,n) = -1.0d0*values(vv+1)
+    !   d3(i,k,j,l,n,m) = -1.0d0*values(vv+1)
+    !   d3(j,i,k,m,l,n) = -1.0d0*values(vv+1)
+    !   d3(j,k,i,m,n,l) = -1.0d0*values(vv+1)
+    !   d3(k,i,j,n,l,m) = -1.0d0*values(vv+1)
+    !   d3(k,j,i,n,m,l) = -1.0d0*values(vv+1)
+    !
+    !   ! Should this be on since it t-3DM is in principle not hermitian
+    !   ! conjugate transpose
+    !   ! d3(l,m,n,i,j,k) = -1.0d0*values(vv+1)
+    !   ! d3(l,n,m,i,k,j) = -1.0d0*values(vv+1)
+    !   ! d3(m,l,n,j,i,k) = -1.0d0*values(vv+1)
+    !   ! d3(m,n,l,j,k,i) = -1.0d0*values(vv+1)
+    !   ! d3(n,l,m,k,i,j) = -1.0d0*values(vv+1)
+    !   ! d3(n,m,l,k,j,i) = -1.0d0*values(vv+1)
+    !
+    ! end do
 
-      d3(i,j,k,l,m,n) = -1.0d0*values(vv+1)
-      d3(i,k,j,l,n,m) = -1.0d0*values(vv+1)
-      d3(j,i,k,m,l,n) = -1.0d0*values(vv+1)
-      d3(j,k,i,m,n,l) = -1.0d0*values(vv+1)
-      d3(k,i,j,n,l,m) = -1.0d0*values(vv+1)
-      d3(k,j,i,n,m,l) = -1.0d0*values(vv+1)
-
-      ! Should this be on since it t-3DM is in principle not hermitian
-      ! conjugate transpose
-      ! d3(l,m,n,i,j,k) = -1.0d0*values(vv+1)
-      ! d3(l,n,m,i,k,j) = -1.0d0*values(vv+1)
-      ! d3(m,l,n,j,i,k) = -1.0d0*values(vv+1)
-      ! d3(m,n,l,j,k,i) = -1.0d0*values(vv+1)
-      ! d3(n,l,m,k,i,j) = -1.0d0*values(vv+1)
-      ! d3(n,m,l,k,j,i) = -1.0d0*values(vv+1)
-
-    end do
-
-    if (allocated(values)) deallocate(values)
-    if (allocated(indices)) deallocate(indices)
   end subroutine qcmaquis_interface_get_fock_contracted_4rdm_full
 
 

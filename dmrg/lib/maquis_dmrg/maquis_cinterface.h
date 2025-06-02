@@ -115,8 +115,10 @@ extern "C"
 
     void qcmaquis_interface_compute_and_store_123rdm_full(const int ket, const bool colMajor);
     void qcmaquis_interface_compute_and_store_trans_123rdm_full(const int ket, const int bra, const bool colMajor);
+    void qcmaquis_interface_rotate_rdm_inplace(V* rdm, const int rdmRank, const V* rotMat);
     void qcmaquis_interface_rotate_rdms(const int ket, const int bra, const int rdmRank, const V* rotMat);
     void qcmaquis_interface_read_rdm_full(const int ket, const int bra, V* rdmPtr, const int rdmRank);
+    void qcmaquis_interface_contract_with_fock_3rdm(const double* epsa, int nasht, int* indices, V* values, int size, V* trdm3, int compressMPS=0);
     // Measure overlap
     double qcmaquis_interface_get_overlap(const char* filename);
 
@@ -141,7 +143,6 @@ extern "C"
     // state_j: second state for 3-TDM measurements, unused for 4-RDM
     void qcmaquis_interface_prepare_hirdm_template(const char* filename, int state, HIRDM_Template tpl, int state_j);
 
-    void qcmaquis_interface_contract_with_fock_3rdm(const double* epsa, int nasht, int* indices, V* values, int size, int compressMPS=0);
 }
 
 #endif
