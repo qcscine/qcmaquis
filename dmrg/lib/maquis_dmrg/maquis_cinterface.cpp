@@ -1078,7 +1078,10 @@ extern "C"
     }
 
     // Used for CASPT2
-    void qcmaquis_interface_get_fock_contracted_4rdm(const double* epsa, int nasht, V* trdm3, int compressMPS) {
+    void qcmaquis_interface_get_fock_contracted_4rdm(const double *epsa,
+                                                     int nasht, int *indices,
+                                                     V *values, int size,
+                                                     int compressMPS) {
       DmrgParameters parms_copy = parms;
       parms_copy.erase("MEASURE[1rdm]");
       parms_copy.erase("MEASURE[2rdm]");
@@ -1087,38 +1090,40 @@ extern "C"
       parms_copy.erase("MEASURE[1spdm]");
       parms_copy.erase("MEASURE[ChemEntropy]");
 
-      printf("Loading MPS in SU2 from %s\n", parms_copy["chkpfile"].c_str());
+      // printf("Loading MPS in SU2 from %s\n", parms_copy["chkpfile"].c_str());
       MPS<matrix, SU2U1PG> optimized_mps_su2;
       load(parms_copy["chkpfile"], optimized_mps_su2);
       if (compressMPS > 0) {
-        std::cout << "Compressing MPS to bond dimension: " << compressMPS << '\n';
+        std::cout << "Compressing MPS to bond dimension: " << compressMPS
+                  << '\n';
         optimized_mps_su2.normalize_left();
-        optimized_mps_su2 = compression::l2r_compress(optimized_mps_su2, compressMPS, 0.0);
+        optimized_mps_su2 =
+            compression::l2r_compress(optimized_mps_su2, compressMPS, 0.0);
       }
       save(parms_copy["chkpfile"], optimized_mps_su2);
 
       // Transform SU2 to 2U1 since MPOTimesMPS not implemented for SU2
-      printf("Transforming MPS\n");
+      // printf("Transforming MPS\n");
       std::string twou1_chkp_name;
       int Nup;
       int Ndown;
-      int state_num = maquis::interface_detail::get_state_number(parms_copy["chkpfile"]);
-      std::tie(twou1_chkp_name, Nup, Ndown) = maquis::interface_detail::twou1_name_Nup_Ndown(pname, state_num, parms_copy["nelec"], parms_copy["spin"]);
-      printf("twou1_chkp_name = %s\n", twou1_chkp_name.c_str());
-      maquis::transform(pname, state_num);
+      std::tie(twou1_chkp_name, Nup, Ndown) =
+          maquis::interface_detail::twou1_name_Nup_Ndown(
+              pname, 0, parms_copy["nelec"], parms_copy["spin"]);
+      // printf("twou1_chkp_name = %s\n", twou1_chkp_name.c_str());
+      maquis::transform(pname, 0);
 
       MPS<matrix, TwoU1PG> optimized_mps_2u1;
       load(twou1_chkp_name, optimized_mps_2u1);
 
-
       parms_copy.set("u1_total_charge1", Nup);
       parms_copy.set("u1_total_charge2", Ndown);
       parms_copy.set("symmetry", "2u1pg");
-      
+
       // Build integral map
       maquis::integral_map<double> int_map;
       for (int i = 0; i < nasht; ++i) {
-        int_map[{i+1, i+1, 0, 0}] = epsa[i];
+        int_map[{i + 1, i + 1, 0, 0}] = epsa[i];
       }
 
       // Compute MPO * |MPS>
@@ -1136,59 +1141,44 @@ extern "C"
       auto mpo = make_mpo(lattice, model);
       int bond_dim_factor = 2;
       auto traitClass = MPOTimesMPSTraitClass<tmatrix<double>, TwoU1PG>(
-          optimized_mps_2u1, model, lattice, model.total_quantum_numbers(parms_caspt2),
+          optimized_mps_2u1, model, lattice,
+          model.total_quantum_numbers(parms_caspt2),
           bond_dim_factor * parms_caspt2["max_bond_dimension"]);
       auto output_mps = traitClass.applyMPO(mpo);
-      std::string MPStimesMPOstr = maquis::interface_detail::pname2workdir(pname) + "MPStimesMPO." + std::to_string(state_num) + ".h5";
+      std::string MPStimesMPOstr =
+          maquis::interface_detail::pname2workdir(pname) + "MPStimesMPO.h5";
       delete_directory_if_exists(MPStimesMPOstr);
       save(MPStimesMPOstr, output_mps);
 
       // Measurement fails if props.h5 not present
-      boost::filesystem::copy(twou1_chkp_name + "/props.h5", MPStimesMPOstr + "/props.h5");
+      boost::filesystem::copy(twou1_chkp_name + "/props.h5",
+                              MPStimesMPOstr + "/props.h5");
       storage::archive ar_out(MPStimesMPOstr + "/props.h5", "w");
       ar_out["/parameters"] << parms_caspt2;
 
       // === Measure trans3RDM ===
-      printf("Measuring 3RDM in file %s between\n  ket=%s\n  bra=%s\n", (maquis::interface_detail::pname2workdir(pname) + "results.h5").c_str(), twou1_chkp_name.c_str(), MPStimesMPOstr.c_str());
+      // printf("Measuring 3RDM in file %s between\n  ket=%s\n  bra=%s\n",
+      // (pname2workdir(pname) + "results.h5").c_str(), twou1_chkp_name.c_str(),
+      // MPStimesMPOstr.c_str());
       parms_caspt2.set("MEASURE[trans3rdm]", twou1_chkp_name);
       parms_caspt2.set("chkpfile", MPStimesMPOstr);
-      parms_caspt2.set("resultfile",maquis::interface_detail::pname2workdir(pname) + "results.h5");
+      parms_caspt2.set("resultfile",
+                       maquis::interface_detail::pname2workdir(pname) +
+                           "results.h5");
       maquis::DMRGInterface<double> interface_measure(parms_caspt2);
       interface_measure.measure();
-      const typename maquis::meas_with_results_type<V>& trans3rdm_meas = interface_measure.getMeasurement("transition_threeptdm");
-      auto threeIdx = [nasht](int t, int u, int v, int x, int y, int z) {
-        return t + u * nasht + v * nasht * nasht + x * nasht * nasht * nasht +
-               y * nasht * nasht * nasht * nasht +
-               z * nasht * nasht * nasht * nasht * nasht;
-      };
-      for (int i = 0; i < trans3rdm_meas.first.size(); i++)
-      {
-        const V val = trans3rdm_meas.second[i];
-        const int t = trans3rdm_meas.first[i][0];
-        const int u = trans3rdm_meas.first[i][1];
-        const int v = trans3rdm_meas.first[i][2];
-        const int x = trans3rdm_meas.first[i][3];
-        const int y = trans3rdm_meas.first[i][4];
-        const int z = trans3rdm_meas.first[i][5];
-
-        // build full trans-3RDM
-        trdm3[threeIdx(t, u, v, x, y, z)] = -val;
-        trdm3[threeIdx(t, v, u, x, z, y)] = -val;
-        trdm3[threeIdx(u, t, v, y, x, z)] = -val;
-        trdm3[threeIdx(v, t, u, z, x, y)] = -val;
-        trdm3[threeIdx(u, v, t, y, z, x)] = -val;
-        trdm3[threeIdx(v, u, t, z, y, x)] = -val;
+      const typename maquis::meas_with_results_type<V> &trans3rdm_meas =
+          interface_measure.getMeasurement("transition_threeptdm");
+      assert(size >= trans3rdm_meas.first.size());
+      assert(size >= trans3rdm_meas.second.size());
+      for (int i = 0; i < trans3rdm_meas.first.size(); i++) {
+        values[i] = trans3rdm_meas.second[i];
+        indices[6 * i] = trans3rdm_meas.first[i][0];
+        indices[6 * i + 1] = trans3rdm_meas.first[i][1];
+        indices[6 * i + 2] = trans3rdm_meas.first[i][2];
+        indices[6 * i + 3] = trans3rdm_meas.first[i][3];
+        indices[6 * i + 4] = trans3rdm_meas.first[i][4];
+        indices[6 * i + 5] = trans3rdm_meas.first[i][5];
       }
-
-      // === Rotate to canonical orbitals ===
-      
-      // load rotation matrix
-      std::vector<V> rotMat((nasht * nasht));
-      FILE *file = fopen("rotMat.bin", "rb");
-      fread(rotMat.data(), sizeof(V), nasht * nasht, file);
-      fclose(file);
-
-      // rotate
-      qcmaquis_interface_rotate_rdm_inplace(trdm3, 3, rotMat.data());
     }
 }
