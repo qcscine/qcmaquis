@@ -646,7 +646,7 @@ extern "C"
            << lnact << ", order='F')\n";
         ss << "print(np.einsum('irqp,is->srqp', two3, U) - tworot)\n";
 
-        std::cout << ss.str() << '\n';
+        std::cout << ss.str();
       } else if (rdmRank == 3) {
         std::stringstream ss;
         ss << "import numpy as np\n";
@@ -712,7 +712,7 @@ extern "C"
 
         ss << "print(np.einsum('ijklmn,ip,jq,kr,ls,mt,nu->pqrstu', three, U, "
               "U, U, U, U, U) - threeRot)\n";
-        std::cout << ss.str() << '\n';
+        std::cout << ss.str();
       }
     }
 
@@ -764,8 +764,8 @@ extern "C"
 
         qcmaquis_interface_rotate_rdm_inplace(oneRDM.data(), 1, rotMat);
 
+        std::cout << "Writing rotated 1RDM to: " << fname1RDM << "\n\n"; 
         file = fopen(fname1RDM.c_str(), "wb");
-        std::cout << "Writing rotated 1RDM to: " << fname1RDM << '\n'; 
         fwrite(oneRDM.data(), sizeof(V), lnact2, file);
         fclose(file);
       }
@@ -782,6 +782,7 @@ extern "C"
 
         qcmaquis_interface_rotate_rdm_inplace(twoRDM.data(), 2, rotMat);
 
+        std::cout << "Writing rotated 2RDM to: " << fname2RDM << "\n\n"; 
         file = fopen(fname2RDM.c_str(), "wb");
         fwrite(twoRDM.data(), sizeof(V), lnact4, file);
         fclose(file);
@@ -799,6 +800,7 @@ extern "C"
 
         qcmaquis_interface_rotate_rdm_inplace(threeRDM.data(), 3, rotMat);
 
+        std::cout << "Writing rotated 3RDM to: " << fname3RDM << "\n\n"; 
         file = fopen(fname3RDM.c_str(), "wb");
         fwrite(threeRDM.data(), sizeof(V), lnact6, file);
         fclose(file);
@@ -827,7 +829,7 @@ extern "C"
       const int nact = parms.get<int>("L");
       const int nelements = std::pow(nact * nact, rdmRank);
       const std::string fname = "qcm_" + std::to_string(rdmRank) + 
-          "rdm_" + std::to_string(ket) + "_" + std::to_string(ket) + ".bin";
+          "rdm_" + std::to_string(bra) + "_" + std::to_string(ket) + ".bin";
       std::cout << "Reading tensor from: " << fname << '\n'; 
       qcmaquis_interface_read_tensor(fname, rdmPtr, nelements);
     }
@@ -1084,7 +1086,7 @@ extern "C"
     }
 
     // Used for CASPT2
-    void qcmaquis_interface_get_fock_contracted_4rdm(const double* epsa, int nasht, int* indices, V* values, int size, int compressMPS) {
+    void qcmaquis_interface_compute_and_store_fock_contracted_4rdm(const double* epsa, int compressMPS) {
       DmrgParameters parms_copy = parms;
       parms_copy.erase("MEASURE[1rdm]");
       parms_copy.erase("MEASURE[2rdm]");
@@ -1092,6 +1094,8 @@ extern "C"
       parms_copy.erase("MEASURE[4rdm]");
       parms_copy.erase("MEASURE[1spdm]");
       parms_copy.erase("MEASURE[ChemEntropy]");
+
+      const int nasht = parms_copy.get<int>("L");
 
       printf("Loading MPS in SU2 from %s\n", parms_copy["chkpfile"].c_str());
       MPS<matrix, SU2U1PG> optimized_mps_su2;
@@ -1162,17 +1166,51 @@ extern "C"
       maquis::DMRGInterface<double> interface_measure(parms_caspt2);
       interface_measure.measure();
       const typename maquis::meas_with_results_type<V>& trans3rdm_meas = interface_measure.getMeasurement("transition_threeptdm");
-      assert(size >= trans3rdm_meas.first.size());
-      assert(size >= trans3rdm_meas.second.size());
+      auto threeIdx = [nasht](int t, int u, int v, int x, int y, int z) {
+        // Computes linearized index in column-major
+        return t + u * nasht + v * nasht * nasht + x * nasht * nasht * nasht +
+               y * nasht * nasht * nasht * nasht +
+               z * nasht * nasht * nasht * nasht * nasht;
+      };
+      std::vector<V> contracted4RDM(std::pow(nasht, 6));
       for (int i = 0; i < trans3rdm_meas.first.size(); i++)
       {
-        values[i] = trans3rdm_meas.second[i];
-        indices[6*i] = trans3rdm_meas.first[i][0];
-        indices[6*i+1] = trans3rdm_meas.first[i][1];
-        indices[6*i+2] = trans3rdm_meas.first[i][2];
-        indices[6*i+3] = trans3rdm_meas.first[i][3];
-        indices[6*i+4] = trans3rdm_meas.first[i][4];
-        indices[6*i+5] = trans3rdm_meas.first[i][5];
+        const V val = trans3rdm_meas.second[i];
+        const int t =  trans3rdm_meas.first[i][0];
+        const int u = trans3rdm_meas.first[i][1];
+        const int v = trans3rdm_meas.first[i][2];
+        const int x = trans3rdm_meas.first[i][3];
+        const int y = trans3rdm_meas.first[i][4];
+        const int z = trans3rdm_meas.first[i][5];
+        contracted4RDM[threeIdx(t,u,v,x,y,z)] = -1.0 * val;
+        contracted4RDM[threeIdx(t,v,u,x,z,y)] = -1.0 * val;
+        contracted4RDM[threeIdx(u,t,v,y,x,z)] = -1.0 * val;
+        contracted4RDM[threeIdx(u,v,t,y,z,x)] = -1.0 * val;
+        contracted4RDM[threeIdx(v,t,u,z,x,y)] = -1.0 * val;
+        contracted4RDM[threeIdx(v,u,t,z,y,x)] = -1.0 * val;
+      }
+
+      // Write out to file
+      const std::string fname = "contracted3RDM_" + std::to_string(state_num) + ".bin";
+      FILE* file = fopen(fname.c_str(), "wb");
+      fwrite(contracted4RDM.data(), sizeof(V), std::pow(nasht, 6), file);
+      fclose(file);
+    }
+
+    void qcmaquis_interface_read_fock_contracted_4rdm(V* contracted4RDM, const bool rotate) {
+      const int nasht = parms.get<int>("L");
+      int state_num = maquis::interface_detail::get_state_number(parms["chkpfile"]);
+      const std::string fname = "contracted3RDM_" + std::to_string(state_num) + ".bin";
+      qcmaquis_interface_read_tensor(fname, contracted4RDM, std::pow(nasht, 6));
+
+      // Rotate to state-specific orbitals
+      std::vector<V> rotMat(nasht * nasht);
+      std::cout << "Rotating to contracted 4RDM to state-specific orbitals\n";
+      FILE *file = fopen("rotMat.bin", "rb");
+      fread(rotMat.data(), sizeof(V), nasht * nasht, file);
+      fclose(file);
+      if (rotate) {
+        qcmaquis_interface_rotate_rdm_inplace(contracted4RDM, 3, rotMat.data());
       }
     }
 }
