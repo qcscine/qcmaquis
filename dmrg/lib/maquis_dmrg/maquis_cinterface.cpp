@@ -5,6 +5,7 @@
  *            See LICENSE.txt for details.
  */
 #include "maquis_cinterface.h"
+#include <cstdio>
 #include <memory>
 #include <string>
 #include <array>
@@ -346,6 +347,7 @@ extern "C"
         std::cerr << "Error opening " << fname1RDM << '\n';
         exit(1);
       }
+      std::cout << "Writing measured 1RDM to: " << fname1RDM << "\n\n"; 
       fwrite(oneRDM.data(), sizeof(V), nact * nact, file);
       fclose(file);
 
@@ -353,8 +355,7 @@ extern "C"
       const typename maquis::meas_with_results_type<V> &meas2RDM =
           interface_ptr->getMeasurement("twoptdm");
       std::vector<V> twoRDM(nact * nact * nact * nact);
-      auto twoIdx = [nact,colMajor](int t, int u, int v, int x) {
-        if (colMajor) {}
+      auto twoIdx = [nact](int t, int u, int v, int x) {
         return t + u * nact + v * nact * nact + x * nact * nact * nact;
       };
       for (int i = 0; i < meas2RDM.first.size(); ++i) {
@@ -378,6 +379,7 @@ extern "C"
         std::cerr << "Error opening " << fname2RDM << '\n';
         exit(1);
       }
+      std::cout << "Writing measured 2RDM to: " << fname2RDM << "\n\n"; 
       fwrite(twoRDM.data(), sizeof(V), nact * nact * nact * nact, file);
       fclose(file);
 
@@ -420,12 +422,13 @@ extern "C"
         threeRDM[threeIdx(z, y, x, v, u, t)] = -val;
       }
       file = fopen(fname3RDM.c_str(), "wb");
-      fwrite(threeRDM.data(), sizeof(V),
-             nact * nact * nact * nact * nact * nact, file);
       if (file == NULL) {
         std::cerr << "Error opening " << fname3RDM << '\n';
         exit(1);
       }
+      std::cout << "Writing measured 3RDM to: " << fname3RDM << "\n\n"; 
+      fwrite(threeRDM.data(), sizeof(V),
+             nact * nact * nact * nact * nact * nact, file);
       fclose(file);
     }
 
@@ -465,6 +468,7 @@ extern "C"
         std::cerr << "Error opening " << fname1RDM << '\n';
         exit(1);
       }
+      std::cout << "Writing measured Trans-1RDM to: " << fname1RDM << "\n\n"; 
       fwrite(oneTRDM.data(), sizeof(V), nact * nact, file);
       fclose(file);
 
@@ -487,13 +491,14 @@ extern "C"
         }
         double val = meas2TRDM.second[i];
         twoTRDM[twoIdx(t, u, v, x)] = val;
-        twoTRDM[twoIdx(u, t, x, v)] = val;
+        twoTRDM[twoIdx(v, x, t, u)] = val;
       }
       file = fopen((fname2RDM).c_str(), "wb");
       if (file == NULL) {
         std::cerr << "Error opening " << fname2RDM << '\n';
         exit(1);
       }
+      std::cout << "Writing measured Trans-2RDM to: " << fname2RDM << "\n\n"; 
       fwrite(twoTRDM.data(), sizeof(V), nact * nact * nact * nact, file);
       fclose(file);
 
@@ -532,12 +537,13 @@ extern "C"
         std::cerr << "Error opening " << fname3RDM << '\n';
         exit(1);
       }
+      std::cout << "Writing measured Trans-3RDM to: " << fname3RDM << "\n\n"; 
       fwrite(threeTRDM.data(), sizeof(V),
              nact * nact * nact * nact * nact * nact, file);
       fclose(file);
     }
 
-    void qcmaquis_interface_rotate_rdm_inplace(V* rdm, const int rdmRank, const V* rotMat) {
+    void qcmaquis_interface_rotate_rdm_inplace(V* rdm, const int rdmRank, const V* rotMat, const bool doInverseRot) {
       if (rdmRank < 0 || rdmRank > 3) {
         std::cerr << "Only up to 3-RDM can be rotated. (Provided RDM rank"  << rdmRank << ")\n";
         exit(1);
@@ -552,6 +558,9 @@ extern "C"
 
       const double alpha = 1.0;
       const double beta = 0.0;
+      const char transChar = doInverseRot ? 'N' : 'T';
+      const char notransChar = doInverseRot ? 'T' : 'N';
+      
       if (rdmRank == 1)  {
         std::stringstream ss;
         ss << "import numpy as np\n";
@@ -569,16 +578,18 @@ extern "C"
 
         std::vector<V> tmp1RDM(lnact2);
         // NOTE: DGEMM assumes col-major
-        dgemm_("T", "N", &lnact, &lnact, &lnact, &alpha, rotMat, &lnact, rdm,
+        dgemm_(&transChar, "N", &lnact, &lnact, &lnact, &alpha, rotMat, &lnact, rdm,
                &lnact, &beta, tmp1RDM.data(), &lnact);
-        dgemm_("N", "N", &lnact, &lnact, &lnact, &alpha, tmp1RDM.data(), &lnact, rotMat,
+        dgemm_("N", &notransChar, &lnact, &lnact, &lnact, &alpha, tmp1RDM.data(), &lnact, rotMat,
                &lnact, &beta, rdm, &lnact);
         ss << "oneRot = np.array([";
         for (int i = 0; i < lnact2; ++i) {
           ss << rdm[i] << ", ";
         }
         ss << "]).reshape(" << lnact << ", " << lnact << ", order='F')\n";
-        ss << "print(np.einsum('ij,ip,jq->pq', one, U, U) - oneRot)\n";
+        ss << "print(np.einsum('ij,ip,jq->pq', one, " <<
+          (doInverseRot ? "U.T, U.T" : "U, U")
+          << ") - oneRot)\n";
         std::cout << ss.str();
       } else if (rdmRank == 2) {
         std::stringstream ss;
@@ -598,7 +609,7 @@ extern "C"
 
         std::vector<V> tmp2RDM(lnact4);
         // NOTE: DGEMM assumes col-major
-        dgemm_("N", "N", &lnact3, &lnact, &lnact, &alpha, rdm,
+        dgemm_("N", &notransChar, &lnact3, &lnact, &lnact, &alpha, rdm,
                &lnact3, rotMat, &lnact, &beta, tmp2RDM.data(), &lnact3);
         ss << "two1 = np.array([";
         for (int i = 0; i < lnact4; ++i) {
@@ -610,7 +621,7 @@ extern "C"
 
         for (int i = 0; i < lnact; ++i) {
           int offset = i * lnact3;
-          dgemm_("N", "N", &lnact2, &lnact, &lnact, &alpha, &tmp2RDM[offset],
+          dgemm_("N", &notransChar, &lnact2, &lnact, &lnact, &alpha, &tmp2RDM[offset],
                  &lnact2, rotMat, &lnact, &beta, &rdm[offset], &lnact2);
         }
         ss << "two2 = np.array([";
@@ -624,7 +635,7 @@ extern "C"
         for (int i = 0; i < lnact; ++i) {
           for (int j = 0; j < lnact; ++j) {
             int offset = i * lnact3 + j * lnact2;
-            dgemm_("N", "N", &lnact, &lnact, &lnact, &alpha, &rdm[offset],
+            dgemm_("N", &notransChar, &lnact, &lnact, &lnact, &alpha, &rdm[offset],
                    &lnact, rotMat, &lnact, &beta, &tmp2RDM[offset], &lnact);
           }
         }
@@ -636,7 +647,7 @@ extern "C"
            << lnact << ", order='F')\n";
         ss << "print(np.einsum('ijqp,jr->irqp', two2, U) - two3)\n";
 
-        dgemm_("T", "N", &lnact, &lnact3, &lnact, &alpha, rotMat, &lnact,
+        dgemm_(&transChar, "N", &lnact, &lnact3, &lnact, &alpha, rotMat, &lnact,
                tmp2RDM.data(), &lnact, &beta, rdm, &lnact);
         ss << "tworot = np.array([";
         for (int i = 0; i < lnact4; ++i) {
@@ -645,6 +656,9 @@ extern "C"
         ss << "]).reshape(" << lnact << ", " << lnact << ", " << lnact << ", "
            << lnact << ", order='F')\n";
         ss << "print(np.einsum('irqp,is->srqp', two3, U) - tworot)\n";
+        ss << "print(np.einsum('ijkl,ip,jq,kr,ls->pqrs', two, "
+           << (doInverseRot ? "U.T, U.T, U.T, U.T" : "U, U, U, U, U, U")
+           << ") - tworot)\n";
 
         std::cout << ss.str();
       } else if (rdmRank == 3) {
@@ -664,17 +678,17 @@ extern "C"
            << lnact << ", " << lnact << ", " << lnact << ", order='F')\n";
 
         std::vector<V> tmp3RDM(lnact6);
-        dgemm_("N", "N", &lnact5, &lnact, &lnact, &alpha, rdm,
+        dgemm_("N", &notransChar, &lnact5, &lnact, &lnact, &alpha, rdm,
                &lnact5, rotMat, &lnact, &beta, tmp3RDM.data(), &lnact5);
         for (int i = 0; i < lnact; ++i) {
           int offset = i * lnact5;
-          dgemm_("N", "N", &lnact4, &lnact, &lnact, &alpha, &tmp3RDM[offset],
+          dgemm_("N", &notransChar, &lnact4, &lnact, &lnact, &alpha, &tmp3RDM[offset],
                  &lnact4, rotMat, &lnact, &beta, &rdm[offset], &lnact4);
         }
         for (int i = 0; i < lnact; ++i) {
           for (int j = 0; j < lnact; ++j) {
             int offset = i * lnact5 + j * lnact4;
-            dgemm_("N", "N", &lnact3, &lnact, &lnact, &alpha, &rdm[offset],
+            dgemm_("N", &notransChar, &lnact3, &lnact, &lnact, &alpha, &rdm[offset],
                    &lnact3, rotMat, &lnact, &beta, &tmp3RDM[offset], &lnact3);
           }
         }
@@ -682,7 +696,7 @@ extern "C"
           for (int j = 0; j < lnact; ++j) {
             for (int k = 0; k < lnact; ++k) {
               int offset = i * lnact5 + j * lnact4 + k * lnact3;
-              dgemm_("N", "N", &lnact2, &lnact, &lnact, &alpha,
+              dgemm_("N", &notransChar, &lnact2, &lnact, &lnact, &alpha,
                      &tmp3RDM[offset], &lnact2, rotMat, &lnact, &beta,
                      &rdm[offset], &lnact2);
             }
@@ -693,14 +707,14 @@ extern "C"
             for (int k = 0; k < lnact; ++k) {
               for (int l = 0; l < lnact; ++l) {
                 int offset = i * lnact5 + j * lnact4 + k * lnact3 + l * lnact2;
-                dgemm_("N", "N", &lnact, &lnact, &lnact, &alpha,
+                dgemm_("N", &notransChar, &lnact, &lnact, &lnact, &alpha,
                        &rdm[offset], &lnact, rotMat, &lnact, &beta,
                        &tmp3RDM[offset], &lnact);
               }
             }
           }
         }
-        dgemm_("T", "N", &lnact, &lnact5, &lnact, &alpha, rotMat, &lnact,
+        dgemm_(&transChar, "N", &lnact, &lnact5, &lnact, &alpha, rotMat, &lnact,
                tmp3RDM.data(), &lnact, &beta, rdm, &lnact);
 
         ss << "threeRot = np.array([";
@@ -710,8 +724,9 @@ extern "C"
         ss << "]).reshape(" << lnact << ", " << lnact << ", " << lnact << ", "
            << lnact << ", " << lnact << ", " << lnact << ", order='F')\n";
 
-        ss << "print(np.einsum('ijklmn,ip,jq,kr,ls,mt,nu->pqrstu', three, U, "
-              "U, U, U, U, U) - threeRot)\n";
+        ss << "print(np.einsum('ijklmn,ip,jq,kr,ls,mt,nu->pqrstu', three, "
+          << (doInverseRot ? "U.T, U.T, U.T, U.T, U.T" : "U, U, U, U, U")
+          << ") - threeRot)\n";
         std::cout << ss.str();
       }
     }
@@ -725,8 +740,11 @@ extern "C"
      * @param bra bra index
      * @param rdmRank rank of rdm to rotate
      * @param rotMat rotation matrix
+     * @param doInverseRot reverse transformation, essentially tranposes rotMat
      */
-    void qcmaquis_interface_rotate_rdms(const int ket, const int bra, const int rdmRank, const V* rotMat) {
+    void qcmaquis_interface_rotate_rdms(const int ket, const int bra,
+                                        const int rdmRank, const V *rotMat,
+                                        const bool doInverseRot) {
       if (rdmRank < 0 || rdmRank > 3) {
         std::cerr << "Only up to 3-RDM can be rotated. (Provided RDM rank"  << rdmRank << ")\n";
         exit(1);
@@ -762,7 +780,7 @@ extern "C"
         fread(oneRDM.data(), sizeof(V), nact * nact, file);
         fclose(file);
 
-        qcmaquis_interface_rotate_rdm_inplace(oneRDM.data(), 1, rotMat);
+        qcmaquis_interface_rotate_rdm_inplace(oneRDM.data(), 1, rotMat, doInverseRot);
 
         std::cout << "Writing rotated 1RDM to: " << fname1RDM << "\n\n"; 
         file = fopen(fname1RDM.c_str(), "wb");
@@ -780,7 +798,7 @@ extern "C"
         fread(twoRDM.data(), sizeof(V), lnact4, file);
         fclose(file);
 
-        qcmaquis_interface_rotate_rdm_inplace(twoRDM.data(), 2, rotMat);
+        qcmaquis_interface_rotate_rdm_inplace(twoRDM.data(), 2, rotMat, doInverseRot);
 
         std::cout << "Writing rotated 2RDM to: " << fname2RDM << "\n\n"; 
         file = fopen(fname2RDM.c_str(), "wb");
@@ -798,7 +816,7 @@ extern "C"
         fread(threeRDM.data(), sizeof(V), lnact6, file);
         fclose(file);
 
-        qcmaquis_interface_rotate_rdm_inplace(threeRDM.data(), 3, rotMat);
+        qcmaquis_interface_rotate_rdm_inplace(threeRDM.data(), 3, rotMat, doInverseRot);
 
         std::cout << "Writing rotated 3RDM to: " << fname3RDM << "\n\n"; 
         file = fopen(fname3RDM.c_str(), "wb");
@@ -1210,7 +1228,7 @@ extern "C"
       fread(rotMat.data(), sizeof(V), nasht * nasht, file);
       fclose(file);
       if (rotate) {
-        qcmaquis_interface_rotate_rdm_inplace(contracted4RDM, 3, rotMat.data());
+        qcmaquis_interface_rotate_rdm_inplace(contracted4RDM, 3, rotMat.data(), false);
       }
     }
 }

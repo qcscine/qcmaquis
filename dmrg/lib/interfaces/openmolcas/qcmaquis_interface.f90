@@ -142,21 +142,23 @@ module qcmaquis_interface
       logical(c_bool), value :: colMajor
     end subroutine
 
-    subroutine qcmaquis_interface_rotate_rdm_inplace(rdm, rdmRank, rotMat) &
+    subroutine qcmaquis_interface_rotate_rdm_inplace(rdm, rdmRank, rotMat, doInverseRot) &
       bind(C)
-      import c_int, c_double
+      import c_int, c_double, c_bool
       real(c_double), dimension(*) :: rdm
       integer(c_int), value :: rdmRank
       real(c_double), dimension(*) :: rotMat
+      logical(c_bool), value :: doInverseRot
     end subroutine
 
-    subroutine qcmaquis_interface_rotate_rdms(ket, bra, rdmRank, rotMat) &
+    subroutine qcmaquis_interface_rotate_rdms(ket, bra, rdmRank, rotMat, doInverseRot) &
       bind(C)
-      import c_int, c_double
+      import c_int, c_double, c_bool
       integer(c_int), value :: ket
       integer(c_int), value :: bra
       integer(c_int), value :: rdmRank
       real(c_double), dimension(*) :: rotMat
+      logical(c_bool), value :: doInverseRot
     end subroutine
 
     subroutine qcmaquis_interface_read_rdm_full(ket, bra, rdmPtr, rdmRank) &
