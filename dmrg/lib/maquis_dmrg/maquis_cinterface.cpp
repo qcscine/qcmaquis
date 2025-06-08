@@ -322,8 +322,8 @@ extern "C"
       qcmaquis_interface_set_state(ket);
 
       const std::string fnamePrefix = "qcm_";
-      const std::string fnameSuffix =
-          "rdm_" + std::to_string(ket) + "_" + std::to_string(ket) + ".bin";
+      const std::string fnameSuffix = "rdm_" + std::to_string(ket) + "_" +
+                                      std::to_string(ket) + "_original.bin";
       const std::string fname1RDM = fnamePrefix + "1" + fnameSuffix;
       const std::string fname2RDM = fnamePrefix + "2" + fnameSuffix;
       const std::string fname3RDM = fnamePrefix + "3" + fnameSuffix;
@@ -443,8 +443,8 @@ extern "C"
       qcmaquis_interface_set_state(ket);
 
       const std::string fnamePrefix = "qcm_";
-      const std::string fnameSuffix =
-          "rdm_" + std::to_string(bra) + "_" + std::to_string(ket) + ".bin";
+      const std::string fnameSuffix = "rdm_" + std::to_string(bra) + "_" +
+                                      std::to_string(ket) + "_original.bin";
       const std::string fname1RDM = fnamePrefix + "1" + fnameSuffix;
       const std::string fname2RDM = fnamePrefix + "2" + fnameSuffix;
       const std::string fname3RDM = fnamePrefix + "3" + fnameSuffix;
@@ -758,11 +758,13 @@ extern "C"
       const long lnact6 = lnact5 * lnact;
 
       const std::string fnamePrefix = "qcm_";
-      const std::string fnameSuffix =
-          "rdm_" + std::to_string(bra) + "_" + std::to_string(ket) + ".bin";
-      const std::string fname1RDM = fnamePrefix + "1" + fnameSuffix;
-      const std::string fname2RDM = fnamePrefix + "2" + fnameSuffix;
-      const std::string fname3RDM = fnamePrefix + "3" + fnameSuffix;
+      const std::string fnameCommon =
+          "rdm_" + std::to_string(bra) + "_" + std::to_string(ket);
+      const std::string fnameOrigSuffix = "_original.bin"; 
+      const std::string fnameRotSuffix = "_rotated.bin"; 
+      const std::string fname1RDM = fnamePrefix + "1" + fnameCommon;
+      const std::string fname2RDM = fnamePrefix + "2" + fnameCommon;
+      const std::string fname3RDM = fnamePrefix + "3" + fnameCommon;
 
       FILE *tmpFile = fopen("rotMat.bin", "wb");
       fwrite(rotMat, sizeof(V), nact * nact, tmpFile);
@@ -772,9 +774,9 @@ extern "C"
       if (rdmRank == 0 || rdmRank == 1) {
         // 1-RDM
         std::vector<V> oneRDM(nact * nact);
-        FILE *file = fopen(fname1RDM.c_str(), "rb");
+        FILE *file = fopen((fname1RDM + fnameOrigSuffix).c_str(), "rb");
         if (file == NULL) {
-          std::cerr << "Error opening " << fname1RDM << '\n';
+          std::cerr << "Error opening " << fname1RDM + fnameOrigSuffix << '\n';
           exit(1);
         }
         fread(oneRDM.data(), sizeof(V), nact * nact, file);
@@ -782,17 +784,17 @@ extern "C"
 
         qcmaquis_interface_rotate_rdm_inplace(oneRDM.data(), 1, rotMat, doInverseRot);
 
-        std::cout << "Writing rotated 1RDM to: " << fname1RDM << "\n\n"; 
-        file = fopen(fname1RDM.c_str(), "wb");
+        std::cout << "Writing rotated 1RDM to: " << fname1RDM + fnameRotSuffix << "\n\n"; 
+        file = fopen((fname1RDM + fnameRotSuffix).c_str(), "wb");
         fwrite(oneRDM.data(), sizeof(V), lnact2, file);
         fclose(file);
       }
       if (rdmRank == 0 || rdmRank == 2) {
         // 2-RDM
         std::vector<V> twoRDM(lnact4);
-        FILE* file = fopen(fname2RDM.c_str(), "rb");
+        FILE* file = fopen((fname2RDM + fnameOrigSuffix).c_str(), "rb");
         if (file == NULL) {
-          std::cerr << "Error opening " << fname2RDM << '\n';
+          std::cerr << "Error opening " << fname2RDM + fnameOrigSuffix << '\n';
           exit(1);
         }
         fread(twoRDM.data(), sizeof(V), lnact4, file);
@@ -800,17 +802,17 @@ extern "C"
 
         qcmaquis_interface_rotate_rdm_inplace(twoRDM.data(), 2, rotMat, doInverseRot);
 
-        std::cout << "Writing rotated 2RDM to: " << fname2RDM << "\n\n"; 
-        file = fopen(fname2RDM.c_str(), "wb");
+        std::cout << "Writing rotated 2RDM to: " << fname2RDM + fnameRotSuffix << "\n\n"; 
+        file = fopen((fname2RDM + fnameRotSuffix).c_str(), "wb");
         fwrite(twoRDM.data(), sizeof(V), lnact4, file);
         fclose(file);
       }
       if (rdmRank == 0 || rdmRank == 3) {
         // 3-RDM
         std::vector<V> threeRDM(nact * nact * nact * nact * nact * nact);
-        FILE* file = fopen(fname3RDM.c_str(), "rb");
+        FILE* file = fopen((fname3RDM + fnameOrigSuffix).c_str(), "rb");
         if (file == NULL) {
-          std::cerr << "Error opening " << fname3RDM << '\n';
+          std::cerr << "Error opening " << fname3RDM + fnameOrigSuffix << '\n';
           exit(1);
         }
         fread(threeRDM.data(), sizeof(V), lnact6, file);
@@ -818,8 +820,8 @@ extern "C"
 
         qcmaquis_interface_rotate_rdm_inplace(threeRDM.data(), 3, rotMat, doInverseRot);
 
-        std::cout << "Writing rotated 3RDM to: " << fname3RDM << "\n\n"; 
-        file = fopen(fname3RDM.c_str(), "wb");
+        std::cout << "Writing rotated 3RDM to: " << fname3RDM + fnameRotSuffix << "\n\n"; 
+        file = fopen((fname3RDM + fnameRotSuffix).c_str(), "wb");
         fwrite(threeRDM.data(), sizeof(V), lnact6, file);
         fclose(file);
       }
@@ -843,11 +845,14 @@ extern "C"
     }
 
     void qcmaquis_interface_read_rdm_full(const int ket, const int bra,
-                                          V *rdmPtr, const int rdmRank) {
+                                          V *rdmPtr, const int rdmRank,
+                                          const bool isRotated) {
       const int nact = parms.get<int>("L");
       const int nelements = std::pow(nact * nact, rdmRank);
       const std::string fname = "qcm_" + std::to_string(rdmRank) + 
-          "rdm_" + std::to_string(bra) + "_" + std::to_string(ket) + ".bin";
+          "rdm_" + std::to_string(bra) + "_" + std::to_string(ket) +
+          (isRotated ? "_rotated" : "_original") + 
+          ".bin";
       std::cout << "Reading tensor from: " << fname << '\n'; 
       qcmaquis_interface_read_tensor(fname, rdmPtr, nelements);
     }

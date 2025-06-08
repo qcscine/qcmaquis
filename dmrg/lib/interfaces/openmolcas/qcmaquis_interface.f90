@@ -161,13 +161,14 @@ module qcmaquis_interface
       logical(c_bool), value :: doInverseRot
     end subroutine
 
-    subroutine qcmaquis_interface_read_rdm_full(ket, bra, rdmPtr, rdmRank) &
+    subroutine qcmaquis_interface_read_rdm_full(ket, bra, rdmPtr, rdmRank, isRotated) &
       bind(C)
-      import c_int, c_double
+      import c_int, c_double, c_bool
       integer(c_int), value :: ket
       integer(c_int), value :: bra
       real(c_double), dimension(*) :: rdmPtr
       integer(c_int), value :: rdmRank
+      logical(c_bool), value :: isRotated
     end subroutine
 
     subroutine qcmaquis_interface_get_trans_1rdm_C(ket, bra, indices, values, size) &

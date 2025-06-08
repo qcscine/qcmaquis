@@ -117,7 +117,7 @@ extern "C"
     void qcmaquis_interface_compute_and_store_trans_123rdm_full(const int ket, const int bra, const bool colMajor);
     void qcmaquis_interface_rotate_rdm_inplace(V* rdm, const int rdmRank, const V* rotMat, const bool doInverseRot);
     void qcmaquis_interface_rotate_rdms(const int ket, const int bra, const int rdmRank, const V* rotMat, const bool doInverseRot);
-    void qcmaquis_interface_read_rdm_full(const int ket, const int bra, V* rdmPtr, const int rdmRank);
+    void qcmaquis_interface_read_rdm_full(const int ket, const int bra, V* rdmPtr, const int rdmRank, const bool isRotated);
     void qcmaquis_interface_compute_and_store_fock_contracted_4rdm(const double* epsa, int compressMPS);
     void qcmaquis_interface_read_fock_contracted_4rdm(V* contracted4RDM, const bool rotate);
     // Measure overlap
