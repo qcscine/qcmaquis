@@ -148,7 +148,7 @@ struct pbequ_impl<Value, typename boost::enable_if<is_real<Value> >::type> {
     typedef typename result_of::uplo_tag<MatrixAB>::type uplo;
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixAB>::value));
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixAB>::type>::type,
             typename remove_const<

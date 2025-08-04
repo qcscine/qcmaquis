@@ -119,14 +119,14 @@ struct ormtr_impl {
     typedef typename result_of::trans_tag<MatrixA, order>::type trans;
     typedef typename result_of::uplo_tag<MatrixA, trans>::type uplo;
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixA>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorTAU>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixA>::type>::type,
             typename remove_const<

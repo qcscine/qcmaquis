@@ -71,7 +71,7 @@ class TaggedNRankRDM : public measurement<Matrix, SymmGroup> {
       if (std::filesystem::exists(bra_ckp)) {
         // Do symmetry check on the bra checkpoint and eventually transform
         // check point group
-        // or boost::is_same<HasPG<SymmGroup>, std::true_type>::value?
+        // or std::is_same<HasPG<SymmGroup>, std::true_type>::value?
         if (maquis::checks::has_pg(bra_ckp) !=
             symm_traits::HasPG<SymmGroup>::value) {
           throw std::runtime_error(

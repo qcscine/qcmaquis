@@ -97,7 +97,7 @@ struct set_extent<std::vector<T, A> > {
         );
     else if (extent.size() == 1 &&
              ((!boost::is_enum<T>::value &&
-               !boost::is_same<typename scalar_type<T>::type, T>::value) ||
+               !std::is_same<typename scalar_type<T>::type, T>::value) ||
               (boost::is_enum<T>::value && is_continuous<T>::value &&
                sizeof(T) != sizeof(typename scalar_type<T>::type))))
       throw archive_error("dimensions do not match" + ALPS_STACKTRACE);
@@ -201,7 +201,8 @@ void save(
   if (is_continuous<T>::value && value.size() == 0)
     ar.write(
         path,
-        static_cast<typename scalar_type<std::vector<T, A> >::type const *>(NULL
+        static_cast<typename scalar_type<std::vector<T, A> >::type const *>(
+            NULL
         ),
         std::vector<std::size_t>()
     );

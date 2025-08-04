@@ -134,14 +134,14 @@ struct pteqr_impl<Value, typename boost::enable_if<is_real<Value> >::type> {
     namespace bindings = ::boost::numeric::bindings;
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixZ>::value));
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorD>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorE>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorD>::type>::type,
             typename remove_const<
@@ -181,7 +181,8 @@ struct pteqr_impl<Value, typename boost::enable_if<is_real<Value> >::type> {
       const char compz, VectorD& d, VectorE& e, MatrixZ& z, minimal_workspace
   ) {
     namespace bindings = ::boost::numeric::bindings;
-    bindings::detail::array<real_type> tmp_work(min_size_work(bindings::size(d))
+    bindings::detail::array<real_type> tmp_work(
+        min_size_work(bindings::size(d))
     );
     return invoke(compz, d, e, z, workspace(tmp_work));
   }
@@ -229,7 +230,7 @@ struct pteqr_impl<Value, typename boost::enable_if<is_complex<Value> >::type> {
     namespace bindings = ::boost::numeric::bindings;
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixZ>::value));
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorD>::type>::type,
             typename remove_const<
@@ -269,7 +270,8 @@ struct pteqr_impl<Value, typename boost::enable_if<is_complex<Value> >::type> {
       const char compz, VectorD& d, VectorE& e, MatrixZ& z, minimal_workspace
   ) {
     namespace bindings = ::boost::numeric::bindings;
-    bindings::detail::array<real_type> tmp_work(min_size_work(bindings::size(d))
+    bindings::detail::array<real_type> tmp_work(
+        min_size_work(bindings::size(d))
     );
     return invoke(compz, d, e, z, workspace(tmp_work));
   }

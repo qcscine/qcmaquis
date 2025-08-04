@@ -90,7 +90,7 @@ struct set_extent<std::valarray<T> > {
             value[i], std::vector<std::size_t>(extent.begin() + 1, extent.end())
         );
     else if (extent.size() == 0 &&
-             !boost::is_same<typename scalar_type<T>::type, T>::value)
+             !std::is_same<typename scalar_type<T>::type, T>::value)
       throw archive_error("dimensions do not match" + ALPS_STACKTRACE);
   }
 };
@@ -157,7 +157,8 @@ void save(
   if (is_continuous<T>::value && value.size() == 0)
     ar.write(
         path,
-        static_cast<typename scalar_type<std::valarray<T> >::type const *>(NULL
+        static_cast<typename scalar_type<std::valarray<T> >::type const *>(
+            NULL
         ),
         std::vector<std::size_t>()
     );

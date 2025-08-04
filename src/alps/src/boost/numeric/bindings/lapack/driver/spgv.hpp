@@ -111,21 +111,21 @@ struct spgv_impl {
     typedef typename result_of::uplo_tag<MatrixAP>::type uplo;
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixZ>::value));
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixAP>::type>::type,
             typename remove_const<
                 typename bindings::value_type<MatrixBP>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixAP>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorW>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixAP>::type>::type,
             typename remove_const<

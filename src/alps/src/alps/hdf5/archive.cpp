@@ -278,9 +278,9 @@ struct ALPS_DECL archivecontext : boost::noncopyable {
       detail::check_error(H5Pset_fclose_degree(prop_id, H5F_CLOSE_SEMI));
 #endif
       if (write_) {
-        if ((file_id_ =
-                 H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDWR, prop_id)
-            ) < 0) {
+        if ((file_id_ = H5Fopen(
+                 (filename_ + suffix_).c_str(), H5F_ACC_RDWR, prop_id
+             )) < 0) {
           detail::property_type fcrt_id(H5Pcreate(H5P_FILE_CREATE));
           detail::check_error(H5Pset_link_creation_order(
               fcrt_id, (H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED)
@@ -332,9 +332,9 @@ struct ALPS_DECL archivecontext : boost::noncopyable {
         detail::check_error(H5Pset_fclose_degree(prop_id, H5F_CLOSE_SEMI));
 #endif
         if (write_) {
-          if ((file_id_ =
-                   H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDWR, prop_id)
-              ) < 0) {
+          if ((file_id_ = H5Fopen(
+                   (filename_ + suffix_).c_str(), H5F_ACC_RDWR, prop_id
+               )) < 0) {
             detail::property_type fcrt_id(H5Pcreate(H5P_FILE_CREATE));
             detail::check_error(H5Pset_link_creation_order(
                 fcrt_id, (H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED)
@@ -741,7 +741,8 @@ std::vector<std::string> archive::list_attributes(std::string path) const {
         detail::list_attributes_visitor, &list
     ));
   } else if (is_data(path)) {
-    detail::data_type id(H5Dopen2(context_->file_id_, path.c_str(), H5P_DEFAULT)
+    detail::data_type id(
+        H5Dopen2(context_->file_id_, path.c_str(), H5P_DEFAULT)
     );
     detail::check_error(H5Aiterate2(
         id, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, NULL,
@@ -775,7 +776,8 @@ std::vector<std::size_t> archive::extent(std::string path) const {
     );
     space_id = H5Dget_space(data_id);
   }
-  detail::check_error(H5Sget_simple_extent_dims(space_id, &buffer.front(), NULL)
+  detail::check_error(
+      H5Sget_simple_extent_dims(space_id, &buffer.front(), NULL)
   );
   detail::check_space(space_id);
   std::vector<std::size_t> extent(buffer.begin(), buffer.end());
@@ -872,7 +874,8 @@ void archive::delete_data(std::string path) const {
     throw invalid_path("no data path: " + path + ALPS_STACKTRACE);
   ALPS_HDF5_FAKE_THREADSAFETY
   if (is_data(path))
-    detail::check_error(H5Ldelete(context_->file_id_, path.c_str(), H5P_DEFAULT)
+    detail::check_error(
+        H5Ldelete(context_->file_id_, path.c_str(), H5P_DEFAULT)
     );
   else if (is_group(path))
     throw invalid_path("the path contains a group: " + path + ALPS_STACKTRACE);
@@ -885,7 +888,8 @@ void archive::delete_group(std::string path) const {
     throw invalid_path("no group path: " + path + ALPS_STACKTRACE);
   ALPS_HDF5_FAKE_THREADSAFETY
   if (is_group(path))
-    detail::check_error(H5Ldelete(context_->file_id_, path.c_str(), H5P_DEFAULT)
+    detail::check_error(
+        H5Ldelete(context_->file_id_, path.c_str(), H5P_DEFAULT)
     );
   else if (is_data(path))
     throw invalid_path(
@@ -931,9 +935,11 @@ detail::archive_proxy<archive> archive::operator[](std::string const &path) {
   }                                                                    \
   else if (detail::check_error(H5Tequal(                               \
                detail::type_type(H5Tcopy(native_id)),                  \
-               detail::type_type(detail::get_native_type(              \
-                   alps::detail::type_wrapper<U>::type()               \
-               ))                                                      \
+               detail::type_type(                                      \
+                   detail::get_native_type(                            \
+                       alps::detail::type_wrapper<U>::type()           \
+                   )                                                   \
+               )                                                       \
            )) > 0) {                                                   \
     U u;                                                               \
     detail::check_error(                                               \
@@ -944,9 +950,11 @@ detail::archive_proxy<archive> archive::operator[](std::string const &path) {
   }                                                            \
   else if (detail::check_error(H5Tequal(                       \
                detail::type_type(H5Tcopy(native_id)),          \
-               detail::type_type(detail::get_native_type(      \
-                   alps::detail::type_wrapper<U>::type()       \
-               ))                                              \
+               detail::type_type(                              \
+                   detail::get_native_type(                    \
+                       alps::detail::type_wrapper<U>::type()   \
+                   )                                           \
+               )                                               \
            )) > 0) {                                           \
     U u;                                                       \
     detail::check_error(H5Aread(attribute_id, native_id, &u)); \
@@ -969,7 +977,8 @@ detail::archive_proxy<archive> archive::operator[](std::string const &path) {
           H5Dopen2(context_->file_id_, path.c_str(), H5P_DEFAULT)              \
       );                                                                       \
       detail::type_type type_id(H5Dget_type(data_id));                         \
-      detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND)  \
+      detail::type_type native_id(                                             \
+          H5Tget_native_type(type_id, H5T_DIR_ASCEND)                          \
       );                                                                       \
       if (H5Tget_class(native_id) == H5T_STRING &&                             \
           !detail::check_error(H5Tis_variable_str(type_id))) {                 \
@@ -1009,7 +1018,8 @@ detail::archive_proxy<archive> archive::operator[](std::string const &path) {
           H5P_DEFAULT                                                          \
       ));                                                                      \
       detail::type_type type_id(H5Aget_type(attribute_id));                    \
-      detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND)  \
+      detail::type_type native_id(                                             \
+          H5Tget_native_type(type_id, H5T_DIR_ASCEND)                          \
       );                                                                       \
       if (H5Tget_class(native_id) == H5T_STRING &&                             \
           !detail::check_error(H5Tis_variable_str(type_id))) {                 \
@@ -1036,9 +1046,11 @@ ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_READ_SCALAR)
   }                                                                           \
   else if (detail::check_error(H5Tequal(                                      \
                detail::type_type(H5Tcopy(native_id)),                         \
-               detail::type_type(detail::get_native_type(                     \
-                   alps::detail::type_wrapper<U>::type()                      \
-               ))                                                             \
+               detail::type_type(                                             \
+                   detail::get_native_type(                                   \
+                       alps::detail::type_wrapper<U>::type()                  \
+                   )                                                          \
+               )                                                              \
            )) > 0) {                                                          \
     std::size_t len = std::accumulate(                                        \
         chunk.begin(), chunk.end(), std::size_t(1),                           \
@@ -1070,9 +1082,11 @@ ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_READ_SCALAR)
   }                                                                           \
   else if (detail::check_error(H5Tequal(                                      \
                detail::type_type(H5Tcopy(native_id)),                         \
-               detail::type_type(detail::get_native_type(                     \
-                   alps::detail::type_wrapper<U>::type()                      \
-               ))                                                             \
+               detail::type_type(                                             \
+                   detail::get_native_type(                                   \
+                       alps::detail::type_wrapper<U>::type()                  \
+                   )                                                          \
+               )                                                              \
            )) > 0) {                                                          \
     std::size_t len = std::accumulate(                                        \
         chunk.begin(), chunk.end(), std::size_t(1),                           \
@@ -1371,7 +1385,8 @@ ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_READ_VECTOR)
       detail::native_ptr_converter<                                            \
           boost::remove_cv<boost::remove_reference<T>::type>::type>            \
           converter(1);                                                        \
-      detail::check_error(H5Awrite(data_id, type_id, converter.apply(&value))  \
+      detail::check_error(                                                     \
+          H5Awrite(data_id, type_id, converter.apply(&value))                  \
       );                                                                       \
       detail::attribute_type attr_id(data_id);                                 \
       if (is_group(path.substr(0, path.find_last_of('@') - 1)))                \
@@ -1449,7 +1464,7 @@ ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_WRITE_SCALAR)
           detail::check_error(H5Pset_attr_creation_order(                      \
               prop_id, (H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED)         \
           ));                                                                  \
-          if (boost::is_same<T, std::string>::value)                           \
+          if (std::is_same<T, std::string>::value)                             \
             detail::check_error(                                               \
                 data_id = H5Dcreate2(                                          \
                     context_->file_id_, path.c_str(), type_id,                 \
@@ -1461,7 +1476,8 @@ ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_WRITE_SCALAR)
                 )                                                              \
             );                                                                 \
           else {                                                               \
-            detail::check_error(H5Pset_fill_time(prop_id, H5D_FILL_TIME_NEVER) \
+            detail::check_error(                                               \
+                H5Pset_fill_time(prop_id, H5D_FILL_TIME_NEVER)                 \
             );                                                                 \
             std::size_t dataset_size = std::accumulate(                        \
                 size.begin(), size.end(), std::size_t(sizeof(T)),              \
@@ -1509,10 +1525,12 @@ ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_WRITE_SCALAR)
           }                                                                    \
         }                                                                      \
         detail::data_type raii_id(data_id);                                    \
-        detail::native_ptr_converter<T> converter(std::accumulate(             \
-            chunk.begin(), chunk.end(), std::size_t(1),                        \
-            std::multiplies<std::size_t>()                                     \
-        ));                                                                    \
+        detail::native_ptr_converter<T> converter(                             \
+            std::accumulate(                                                   \
+                chunk.begin(), chunk.end(), std::size_t(1),                    \
+                std::multiplies<std::size_t>()                                 \
+            )                                                                  \
+        );                                                                     \
         if (std::equal(chunk.begin(), chunk.end(), size.begin()))              \
           detail::check_error(H5Dwrite(                                        \
               raii_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT,                 \
@@ -1524,9 +1542,11 @@ ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_WRITE_SCALAR)
               space_id, H5S_SELECT_SET, &offset_hid.front(), NULL,             \
               &chunk_hid.front(), NULL                                         \
           ));                                                                  \
-          detail::space_type mem_id(detail::space_type(H5Screate_simple(       \
-              static_cast<int>(chunk_hid.size()), &chunk_hid.front(), NULL     \
-          )));                                                                 \
+          detail::space_type mem_id(                                           \
+              detail::space_type(H5Screate_simple(                             \
+                  static_cast<int>(chunk_hid.size()), &chunk_hid.front(), NULL \
+              ))                                                               \
+          );                                                                   \
           detail::check_error(H5Dwrite(                                        \
               raii_id, type_id, mem_id, space_id, H5P_DEFAULT,                 \
               converter.apply(value)                                           \
@@ -1596,10 +1616,12 @@ ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_WRITE_SCALAR)
         {                                                                      \
           detail::attribute_type raii_id(data_id);                             \
           if (std::equal(chunk.begin(), chunk.end(), size.begin())) {          \
-            detail::native_ptr_converter<T> converter(std::accumulate(         \
-                chunk.begin(), chunk.end(), std::size_t(1),                    \
-                std::multiplies<std::size_t>()                                 \
-            ));                                                                \
+            detail::native_ptr_converter<T> converter(                         \
+                std::accumulate(                                               \
+                    chunk.begin(), chunk.end(), std::size_t(1),                \
+                    std::multiplies<std::size_t>()                             \
+                )                                                              \
+            );                                                                 \
             detail::check_error(                                               \
                 H5Awrite(raii_id, type_id, converter.apply(value))             \
             );                                                                 \
@@ -1716,16 +1738,18 @@ void archive::construct(std::string const &filename, std::size_t props) {
   }
   if (ref_cnt_.find(file_key(filename, props & LARGE, props & MEMORY)) ==
       ref_cnt_.end())
-    ref_cnt_.insert(std::make_pair(
-        file_key(filename, props & LARGE, props & MEMORY),
+    ref_cnt_.insert(
         std::make_pair(
-            context_ = new detail::archivecontext(
-                filename, props & WRITE, props & REPLACE, props & COMPRESS,
-                props & LARGE, props & MEMORY
-            ),
-            1
+            file_key(filename, props & LARGE, props & MEMORY),
+            std::make_pair(
+                context_ = new detail::archivecontext(
+                    filename, props & WRITE, props & REPLACE, props & COMPRESS,
+                    props & LARGE, props & MEMORY
+                ),
+                1
+            )
         )
-    ));
+    );
   else {
     context_ = ref_cnt_.find(file_key(filename, props & LARGE, props & MEMORY))
                    ->second.first;
@@ -1735,8 +1759,9 @@ void archive::construct(std::string const &filename, std::size_t props) {
   }
 }
 
-std::string archive::file_key(std::string filename, bool large, bool memory)
-    const {
+std::string archive::file_key(
+    std::string filename, bool large, bool memory
+) const {
   return (large ? "l" : (memory ? "m" : "_")) + filename;
 }
 

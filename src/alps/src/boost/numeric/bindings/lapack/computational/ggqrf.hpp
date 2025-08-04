@@ -146,21 +146,21 @@ struct ggqrf_impl<Value, typename boost::enable_if<is_real<Value> >::type> {
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixA>::value));
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixB>::value));
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixA>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorTAUA>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixA>::type>::type,
             typename remove_const<
                 typename bindings::value_type<MatrixB>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixA>::type>::type,
             typename remove_const<
@@ -305,21 +305,21 @@ struct ggqrf_impl<Value, typename boost::enable_if<is_complex<Value> >::type> {
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixA>::value));
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixB>::value));
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixA>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorTAUA>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixA>::type>::type,
             typename remove_const<
                 typename bindings::value_type<MatrixB>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixA>::type>::type,
             typename remove_const<

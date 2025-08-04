@@ -84,7 +84,7 @@ struct set_extent<std::array<T, N> > {
             *it, std::vector<std::size_t>(extent.begin() + 1, extent.end())
         );
     else if (extent.size() == 0 &&
-             !boost::is_same<typename scalar_type<T>::type, T>::value)
+             !std::is_same<typename scalar_type<T>::type, T>::value)
       throw archive_error("dimensions do not match" + ALPS_STACKTRACE);
   }
 };
@@ -145,7 +145,8 @@ void save(
   if (is_continuous<T>::value && value.size() == 0)
     ar.write(
         path,
-        static_cast<typename scalar_type<std::array<T, N> >::type const *>(NULL
+        static_cast<typename scalar_type<std::array<T, N> >::type const *>(
+            NULL
         ),
         std::vector<std::size_t>()
     );

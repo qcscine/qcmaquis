@@ -50,11 +50,11 @@ typename multiply_return_type_helper<matrix<T>, Vector>::type multiply(
   // NOTE: This function depends on some implementation details of ublas. I
   // didn't see any other efficient way.
   using ::boost::numeric::ublas::map_std;
-  BOOST_STATIC_ASSERT((
-      boost::is_same<A, map_std<std::size_t, map_std<std::size_t, T> > >::value
-  ));
   BOOST_STATIC_ASSERT(
-      (boost::is_same<L, ::boost::numeric::ublas::row_major>::value)
+      (std::is_same<A, map_std<std::size_t, map_std<std::size_t, T> > >::value)
+  );
+  BOOST_STATIC_ASSERT(
+      (std::is_same<L, ::boost::numeric::ublas::row_major>::value)
   );
   typedef A array_type;
   typedef

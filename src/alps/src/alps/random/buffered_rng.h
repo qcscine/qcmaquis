@@ -129,7 +129,7 @@ template <class RNG>
 class buffered_rng : public buffered_rng_base {
  private:
   BOOST_STATIC_ASSERT(
-      (::boost::is_same<typename RNG::result_type, uint32_t>::value)
+      (::std::is_same<typename RNG::result_type, uint32_t>::value)
   );
 
  public:

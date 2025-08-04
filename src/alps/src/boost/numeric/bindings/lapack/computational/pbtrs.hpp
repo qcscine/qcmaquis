@@ -140,7 +140,7 @@ struct pbtrs_impl {
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixAB>::value));
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixB>::value));
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixAB>::type>::type,
             typename remove_const<

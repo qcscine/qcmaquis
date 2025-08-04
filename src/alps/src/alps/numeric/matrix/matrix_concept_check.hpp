@@ -106,7 +106,7 @@ struct DiagonalIteratableMatrix : Matrix<X> {
   BOOST_CONCEPT_ASSERT((boost::InputIterator<const_diagonal_iterator>));
   BOOST_CONCEPT_USAGE(DiagonalIteratableMatrix) {
     typename boost::remove_const<X>::type x(1, 1);
-    typename boost::add_const<X>::type y(1, 1);
+    typename std::add_const<X>::type y(1, 1);
 
     std::pair<diagonal_iterator, diagonal_iterator> diagonal_range =
         diagonal(x);
@@ -132,7 +132,7 @@ struct IteratableMatrix : DiagonalIteratableMatrix<X> {
 
   BOOST_CONCEPT_USAGE(IteratableMatrix) {
     typename boost::remove_const<X>::type x(1, 1);
-    typename boost::add_const<X>::type y(1, 1);
+    typename std::add_const<X>::type y(1, 1);
     // Iterator functions
     std::pair<row_element_iterator, row_element_iterator> row_range = row(x, 0);
     std::pair<col_element_iterator, col_element_iterator> col_range = col(x, 0);

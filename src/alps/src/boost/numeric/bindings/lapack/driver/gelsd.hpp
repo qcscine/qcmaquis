@@ -161,14 +161,14 @@ struct gelsd_impl<Value, typename boost::enable_if<is_real<Value> >::type> {
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixA>::value));
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixB>::value));
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixA>::type>::type,
             typename remove_const<
                 typename bindings::value_type<MatrixB>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixA>::type>::type,
             typename remove_const<
@@ -264,7 +264,8 @@ struct gelsd_impl<Value, typename boost::enable_if<is_real<Value> >::type> {
     bindings::detail::array<real_type> tmp_work(
         min_size_work(minmn, smlsiz, nlvl, bindings::size_column(b))
     );
-    bindings::detail::array<fortran_int_t> tmp_iwork(min_size_iwork(minmn, nlvl)
+    bindings::detail::array<fortran_int_t> tmp_iwork(
+        min_size_iwork(minmn, nlvl)
     );
     return invoke(a, b, s, rcond, rank, workspace(tmp_work, tmp_iwork));
   }
@@ -296,7 +297,8 @@ struct gelsd_impl<Value, typename boost::enable_if<is_real<Value> >::type> {
         0
     );
     real_type opt_size_work;
-    bindings::detail::array<fortran_int_t> tmp_iwork(min_size_iwork(minmn, nlvl)
+    bindings::detail::array<fortran_int_t> tmp_iwork(
+        min_size_iwork(minmn, nlvl)
     );
     detail::gelsd(
         bindings::size_row(a), bindings::size_column(a),
@@ -361,7 +363,7 @@ struct gelsd_impl<Value, typename boost::enable_if<is_complex<Value> >::type> {
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixA>::value));
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixB>::value));
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixA>::type>::type,
             typename remove_const<
@@ -465,7 +467,8 @@ struct gelsd_impl<Value, typename boost::enable_if<is_complex<Value> >::type> {
     bindings::detail::array<real_type> tmp_rwork(
         min_size_rwork(minmn, smlsiz, nlvl, bindings::size_column(b))
     );
-    bindings::detail::array<fortran_int_t> tmp_iwork(min_size_iwork(minmn, nlvl)
+    bindings::detail::array<fortran_int_t> tmp_iwork(
+        min_size_iwork(minmn, nlvl)
     );
     return invoke(
         a, b, s, rcond, rank, workspace(tmp_work, tmp_rwork, tmp_iwork)
@@ -502,7 +505,8 @@ struct gelsd_impl<Value, typename boost::enable_if<is_complex<Value> >::type> {
     bindings::detail::array<real_type> tmp_rwork(
         min_size_rwork(minmn, smlsiz, nlvl, bindings::size_column(b))
     );
-    bindings::detail::array<fortran_int_t> tmp_iwork(min_size_iwork(minmn, nlvl)
+    bindings::detail::array<fortran_int_t> tmp_iwork(
+        min_size_iwork(minmn, nlvl)
     );
     detail::gelsd(
         bindings::size_row(a), bindings::size_column(a),

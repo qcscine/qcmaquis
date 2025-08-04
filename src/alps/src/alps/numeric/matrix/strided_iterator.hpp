@@ -52,17 +52,17 @@ class strided_iterator
     // The value_type of the iterator must be the value_type of the matrix or
     // const Matrix::value_type
     BOOST_STATIC_ASSERT(
-        (boost::is_same<typename Matrix::value_type, T>::value ||
-         boost::is_same<const typename Matrix::value_type, T>::value)
+        (std::is_same<typename Matrix::value_type, T>::value ||
+         std::is_same<const typename Matrix::value_type, T>::value)
     );
   }
 
   template <typename Matrix2, typename U>
   strided_iterator(strided_iterator<Matrix2, U> const& r)
       : ptr(r.ptr), stride(r.stride) {
-    BOOST_STATIC_ASSERT((boost::is_same<
-                         typename boost::add_const<Matrix>::type,
-                         typename boost::add_const<Matrix2>::type>::value));
+    BOOST_STATIC_ASSERT((std::is_same<
+                         typename std::add_const<Matrix>::type,
+                         typename std::add_const<Matrix2>::type>::value));
   }
 
  private:
@@ -77,9 +77,9 @@ class strided_iterator
 
   template <typename Matrix2, typename U>
   bool equal(strided_iterator<Matrix2, U> const& y) const {
-    BOOST_STATIC_ASSERT((boost::is_same<
-                         typename boost::add_const<Matrix>::type,
-                         typename boost::add_const<Matrix2>::type>::value));
+    BOOST_STATIC_ASSERT((std::is_same<
+                         typename std::add_const<Matrix>::type,
+                         typename std::add_const<Matrix2>::type>::value));
     return (ptr == y.ptr);
   }
   void increment() { ptr += stride; }

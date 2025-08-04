@@ -179,70 +179,70 @@ struct gtsvx_impl<Value, typename boost::enable_if<is_real<Value> >::type> {
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixB>::value));
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixX>::value));
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorDL>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorD>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorDL>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorDU>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorDL>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorDLF>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorDL>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorDF>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorDL>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorDUF>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorDL>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorDU2>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorDL>::type>::type,
             typename remove_const<
                 typename bindings::value_type<MatrixB>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorDL>::type>::type,
             typename remove_const<
                 typename bindings::value_type<MatrixX>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorDL>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorFERR>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorDL>::type>::type,
             typename remove_const<
@@ -408,63 +408,63 @@ struct gtsvx_impl<Value, typename boost::enable_if<is_complex<Value> >::type> {
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixB>::value));
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixX>::value));
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorFERR>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorBERR>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorDL>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorD>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorDL>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorDU>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorDL>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorDLF>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorDL>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorDF>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorDL>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorDUF>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorDL>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorDU2>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorDL>::type>::type,
             typename remove_const<
                 typename bindings::value_type<MatrixB>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorDL>::type>::type,
             typename remove_const<

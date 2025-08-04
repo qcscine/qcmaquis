@@ -99,14 +99,14 @@ struct opgtr_impl {
     namespace bindings = ::boost::numeric::bindings;
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixQ>::value));
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorAP>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorTAU>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorAP>::type>::type,
             typename remove_const<

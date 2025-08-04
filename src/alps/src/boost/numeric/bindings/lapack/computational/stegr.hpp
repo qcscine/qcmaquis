@@ -166,21 +166,21 @@ struct stegr_impl<Value, typename boost::enable_if<is_real<Value> >::type> {
     namespace bindings = ::boost::numeric::bindings;
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixZ>::value));
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorD>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorE>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorD>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorW>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorD>::type>::type,
             typename remove_const<
@@ -333,14 +333,14 @@ struct stegr_impl<Value, typename boost::enable_if<is_complex<Value> >::type> {
     namespace bindings = ::boost::numeric::bindings;
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixZ>::value));
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorD>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorE>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorD>::type>::type,
             typename remove_const<

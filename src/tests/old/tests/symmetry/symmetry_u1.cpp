@@ -33,7 +33,7 @@
 
 BOOST_AUTO_TEST_CASE(symmetry_u1_type_test) {
   typedef U1::charge value_type;
-  BOOST_MPL_ASSERT((boost::is_same<int, value_type>));
+  BOOST_MPL_ASSERT((std::is_same<int, value_type>));
   value_type q(0);
   BOOST_CHECK_EQUAL(q, 0);
 }

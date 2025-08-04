@@ -33,11 +33,11 @@ namespace umfpack {
 template <typename MatrA>
 void check_umfpack_structure() {
   BOOST_STATIC_ASSERT(
-      (boost::is_same<
+      (std::is_same<
           typename bindings::detail::property_at<MatrA, tag::matrix_type>::type,
           tag::general>::value)
   );
-  BOOST_STATIC_ASSERT((boost::is_same<
+  BOOST_STATIC_ASSERT((std::is_same<
                        typename bindings::result_of::data_order<MatrA>::type,
                        tag::column_major>::value));
   typedef typename bindings::result_of::index_base<MatrA>::type index_b;
@@ -46,8 +46,8 @@ void check_umfpack_structure() {
       typename bindings::detail::property_at<MatrA, tag::data_structure>::type
           storage_f;
   BOOST_STATIC_ASSERT(
-      (boost::is_same<storage_f, tag::compressed_sparse>::value ||
-       boost::is_same<storage_f, tag::coordinate_sparse>::value)
+      (std::is_same<storage_f, tag::compressed_sparse>::value ||
+       std::is_same<storage_f, tag::coordinate_sparse>::value)
   );
 }
 

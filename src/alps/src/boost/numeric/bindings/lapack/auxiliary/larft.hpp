@@ -130,14 +130,14 @@ struct larft_impl {
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixV>::value));
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixT>::value));
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixV>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorTAU>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixV>::type>::type,
             typename remove_const<

@@ -102,14 +102,14 @@ struct stevd_impl {
     namespace bindings = ::boost::numeric::bindings;
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixZ>::value));
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorD>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorE>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorD>::type>::type,
             typename remove_const<

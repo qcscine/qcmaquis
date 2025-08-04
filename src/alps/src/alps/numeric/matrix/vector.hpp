@@ -68,7 +68,7 @@ class vector : public MemoryBlock {
   explicit vector(
       Vector const& v,
       typename boost::enable_if<
-          boost::is_same<typename get_entity<Vector>::type, tag::vector>,
+          std::is_same<typename get_entity<Vector>::type, tag::vector>,
           void>::type* = 0
   )
       : MemoryBlock(v.begin(), v.end()) {}

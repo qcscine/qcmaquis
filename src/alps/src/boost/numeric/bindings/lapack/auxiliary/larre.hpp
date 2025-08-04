@@ -120,56 +120,56 @@ struct larre_impl {
   ) {
     namespace bindings = ::boost::numeric::bindings;
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorD>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorE>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorD>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorE2>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorD>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorW>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorD>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorWERR>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorD>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorWGAP>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorD>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorGERS>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT((
-        boost::is_same<
+        std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorISPLIT>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorIBLOCK>::type>::type>::value
     ));
     BOOST_STATIC_ASSERT((
-        boost::is_same<
+        std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorISPLIT>::type>::type,
             typename remove_const<

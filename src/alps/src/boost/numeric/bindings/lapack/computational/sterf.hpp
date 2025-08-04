@@ -84,7 +84,7 @@ struct sterf_impl {
   static std::ptrdiff_t invoke(const fortran_int_t n, VectorD& d, VectorE& e) {
     namespace bindings = ::boost::numeric::bindings;
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorD>::type>::type,
             typename remove_const<

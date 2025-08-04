@@ -223,7 +223,7 @@ struct getrs_impl {
     typedef typename result_of::trans_tag<MatrixA, order>::type trans;
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixB>::value));
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixA>::type>::type,
             typename remove_const<

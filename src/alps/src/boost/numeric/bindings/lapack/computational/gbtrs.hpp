@@ -149,7 +149,7 @@ struct gbtrs_impl {
     typedef typename result_of::data_order<MatrixB>::type order;
     typedef typename result_of::trans_tag<MatrixAB, order>::type trans;
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixAB>::type>::type,
             typename remove_const<

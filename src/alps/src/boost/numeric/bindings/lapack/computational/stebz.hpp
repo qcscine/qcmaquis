@@ -114,21 +114,21 @@ struct stebz_impl {
   ) {
     namespace bindings = ::boost::numeric::bindings;
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorD>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorE>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorD>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorW>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT((
-        boost::is_same<
+        std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorIBLOCK>::type>::type,
             typename remove_const<

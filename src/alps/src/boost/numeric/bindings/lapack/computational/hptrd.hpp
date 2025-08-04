@@ -135,21 +135,21 @@ struct hptrd_impl<Value, typename boost::enable_if<is_real<Value> >::type> {
     namespace bindings = ::boost::numeric::bindings;
     typedef typename result_of::uplo_tag<MatrixAP>::type uplo;
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixAP>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorD>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixAP>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorE>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixAP>::type>::type,
             typename remove_const<
@@ -191,14 +191,14 @@ struct hptrd_impl<Value, typename boost::enable_if<is_complex<Value> >::type> {
     namespace bindings = ::boost::numeric::bindings;
     typedef typename result_of::uplo_tag<MatrixAP>::type uplo;
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorD>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorE>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixAP>::type>::type,
             typename remove_const<

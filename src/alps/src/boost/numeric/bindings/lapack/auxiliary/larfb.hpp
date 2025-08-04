@@ -172,14 +172,14 @@ struct larfb_impl<Value, typename boost::enable_if<is_real<Value> >::type> {
     typedef typename result_of::trans_tag<MatrixV, order>::type trans;
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixC>::value));
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixV>::type>::type,
             typename remove_const<
                 typename bindings::value_type<MatrixT>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixV>::type>::type,
             typename remove_const<
@@ -294,14 +294,14 @@ struct larfb_impl<Value, typename boost::enable_if<is_complex<Value> >::type> {
     typedef typename result_of::trans_tag<MatrixV, order>::type trans;
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixC>::value));
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixV>::type>::type,
             typename remove_const<
                 typename bindings::value_type<MatrixT>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixV>::type>::type,
             typename remove_const<

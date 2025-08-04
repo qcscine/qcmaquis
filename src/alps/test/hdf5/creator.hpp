@@ -140,34 +140,34 @@ template <
     typename T5, typename T6, typename T7, typename T8, typename T9>
 void initialize(std::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> &v) {
   initialize_tuple_value<0, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(
-      v, typename boost::is_same<T0, boost::tuples::null_type>::type()
+      v, typename std::is_same<T0, boost::tuples::null_type>::type()
   );
   initialize_tuple_value<1, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(
-      v, typename boost::is_same<T1, boost::tuples::null_type>::type()
+      v, typename std::is_same<T1, boost::tuples::null_type>::type()
   );
   initialize_tuple_value<2, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(
-      v, typename boost::is_same<T2, boost::tuples::null_type>::type()
+      v, typename std::is_same<T2, boost::tuples::null_type>::type()
   );
   initialize_tuple_value<3, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(
-      v, typename boost::is_same<T3, boost::tuples::null_type>::type()
+      v, typename std::is_same<T3, boost::tuples::null_type>::type()
   );
   initialize_tuple_value<4, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(
-      v, typename boost::is_same<T4, boost::tuples::null_type>::type()
+      v, typename std::is_same<T4, boost::tuples::null_type>::type()
   );
   initialize_tuple_value<5, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(
-      v, typename boost::is_same<T5, boost::tuples::null_type>::type()
+      v, typename std::is_same<T5, boost::tuples::null_type>::type()
   );
   initialize_tuple_value<6, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(
-      v, typename boost::is_same<T6, boost::tuples::null_type>::type()
+      v, typename std::is_same<T6, boost::tuples::null_type>::type()
   );
   initialize_tuple_value<7, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(
-      v, typename boost::is_same<T7, boost::tuples::null_type>::type()
+      v, typename std::is_same<T7, boost::tuples::null_type>::type()
   );
   initialize_tuple_value<8, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(
-      v, typename boost::is_same<T8, boost::tuples::null_type>::type()
+      v, typename std::is_same<T8, boost::tuples::null_type>::type()
   );
   initialize_tuple_value<9, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(
-      v, typename boost::is_same<T9, boost::tuples::null_type>::type()
+      v, typename std::is_same<T9, boost::tuples::null_type>::type()
   );
 }
 template <typename T, typename A>
@@ -286,11 +286,11 @@ class cast_type : public cast_type_base<T, U> {
     return compare(
         v, typename boost::mpl::and_<
                typename boost::mpl::or_<
-                   typename boost::is_same<T, double>::type,
-                   typename boost::is_same<T, float>::type>::type,
+                   typename std::is_same<T, double>::type,
+                   typename std::is_same<T, float>::type>::type,
                typename boost::mpl::or_<
-                   typename boost::is_same<U, double>::type,
-                   typename boost::is_same<U, float>::type>::type>::type()
+                   typename std::is_same<U, double>::type,
+                   typename std::is_same<U, float>::type>::type>::type()
     );
   }
 
@@ -299,8 +299,8 @@ class cast_type : public cast_type_base<T, U> {
     U diff = (base_type::has_u ? base_type::u : alps::cast<U>(base_type::t)) -
              (v.has_u ? v.u : alps::cast<U>(v.t));
     return (diff > 0 ? diff : -diff) /
-               ((base_type::has_u ? base_type::u : alps::cast<U>(base_type::t)
-                ) +
+               ((base_type::has_u ? base_type::u
+                                  : alps::cast<U>(base_type::t)) +
                 (v.has_u ? v.u : alps::cast<U>(v.t))) /
                2 <
            1e-4;
@@ -375,7 +375,8 @@ class cast_type<
       std::vector<std::vector<std::vector<U> > > >
       base_type;
   cast_type()
-      : base_type(creator<std::pair<T *, std::vector<std::size_t> > >::special()
+      : base_type(
+            creator<std::pair<T *, std::vector<std::size_t> > >::special()
         ) {}
   bool operator==(cast_type<
                   std::pair<T *, std::vector<std::size_t> >,

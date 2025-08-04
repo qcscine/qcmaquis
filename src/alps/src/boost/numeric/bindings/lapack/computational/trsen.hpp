@@ -114,14 +114,14 @@ struct trsen_impl {
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixT>::value));
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixQ>::value));
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixT>::type>::type,
             typename remove_const<
                 typename bindings::value_type<MatrixQ>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixT>::type>::type,
             typename remove_const<

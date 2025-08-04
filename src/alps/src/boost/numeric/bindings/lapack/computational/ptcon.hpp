@@ -132,7 +132,7 @@ struct ptcon_impl<Value, typename boost::enable_if<is_real<Value> >::type> {
   ) {
     namespace bindings = ::boost::numeric::bindings;
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<VectorD>::type>::type,
             typename remove_const<
@@ -164,7 +164,8 @@ struct ptcon_impl<Value, typename boost::enable_if<is_real<Value> >::type> {
       real_type& rcond, minimal_workspace
   ) {
     namespace bindings = ::boost::numeric::bindings;
-    bindings::detail::array<real_type> tmp_work(min_size_work(bindings::size(d))
+    bindings::detail::array<real_type> tmp_work(
+        min_size_work(bindings::size(d))
     );
     return invoke(d, e, anorm, rcond, workspace(tmp_work));
   }
@@ -237,8 +238,9 @@ struct ptcon_impl<Value, typename boost::enable_if<is_complex<Value> >::type> {
       real_type& rcond, minimal_workspace
   ) {
     namespace bindings = ::boost::numeric::bindings;
-    bindings::detail::array<real_type> tmp_rwork(min_size_rwork(bindings::size(d
-    )));
+    bindings::detail::array<real_type> tmp_rwork(
+        min_size_rwork(bindings::size(d))
+    );
     return invoke(d, e, anorm, rcond, workspace(tmp_rwork));
   }
 

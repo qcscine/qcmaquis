@@ -146,7 +146,7 @@ struct trtrs_impl {
     typedef typename result_of::uplo_tag<MatrixA, trans>::type uplo;
     typedef typename result_of::diag_tag<MatrixA>::type diag;
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixA>::type>::type,
             typename remove_const<

@@ -448,7 +448,7 @@ archive &operator>>(archive &ar, detail::make_pvp_proxy<T> proxy) {
 template <typename T>
 typename boost::disable_if<
     typename boost::mpl::and_<
-        typename boost::is_same<
+        typename std::is_same<
             typename alps::detail::remove_cvr<
                 typename boost::remove_all_extents<T>::type>::type,
             char>::type,
@@ -460,7 +460,7 @@ make_pvp(std::string const &path, T &value) {
 template <typename T>
 typename boost::disable_if<
     typename boost::mpl::and_<
-        typename boost::is_same<
+        typename std::is_same<
             typename alps::detail::remove_cvr<
                 typename boost::remove_all_extents<T>::type>::type,
             char>::type,
@@ -472,7 +472,7 @@ make_pvp(std::string const &path, T const &value) {
 template <typename T>
 typename boost::enable_if<
     typename boost::mpl::and_<
-        typename boost::is_same<
+        typename std::is_same<
             typename alps::detail::remove_cvr<
                 typename boost::remove_all_extents<T>::type>::type,
             char>::type,

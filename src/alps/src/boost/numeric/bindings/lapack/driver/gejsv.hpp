@@ -114,21 +114,21 @@ struct gejsv_impl {
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixU>::value));
     BOOST_STATIC_ASSERT((bindings::is_column_major<MatrixV>::value));
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixA>::type>::type,
             typename remove_const<
                 typename bindings::value_type<VectorSVA>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixA>::type>::type,
             typename remove_const<
                 typename bindings::value_type<MatrixU>::type>::type>::value)
     );
     BOOST_STATIC_ASSERT(
-        (boost::is_same<
+        (std::is_same<
             typename remove_const<
                 typename bindings::value_type<MatrixA>::type>::type,
             typename remove_const<
