@@ -5,7 +5,7 @@ import pytest
 from pyscf import gto, mcscf, scf, fci
 import numpy as np
 
-from scine_qcmaquis.pyscf_interface.pyscf_interface import DMRGSolver
+from scine_qcmaquis import DMRGSolver
 
 
 def test_dmrgci():
