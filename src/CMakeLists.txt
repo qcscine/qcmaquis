@@ -213,10 +213,12 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 
 if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
-  # message(STATUS "Debug build: Adding Address Sanitizer") message(STATUS
-  # "Debug warnings = ${COMPILER_WARNING_FLAGS}") add_compile_options(-g3
-  # -fsanitize=address,leak,undefined) add_link_options(-g3
-  # -fsanitize=address,leak,undefined)
+  message(STATUS "Debug build: Adding Address Sanitizer")
+  message(STATUS "Debug warnings = ${COMPILER_WARNING_FLAGS}")
+  add_compile_options(-g3)
+  add_link_options(-g3)
+  # add_compile_options(-g3 -fsanitize=address,leak,undefined)
+  # add_link_options(-g3 -fsanitize=address,leak,undefined)
 endif()
 # ##############################################################################
 # Symmetries management
