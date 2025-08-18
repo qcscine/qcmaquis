@@ -61,8 +61,9 @@ class qc_model : public model_impl<Matrix, SymmGroup> {
   void create_terms();
 
   /** @brief Updates the map with the operator definition */
-  void addTerm(MapOfOperatorsType& mapOfOperators, const term_descriptor& term)
-      const;
+  void addTerm(
+      MapOfOperatorsType& mapOfOperators, const term_descriptor& term
+  ) const;
 
   void update(BaseParameters const& p) {
     throw std::runtime_error("update() not yet implemented for this model.");
@@ -75,7 +76,8 @@ class qc_model : public model_impl<Matrix, SymmGroup> {
   tag_type identity_matrix_tag(size_t type) const { return ident[type]; }
   tag_type filling_matrix_tag(size_t type) const { return fill[type]; }
 
-  typename SymmGroup::charge total_quantum_numbers(BaseParameters& parms_
+  typename SymmGroup::charge total_quantum_numbers(
+      BaseParameters& parms_
   ) const {
     return chem::detail::qn_helper<SymmGroup>().total_qn(parms_);
   }
@@ -119,7 +121,7 @@ class qc_model : public model_impl<Matrix, SymmGroup> {
     using tokenizer = boost::tokenizer<boost::char_separator<char>>;
 
     std::vector<tag_type> swap_d2u =
-        (tag_handler->get_product_tags(destroy_down, create_up)).first;
+        (tag_handler->get_product_tags(destroy_down_for_meas, create_up)).first;
     std::vector<tag_type> swap_u2d =
         (tag_handler->get_product_tags(destroy_up, create_down_for_meas)).first;
     std::vector<tag_type> create_up_count_down =
@@ -129,7 +131,7 @@ class qc_model : public model_impl<Matrix, SymmGroup> {
     std::vector<tag_type> destroy_up_count_down =
         (tag_handler->get_product_tags(count_down, destroy_up)).first;
     std::vector<tag_type> destroy_down_count_up =
-        (tag_handler->get_product_tags(count_up, destroy_down)).first;
+        (tag_handler->get_product_tags(count_up, destroy_down_for_meas)).first;
 
     std::vector<op_t> ident_ops = tag_handler->get_ops(ident);
     std::vector<op_t> fill_ops = tag_handler->get_ops(fill);
@@ -540,8 +542,9 @@ class qc_model : public model_impl<Matrix, SymmGroup> {
             std::transform(
                 pos_tokens.begin(), pos_tokens.end(),
                 std::back_inserter(positions),
-                static_cast<pos_t (*)(std::string const&)>(boost::lexical_cast<
-                                                           pos_t, std::string>)
+                static_cast<pos_t (*)(std::string const&)>(
+                    boost::lexical_cast<pos_t, std::string>
+                )
             );
             /*
             maquis::cout << "my positions are ... ";
@@ -680,7 +683,7 @@ class qc_model : public model_impl<Matrix, SymmGroup> {
             meas_operators.push_back(create_down_for_meas);
             meas_operators.push_back(create_down_for_meas);
             meas_operators.push_back(create_up);
-            meas_operators.push_back(create_down);
+            meas_operators.push_back(create_down_for_meas);
             meas_operators.push_back(destroy_down_for_meas);
             meas_operators.push_back(destroy_down_for_meas);
             meas_operators.push_back(destroy_up);
@@ -831,8 +834,9 @@ class qc_model : public model_impl<Matrix, SymmGroup> {
             std::transform(
                 pos_tokens.begin(), pos_tokens.end(),
                 std::back_inserter(positions),
-                static_cast<pos_t (*)(std::string const&)>(boost::lexical_cast<
-                                                           pos_t, std::string>)
+                static_cast<pos_t (*)(std::string const&)>(
+                    boost::lexical_cast<pos_t, std::string>
+                )
             );
             /*
             maquis::cout << "my positions are ... ";
@@ -1056,13 +1060,13 @@ class qc_model : public model_impl<Matrix, SymmGroup> {
               meas_operators.push_back(destroy_up);
               ++f_ops;
             } else if (*it2 == "c_down") {
-              meas_operators.push_back(destroy_down);
+              meas_operators.push_back(destroy_down_for_meas);
               ++f_ops;
             } else if (*it2 == "cdag_up") {
               meas_operators.push_back(create_up);
               ++f_ops;
             } else if (*it2 == "cdag_down") {
-              meas_operators.push_back(create_down);
+              meas_operators.push_back(create_down_for_meas);
               ++f_ops;
             }
 
@@ -1122,13 +1126,15 @@ class qc_model : public model_impl<Matrix, SymmGroup> {
             std::transform(
                 pos_tokens.begin(), pos_tokens.end(),
                 std::back_inserter(positions),
-                static_cast<pos_t (*)(std::string const&)>(boost::lexical_cast<
-                                                           pos_t, std::string>)
+                static_cast<pos_t (*)(std::string const&)>(
+                    boost::lexical_cast<pos_t, std::string>
+                )
             );
           }
 
           std::vector<scaled_bond_element> synchronous_meas_operators;
-          synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1)
+          synchronous_meas_operators.push_back(
+              std::make_pair(meas_operators, 1)
           );
           meas.push_back(new measurements::TaggedNRankRDM<Matrix, SymmGroup>(
               name, lat, tag_handler, ident, fill, synchronous_meas_operators,
@@ -1147,8 +1153,8 @@ class qc_model : public model_impl<Matrix, SymmGroup> {
   std::vector<Index<SymmGroup>> phys_indices;
   std::shared_ptr<TagHandler<Matrix, SymmGroup>> tag_handler;
   static constexpr bool isTranscorrelated_ =
-      (HamiltonianTranscorrelated == HamiltonianTransformation::Transcorrelated
-      );
+      (HamiltonianTranscorrelated ==
+       HamiltonianTransformation::Transcorrelated);
   bool isQuantumComputingFormat;
 
   // Need a vector to store operators corresponding to different irreps
