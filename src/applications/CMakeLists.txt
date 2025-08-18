@@ -27,7 +27,3 @@ add_custom_command(
   TARGET qcmaquis
   POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:qcmaquis> ${CMAKE_BINARY_DIR})
-
-
-add_executable(hirdm-debug hirdm-debug.cpp)
-target_link_libraries(hirdm-debug ${DMRG_APP_LIBRARIES})
