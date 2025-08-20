@@ -84,7 +84,6 @@ def test_maquis_dmrg_sweep_from_fcidump():
         tmp_fcidump.close()
     _write_fcidump()
     parameters = ParametersWrapper()
-    parameters._set_defaults()
     parameters.set_system(4, 2, 0)
     integrals = IntegralMapWrapper()
     integrals.fill_from_fcidump("fcidump_mock")

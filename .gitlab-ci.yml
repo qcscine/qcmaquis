@@ -38,6 +38,21 @@ testElectronic:
     - cd buildElectronic
     - make CTEST_OUTPUT_ON_FAILURE=1 test
 
+test-python-package:
+  stage: testBasic
+  tags:
+    - default_docker
+  script:
+    # Install Python dependencies and package
+    - python3 -m pip install --upgrade pip
+    - python3 -m pip install .[dev]
+    # Run Python tests
+    - pytest --junit-xml=pytest-results.xml
+  artifacts:
+    reports:
+      junit: pytest-results.xml
+    when: always
+
 # Relativistic electronic-structure tests
 build-relativistic:
   stage: buildAdvanced

@@ -13,7 +13,7 @@ readme = "README.md"
 license = {text = "Proprietary"}
 requires-python = ">=3.8"
 dependencies = [
-    "numpy",
+    "numpy>=1.23.5,<2.3.0",
     "tomli>=1.0.0;python_version<'3.11'",
 ]
 classifiers = [
@@ -45,7 +45,7 @@ docs = [
 
 [tool.setuptools]
 package-dir = {"" = "src/python"}
-packages = ["scine_qcmaquis", "scine_qcmaquis.utils"]
+packages = ["scine_qcmaquis", "scine_qcmaquis.utils", "scine_qcmaquis.pyscf_interface", "scine_qcmaquis.tests", "scine_qcmaquis.tests.pyscf_interface"]
 
 [tool.setuptools.package-data]
 "*" = ["*.txt", "*.md"]
@@ -115,3 +115,8 @@ exclude = ["tests"]
 [[tool.mypy.overrides]]
 module = ["yaml.*", "numpy.*", "h5py.*", "matplotlib.*", "pyscf.*", "_dmrg.*"]
 ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["src/python/scine_qcmaquis/tests"]
+pythonpath = ["."]
+addopts = "--import-mode=importlib -v"
