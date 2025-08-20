@@ -1,0 +1,117 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel", "numpy", "tomli>=1.0.0;python_version<'3.11'"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scine_qcmaquis"
+version = "1.0.0"
+description = "SCINE QCMaquis: DMRG quantum chemistry package with support for electronic, vibrational, and time-dependent calculations"
+authors = [
+    {name = "ETH Zurich, Laboratory of Physical Chemistry, Reiher Group"},
+]
+readme = "README.md"
+license = {text = "Proprietary"}
+requires-python = ">=3.8"
+dependencies = [
+    "numpy",
+    "tomli>=1.0.0;python_version<'3.11'",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: C++",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "black",
+    "isort",
+    "flake8",
+    "mypy",
+]
+docs = [
+    "sphinx",
+    "sphinx-rtd-theme",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src/python"}
+packages = ["scine_qcmaquis", "scine_qcmaquis.utils"]
+
+[tool.setuptools.package-data]
+"*" = ["*.txt", "*.md"]
+
+[tool.dmrg_build]
+# Build configuration profiles
+# Users can select these with: pip install . --config-settings="--build-profile=vibrational"
+
+[tool.dmrg_build.profiles.default]
+symmetries = "TwoU1;TwoU1PG;SU2U1;SU2U1PG"
+evolve = true
+transcorrelated = true
+vibrational = false
+vibronic = false
+
+[tool.dmrg_build.profiles.vibrational]
+symmetries = "U1;NONE;NU1"
+evolve = false
+transcorrelated = false
+vibrational = true
+vibronic = false
+numsymm = 6
+
+[tool.dmrg_build.profiles.time_dependent]
+symmetries = "U1;NU1;NONE"
+evolve = true
+transcorrelated = false
+vibrational = true
+vibronic = true
+
+[tool.dmrg_build.profiles.full]
+symmetries = "U1;TwoU1;TwoU1PG;NU1;NONE;SU2U1;SU2U1PG"
+evolve = true
+transcorrelated = true
+vibrational = true
+vibronic = true
+numsymm = 12
+
+[tool.dmrg_build.profiles.vibrational_ethene]
+symmetries = "U1;NONE;NU1"
+evolve = false
+transcorrelated = false
+vibrational = true
+vibronic = false
+numsymm = 12
+
+[tool.isort]
+profile = "black"
+line_length = 120
+
+[tool.black]
+line-length = 120
+target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+
+[tool.flake8]
+max-line-length = 120
+max-complexity = 20
+per-file-ignores = ["__init__.py:F401"]
+exclude = ["cq_hdf5_reader.py"]
+
+[tool.mypy]
+show_error_codes = true
+pretty = false
+warn_redundant_casts = true
+exclude = ["tests"]
+
+[[tool.mypy.overrides]]
+module = ["yaml.*", "numpy.*", "h5py.*", "matplotlib.*", "pyscf.*", "_dmrg.*"]
+ignore_missing_imports = true
