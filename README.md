@@ -75,6 +75,7 @@ For issues and bug reports with QCMaquis in OpenMOLCAS, please open an issue in 
 For reproducibility reasons, please cite, depending on the actual calculations you carried out, one or more of the following papers in publications that present data produced with QCMaquis:
 
 ### General reference to the code:
+  - K. Szenes, N. Glaser, M. Erakovic, V. Barandun, M. Mörchen, R. Feldmann, S. Battaglia, A. Baiardi, M. Reiher, "QCMaquis 4.0: Multipurpose Electronic, Vibrational, and Vibronic Structure and Dynamics Calculations with the Density Matrix Renormalization Group", J. Phys. Chem. A, 2025, 129, 7549. [DOI](https://doi.org/10.1021/acs.jpca.5c02970)
   - S. Keller, M. Dolfi, M. Troyer, M. Reiher, "An efficient matrix product operator representation of the quantum chemical Hamiltonian", J. Chem. Phys., 2015, 143, 244118. [DOI](https://doi.org/10.1063/1.4939000)
 ### DMRG-NEVPT2:
   - L. Freitag, S. Knecht, C. Angeli, M. Reiher, Multireference Perturbation Theory with Cholesky Decomposition for the Density Matrix Renormalization Group", J. Chem. Theory Comput., 2017, 13, 451. [DOI](https://doi.org/10.1021/acs.jctc.6b00778)
