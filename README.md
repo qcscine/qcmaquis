@@ -16,7 +16,7 @@ QCMaquis is an efficient C++17 implementation of the density matrix renormalizat
     - Analytic gradients for state-specific DMRG-SCF calculations
     - MPS state interaction (MPS-SI) for the calculation of spin-orbit coupling matrix elements, electronic and magnetic properties
     - state-specific and quasi-degenerate (multi-state) DMRG-NEVPT2 calculations
-  - The current release version can be used together with SCINE autoCAS
+  - The current release version can be used together with SCINE autoCAS 3.0.0
 
 ## QCMaquis compilation and installation
 ### Prerequisites:
