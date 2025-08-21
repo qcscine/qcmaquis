@@ -28,6 +28,7 @@ QCMaquis is an efficient C++17 implementation of the density matrix renormalizat
 - [HDF5](https://www.hdfgroup.org/downloads/hdf5)
 - Linear algebra library, such as BLAS/Lapack, [Intel MKL](https://software.intel.com/content/www/us/en/develop/tools/math-kernel-library.html) or [OpenBLAS](https://www.openblas.net/)
 - For documentation: PDFLaTeX
+
 For a quick start, type the following into the terminal:
 ```
 git clone https://github.com/qcscine/qcmaquis.git qcmaquis
