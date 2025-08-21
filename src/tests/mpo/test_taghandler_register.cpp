@@ -25,13 +25,20 @@
 typedef boost::mpl::list<
 #ifdef HAVE_TrivialGroup
     TrivialGroup
+    #ifdef HAVE_U1
+    ,
+    #endif
+    #ifdef HAVE_NU1
+    ,
+    #endif
 #endif
 #ifdef HAVE_U1
-    ,
     U1
+    #ifdef HAVE_NU1
+    ,
+    #endif
 #endif
 #ifdef HAVE_NU1
-    ,
     NU1_template<5>
 #endif
     >
