@@ -20,6 +20,10 @@
 - Removed keyword "ipi_sweeps_per_system", instead the standard keyword "nsweeps" is used.
 - Cleaned up and improved output format.
 
+## Release 3.1.4
+
+- Fix missing `#include <map>` in `results_collector.h`
+
 ## Release 3.1.3
 
 - Added support for DMRG[IP], the inverse power iteration method applied to MPS wave functions.
