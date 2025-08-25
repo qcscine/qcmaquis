@@ -47,7 +47,7 @@ test-python-package:
     - python3 -m pip install --upgrade pip
     - python3 -m pip install .[dev]
     # Run Python tests
-    - pytest --junit-xml=pytest-results.xml
+    - python3 -m pytest --junit-xml=pytest-results.xml
   artifacts:
     reports:
       junit: pytest-results.xml
