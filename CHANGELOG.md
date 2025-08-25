@@ -10,7 +10,6 @@
 - Added PySCF interface.
 - Enhanced SRCAS for electronic DMRG.
 - Added functionality to calculate one- and two-modal RDMs in n-mode quantization framework.
-- Added Excitonic Model.
 - Added $n$-Mode quantized vibrational Hamiltonian.
 - Added correlation analysis for vibrational basis functions.
 
