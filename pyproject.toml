@@ -32,12 +32,16 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
+pyscf = [
+    "pyscf>=2.0",
+]
 dev = [
     "pytest",
     "black",
     "isort",
     "flake8",
     "mypy",
+    "pyscf>=2.0",
 ]
 docs = [
     "sphinx",
