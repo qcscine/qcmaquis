@@ -23,7 +23,7 @@ BOOST_FIXTURE_TEST_CASE(Test_NmodeModels_Energy, NModeFixture) {
   parametersWater.set("nmode_num_basis", "7,7,7");
   parametersWater.set("init_basis_state", "1,1,1");
   parametersWater.set("symmetry", "none");
-  parametersWater.set("integral_file", "integral_file_test_OneBodyWater");
+  parametersWater.set("integral_file", oneBodyWaterFile);
   parametersWater.set("MODEL", "nmodecompact");
   parametersWater.set("LATTICE", "watson lattice");
   parametersWater.set("L", 3);
@@ -33,7 +33,7 @@ BOOST_FIXTURE_TEST_CASE(Test_NmodeModels_Energy, NModeFixture) {
   parametersWater.set("nmode_num_basis", "6,6,6");
   parametersWater.set("init_basis_state", "0,0,0");
   parametersWater.set("symmetry", "none");
-  parametersWater.set("integral_file", "integral_file_test_OneBodyWater");
+  parametersWater.set("integral_file", oneBodyWaterFile);
   parametersWater.set("MODEL", "nmodecompactpaired");
   parametersWater.set("LATTICE", "watson lattice");
   parametersWater.set("L", 3);
@@ -43,7 +43,7 @@ BOOST_FIXTURE_TEST_CASE(Test_NmodeModels_Energy, NModeFixture) {
   parametersWater.set("nmode_num_basis", "6,6,6");
   parametersWater.set("init_basis_state", "0,0,0");
   parametersWater.set("symmetry", "nu1");
-  parametersWater.set("integral_file", "integral_file_test_OneBodyWater");
+  parametersWater.set("integral_file", oneBodyWaterFile);
   parametersWater.set("MODEL", "nmode");
   parametersWater.set("LATTICE", "nmode lattice");
   parametersWater.set("L", 18);

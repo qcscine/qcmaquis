@@ -24,9 +24,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibronic_Excitonic_SingleSite, VibronicFixture) {
   parametersExcitonicAggregate.set("optimization", "singlesite");
   parametersExcitonicAggregate.set("nsweeps", 10);
   parametersExcitonicAggregate.set("max_bond_dimension", 20);
-  parametersExcitonicAggregate.set(
-      "integral_file", "integral_file_Excitonic_Harmonic"
-  );
+  parametersExcitonicAggregate.set("integral_file", excitonicHarmonicFile);
   parametersExcitonicAggregate.set("ngrowsweeps", 2);
   parametersExcitonicAggregate.set("nmainsweeps", 2);
   parametersExcitonicAggregate.set("alpha_initial", 1.0E-8);
@@ -55,9 +53,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibronic_Excitonic_TwoSite, VibronicFixture) {
   parametersExcitonicAggregate.set("optimization", "twosite");
   parametersExcitonicAggregate.set("nsweeps", 10);
   parametersExcitonicAggregate.set("max_bond_dimension", 20);
-  parametersExcitonicAggregate.set(
-      "integral_file", "integral_file_Excitonic_Harmonic"
-  );
+  parametersExcitonicAggregate.set("integral_file", excitonicHarmonicFile);
   parametersExcitonicAggregate.set("vibronic_J_coupling", 0.);
   parametersExcitonicAggregate.set("vibronic_J_excitation", 1000.);
   // Creates the interface
