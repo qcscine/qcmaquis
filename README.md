@@ -23,6 +23,7 @@ QCMaquis is an efficient C++17 implementation of the density matrix renormalizat
 - a C++ compiler, optionally a Fortran compiler for the OpenMOLCAS Fortran interface. Only G++ has been tested.
 - GNU make
 - [CMake](https://cmake.org)
+- [Eigen](https://eigen.tuxfamily.org)
 - [Boost](https://boost.org) >= 1.56
 - [GSL](https://www.gnu.org/software/gsl/)
 - [HDF5](https://www.hdfgroup.org/downloads/hdf5)
@@ -32,7 +33,7 @@ QCMaquis is an efficient C++17 implementation of the density matrix renormalizat
 For a quick start, type the following into the terminal:
 ```
 git clone https://github.com/qcscine/qcmaquis.git qcmaquis
-cd qcmaquis/dmrg
+cd qcmaquis
 mkdir build
 cd build
 cmake -D<CMAKE_COMPILE_OPTIONS> ../
