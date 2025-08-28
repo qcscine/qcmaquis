@@ -10,6 +10,9 @@
 
 #include "dmrg/utils/DmrgParameters.h"
 #include "maquis_dmrg.h"
+#include <sstream>
+#include <unistd.h>
+#include <chrono>
 
 /**
  * @brief Fixture class for the test of the n-mode vibrational DMRG code.
@@ -20,6 +23,18 @@ struct NModeFixture {
       maquis::integral_map<double, chem::Hamiltonian::VibrationalNMode>;
   /** @brief Constructor for the fixture class */
   NModeFixture() {
+    // Generate unique suffix for this test instance
+    std::stringstream ss;
+    ss << "_" << getpid() << "_"
+       << std::chrono::steady_clock::now().time_since_epoch().count();
+    uniqueSuffix = ss.str();
+
+    // Define unique filenames
+    oneBodyFile = "integral_file_test_OneBodyFAD" + uniqueSuffix;
+    twoBodyFile = "integral_file_test_TwoBodyFAD" + uniqueSuffix;
+    fingerprintFile =
+        "integral_file_test_TwoBodyFAD_Fingerprint" + uniqueSuffix;
+    oneBodyWaterFile = "integral_file_test_OneBodyWater" + uniqueSuffix;
     // == PARAMETERS FOR DUMMY CALCULATIONS ==
     parametersTwoMode.set("L", 24);
     parametersTwoMode.set("nmode_num_modes", 2);
@@ -40,7 +55,7 @@ struct NModeFixture {
     parametersFADOneBody.set("symmetry", "nu1");
     parametersFADOneBody.set("LATTICE", "nmode lattice");
     parametersFADOneBody.set("MODEL", "nmode");
-    parametersFADOneBody.set("integral_file", "integral_file_test_OneBodyFAD");
+    parametersFADOneBody.set("integral_file", oneBodyFile);
     //
     parametersFADOneBodyPaired.set("L", 1);
     parametersFADOneBodyPaired.set("nmode_num_modes", 1);
@@ -49,9 +64,7 @@ struct NModeFixture {
     parametersFADOneBodyPaired.set("symmetry", "none");
     parametersFADOneBodyPaired.set("LATTICE", "watson lattice");
     parametersFADOneBodyPaired.set("MODEL", "nmodecompactpaired");
-    parametersFADOneBodyPaired.set(
-        "integral_file", "integral_file_test_OneBodyFAD"
-    );
+    parametersFADOneBodyPaired.set("integral_file", oneBodyFile);
     //
     parametersFADTwoBody.set("L", 22);
     parametersFADTwoBody.set("nmode_num_modes", 2);
@@ -60,7 +73,7 @@ struct NModeFixture {
     parametersFADTwoBody.set("symmetry", "nu1");
     parametersFADTwoBody.set("LATTICE", "nmode lattice");
     parametersFADTwoBody.set("MODEL", "nmode");
-    parametersFADTwoBody.set("integral_file", "integral_file_test_TwoBodyFAD");
+    parametersFADTwoBody.set("integral_file", twoBodyFile);
     //
     parametersFADTwoBodyPaired.set("L", 2);
     parametersFADTwoBodyPaired.set("nmode_num_modes", 2);
@@ -69,9 +82,7 @@ struct NModeFixture {
     parametersFADTwoBodyPaired.set("symmetry", "none");
     parametersFADTwoBodyPaired.set("LATTICE", "watson lattice");
     parametersFADTwoBodyPaired.set("MODEL", "nmodecompactpaired");
-    parametersFADTwoBodyPaired.set(
-        "integral_file", "integral_file_test_TwoBodyFAD"
-    );
+    parametersFADTwoBodyPaired.set("integral_file", twoBodyFile);
     //
     parametersWater.set("nsweeps", 50);
     parametersWater.set("ngrowsweeps", 10);
@@ -91,7 +102,7 @@ struct NModeFixture {
     parametersWater.set("init_type", "basis_state_generic");
 
     // == INPUT FILE CREATIONS ==
-    integralFileOneBodyFAD.open("integral_file_test_OneBodyFAD");
+    integralFileOneBodyFAD.open(oneBodyFile);
     integralFileOneBodyFAD << "       1 0       1 0  -2.359242429009664e+03\n";
     integralFileOneBodyFAD << "       1 1       1 1  -2.358797386438359e+03\n";
     integralFileOneBodyFAD << "       1 2       1 2  -1.444541233850135e+03\n";
@@ -215,7 +226,7 @@ struct NModeFixture {
     };
     // For the two-body FCIDUMP, we kept only the constants > 1 cm-1 for
     // convenience
-    integralFileTwoBodyFAD.open("integral_file_test_TwoBodyFAD");
+    integralFileTwoBodyFAD.open(twoBodyFile);
     integralFileTwoBodyFAD << "       1 0       1 0  -4.999867107589869e+02 \n";
     integralFileTwoBodyFAD << "       1 1       1 1  -3.210749553546130e+02 \n";
     integralFileTwoBodyFAD << "       1 2       1 2   6.996161115711967e+02 \n";
@@ -9886,9 +9897,7 @@ struct NModeFixture {
                               "2.904591355839877e+04 \n";
     integralFileTwoBodyFAD.close();
     // Integral file for the fingerprint region
-    integralFileTwoBodyFADFingerPrint.open(
-        "integral_file_test_TwoBodyFAD_Fingerprint"
-    );
+    integralFileTwoBodyFADFingerPrint.open(fingerprintFile);
     integralFileTwoBodyFADFingerPrint
         << "1-0       1-0   6.275787578691857e+02 \n";
     integralFileTwoBodyFADFingerPrint
@@ -15171,7 +15180,7 @@ struct NModeFixture {
         << "4-3       4-3       5-3       5-3   -2.013327838133568e+00\n";
     integralFileTwoBodyFADFingerPrint.close();
     //
-    integralFileOneBodyWater.open("integral_file_test_OneBodyWater");
+    integralFileOneBodyWater.open(oneBodyWaterFile);
     integralFileOneBodyWater << "1-0    1-0    822.20658268\n";
     integralFileOneBodyWater << "1-1    1-1    2458.13980365\n";
     integralFileOneBodyWater << "1-2    1-2    4080.70800235\n";
@@ -15211,19 +15220,20 @@ struct NModeFixture {
     parametersFADTwoBodyFingerPrint.set("symmetry", "nu1");
     parametersFADTwoBodyFingerPrint.set("LATTICE", "nmode lattice");
     parametersFADTwoBodyFingerPrint.set("MODEL", "nmode");
-    parametersFADTwoBodyFingerPrint.set(
-        "integral_file", "integral_file_test_TwoBodyFAD_Fingerprint"
-    );
+    parametersFADTwoBodyFingerPrint.set("integral_file", fingerprintFile);
   }
 
   /** @brief Class destructor (removes tmp files) */
   ~NModeFixture() {
-    std::remove("integral_file_test_OneBodyFAD");
-    std::remove("integral_file_test_TwoBodyFAD");
-    std::remove("integral_file_test_TwoBodyFAD_Fingerprint");
+    if (!oneBodyFile.empty()) std::remove(oneBodyFile.c_str());
+    if (!twoBodyFile.empty()) std::remove(twoBodyFile.c_str());
+    if (!fingerprintFile.empty()) std::remove(fingerprintFile.c_str());
+    if (!oneBodyWaterFile.empty()) std::remove(oneBodyWaterFile.c_str());
   }
 
   // Class members
+  std::string uniqueSuffix;
+  std::string oneBodyFile, twoBodyFile, fingerprintFile, oneBodyWaterFile;
   DmrgParameters parametersTwoMode, parametersFourMode, parametersFADOneBody,
       parametersFADOneBodyPaired, parametersFADTwoBody,
       parametersFADTwoBodyPaired, parametersFADOneBodyBinary,

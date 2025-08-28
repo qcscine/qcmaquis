@@ -715,8 +715,6 @@ if(QCMAQUIS_TESTS)
              COMMAND test_overlap_propagator_vibrational)
     add_test(NAME Vibrational_BoundaryPropagator
              COMMAND test_boundary_propagator_vibrational)
-    add_test(NAME Vibrational_Linear_System_Solver
-             COMMAND test_linear_system_solver_vibrational)
     add_test(NAME Vibrational_SweepEnergyMinimization
              COMMAND test_sweep_based_energy_minimization_vibrational)
     add_test(NAME Vibrational_SweepBasedLinearSystem
@@ -729,6 +727,8 @@ if(QCMAQUIS_TESTS)
     add_test(NAME Vibrational_Ethylene_Sextic COMMAND test_Ethylene_Sextic)
     if (DMRG_HAS_TrivialGroup)
       add_test(NAME Vibrational_H2CO COMMAND test_H2CO)
+      add_test(NAME Vibrational_Linear_System_Solver
+               COMMAND test_linear_system_solver_vibrational)
     endif()
     add_test(NAME Vibrational_Maleimide COMMAND test_Maleimide)
     add_test(NAME Vibrational_Ethylene_nMode COMMAND test_Ethylene_nMode)

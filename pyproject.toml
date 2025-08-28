@@ -14,6 +14,7 @@ license = {text = "Proprietary"}
 requires-python = ">=3.8"
 dependencies = [
     "numpy>=1.23.5,<2.3.0",
+    "h5py>=3.0.0",
     "tomli>=1.0.0;python_version<'3.11'",
 ]
 classifiers = [
@@ -31,12 +32,16 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
+pyscf = [
+    "pyscf>=2.0",
+]
 dev = [
     "pytest",
     "black",
     "isort",
     "flake8",
     "mypy",
+    "pyscf>=2.0",
 ]
 docs = [
     "sphinx",
