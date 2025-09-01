@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher
- * Group. See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #ifndef MODELS_VIBRATIONAL_NONE_H
@@ -191,8 +191,7 @@ class WatsonHamiltonian : public model_impl<Matrix, TrivialGroup> {
       auto newEnd = std::remove(termVector.begin(), termVector.end(), 0);
       auto numberOfNonZeroElements = std::distance(termVector.begin(), newEnd);
       std::stable_sort(
-          termVector.begin(), newEnd,
-          [](const auto& iVal, const auto& jVal) {
+          termVector.begin(), newEnd, [](const auto& iVal, const auto& jVal) {
             return std::abs(iVal) < std::abs(jVal);
           }
       );
@@ -241,7 +240,8 @@ class WatsonHamiltonian : public model_impl<Matrix, TrivialGroup> {
   }
 
   /** @brief Gets the quantum number associated with the wfn */
-  typename TrivialGroup::charge total_quantum_numbers(BaseParameters& parms
+  typename TrivialGroup::charge total_quantum_numbers(
+      BaseParameters& parms
   ) const override {
     return typename TrivialGroup::charge();
   }
@@ -252,8 +252,9 @@ class WatsonHamiltonian : public model_impl<Matrix, TrivialGroup> {
    * @param type site type for which the operator is returned
    * @return tag_type tag associated with the requested operator
    */
-  tag_type get_operator_tag(const std::string& name, size_t type)
-      const override {
+  tag_type get_operator_tag(
+      const std::string& name, size_t type
+  ) const override {
     if (name == "id")
       return ident_.at(nMaxVec[type]);
     else if (name == "fill")

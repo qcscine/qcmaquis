@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher
- * Group. See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #ifndef MAQUIS_DMRG_NMODE_LATTICE
@@ -72,7 +72,8 @@ class NModeLattice : public lattice_impl {
       } else {
         int mod = stoi(size_vec[idx - 1]);
         if (mod <= 0)
-          throw std::runtime_error("Non-positive number of basis function found"
+          throw std::runtime_error(
+              "Non-positive number of basis function found"
           );
         else
           vectorWithStartingPositions.push_back(
@@ -127,8 +128,9 @@ class NModeLattice : public lattice_impl {
    * @param pos vector of positions
    * @return std::any requested property
    */
-  std::any get_prop_(std::string const& property, std::vector<pos_t> const& pos)
-      const {
+  std::any get_prop_(
+      std::string const& property, std::vector<pos_t> const& pos
+  ) const {
     if (property == "label" && pos.size() == 1)
       return std::any(site_label(pos[0]));
     else if (property == "label" && pos.size() == 2)

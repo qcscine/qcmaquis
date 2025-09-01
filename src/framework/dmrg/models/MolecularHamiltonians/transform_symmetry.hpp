@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher
- * Group. See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #ifndef TRANSFORM_SYMMETRY_HPP
@@ -76,7 +76,8 @@ void transform_site(
     if (pass == 1) {
       for (typename subsector_map_t::iterator it = left_subblocks.begin();
            it != left_subblocks.end(); ++it)
-        new_left_i.insert(std::make_pair(it->first, (it->second).sum_of_sizes())
+        new_left_i.insert(
+            std::make_pair(it->first, (it->second).sum_of_sizes())
         );
 
       for (typename subsector_map_t::iterator it = right_subblocks.begin();
@@ -99,9 +100,11 @@ void transform_site(
       charge in_l_charge_paired = m_in.basis().left_charge(block);
 
       for (size_t s = 0; s < physical_i_in.size(); ++s) {
-        size_t l = left_i_in.position(SymmIn::fuse(
-            m_in.basis().left_charge(block), -physical_i_in[s].first
-        ));
+        size_t l = left_i_in.position(
+            SymmIn::fuse(
+                m_in.basis().left_charge(block), -physical_i_in[s].first
+            )
+        );
         if (l == left_i_in.size()) continue;
 
         charge in_l_charge = left_i_in[l].first;
@@ -184,14 +187,16 @@ void transform_site(
             std::size_t out_left_offset_2u1 = out_left_pb(physc, leftc);
             std::size_t out_left_offset_su2 =
                 left_subblocks[leftc].position(std::make_pair(in_l_charge, 0));
-            std::size_t out_right_offset_su2 =
-                right_subblocks[rightc].position(std::make_pair(in_r_charge, 0)
-                );
+            std::size_t out_right_offset_su2 = right_subblocks[rightc].position(
+                std::make_pair(in_r_charge, 0)
+            );
 
             int l_left = SymmIn::spin(in_l_charge);  // spin from left
-            int l_site = std::abs(SymmIn::spin(physical_i_in[s].first)
+            int l_site = std::abs(
+                SymmIn::spin(physical_i_in[s].first)
             );  // new spin at this site
-            int l_tot = SymmIn::spin(in_r_charge
+            int l_tot = SymmIn::spin(
+                in_r_charge
             );  // spin resulting from left and new spin --> total spin
             int m_left = leftc[0] - leftc[1];   // spin proj from left
             int m_site = physc[0] - physc[1];   // spin proj at this site

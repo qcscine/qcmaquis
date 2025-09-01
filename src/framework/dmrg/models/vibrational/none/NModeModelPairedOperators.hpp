@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher
- * Group. See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #ifndef MODELS_VIBRATIONAL_NMODEPAIRED_H
@@ -95,7 +95,8 @@ class NModeModelPaired : public model_impl<Matrix, TrivialGroup> {
     // Loads the vector with the site types
     siteTypes.reserve(lattice_size);
     for (int iSite = 0; iSite < lattice_size; iSite++) {
-      siteTypes.push_back(lattice.get_prop<int>("type", iSite)
+      siteTypes.push_back(
+          lattice.get_prop<int>("type", iSite)
       );  // this has to be compatible with the chosen lattice
     }
     // == DEFINITION OF THE ELEMENTARY OPERATORS ==
@@ -206,9 +207,9 @@ class NModeModelPaired : public model_impl<Matrix, TrivialGroup> {
    * This method populates the [terms_] member with the Hamiltonian coefficients
    */
 
-  void create_terms(
-  ) override {  // this is taken from nu1/model.hpp. i dont think i have to
-                // change this but check and make sure...
+  void
+  create_terms() override {  // this is taken from nu1/model.hpp. i dont think i
+                             // have to change this but check and make sure...
     std::cout << "Parsing integral file" << std::endl;
     auto HamiltonianTerms =
         Vibrational::detail::NModeIntegralParser<double>(parameters, lattice);
@@ -275,7 +276,8 @@ class NModeModelPaired : public model_impl<Matrix, TrivialGroup> {
   }
 
   /** @brief Gets the quantum number associated with the wfn */
-  typename TrivialGroup::charge total_quantum_numbers(BaseParameters& parms
+  typename TrivialGroup::charge total_quantum_numbers(
+      BaseParameters& parms
   ) const override {
     return typename TrivialGroup::charge();
   }
@@ -351,10 +353,12 @@ class NModeModelPaired : public model_impl<Matrix, TrivialGroup> {
         bool pair = false;
         assert(mode < lattice_size);
         int dimension = nModalsVec[mode];
-        std::set<int>::iterator it = nModalsUnique.find(dimension
+        std::set<int>::iterator it = nModalsUnique.find(
+            dimension
         );  // find pointer to desired dimension in the set
         if (it == nModalsUnique.end())
-          std::runtime_error("Index of dimension not found in set nModalsUnique"
+          std::runtime_error(
+              "Index of dimension not found in set nModalsUnique"
           );
         int indexInSet = std::distance(
             nModalsUnique.begin(), it

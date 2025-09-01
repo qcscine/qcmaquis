@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher
- * Group. See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #define BOOST_TEST_MAIN
@@ -47,9 +47,9 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_Maleimide, MaleimideFixture) {
   auto maleimideModel =
       Model<matrix, TrivialGroup>(maleimideLattice, parametersMaleimideOneBody);
   auto mpsHF = MPSType(
-      maleimideLattice.size(),
-      *(maleimideModel.initializer(maleimideLattice, parametersMaleimideOneBody)
-      )
+      maleimideLattice.size(), *(maleimideModel.initializer(
+                                   maleimideLattice, parametersMaleimideOneBody
+                               ))
   );
   auto mpoMaleimide = make_mpo(maleimideLattice, maleimideModel);
   auto energyFromHF = maquis::real(expval(mpsHF, mpoMaleimide) / norm(mpsHF));

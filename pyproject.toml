@@ -7,7 +7,7 @@ name = "scine_qcmaquis"
 version = "4.0.0"
 description = "SCINE QCMaquis: DMRG quantum chemistry package with support for electronic, vibrational, and time-dependent calculations"
 authors = [
-    {name = "ETH Zurich, Laboratory of Physical Chemistry, Reiher Group"},
+    {name = "ETH Zurich, Department of Chemistry and Applied Biosciences, Reiher Group"},
 ]
 readme = "README.md"
 license = {text = "Proprietary"}

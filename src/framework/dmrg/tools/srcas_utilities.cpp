@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher
- * Group. See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #include "srcas_utilities.h"
@@ -288,8 +288,9 @@ void SRCAS<ScalarType>::setupInitState_() {
 }
 
 template <typename ScalarType>  // real or complex
-SRCAS<ScalarType>::
-    SRCAS(DmrgParameters &parameters, std::shared_ptr<InterfaceType> interface)
+SRCAS<ScalarType>::SRCAS(
+    DmrgParameters &parameters, std::shared_ptr<InterfaceType> interface
+)
     : interface_(interface),
       uniformDist_(0., 1.),
       uniformRandomNumber_(generator_, uniformDist_),

@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher
- * Group. See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #ifndef MPS_ROTATE_H
@@ -125,14 +125,18 @@ struct setupMPO {
             "destroy_down_for_meas", lat.get_prop<sc_t>("type", j)
         ));
 
-        ret.push_back(generate_mpo::make_1D_mpo(
-            positions, operators_up, ident, fill, model.operators_table(), lat,
-            t(i, j) / t(j, j)
-        ));
-        ret.push_back(generate_mpo::make_1D_mpo(
-            positions, operators_down, ident, fill, model.operators_table(),
-            lat, t(i, j) / t(j, j)
-        ));
+        ret.push_back(
+            generate_mpo::make_1D_mpo(
+                positions, operators_up, ident, fill, model.operators_table(),
+                lat, t(i, j) / t(j, j)
+            )
+        );
+        ret.push_back(
+            generate_mpo::make_1D_mpo(
+                positions, operators_down, ident, fill, model.operators_table(),
+                lat, t(i, j) / t(j, j)
+            )
+        );
       }
 
     return ret;
