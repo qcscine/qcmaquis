@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher
- * Group. See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #define BOOST_TEST_MAIN
@@ -25,18 +25,18 @@
 typedef boost::mpl::list<
 #ifdef HAVE_TrivialGroup
     TrivialGroup
-    #ifdef HAVE_U1
+#ifdef HAVE_U1
     ,
-    #endif
-    #ifdef HAVE_NU1
+#endif
+#ifdef HAVE_NU1
     ,
-    #endif
+#endif
 #endif
 #ifdef HAVE_U1
     U1
-    #ifdef HAVE_NU1
+#ifdef HAVE_NU1
     ,
-    #endif
+#endif
 #endif
 #ifdef HAVE_NU1
     NU1_template<5>

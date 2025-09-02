@@ -1,8 +1,8 @@
 /**
  * @file
  * @copyright This code is licensed under the 3-clause BSD license.
- *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher
- * Group. See LICENSE.txt for details.
+ *            Copyright ETH Zurich, Department of Chemistry and Applied
+ * Biosciences, Reiher Group. See LICENSE.txt for details.
  */
 
 #ifndef MAQUIS_DMRG_MPO_TIMES_MPS_HPP
@@ -253,9 +253,11 @@ class MPOTimesMPSTraitClass {
             if (new_right_i_map.find(iCol) == new_right_i_map.end())
               new_right_i_map[iCol] = Index<SymmGroup>();
             if (!new_right_i_map[iCol].has(out_r_charge)) {
-              new_right_i_map[iCol].insert(std::make_pair(
-                  out_r_charge, right_i.size_of_block(in_r_charge)
-              ));
+              new_right_i_map[iCol].insert(
+                  std::make_pair(
+                      out_r_charge, right_i.size_of_block(in_r_charge)
+                  )
+              );
             } else {
               if (new_right_i_map[iCol].size_of_block(out_r_charge) !=
                   right_i.size_of_block(in_r_charge))
@@ -276,10 +278,12 @@ class MPOTimesMPSTraitClass {
           finalLeft[finalLeft.position(mapTrackingBlocks[iRow][iCharge].first)]
               .second += mapTrackingBlocks[iRow][iCharge].second;
         else
-          finalLeft.insert(std::make_pair(
-              mapTrackingBlocks[iRow][iCharge].first,
-              mapTrackingBlocks[iRow][iCharge].second
-          ));
+          finalLeft.insert(
+              std::make_pair(
+                  mapTrackingBlocks[iRow][iCharge].first,
+                  mapTrackingBlocks[iRow][iCharge].second
+              )
+          );
 
     for (int iCol = 1; iCol < mpo[site].col_dim(); iCol++)
       for (int iCharge = 0; iCharge < new_right_i_map[iCol].size(); iCharge++)
@@ -287,10 +291,12 @@ class MPOTimesMPSTraitClass {
           finalRight[finalRight.position(new_right_i_map[iCol][iCharge].first)]
               .second += new_right_i_map[iCol][iCharge].second;
         else
-          finalRight.insert(std::make_pair(
-              new_right_i_map[iCol][iCharge].first,
-              new_right_i_map[iCol][iCharge].second
-          ));
+          finalRight.insert(
+              std::make_pair(
+                  new_right_i_map[iCol][iCharge].first,
+                  new_right_i_map[iCol][iCharge].second
+              )
+          );
 
     auto finalMPS = MPSTensor<Matrix, SymmGroup>(
         finalPhys, finalLeft, finalRight, false, 0.
@@ -414,10 +420,10 @@ class MPOTimesMPSTraitClass {
                               thresholdLeft[out_l_charge][iRow],
                               out_right_offset  // Offset given by the product
                                                 // basis
-                                  + iColPhys *
-                                        finalRight.size_of_block(out_r_charge
-                                        )  // (sigma*m) values for all preceding
-                                           // sigma values
+                                  + iColPhys * finalRight.size_of_block(
+                                                   out_r_charge
+                                               )  // (sigma*m) values for all
+                                                  // preceding sigma values
                                   + thresholdRightElement  // Threshold induced
                                                            // by b
                                   + rr
@@ -487,7 +493,8 @@ class MPOTimesMPSTraitClass {
       charge phys_in = W.basis().left_charge(w_block);
       if (!mps.site_dim().has(phys_in)) continue;
       charge phys_out = W.basis().right_charge(w_block);
-      new_phys_i.insert(std::make_pair(phys_out, W.basis().right_size(w_block))
+      new_phys_i.insert(
+          std::make_pair(phys_out, W.basis().right_size(w_block))
       );
     }
 

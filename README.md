@@ -1,5 +1,5 @@
 # QCMaquis
-QCMaquis is an efficient C++11 implementation of the density matrix renormalization group (DMRG) algorithm for quantum chemical Hamiltonians in its matrix product state-matrix product operator (MPS-MPO) formulation. Quantum-chemical operators represented as matrix product operators (MPOs) provide the necessary flexibility to accommodate Abelian and non-Abelian symmetries as well as the implementation of non-relativistic and relativistic quantum chemical Hamiltonians, respectively, in a unified framework. We have implemented the special unitary group of degree 2 (SU(2)) in the MPO representation of the non-relativistic Hamiltonian to ensure spin conservation.
+QCMaquis is an efficient C++17 implementation of the density matrix renormalization group (DMRG) algorithm for quantum chemical Hamiltonians in its matrix product state-matrix product operator (MPS-MPO) formulation. Quantum-chemical operators represented as matrix product operators (MPOs) provide the necessary flexibility to accommodate Abelian and non-Abelian symmetries as well as the implementation of non-relativistic and relativistic quantum chemical Hamiltonians, respectively, in a unified framework. We have implemented the special unitary group of degree 2 (SU(2)) in the MPO representation of the non-relativistic Hamiltonian to ensure spin conservation.
 
 ## Current Features:
   - Optimization of spin-adapted SU(2) MPS wave functions with the DMRG algorithm
@@ -16,22 +16,24 @@ QCMaquis is an efficient C++11 implementation of the density matrix renormalizat
     - Analytic gradients for state-specific DMRG-SCF calculations
     - MPS state interaction (MPS-SI) for the calculation of spin-orbit coupling matrix elements, electronic and magnetic properties
     - state-specific and quasi-degenerate (multi-state) DMRG-NEVPT2 calculations
-  - The current release version can be used together with SCINE autoCAS
+  - The current release version can be used together with SCINE autoCAS 3.0.0
 
 ## QCMaquis compilation and installation
 ### Prerequisites:
 - a C++ compiler, optionally a Fortran compiler for the OpenMOLCAS Fortran interface. Only G++ has been tested.
 - GNU make
 - [CMake](https://cmake.org)
+- [Eigen](https://eigen.tuxfamily.org)
 - [Boost](https://boost.org) >= 1.56
 - [GSL](https://www.gnu.org/software/gsl/)
 - [HDF5](https://www.hdfgroup.org/downloads/hdf5)
 - Linear algebra library, such as BLAS/Lapack, [Intel MKL](https://software.intel.com/content/www/us/en/develop/tools/math-kernel-library.html) or [OpenBLAS](https://www.openblas.net/)
 - For documentation: PDFLaTeX
+
 For a quick start, type the following into the terminal:
 ```
 git clone https://github.com/qcscine/qcmaquis.git qcmaquis
-cd qcmaquis/dmrg
+cd qcmaquis
 mkdir build
 cd build
 cmake -D<CMAKE_COMPILE_OPTIONS> ../
@@ -74,6 +76,7 @@ For issues and bug reports with QCMaquis in OpenMOLCAS, please open an issue in 
 For reproducibility reasons, please cite, depending on the actual calculations you carried out, one or more of the following papers in publications that present data produced with QCMaquis:
 
 ### General reference to the code:
+  - K. Szenes, N. Glaser, M. Erakovic, V. Barandun, M. Mörchen, R. Feldmann, S. Battaglia, A. Baiardi, M. Reiher, "QCMaquis 4.0: Multipurpose Electronic, Vibrational, and Vibronic Structure and Dynamics Calculations with the Density Matrix Renormalization Group", J. Phys. Chem. A, 2025, 129, 7549. [DOI](https://doi.org/10.1021/acs.jpca.5c02970)
   - S. Keller, M. Dolfi, M. Troyer, M. Reiher, "An efficient matrix product operator representation of the quantum chemical Hamiltonian", J. Chem. Phys., 2015, 143, 244118. [DOI](https://doi.org/10.1063/1.4939000)
 ### DMRG-NEVPT2:
   - L. Freitag, S. Knecht, C. Angeli, M. Reiher, Multireference Perturbation Theory with Cholesky Decomposition for the Density Matrix Renormalization Group", J. Chem. Theory Comput., 2017, 13, 451. [DOI](https://doi.org/10.1021/acs.jctc.6b00778)
@@ -89,5 +92,5 @@ For reproducibility reasons, please cite, depending on the actual calculations y
 QCMaquis builds upon the ALPS MPS project. The ALPS MPS codes implement the DMRG algorithm for variational ground and low-lying excited state search as well as time evolution of arbitrary one- and two-dimensional models in a matrix-product-state representation. They have been developed at ETH Zurich by Michele Dolfi and Bela Bauer in the group of Matthias Troyer with contributions from Sebastian Keller and Alexandr Kosenkov and at the University of Geneva by Timothée Ewart and Adrian Kantian in the group of Thierry Giamarchi. For further information on the ALPS project, please visit https://alps.comp-phys.org and note the original ALPS MPS paper:
 - M. Dolfi, B. Bauer, S. Keller, A. Kosenkov, T. Ewart, A. Kantian, T. Giamarchi, M. Troyer, "Matrix product state applications for the ALPS project" ,Comp. Phys. Commun., 2014, 12, 3430. [DOI](https://doi.org/10.1016/j.cpc.2014.08.019)
 
-The current QCMaquis release ships with a modified ALPS library based on ALPS 2.3.0 to reduce compile and runtime dependencies. For more information, please read the README.txt in the `dmrg/alps` subdirectory. The ALPS library is subject to the ALPS Library license, which is found in `dmrg/alps/LICENSE.txt`.
+The current QCMaquis release ships with a modified ALPS library based on ALPS 2.3.0 to reduce compile and runtime dependencies. For more information, please read the README.txt in the `sr/alps` subdirectory. The ALPS library is subject to the ALPS Library license, which is found in `src/alps/LICENSE.txt`.
 

@@ -10,11 +10,36 @@
 
 #include "dmrg/utils/DmrgParameters.h"
 #include "maquis_dmrg.h"
+#include <sstream>
+#include <unistd.h>
+#include <chrono>
 
 /** @brief Fixture class for the test of the Vibronic DMRG */
 struct VibronicFixture {
   /** @brief Constructor for the fixture class */
   VibronicFixture() {
+    // Generate unique suffix for this test instance
+    std::stringstream ss;
+    ss << "_" << getpid() << "_"
+       << std::chrono::steady_clock::now().time_since_epoch().count();
+    uniqueSuffix = ss.str();
+
+    // Define unique filenames
+    vibronicFile = "integral_file_VibronicFile" + uniqueSuffix;
+    excitonicFile = "integral_file_Excitonic" + uniqueSuffix;
+    excitonicHarmonicFile = "integral_file_Excitonic_Harmonic" + uniqueSuffix;
+    pyrazineRedDimFile =
+        "integral_file_vibronic_Pyrazine_RedDim" + uniqueSuffix;
+    pyrazineRedDimFullFile =
+        "integral_file_vibronic_Pyrazine_RedDim_Full" + uniqueSuffix;
+    thiopheneFile = "integralFileThiopheneDimer" + uniqueSuffix;
+    excitonicExtendedFile = "integral_file_ExcitonicExtended" + uniqueSuffix;
+    testNmaxFile = "integralFileTestNmax" + uniqueSuffix;
+    simpleCoherentFile = "integral_file_simpleCoherent" + uniqueSuffix;
+    simpleCoherentConnectingFile =
+        "integral_file_simpleCoherentConnecting" + uniqueSuffix;
+    nmodeThiopheneOneBodyFile =
+        "integral_file_NmodeThiopheneOneBody" + uniqueSuffix;
     // Single-excited state excitonic model
     parametersExcitonicAggregate.set("L", 66);
     parametersExcitonicAggregate.set("symmetry", "u1");
@@ -26,9 +51,7 @@ struct VibronicFixture {
     parametersExcitonicAggregate.set("vibronic_num_molecules", 6);
     parametersExcitonicAggregate.set("vibronic_J_coupling", -500);
     parametersExcitonicAggregate.set("vibronic_J_interaction_type", "nn");
-    parametersExcitonicAggregate.set(
-        "integral_file", "integral_file_Excitonic"
-    );
+    parametersExcitonicAggregate.set("integral_file", excitonicFile);
     parametersExcitonicAggregate.set("hamiltonian_units", "cm-1");
     //
     parametersExcitonicAggregateTwoSites.set("L", 22);
@@ -43,9 +66,7 @@ struct VibronicFixture {
     parametersExcitonicAggregateTwoSites.set(
         "vibronic_J_interaction_type", "nn"
     );
-    parametersExcitonicAggregateTwoSites.set(
-        "integral_file", "integral_file_Excitonic"
-    );
+    parametersExcitonicAggregateTwoSites.set("integral_file", excitonicFile);
     parametersExcitonicAggregateTwoSites.set("hamiltonian_units", "cm-1");
     // Vibronic models for S1/S2 states of pyrazine --> L=26
     parametersVibronic.set("L", 26);
@@ -65,7 +86,7 @@ struct VibronicFixture {
     parametersFakeVibronic.set("Nmax", 6);
     parametersFakeVibronic.set("vibronic_num_elestates", 1);
     parametersFakeVibronic.set("vibronic_num_vibmodes", 3);
-    parametersFakeVibronic.set("integral_file", "integral_file_VibronicFile");
+    parametersFakeVibronic.set("integral_file", vibronicFile);
     // Vibronic Hamiltonian for pyrazine, for the 4-mode Harmonic Hamiltonian.
     parametersVibronicPyrazineRedDim.set("L", 6);
     parametersVibronicPyrazineRedDim.set("symmetry", "u1");
@@ -74,9 +95,7 @@ struct VibronicFixture {
     parametersVibronicPyrazineRedDim.set("Nmax", 6);
     parametersVibronicPyrazineRedDim.set("vibronic_num_elestates", 2);
     parametersVibronicPyrazineRedDim.set("vibronic_num_vibmodes", 4);
-    parametersVibronicPyrazineRedDim.set(
-        "integral_file", "integral_file_vibronic_Pyrazine_RedDim"
-    );
+    parametersVibronicPyrazineRedDim.set("integral_file", pyrazineRedDimFile);
     parametersVibronicPyrazineRedDim.set("hamiltonian_units", "cm-1");
     // Vibronic Hamiltonian for pyrazine, for the 4-mode full vibronic
     // Hamiltonian.
@@ -88,7 +107,7 @@ struct VibronicFixture {
     parametersVibronicPyrazineRedDimFull.set("vibronic_num_elestates", 2);
     parametersVibronicPyrazineRedDimFull.set("vibronic_num_vibmodes", 4);
     parametersVibronicPyrazineRedDimFull.set(
-        "integral_file", "integral_file_vibronic_Pyrazine_RedDim_Full"
+        "integral_file", pyrazineRedDimFullFile
     );
     parametersVibronicPyrazineRedDimFull.set("hamiltonian_units", "cm-1");
     // Vibronic Hamiltonian for the thiphene dimer with a single harmonic mode
@@ -103,9 +122,7 @@ struct VibronicFixture {
     parametersVibronicThiopheneDimer.set("vibronic_num_excitons", 1);
     parametersVibronicThiopheneDimer.set("vibronic_J_coupling", 0);
     parametersVibronicThiopheneDimer.set("vibronic_sorting", "intertwined");
-    parametersVibronicThiopheneDimer.set(
-        "integral_file", "integralFileThiopheneDimer"
-    );
+    parametersVibronicThiopheneDimer.set("integral_file", thiopheneFile);
     parametersVibronicThiopheneDimer.set("nsweeps", 6);
     parametersVibronicThiopheneDimer.set("max_bond_dimension", 20);
     parametersVibronicThiopheneDimer.set("init_type", "basis_state_generic");
@@ -120,7 +137,7 @@ struct VibronicFixture {
     parametersTestNmax.set("nsweeps", 10);
     parametersTestNmax.set("max_bond_dimension", 20);
     parametersTestNmax.set("optimization", "twosite");
-    parametersTestNmax.set("integral_file", "integralFileTestNmax");
+    parametersTestNmax.set("integral_file", testNmaxFile);
     parametersTestNmax.set("init_type", "basis_state_generic");
     parametersTestNmax.set("init_basis_state", "0,0,0,1,0,0,0,0");
     parametersTestNmax.set("Nmax", "1,2,3,4,5");
@@ -154,14 +171,12 @@ struct VibronicFixture {
     parametersExcitonicExtendedAggregate.set("vibronic_num_molecules", 1);
     parametersExcitonicExtendedAggregate.set("vibronic_J_coupling", -2);
     parametersExcitonicExtendedAggregate.set(
-        "integral_file", "integral_file_ExcitonicExtended"
+        "integral_file", excitonicExtendedFile
     );
     parametersExcitonicExtendedAggregate.set("hamiltonian_units", "Hartree");
     //
     parametersSimpleCoherent.set("max_bond_dimension", 50);
-    parametersSimpleCoherent.set(
-        "integral_file", "integral_file_simpleCoherent"
-    );
+    parametersSimpleCoherent.set("integral_file", simpleCoherentFile);
     parametersSimpleCoherent.set("L", 4);
     parametersSimpleCoherent.set("Nmax", 6);
     parametersSimpleCoherent.set("symmetry", "u1");
@@ -181,7 +196,7 @@ struct VibronicFixture {
     parametersSimpleCoherentConnecting.set("lattice_library", "coded");
     parametersSimpleCoherentConnecting.set("optimization", "singlesite");
     parametersSimpleCoherentConnecting.set(
-        "integral_file", "integral_file_simpleCoherentConnecting"
+        "integral_file", simpleCoherentConnectingFile
     );
     parametersSimpleCoherentConnecting.set("Nmax", 6);
     parametersSimpleCoherentConnecting.set("symmetry", "u1");
@@ -202,7 +217,7 @@ struct VibronicFixture {
     parametersNmodeThiopheneOneBody.set("lattice_library", "coded");
     parametersNmodeThiopheneOneBody.set("optimization", "twosite");
     parametersNmodeThiopheneOneBody.set(
-        "integral_file", "integral_file_NmodeThiopheneOneBody"
+        "integral_file", nmodeThiopheneOneBodyFile
     );
     parametersNmodeThiopheneOneBody.set("Nmax", 6);
     parametersNmodeThiopheneOneBody.set("symmetry", "u1");
@@ -224,7 +239,7 @@ struct VibronicFixture {
     );
     parametersNmodeThiopheneOneBody.set("vibronic_max_coupling_nmode", 1);
     //
-    integralFileFakeVibronic.open("integral_file_VibronicFile");
+    integralFileFakeVibronic.open(vibronicFile);
     integralFileFakeVibronic << "EL_ST 0 0 " << std::endl;
     integralFileFakeVibronic << " 1.0000   1   1  " << std::endl;
     integralFileFakeVibronic << "-1.0000  -1  -1  " << std::endl;
@@ -234,7 +249,7 @@ struct VibronicFixture {
     integralFileFakeVibronic << "-3.0000  -3  -3  " << std::endl;
     integralFileFakeVibronic.close();
     //
-    integralFileExcitonic.open("integral_file_Excitonic");
+    integralFileExcitonic.open(excitonicFile);
     integralFileExcitonic << " 103.00      1     1" << std::endl;
     integralFileExcitonic << "-103.00     -1    -1" << std::endl;
     integralFileExcitonic << " 105.50      2     2" << std::endl;
@@ -267,7 +282,7 @@ struct VibronicFixture {
     integralFileExcitonic << " 454.68     10     0" << std::endl;
     integralFileExcitonic.close();
     //
-    integralFileExcitonicHarmonic.open("integral_file_Excitonic_Harmonic");
+    integralFileExcitonicHarmonic.open(excitonicHarmonicFile);
     integralFileExcitonicHarmonic << " 103.00      1     1" << std::endl;
     integralFileExcitonicHarmonic << "-103.00     -1    -1" << std::endl;
     integralFileExcitonicHarmonic << " 105.50      2     2" << std::endl;
@@ -290,7 +305,7 @@ struct VibronicFixture {
     integralFileExcitonicHarmonic << "-814.50    -10   -10" << std::endl;
     integralFileExcitonicHarmonic.close();
     //
-    integralFilePyrazineRedDim.open("integral_file_vibronic_Pyrazine_RedDim");
+    integralFilePyrazineRedDim.open(pyrazineRedDimFile);
     integralFilePyrazineRedDim << "EL_ST 0 0" << std::endl;
     integralFilePyrazineRedDim << "-4114.23                0      0"
                                << std::endl;
@@ -330,9 +345,7 @@ struct VibronicFixture {
     integralFilePyrazineRedDim << " -518.21124            -4     -4"
                                << std::endl;
     //
-    integralFilePyrazineRedDimFull.open(
-        "integral_file_vibronic_Pyrazine_RedDim_Full"
-    );
+    integralFilePyrazineRedDimFull.open(pyrazineRedDimFullFile);
     integralFilePyrazineRedDimFull << "EL_ST 0 0" << std::endl;
     integralFilePyrazineRedDimFull << "-4114.23                0      0"
                                    << std::endl;
@@ -459,13 +472,13 @@ struct VibronicFixture {
                                    << std::endl;
     integralFilePyrazineRedDimFull.close();
     //
-    integralFileThiopheneDimer.open("integralFileThiopheneDimer");
+    integralFileThiopheneDimer.open(thiopheneFile);
     integralFileThiopheneDimer << "-0.002633     -1      -1" << std::endl;
     integralFileThiopheneDimer << "0.002633       1       1" << std::endl;
     integralFileThiopheneDimer << "0              1       0" << std::endl;
     integralFileThiopheneDimer.close();
     //
-    integralFileExcitonicExtended.open("integral_file_ExcitonicExtended");
+    integralFileExcitonicExtended.open(excitonicExtendedFile);
     integralFileExcitonicExtended << "0.1       0       0       -1      -1"
                                   << std::endl;
     integralFileExcitonicExtended << "0.2       0       0        1       1"
@@ -480,7 +493,7 @@ struct VibronicFixture {
                                   << std::endl;
     integralFileExcitonic.close();
     //
-    integralFileTestNmax.open("integralFileTestNmax");
+    integralFileTestNmax.open(testNmaxFile);
     integralFileTestNmax << "-1. 0 0 -1 -1" << std::endl;
     integralFileTestNmax << "1. 0 0 1 1" << std::endl;
     integralFileTestNmax << "-1. 1 0 -1 -1" << std::endl;
@@ -491,16 +504,14 @@ struct VibronicFixture {
     integralFileTestNmax << "2. 1 1 2 2" << std::endl;
     integralFileTestNmax.close();
     //
-    IntegralFileSimpleCoherent.open("integral_file_simpleCoherent");
+    IntegralFileSimpleCoherent.open(simpleCoherentFile);
     IntegralFileSimpleCoherent << "-1.0 0 0 -1 -1" << std::endl;
     IntegralFileSimpleCoherent << "1.0 0 0 1 1" << std::endl;
     IntegralFileSimpleCoherent << "-2.0 1 0 -1 -1" << std::endl;
     IntegralFileSimpleCoherent << "2.0 1 0 1 1" << std::endl;
     IntegralFileSimpleCoherent.close();
     //
-    IntegralFileSimpleCoherentConnecting.open(
-        "integral_file_simpleCoherentConnecting"
-    );
+    IntegralFileSimpleCoherentConnecting.open(simpleCoherentConnectingFile);
     IntegralFileSimpleCoherentConnecting << "-1. 0 0 -1 -1" << std::endl;
     IntegralFileSimpleCoherentConnecting << "-1. 1 0 -1 -1" << std::endl;
     IntegralFileSimpleCoherentConnecting << "1. 0 0 1 1" << std::endl;
@@ -511,8 +522,7 @@ struct VibronicFixture {
     IntegralFileSimpleCoherentConnecting << "3. 1 1 2 2" << std::endl;
     IntegralFileSimpleCoherentConnecting.close();
     //
-    integralFileNmodeThiopheneOneBody.open("integral_file_NmodeThiopheneOneBody"
-    );
+    integralFileNmodeThiopheneOneBody.open(nmodeThiopheneOneBodyFile);
     integralFileNmodeThiopheneOneBody << "1-0 1-0 0 0 0.0024695226597438247"
                                       << std::endl;
     integralFileNmodeThiopheneOneBody << "1-1 1-1 0 0 0.0074041535374397074"
@@ -590,14 +600,33 @@ struct VibronicFixture {
 
   /** @brief Class destructor */
   ~VibronicFixture() {
-    std::remove("integral_file_VibronicFile");
-    std::remove("integral_file_Excitonic");
-    std::remove("integral_file_Excitonic_Harmonic");
-    std::remove("integral_file_vibronic_Pyrazine_RedDim");
-    std::remove("integral_file_vibronic_Pyrazine_RedDim_Full");
+    // Remove all uniquely named files
+    if (!vibronicFile.empty()) std::remove(vibronicFile.c_str());
+    if (!excitonicFile.empty()) std::remove(excitonicFile.c_str());
+    if (!excitonicHarmonicFile.empty())
+      std::remove(excitonicHarmonicFile.c_str());
+    if (!pyrazineRedDimFile.empty()) std::remove(pyrazineRedDimFile.c_str());
+    if (!pyrazineRedDimFullFile.empty())
+      std::remove(pyrazineRedDimFullFile.c_str());
+    if (!thiopheneFile.empty()) std::remove(thiopheneFile.c_str());
+    if (!excitonicExtendedFile.empty())
+      std::remove(excitonicExtendedFile.c_str());
+    if (!testNmaxFile.empty()) std::remove(testNmaxFile.c_str());
+    if (!simpleCoherentFile.empty()) std::remove(simpleCoherentFile.c_str());
+    if (!simpleCoherentConnectingFile.empty())
+      std::remove(simpleCoherentConnectingFile.c_str());
+    if (!nmodeThiopheneOneBodyFile.empty())
+      std::remove(nmodeThiopheneOneBodyFile.c_str());
   }
 
   // Class members
+  std::string uniqueSuffix;
+  std::string vibronicFile, excitonicFile, excitonicHarmonicFile;
+  std::string pyrazineRedDimFile, pyrazineRedDimFullFile;
+  std::string thiopheneFile, excitonicExtendedFile, testNmaxFile;
+  std::string simpleCoherentFile, simpleCoherentConnectingFile;
+  std::string nmodeThiopheneOneBodyFile;
+
   DmrgParameters parametersVibronic, parametersFakeVibronic,
       parametersExcitonicAggregate, parametersExcitonicAggregateTwoSites,
       parametersVibronicPyrazineRedDim, parametersVibronicPyrazineRedDimFull,

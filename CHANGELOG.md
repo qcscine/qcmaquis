@@ -1,14 +1,28 @@
 # Changelog
 
 
-## Release 3.X.X
+## Release 4.0.0
 
-- Removed keyword "ipi_sweeps_per_system", instead the standard keyword "nsweeps" is used.
-- Added support for vibrational Hamiltonians within the n-mode quantization framework.
+### Major Features
+
+- Added Transcorrelated DMRG functionality.
+- Added Python-bindings for electronic DMRG.
+- Added PySCF interface.
+- Enhanced SRCAS for electronic DMRG.
 - Added functionality to calculate one- and two-modal RDMs in n-mode quantization framework.
-- Added Python-bindings for electronic DMRG
-- Added PySCF interface
-- Enhanced SRCAS for electronic DMRG
+- Added $n$-Mode quantized vibrational Hamiltonian.
+- Added correlation analysis for vibrational basis functions.
+
+### Minor Changes
+
+- Changed name and location of the executable. It is found here: `build/applications/qcmaquis`.
+- Added `simluation_type` keyword for distinguishing types of calculation e.g., `optimize` and `evolve`.
+- Removed keyword "ipi_sweeps_per_system", instead the standard keyword "nsweeps" is used.
+- Cleaned up and improved output format.
+
+## Release 3.1.4
+
+- Fix missing `#include <map>` in `results_collector.h`
 
 ## Release 3.1.3
 
