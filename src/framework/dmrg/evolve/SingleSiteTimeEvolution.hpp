@@ -13,7 +13,6 @@
 #include "dmrg/mp_tensors/mpo_ops.h"
 #include "dmrg/evolve/TimeEvolutionSweep.h"
 #include "dmrg/utils/DmrgParameters.h"
-#include <chrono>
 
 /**
  * @brief Class implementing the single-site time-evolution algorithm with a
