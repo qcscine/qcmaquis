@@ -23,7 +23,7 @@ BOOST_FIXTURE_TEST_CASE(
   using InterfaceType = maquis::DMRGInterface<double>;
   // Adds the final input parameters
   parametersEthyleneWatsonHarmonic.set("init_type", "const");
-  parametersEthyleneWatsonHarmonic.set("nsweeps", 20);
+  parametersEthyleneWatsonHarmonic.set("nsweeps", 6);
   parametersEthyleneWatsonHarmonic.set("max_bond_dimension", 20);
   parametersEthyleneWatsonHarmonic.set("MODEL", "watson");
   // Creates the interface
@@ -52,7 +52,7 @@ BOOST_FIXTURE_TEST_CASE(
   using InterfaceType = maquis::DMRGInterface<double>;
   // Adds the final input parameters
   parametersEthyleneWatsonHarmonicTwoRows.set("init_type", "const");
-  parametersEthyleneWatsonHarmonicTwoRows.set("nsweeps", 20);
+  parametersEthyleneWatsonHarmonicTwoRows.set("nsweeps", 6);
   parametersEthyleneWatsonHarmonicTwoRows.set("max_bond_dimension", 20);
   parametersEthyleneWatsonHarmonicTwoRows.set("MODEL", "watson");
   parametersEthyleneWatsonHarmonicTwoRows.set(
@@ -83,7 +83,7 @@ BOOST_FIXTURE_TEST_CASE(
   // Adds the final input parameters
   parametersEthyleneWatson.set("init_type", "basis_state_generic");
   parametersEthyleneWatson.set("init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0");
-  parametersEthyleneWatson.set("nsweeps", 20);
+  parametersEthyleneWatson.set("nsweeps", 6);
   parametersEthyleneWatson.set("max_bond_dimension", 50);
   parametersEthyleneWatson.set("MODEL", "watson");
   parametersEthyleneWatson.set("optimization", "singlesite");

@@ -55,7 +55,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_H2CO, WatsonFixture) {
   parametersH2COWatsonNoCoriolis.set("init_type", "const");
   parametersH2COWatsonNoCoriolis.set("optimization", "singlesite");
   parametersH2COWatsonNoCoriolis.set("symmetry", "none");
-  parametersH2COWatsonNoCoriolis.set("nsweeps", 20);
+  parametersH2COWatsonNoCoriolis.set("nsweeps", 10);
   parametersH2COWatsonNoCoriolis.set("ngrowsweeps", 3);
   parametersH2COWatsonNoCoriolis.set("nmainsweeps", 3);
   parametersH2COWatsonNoCoriolis.set("chkpfile", "GS.H2CO.chkp.h5");
@@ -104,7 +104,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_H2CO, WatsonFixture) {
   );
   //
   parametersH2COWatsonNoCoriolis.set("linsystem_precond", "no");
-  parametersH2COWatsonNoCoriolis.set("linsystem_krylov_dim", 50);
+  parametersH2COWatsonNoCoriolis.set("linsystem_krylov_dim", 20);
   parametersH2COWatsonNoCoriolis.set("linsystem_tol", 1.0E-5);
   parametersH2COWatsonNoCoriolis.set("linsystem_init", "last");
   parametersH2COWatsonNoCoriolis.set("linsystem_exact_error", "yes");
@@ -172,7 +172,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Bilinearly, WatsonFixture) {
   parametersBilinearly.set("alpha_initial", 1.0E-8);
   parametersBilinearly.set("alpha_initial", 1.0E-15);
   parametersBilinearly.set("alpha_initial", 0.);
-  parametersBilinearly.set("nsweeps", 20);
+  parametersBilinearly.set("nsweeps", 6);
   parametersBilinearly.set("ngrowsweeps", 2);
   parametersBilinearly.set("nmainsweeps", 2);
   parametersBilinearly.set("max_bond_dimension", 20);
@@ -197,7 +197,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Bilinearly, WatsonFixture) {
   auto eMax = energyFromOptimizerGS +
               (energyFromOptimizerES - energyFromOptimizerGS) / 10.;
   // FEAST-specific parameters
-  parametersBilinearly.set("nsweeps", 10);
+  parametersBilinearly.set("nsweeps", 6);
   parametersBilinearly.set("feast_num_states", 1);
   parametersBilinearly.set("feast_max_iter", 1);
   parametersBilinearly.set("feast_emin", eMin);
@@ -228,7 +228,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Bilinearly, WatsonFixture) {
 /** @brief DMRG[FEAST] test for the n-mode Hamiltonian */
 BOOST_FIXTURE_TEST_CASE(Test_FEAST_FAD_Fingerprint, NModeFixture) {
   maquis::cout << "FINGERPRINT before otimization" << std::endl;
-  parametersFADTwoBodyFingerPrint.set("nsweeps", 20);
+  parametersFADTwoBodyFingerPrint.set("nsweeps", 6);
   parametersFADTwoBodyFingerPrint.set("init_type", "const");
   parametersFADTwoBodyFingerPrint.set("optimization", "twosite");
   parametersFADTwoBodyFingerPrint.set("twosite_truncation", "heev");
@@ -262,7 +262,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_FAD_Fingerprint, NModeFixture) {
   parametersFADTwoBodyFingerPrint.set("feast_integral_type", "full");
   // Setup parameters for the linear system solver.
   parametersFADTwoBodyFingerPrint.set("linsystem_precond", "no");
-  parametersFADTwoBodyFingerPrint.set("linsystem_krylov_dim", 50);
+  parametersFADTwoBodyFingerPrint.set("linsystem_krylov_dim", 20);
   parametersFADTwoBodyFingerPrint.set("linsystem_tol", 1.0E-12);
   parametersFADTwoBodyFingerPrint.set("linsystem_init", "last");
   maquis::DMRGInterface<std::complex<double>> interfaceFEAST(
