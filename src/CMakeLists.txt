@@ -357,6 +357,9 @@ list(APPEND DMRG_LIBRARIES ${HDF5_LIBRARIES})
 # Boost
 
 # Remove annoying cmake configure boost warning
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 NEW)
+endif()
 set(Boost_NO_WARN_NEW_VERSIONS 1)
 set(Boost_requirements program_options filesystem system serialization thread)
 set(Boost_NO_BOOST_CMAKE ON)
