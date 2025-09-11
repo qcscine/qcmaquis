@@ -14,6 +14,8 @@ add_executable(testLiH Electronic/testLiH.cpp)
 target_link_libraries(testLiH ${DMRG_APP_LIBRARIES})
 add_executable(test_FEAST_electronic FEAST/ElectronicFEAST.cpp)
 target_link_libraries(test_FEAST_electronic ${DMRG_APP_LIBRARIES})
+add_executable(test_energy_convergence Electronic/test_energy_convergence.cpp)
+target_link_libraries(test_energy_convergence ${DMRG_APP_LIBRARIES})
 
 add_executable(test_FH_RealSpace FermiHubbard/test_FH_RealSpace.cpp)
 target_link_libraries(test_FH_RealSpace ${DMRG_APP_LIBRARIES})

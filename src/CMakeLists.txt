@@ -636,6 +636,7 @@ if(QCMAQUIS_TESTS)
   add_test(NAME LihGroundAndExcited COMMAND testLiHGroundAndExcited)
   add_test(NAME FermiHubbard_RealSpace COMMAND test_FH_RealSpace)
   add_test(NAME FermiHubbard_MomentumSpace COMMAND test_FH_MomentumSpace)
+  add_test(NAME EnergyConvergence COMMAND test_energy_convergence)
   if(BUILD_TRANSCORRELATED_DMRG)
     add_test(NAME TranscorrelatedMolecular
              COMMAND test_transcorrelated_molecular)
