@@ -147,11 +147,12 @@ namespace maquis
             // Find out about the spin multiplicity required in the 2U1 filename
             // by loading the parameters from the SU2U1 file
 
-            for (int i = 0; i < project_names.size(); i++)
+            // Pass 1: collect nel_ and multiplicities_ for all projects before generating 2U1 checkpoints.
+            // This is necessary because generating 2U1 checkpoints for project i requires knowing the
+            // multiplicities of ALL other projects j (to determine the required Ms projections),
+            // but in a single-pass loop multiplicities_[j] for j > i would still be 0 (uninitialized).
+            for (int i = 0; i < (int)project_names.size(); i++)
             {
-                // Load the first state of each project group and get its number of electrons and spin.
-                // We will not check if the subsequent states have the same spin for now, but if you want to implement if for better
-                // error safety, feel free.
                 const std::string& pname = project_names[i];
                 assert(states[i].size() > 0); // make sure we do not have empty state containers
                 int state = states[i][0];
@@ -171,6 +172,12 @@ namespace maquis
                     throw std::runtime_error("Different electron numbers in different project groups: This is not supported in MPSSI yet.");
                 nel_ = nel;
                 multiplicities_[i] = parms["spin"];
+            }
+
+            // Pass 2: now that all multiplicities are known, generate 2U1 checkpoints for each project.
+            for (int i = 0; i < (int)project_names.size(); i++)
+            {
+                const std::string& pname = project_names[i];
 
                 // transform all checkpoints to 2U1 point group
                 for (auto&& st: states[i])
@@ -180,7 +187,7 @@ namespace maquis
                     // so we create a list with these Ms values
                     int min_tmp = multiplicities_[i];
                     std::vector<int> mult_totransform{min_tmp};
-                    for (int j = 0; j < project_names.size(); j++)
+                    for (int j = 0; j < (int)project_names.size(); j++)
                     {
                         if (min_tmp > std::min(multiplicities_[j], min_tmp))
                         {
@@ -191,7 +198,6 @@ namespace maquis
 
                     for (auto&& m: mult_totransform)
                         maquis::transform(pname, st, m);
-
                 }
             }
         }
