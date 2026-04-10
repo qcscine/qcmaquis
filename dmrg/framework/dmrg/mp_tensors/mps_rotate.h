@@ -318,6 +318,24 @@ namespace mps_rotate
             // compression of MPS'
             compress_mps<Matrix, SymmGroup>(mps_prime, "MPS prime");
 
+            // Guard: if the first correction vanishes or becomes NaN after compression,
+            // applying the MPO to it produces mps_prime_prime with disconnected charge sectors
+            // or NaN tensors; the subsequent join/multiply_by_scalar causes a SIGSEGV
+            // (qcscine/qcmaquis#36). A negligible/NaN first correction implies a negligible
+            // second correction, so skip both.
+            // NOTE: use !(>= threshold) instead of (< threshold) to also catch NaN, since
+            // IEEE 754 defines NaN < x == false for any x, bypassing a plain < guard.
+            if (!(norm(mps_prime) >= 1e-14)) {
+                compress_mps<Matrix, SymmGroup>(mps, "MPS final");
+                typename Matrix::value_type n = norm(mps_prime);
+                if (std::isnan(n))
+                    maquis::cout << "-  First correction is NaN after compression (degenerate charge sectors); skipping second correction  -" << std::endl;
+                else
+                    maquis::cout << "-  First correction negligible (norm=" << n << " < 1e-14); skipping second correction  -" << std::endl;
+                maquis::cout << "-  Final (for the current site to be rotated) MPS with full compression - " << std::endl;
+                continue;
+            }
+
             //maquis::cout << "- enter for second correction - "<<      std::endl;
             // |mps''> = H|mps'> (second correction vector)
             mps_prime_prime = MPS_sigma_vector_product<Matrix, SymmGroup>(mps_prime, MPO_vec);
