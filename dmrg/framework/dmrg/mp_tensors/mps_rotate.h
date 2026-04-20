@@ -315,16 +315,30 @@ namespace mps_rotate
             maquis::cout << "- intermediate correction MPS obtained - "<<      std::endl;
             //debug::mps_print_ci(mps, "dets.txt");
 
+            // Pre-compression guard: if mps_prime is already negligible before compression
+            // (e.g. incompatible charge sectors between spin manifolds in MPSSI — exact
+            // symmetry zero), calling l2r_compress would divide by sqrt(0) → Inf tensors →
+            // SVD abort on strict LAPACK implementations (NAG, some OpenBLAS builds).
+            // A negligible first correction implies a negligible second correction; skip both.
+            // mps has already been extended by join(mps, mps_prime_zero); compress_mps(mps)
+            // below discards the zero contribution via SVD cutoff, recovering the original mps.
+            // NOTE: use !(>= threshold) to catch NaN via IEEE 754 (NaN comparisons are false).
+            if (!(norm(mps_prime) >= 1e-14)) {
+                compress_mps<Matrix, SymmGroup>(mps, "MPS final");
+                typename Matrix::value_type n = norm(mps_prime);
+                maquis::cout << "-  First correction negligible before compression (norm=" << n
+                             << " < 1e-14); skipping  -" << std::endl;
+                maquis::cout << "-  Final (for the current site to be rotated) MPS with full compression - " << std::endl;
+                continue;
+            }
+
             // compression of MPS'
             compress_mps<Matrix, SymmGroup>(mps_prime, "MPS prime");
 
-            // Guard: if the first correction vanishes or becomes NaN after compression,
-            // applying the MPO to it produces mps_prime_prime with disconnected charge sectors
-            // or NaN tensors; the subsequent join/multiply_by_scalar causes a SIGSEGV
-            // (qcscine/qcmaquis#36). A negligible/NaN first correction implies a negligible
-            // second correction, so skip both.
-            // NOTE: use !(>= threshold) instead of (< threshold) to also catch NaN, since
-            // IEEE 754 defines NaN < x == false for any x, bypassing a plain < guard.
+            // Post-compression guard: mps_prime may become NaN after compression due to
+            // degenerate charge sectors (qcscine/qcmaquis#36). Catches NaN that only appears
+            // after SVD truncation on near-degenerate sectors.
+            // NOTE: use !(>= threshold) to catch NaN via IEEE 754.
             if (!(norm(mps_prime) >= 1e-14)) {
                 compress_mps<Matrix, SymmGroup>(mps, "MPS final");
                 typename Matrix::value_type n = norm(mps_prime);

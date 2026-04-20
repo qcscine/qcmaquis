@@ -63,6 +63,14 @@ static l2r_compress(MPS<Matrix, SymmGroup> mps, std::size_t Mmax, double cutoff,
 {
   int L = mps.length();
   auto initialNorm = norm(mps);
+  // Guard: dividing by sqrt(0) produces Inf tensors; subsequent SVD aborts on strict LAPACK
+  // implementations (e.g. NAG). Callers must ensure the MPS has non-negligible norm before
+  // calling l2r_compress (see pre-compression guard in mps_rotate.h).
+  if (!(initialNorm >= 1e-14)) {
+      maquis::cerr << "l2r_compress: initialNorm=" << initialNorm
+                   << " is zero or near-zero; aborting to prevent undefined SVD behaviour" << std::endl;
+      std::abort();
+  }
   block_matrix<Matrix, SymmGroup> t;
   mps[0] /= std::sqrt(initialNorm);
   mps.canonize(1);
